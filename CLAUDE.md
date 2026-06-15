@@ -1,5 +1,10 @@
 # multi-fec — 개발자 레퍼런스
 
+## 작업 워크플로 (Claude)
+
+- Claude가 생성한 PR은 별도 확인 없이 `dev` 브랜치로 **자동 머지**한다 (머지 방식: merge 커밋).
+- 자동 머지 후 결과(머지 커밋 SHA)를 보고한다. CI가 구성되어 있으면 통과 확인 후 머지한다.
+
 ## 프로젝트 개요
 
 UDPspeeder V2 FEC + glorytun mud_lite 멀티패스 + GFW 난독화를 결합한 UDP 프록시.
@@ -476,7 +481,7 @@ best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
 | 파라미터 | 값 | 비고 |
 |----------|-----|------|
 | `keepalive` | `5,000,000 µs` (5초) | 경로 유지 probe 주기 |
-| `timetolerance` | `0` → 기본값 `10,000,000 µs` (10초) | 패킷 시각 오차 허용 범위. 초과 시 조용한 드롭 |
+| `timetolerance` | `30,000,000 µs` (30초) | 패킷 시각 오차 허용 범위. 초과 시 조용한 드롭. HMAC ±1슬롯(±30초) 허용범위와 일치시켜 "HMAC 통과 패킷은 mud도 수용" 보장 |
 | `beat` (경로당) | `80,000–120,000 µs` (80–120ms 랜덤) | probe 전송 주기. `mud_random_beat()` 경로 포인터+시각 기반 난수. |
 | `loss_limit` (경로당) | `200` | LOSSY 임계. `tx.loss > 200` → LOSSY |
 
@@ -861,8 +866,12 @@ mud->conf.timetolerance = 10 * MUD_ONE_SEC;  // 10초
 **수정 후**:
 ```cpp
 mconf.keepalive     = 5000000ULL;   /* 5초 (5,000,000 µs) */
-/* timetolerance = 0 → mud_create 기본값(10초) 유지 */
+mconf.timetolerance = 30000000ULL;  /* 30초 — HMAC ±30s 허용범위와 일치, 시계 오차 대응 */
 ```
+
+> 비고: 초기 수정은 `timetolerance = 0`(→ mud_create 기본값 10초 유지)이었으나,
+> 이후 obfs HMAC의 ±1슬롯(±30초) 허용범위와 정합성을 맞추기 위해 30초로 상향했다.
+> HMAC을 통과한 패킷(±30s)이 시계 오차로 mud에서 조용히 드롭되는 모순을 제거한다.
 
 **진단 팁**: `timetolerance` 실패는 `mud_recv()` 내부에서 `return 0`으로 처리되어
 상위 코드(`mud_io_cb`)의 `n==0` 분기를 탐. 로그가 전혀 남지 않아 진단이 어려움.
