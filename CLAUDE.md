@@ -1,5 +1,10 @@
 # multi-fec — 개발자 레퍼런스
 
+## 작업 워크플로 (Claude)
+
+- Claude가 생성한 PR은 별도 확인 없이 `dev` 브랜치로 **자동 머지**한다 (머지 방식: merge 커밋).
+- 자동 머지 후 결과(머지 커밋 SHA)를 보고한다. CI가 구성되어 있으면 통과 확인 후 머지한다.
+
 ## 프로젝트 개요
 
 UDPspeeder V2 FEC + glorytun mud_lite 멀티패스 + GFW 난독화를 결합한 UDP 프록시.
