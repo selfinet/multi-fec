@@ -2,6 +2,10 @@
 /*
  * mud_lite.h — glorytun mud에서 libsodium 암호화 제거 버전
  *
+ * 원본: glorytun (https://github.com/angt/glorytun), BSD 2-Clause License,
+ *       Copyright (c) Adrien Gallouet <adrien@gallouet.fr>.
+ *       전체 라이선스 고지는 mud_lite.c 및 THIRD_PARTY_NOTICES.md 참조.
+ *
  * 제거: 키 교환, AEAD 암호화, libsodium 의존성
  * 유지: 멀티패스 경로 선택, RTT 측정, 손실률, 속도 제어, MTU 탐지
  *
