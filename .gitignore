@@ -1,0 +1,27 @@
+# Build artifacts
+*.o
+*.a
+*.so
+git_version.h
+
+# Binaries
+/multi-fec
+/multi-fec-static
+/multi-fec-dist
+
+# Python
+__pycache__/
+*.pyc
+
+# Claude local settings
+.claude/settings.local.json
+
+# libev build artifacts
+libev/.libs/
+libev/*.lo
+libev/*.la
+libev/Makefile
+libev/config.h
+libev/config.log
+libev/config.status
+libev/autom4te.cache/
