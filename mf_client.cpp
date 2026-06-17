@@ -429,6 +429,8 @@ void mf_client_event_loop(struct mud *mud, const struct obfs_ctx *obfs)
     /* FEC encode manager */
     conn_info.fec_encode_manager.set_data(&conn_info);
     conn_info.fec_encode_manager.set_loop_and_cb(loop, fec_encode_cb);
+    conn_info.rnlc_encode_manager.set_data(&conn_info);
+    conn_info.rnlc_encode_manager.set_loop_and_cb(loop, fec_encode_cb);
 
     /* delay manager */
     delay_manager.set_loop_and_cb(loop, delay_manager_cb);

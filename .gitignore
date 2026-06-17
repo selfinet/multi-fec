@@ -8,6 +8,7 @@ git_version.h
 /multi-fec
 /multi-fec-static
 /multi-fec-dist
+/test_rnlc_unit
 
 # Python
 __pycache__/

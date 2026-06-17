@@ -90,22 +90,25 @@ int from_normal_to_fec(conn_info_t &conn_info, char *data, int len, int &out_n, 
         }
         // counter++;
 
-        conn_info.fec_encode_manager.input(data, len);
-
-        // if(counter%5==0)
-        // conn_info.fec_encode_manager.input(0,0);
-
-        // int n;
-        // char **s_arr;
-        // int s_len;
-
-        conn_info.fec_encode_manager.output(out_n, out_arr, out_len);
+        int enc_type;
+        my_time_t enc_first_packet_time;
+        if (g_fec_par.mode == 2) {  /* RNLC */
+            conn_info.rnlc_encode_manager.input(data, len);
+            conn_info.rnlc_encode_manager.output(out_n, out_arr, out_len);
+            enc_type = conn_info.rnlc_encode_manager.get_type();
+            enc_first_packet_time = conn_info.rnlc_encode_manager.get_first_packet_time();
+        } else {
+            conn_info.fec_encode_manager.input(data, len);
+            conn_info.fec_encode_manager.output(out_n, out_arr, out_len);
+            enc_type = conn_info.fec_encode_manager.get_type();
+            enc_first_packet_time = conn_info.fec_encode_manager.get_first_packet_time();
+        }
 
         if (out_n > 0) {
             my_time_t common_latency = 0;
-            my_time_t first_packet_time = conn_info.fec_encode_manager.get_first_packet_time();
+            my_time_t first_packet_time = enc_first_packet_time;
 
-            if (fix_latency == 1 && conn_info.fec_encode_manager.get_type() == 0) {
+            if (fix_latency == 1 && enc_type == 0) {
                 my_time_t current_time = get_current_time_us();
                 my_time_t tmp;
                 assert(first_packet_time != 0);
@@ -181,10 +184,15 @@ int from_fec_to_normal(conn_info_t &conn_info, char *data, int len, int &out_n, 
             inner_stat.input_packet_size += len;
         }
 
-        conn_info.fec_decode_manager.input(data, len);
-
-        // int n;char ** s_arr;int* len_arr;
-        conn_info.fec_decode_manager.output(out_n, out_arr, out_len);
+        /* 패킷 type 바이트(헤더 offset 4)로 RNLC(2) 여부 판별 후 분기 */
+        int pkt_type = (data != 0 && len >= 5) ? (unsigned char)data[4] : -1;
+        if (g_fec_par.mode == 2 || pkt_type == 2) {  /* RNLC */
+            conn_info.rnlc_decode_manager.input(data, len);
+            conn_info.rnlc_decode_manager.output(out_n, out_arr, out_len);
+        } else {
+            conn_info.fec_decode_manager.input(data, len);
+            conn_info.fec_decode_manager.output(out_n, out_arr, out_len);
+        }
         for (int i = 0; i < out_n; i++) {
             out_delay_buf[i] = 0;
 

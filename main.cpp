@@ -184,7 +184,7 @@ static void print_help(const char *prog)
         "FEC options:\n"
         "  -f x:y                FEC ratio  [default: 20:10]\n"
         "  --fec-timeout N       FEC group flush timeout ms  [default: 8]\n"
-        "  --mode 0|1            FEC mode: 0=bandwidth-saving, 1=low-latency  [default: 0]\n"
+        "  --mode 0|1|2          FEC mode: 0=bandwidth-saving, 1=low-latency, 2=RNLC  [default: 0]\n"
         "  --mtu N               FEC packet MTU bytes  [default: 1250]\n"
         "  -q N / --queue-len N  FEC encode queue length (mode 0)  [default: 200]\n"
         "  --decode-buf N        FEC decoder ring buffer size (300-20000)  [default: 2000]\n"
@@ -459,8 +459,8 @@ static void parse_args(int argc, char *argv[])
 
         case OPT_FEC_MODE:
             g_fec_mode = atoi(optarg);
-            if (g_fec_mode != 0 && g_fec_mode != 1) {
-                fprintf(stderr, "error: --mode must be 0 or 1\n");
+            if (g_fec_mode != 0 && g_fec_mode != 1 && g_fec_mode != 2) {
+                fprintf(stderr, "error: --mode must be 0, 1, or 2\n");
                 exit(1);
             }
             break;

@@ -67,7 +67,7 @@ static struct ev_loop        *g_loop = NULL;
  * mud_update_cb (100ms) 에서 window 여유 생기면 flush.
  * ──────────────────────────────────────────────────────────────── */
 
-#define SERVER_PENDING_Q_CAP 512
+#define SERVER_PENDING_Q_CAP 4096
 
 struct server_pending_pkt_t {
     char data[buf_len];
@@ -452,6 +452,8 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
 
         ci.fec_encode_manager.set_data(&ci);
         ci.fec_encode_manager.set_loop_and_cb(g_loop, fec_encode_cb);
+        ci.rnlc_encode_manager.set_data(&ci);
+        ci.rnlc_encode_manager.set_loop_and_cb(g_loop, fec_encode_cb);
 
         mylog(log_info, "[server] new client %s\n",
               const_cast<address_t&>(src_addr).get_str());
@@ -967,7 +969,7 @@ void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obfs,
 
     /* ev_timer: mud_update every 100ms */
     struct ev_timer mud_timer;
-    ev_timer_init(&mud_timer, mud_update_cb, 0.1, 0.1);
+    ev_timer_init(&mud_timer, mud_update_cb, 0.02, 0.02);
     ev_timer_start(loop, &mud_timer);
 
     /* ev_timer: global connection cleanup */
