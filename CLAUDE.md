@@ -652,6 +652,7 @@ ExecStartPre=/bin/mkdir -p /run/multi-fec
 ExecStart=/usr/local/bin/multi-fec -r \
     -l ${LISTEN} --upstream ${UPSTREAM} \
     -k ${KEY} --obfs-mode ${OBFS_MODE} \
+    --auth-interval ${AUTH_INTERVAL} \
     --log-level ${LOG_LEVEL} \
     ${DECOY:+--decoy ${DECOY}}
 Restart=on-failure
@@ -679,6 +680,7 @@ ExecStart=/usr/local/bin/multi-fec -r \
     -l ${LISTEN} \
     --route "${KEY_A} ${UPSTREAM_A}" \
     --route "${KEY_B} ${UPSTREAM_B}" \
+    --auth-interval ${AUTH_INTERVAL} \
     --log-level ${LOG_LEVEL} \
     ${DECOY:+--decoy ${DECOY}}
 Restart=on-failure
@@ -695,9 +697,14 @@ KEY_A=keyA
 UPSTREAM_A=1.2.3.4:443
 KEY_B=keyB
 UPSTREAM_B=5.6.7.8:443
+AUTH_INTERVAL=60       # ★ 클라이언트/서버와 반드시 동일. 불일치 시 모든 패킷이 probe로 폐기됨
 DECOY=127.0.0.1:8443   # 미사용 시 이 줄 삭제 → 내장 QUIC Server Initial로 자동 응답
 LOG_LEVEL=4
 ```
+
+> ⚠️ **릴레이 `--auth-interval` 주의**: 릴레이도 HMAC을 검증하므로 `--auth-interval` 값이 클라이언트/서버와 반드시 일치해야 한다(기본 30, 권장 60).
+> 불일치 시 HMAC 토큰 슬롯(`time/auth_interval`)이 어긋나 릴레이가 클라이언트 패킷을 GFW probe로 간주해 조용히 폐기한다.
+> 증상: 해당 경로 DEGRADED(rx=0), 릴레이에 `[relay] new session` 로그 없음, `ss -unp`에 upstream 소켓 없음.
 
 ```bash
 systemctl daemon-reload
