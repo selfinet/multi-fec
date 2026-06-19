@@ -1,0 +1,196 @@
+-----------------------------------------------------------
+Server listening on 5201
+-----------------------------------------------------------
+Accepted connection from 10.9.10.2, port 45022
+[  5] local 10.9.10.1 port 5201 connected to 10.9.10.2 port 45036
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec  2.26 MBytes  19.0 Mbits/sec  121   53.6 KBytes       
+[  5]   1.00-2.00   sec  1.49 MBytes  12.5 Mbits/sec    7   40.2 KBytes       
+[  5]   2.00-3.00   sec  1.73 MBytes  14.5 Mbits/sec    7   43.9 KBytes       
+[  5]   3.00-4.00   sec  1.49 MBytes  12.5 Mbits/sec    9   24.4 KBytes       
+[  5]   4.00-5.00   sec  1014 KBytes  8.31 Mbits/sec    0   45.1 KBytes       
+[  5]   5.00-6.00   sec  1.79 MBytes  15.1 Mbits/sec    7   34.1 KBytes       
+[  5]   6.00-7.00   sec  1.30 MBytes  10.9 Mbits/sec    3   39.0 KBytes       
+[  5]   7.00-8.00   sec  1.49 MBytes  12.5 Mbits/sec    3   46.3 KBytes       
+[  5]   8.00-9.00   sec  1.24 MBytes  10.4 Mbits/sec   15   35.3 KBytes       
+[  5]   9.00-10.00  sec  1.55 MBytes  13.0 Mbits/sec    4   41.4 KBytes       
+[  5]  10.00-11.00  sec  1.49 MBytes  12.5 Mbits/sec    8   43.9 KBytes       
+[  5]  11.00-12.00  sec  1.49 MBytes  12.5 Mbits/sec   13   30.5 KBytes       
+[  5]  12.00-13.00  sec  1.49 MBytes  12.5 Mbits/sec    6   36.6 KBytes       
+[  5]  13.00-14.00  sec  1.24 MBytes  10.4 Mbits/sec   13   29.2 KBytes       
+[  5]  14.00-15.00  sec  1.24 MBytes  10.4 Mbits/sec    5   35.3 KBytes       
+[  5]  15.00-16.00  sec  1.24 MBytes  10.4 Mbits/sec    7   40.2 KBytes       
+[  5]  16.00-17.00  sec  1.30 MBytes  10.9 Mbits/sec    4   48.8 KBytes       
+[  5]  17.00-18.00  sec  1.49 MBytes  12.5 Mbits/sec    7   53.6 KBytes       
+[  5]  18.00-19.00  sec  1.36 MBytes  11.4 Mbits/sec    9   41.4 KBytes       
+[  5]  19.00-20.00  sec  1.49 MBytes  12.5 Mbits/sec    9   31.7 KBytes       
+[  5]  20.00-20.08  sec   254 KBytes  27.2 Mbits/sec    0   34.1 KBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-20.08  sec  29.4 MBytes  12.3 Mbits/sec  257             sender
+iperf3: error - select failed: Bad file descriptor
+-----------------------------------------------------------
+Server listening on 5201
+-----------------------------------------------------------
+Accepted connection from 10.9.10.2, port 32998
+[  5] local 10.9.10.1 port 5201 connected to 10.9.10.2 port 46069
+[ ID] Interval           Transfer     Bitrate         Total Datagrams
+[  5]   0.00-1.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   1.00-2.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   2.00-3.00   sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]   3.00-4.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   4.00-5.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   5.00-6.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   6.00-7.00   sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]   7.00-8.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   8.00-9.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   9.00-10.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  10.00-11.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  11.00-12.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  12.00-13.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  13.00-14.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  14.00-15.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  15.00-16.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  16.00-17.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  17.00-18.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  18.00-19.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  19.00-20.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  20.00-21.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  21.00-22.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  22.00-23.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  23.00-24.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  24.00-25.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  25.00-26.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  26.00-27.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  27.00-28.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  28.00-29.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  29.00-30.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  30.00-31.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  31.00-32.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  32.00-33.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  33.00-34.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  34.00-35.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  35.00-36.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  36.00-37.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  37.00-38.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  38.00-39.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  39.00-40.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  40.00-41.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  41.00-42.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  42.00-43.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  43.00-44.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  44.00-45.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  45.00-46.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  46.00-47.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  47.00-48.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  48.00-49.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  49.00-50.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  50.00-51.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  51.00-52.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  52.00-53.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  53.00-54.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  54.00-55.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  55.00-56.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  56.00-57.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  57.00-58.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  58.00-59.00  sec   976 KBytes  8.00 Mbits/sec  801  
+-----------------------------------------------------------
+Server listening on 5201
+-----------------------------------------------------------
+Accepted connection from 10.9.10.2, port 44722
+[  5] local 10.9.10.1 port 5201 connected to 10.9.10.2 port 44726
+[ ID] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5]   0.00-1.00   sec   503 KBytes  4.12 Mbits/sec   26   12.2 KBytes       
+[  5]   1.00-2.00   sec   322 KBytes  2.64 Mbits/sec    7   14.6 KBytes       
+[  5]   2.00-3.00   sec   322 KBytes  2.64 Mbits/sec   11   9.75 KBytes       
+[  5]   3.00-4.00   sec   389 KBytes  3.19 Mbits/sec    4   17.1 KBytes       
+[  5]   4.00-5.00   sec   503 KBytes  4.12 Mbits/sec    6   17.1 KBytes       
+[  5]   5.00-6.00   sec   412 KBytes  3.37 Mbits/sec    8   19.5 KBytes       
+[  5]   6.00-7.00   sec   319 KBytes  2.62 Mbits/sec   11   13.4 KBytes       
+[  5]   7.00-8.00   sec   534 KBytes  4.37 Mbits/sec    0   30.5 KBytes       
+[  5]   8.00-9.00   sec   731 KBytes  5.99 Mbits/sec   18   19.5 KBytes       
+[  5]   9.00-10.00  sec   338 KBytes  2.77 Mbits/sec   15   11.0 KBytes       
+[  5]  10.00-11.00  sec   254 KBytes  2.08 Mbits/sec   12   9.75 KBytes       
+[  5]  11.00-12.00  sec   317 KBytes  2.60 Mbits/sec   10   7.31 KBytes       
+[  5]  12.00-13.00  sec   254 KBytes  2.08 Mbits/sec    8   11.0 KBytes       
+[  5]  13.00-14.00  sec   317 KBytes  2.60 Mbits/sec    8   12.2 KBytes       
+[  5]  14.00-15.00  sec   322 KBytes  2.64 Mbits/sec   14   6.09 KBytes       
+[  5]  15.00-16.00  sec   190 KBytes  1.56 Mbits/sec    7   11.0 KBytes       
+[  5]  16.00-17.00  sec   317 KBytes  2.60 Mbits/sec    7   12.2 KBytes       
+[  5]  17.00-18.00  sec   323 KBytes  2.65 Mbits/sec   10   9.75 KBytes       
+[  5]  18.00-19.00  sec   254 KBytes  2.08 Mbits/sec    7   13.4 KBytes       
+[  5]  19.00-20.00  sec   317 KBytes  2.60 Mbits/sec    7   17.1 KBytes       
+[  5]  20.00-20.43  sec   190 KBytes  3.59 Mbits/sec    7   9.75 KBytes       
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID] Interval           Transfer     Bitrate         Retr
+[  5]   0.00-20.43  sec  7.25 MBytes  2.98 Mbits/sec  203             sender
+iperf3: error - select failed: Bad file descriptor
+iperf3: interrupt - the server has terminated
+-----------------------------------------------------------
+Server listening on 5201
+-----------------------------------------------------------
+Accepted connection from 10.9.10.2, port 43678
+[  5] local 10.9.10.1 port 5201 connected to 10.9.10.2 port 59691
+[ ID] Interval           Transfer     Bitrate         Total Datagrams
+[  5]   0.00-1.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   1.00-2.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   2.00-3.00   sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]   3.00-4.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   4.00-5.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   5.00-6.00   sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]   6.00-7.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   7.00-8.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   8.00-9.00   sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]   9.00-10.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  10.00-11.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  11.00-12.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  12.00-13.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  13.00-14.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  14.00-15.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  15.00-16.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  16.00-17.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  17.00-18.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  18.00-19.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  19.00-20.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  20.00-21.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  21.00-22.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  22.00-23.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  23.00-24.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  24.00-25.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  25.00-26.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  26.00-27.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  27.00-28.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  28.00-29.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  29.00-30.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  30.00-31.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  31.00-32.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  32.00-33.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  33.00-34.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  34.00-35.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  35.00-36.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  36.00-37.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  37.00-38.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  38.00-39.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  39.00-40.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  40.00-41.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  41.00-42.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  42.00-43.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  43.00-44.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  44.00-45.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  45.00-46.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  46.00-47.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  47.00-48.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  48.00-49.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  49.00-50.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  50.00-51.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  51.00-52.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  52.00-53.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  53.00-54.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  54.00-55.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  55.00-56.00  sec   977 KBytes  8.01 Mbits/sec  802  
+[  5]  56.00-57.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  57.00-58.00  sec   976 KBytes  8.00 Mbits/sec  801  
+[  5]  58.00-59.00  sec   976 KBytes  8.00 Mbits/sec  801  
+-----------------------------------------------------------
+Server listening on 5201
+-----------------------------------------------------------
