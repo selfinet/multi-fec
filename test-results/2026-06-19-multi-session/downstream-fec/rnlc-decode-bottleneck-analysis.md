@@ -75,12 +75,32 @@ Cauchy 바이너리를 s.xdn/c.xdn에 배포·mode2 재측정:
 - 즉 본 분석의 두 가설(① 디코드 CPU, ② rank결핍 잔여손실)은 **모두 실측에서 기각**.
 - 본 수정은 RNLC를 진짜 MDS로 만드는 **정합성 개선**으로서만 유효(불필요 복구실패 제거).
 
-### 미해결 + 다음 단서
-mode2 다운스트림 TCP가 ~3Mbps에 머무는 진짜 원인은 **미해결**. 서버 리포트 로그상
-다운스트림 **fec/original ≈ 2.1x**(20:5라면 ~1.25x 기대) — TCP의 버스트/ack-clocked
-트래픽에서 작은 세대가 timeout(5ms)에 조기 flush되며 FEC 오버헤드·재정렬이 커지는지,
-또는 RNLC 특유의 세대-단위 burst 복구가 RTT 분산을 키워 TCP를 누르는지 **프로파일 필요**.
-(mode1 RS도 같은 grouping 로직이나 격차가 있으니 RNLC 고유 요인 존재.)
+### 측정 2 (2026-06-19): CPU 가설도 데이터로 기각 → 지연/재정렬이 원인
+
+c.xdn(Intel Atom N2600 @1.6GHz)에서 클라 multi-fec 프로세스 CPU를 pidstat으로
+다운스트림 iperf3 -R 중 측정:
+
+| | goodput | 클라 CPU(1코어) |
+|--|--|--|
+| mode1 (RS) | 12.4 Mbps | **65%** (usr20+sys45) |
+| mode2 (RNLC) | 3.04 Mbps | **33%** (usr9+sys24) |
+
+- mode2는 throughput 1/4인데 **CPU는 오히려 절반**. CPU 병목이면 ~100%를 쳐야 하나
+  33%로 한가 → **디코드 CPU 병목 아님 확정**(in-order Atom에서도). 링크·CPU가 노는 건
+  **무언가를 기다린다**(지연)는 뜻.
+- 단서: mode2 UDP out-of-order가 mode1의 ~2배(6079→15914), TCP retr는 mode2가
+  처리량 대비 훨씬 높음(mode1 257@12Mbps vs mode2 ~200@3Mbps).
+- **유력 결론: RNLC 특유의 복구 타이밍/세대-단위 전달이 패킷 재정렬·RTT 분산을 키워
+  TCP 혼잡제어를 무너뜨린다(cwnd collapse).** 코딩 패킷은 세대 내 systematic 뒤에
+  전송(rnlc.cpp:186-225)되어, 손실분 복구가 코딩 도착 후로 지연 + 순서 뒤섞임 → WG 위
+  TCP가 손실로 오판 → throughput이 idle 상태로 ~3Mbps에 고착.
+- (별개 사실) fec/original≈2.1x 과다 오버헤드는 `-f 20:5`가 모든 세대에 r=5 적용
+  (fec_manager.h:94-99)해 작은 세대가 최대 6x 중복 — mode1/2 공통, 격차 원인 아님.
+
+### 다음 (가설→코드 우선 검증)
+재정렬 가설 검증: 디코드 전달을 in-order 보장하거나(복구분을 시퀀스 순서로 재정렬),
+세대-단위 burst 복구 지연을 줄이는 방향. 검증은 wt5 WG-루프백(netem)으로 mode1 vs
+mode2 TCP cwnd/재정렬을 재현해 프로파일 후 진행(운영 무영향).
 
 ## 참고
 - 측정: `downstream-results.md`, `iperf3-server.log`
