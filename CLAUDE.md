@@ -1475,6 +1475,10 @@ Random Linear Network Coding을 `--mode 2`로 추가. RS와 동일하게 `-f x:y
 - `test_perf_stability.py` — 성능·안정성 26개 케이스
 - `test_rnlc_unit.cpp` — RNLC 인코드/디코드 결정적 유닛 테스트 11개 케이스 (`make test-rnlc-unit`)
 - `test_rnlc.py` — RNLC end-to-end 통합 검증 9개 케이스
+- `test_scale_sessions.py` — 다중 세션(session_id) 부하/스케일 + 아징 소크 테스트 (루프백 단일 호스트). 세션 수를 늘리며 서버 RSS/CPU/처리량/세션 간 cross-talk 측정. `--aging N`으로 장시간 소크(주기 샘플링·누수/크래시/cross-talk 감지). 1프로세스=1세션.
+- `aging_rt_server.py` / `aging_rt_clients.py` — 실제 토폴로지(c→r→s) 다중 세션 아징 하베스트. 서버+sink(s측), 클라이언트 N개+태그 생성기(c측)로 분리. 평행 테스트 체인(:4443)으로 운영(:443) 비침습. 10세션 3h 검증 완료(누수0·crosstalk0·전달99.85%).
+
+> 다운스트림 FEC 측정은 합성 왕복으로 불가(양방향 mud/FEC 결합으로 신호 묻힘). 실제 WG `starlink-fec` 터널(s=10.9.10.1, c=10.9.10.2) 위 `iperf3 -R`로 측정. 실측: mode1 다운 12.0Mbps/잔여손실0.006%, mode2(RNLC) 2.93Mbps/0.68% (netem 15%, fec 20:5).
 
 **참고 문서:**
 - `DEPLOY_EXAMPLES.md` — 10가지 배포 시나리오별 전체 설정 예제
