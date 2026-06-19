@@ -210,8 +210,14 @@ int rnlc_encode_manager_t::input(char *s, int len) {
         o[idx++] = (unsigned char)(k + j);  /* inner_index >= k */
 
         unsigned char *coeff = (unsigned char *)(o + idx);
+        /* Cauchy 계수: P[j][c] = 1/((k+j) XOR c).
+         * x_j=k+j (코딩 r행), y_c=c (k열) — 범위 분리로 x_j^y_c != 0 보장(gf_inv 정의).
+         * systematic [I|P]가 Cauchy면 MDS → 임의의 k개 수신 시 항상 복구(RS와 동등).
+         * 기존 랜덤 계수의 rank 결핍(여유분==손실수일 때 ~0.4% 복구 실패) 제거.
+         * 전제 k+r<=255는 위 r 클램프(max_fec_packet_num)로 이미 보장됨. */
+        unsigned char xj = (unsigned char)(k + j);
         for (int c = 0; c < k; c++)
-            coeff[c] = (unsigned char)(get_fake_random_number() & 0xFF);
+            coeff[c] = rnlc_gf_inv((unsigned char)(xj ^ (unsigned char)c));
         idx += k;
 
         char *coded = o + idx;

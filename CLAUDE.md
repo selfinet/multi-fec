@@ -1469,6 +1469,29 @@ Random Linear Network Coding을 `--mode 2`로 추가. RS와 동일하게 `-f x:y
 
 ---
 
+### 17. RNLC 코딩 계수 랜덤 → Cauchy(MDS) 교체
+
+**파일**: `rnlc.cpp` — `rnlc_encode_manager_t::input()` 코딩 패킷 계수 생성
+
+**배경**: 10세션 다운스트림 측정(2026-06-19, netem 15%)에서 RNLC(mode2) TCP goodput이
+RS(mode1)의 ~1/4(2.93 vs 12.0 Mbps). UDP는 8Mbit/s를 거의 다 통과(7.96)했고 디코드
+연산량도 사소(~4.5M byte-op/s)해 **CPU 병목이 아니라 잔여손실(0.68% vs RS 0.006%, 100배)이
+TCP를 무너뜨린 것**으로 판명(TCP BW ∝ 1/√loss).
+
+**원인**: 코딩 계수가 순수 난수(`get_fake_random_number() & 0xFF`)라 수신 코딩 패킷들이
+1차 종속일 확률(여유분==손실수일 때 ~0.4%)이 있어 손실 ≤ r 인데도 복구 실패. RS(Vandermonde,
+MDS)는 임의 k개 수신 시 항상 복구하므로 이 실패가 없음.
+
+**수정**: 계수를 **Cauchy 행렬**로 — `P[j][c] = 1/((k+j) XOR c)` (x_j=k+j 코딩 r행,
+y_c=c k열, 범위 분리로 x_j⊕y_c≠0 보장). systematic `[I|P]`에서 P가 Cauchy면 모든 정방
+부분행렬 가역 → **MDS** → RS와 동일하게 임의 k개 수신 시 복구 보장. 디코더는 계수를 wire에서
+읽어 일반 가우스 소거하므로 **무변경**. 전제 k+r≤255는 기존 r 클램프로 보장.
+
+**검증**: `test_rnlc_unit` 11/11(최대손실 복구가 이제 결정적). 전체 빌드 정상.
+세부 분석: `test-results/2026-06-19-multi-session/downstream-fec/rnlc-decode-bottleneck-analysis.md`.
+
+---
+
 **테스트 스크립트:**
 - `test_relay_routing.py` — 릴레이 키별 라우팅 7개 케이스
 - `test_all_options.py` — 전체 CLI 옵션 90개 케이스
