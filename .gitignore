@@ -14,6 +14,13 @@ git_version.h
 __pycache__/
 *.pyc
 
+# Aging/test run artifacts
+aging10_*.log
+.aging10_ts
+
+# macOS
+.DS_Store
+
 # Claude local settings
 .claude/settings.local.json
 
