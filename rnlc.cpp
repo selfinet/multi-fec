@@ -1,9 +1,9 @@
 /*
- * rnlc.cpp — Random Linear Network Coding (RNLC) FEC 모드 (--mode 2) 구현
+ * rnlc.cpp — Random Linear Network Coding (RNLC) FEC mode (--mode 2) implementation
  *
- * 설계 개요는 rnlc.h 참고. 핵심:
- *   - 인코더: 세대당 원본 k개 그대로 + 코딩 r개(랜덤 선형결합) 전송
- *   - 디코더: 원본은 도착 즉시 전달, 손실분은 임의의 k개(1차 독립)로 가우스 소거 복구
+ * See rnlc.h for the design overview. Key points:
+ *   - Encoder: per generation, send k originals as-is + r coded packets (random linear combinations)
+ *   - Decoder: deliver originals on arrival; recover losses via Gaussian elimination from any k (linearly independent)
  */
 
 #include "rnlc.h"
@@ -29,7 +29,7 @@ void rnlc_gf_init() {
     }
     for (int i = 255; i < 512; i++)
         gf_exp_tbl[i] = gf_exp_tbl[i - 255];
-    gf_log_tbl[0] = 0;  /* 미정의지만 0으로; mul에서 0은 별도 처리 */
+    gf_log_tbl[0] = 0;  /* undefined, set to 0; mul handles 0 separately */
     gf_inv_tbl[0] = 0;
     for (int i = 1; i < 256; i++)
         gf_inv_tbl[i] = gf_exp_tbl[255 - gf_log_tbl[i]];
@@ -68,7 +68,7 @@ void rnlc_gf_scale(unsigned char *buf, unsigned char scalar, int len) {
 }
 
 /* ──────────────────────────────────────────────────────────────────
- * 인코더
+ * Encoder
  * ────────────────────────────────────────────────────────────────── */
 rnlc_encode_manager_t::rnlc_encode_manager_t() {
     rnlc_gf_init();
@@ -128,7 +128,7 @@ int rnlc_encode_manager_t::input(char *s, int len) {
     output_n = 0;
 
     if (s == 0 && counter == 0) {
-        /* 타임아웃인데 모인 패킷 없음 */
+        /* timeout but no packets gathered */
         return -1;
     }
 
@@ -163,11 +163,11 @@ int rnlc_encode_manager_t::input(char *s, int len) {
     }
 
     int flush = 0;
-    if (s == 0) flush = 1;             /* 타임아웃 → 부분 세대 전송 */
-    if (counter == tail_x) flush = 1;  /* 세대 가득 */
+    if (s == 0) flush = 1;             /* timeout → send partial generation */
+    if (counter == tail_x) flush = 1;  /* generation full */
     if (!flush) return 0;
 
-    /* ── flush: 세대 빌드 ── */
+    /* ── flush: build generation ── */
     int k = counter;
     int r = fec_par.rs_par[k - 1].y;
     if (k + r > max_fec_packet_num) r = max_fec_packet_num - k;
@@ -176,13 +176,13 @@ int rnlc_encode_manager_t::input(char *s, int len) {
     int symbol_len = 0;
     for (int i = 0; i < k; i++)
         if (sym_len[i] > symbol_len) symbol_len = sym_len[i];
-    /* 코딩용으로 각 원본 심볼을 symbol_len까지 0패딩 */
+    /* zero-pad each original symbol to symbol_len for coding */
     for (int i = 0; i < k; i++)
         memset(sym_ptr(i) + sym_len[i], 0, symbol_len - sym_len[i]);
 
     int out_i = 0;
 
-    /* systematic 패킷 (자연 길이) */
+    /* systematic packets (natural length) */
     for (int i = 0; i < k; i++) {
         char *o = out_store + (size_t)out_i * rnlc_pkt_max;
         int idx = 0;
@@ -198,7 +198,7 @@ int rnlc_encode_manager_t::input(char *s, int len) {
         out_i++;
     }
 
-    /* 코딩 패킷 (symbol_len 고정, 앞에 k 계수) */
+    /* coded packets (fixed symbol_len, prefixed with k coefficients) */
     for (int j = 0; j < r; j++) {
         char *o = out_store + (size_t)out_i * rnlc_pkt_max;
         int idx = 0;
@@ -210,11 +210,11 @@ int rnlc_encode_manager_t::input(char *s, int len) {
         o[idx++] = (unsigned char)(k + j);  /* inner_index >= k */
 
         unsigned char *coeff = (unsigned char *)(o + idx);
-        /* Cauchy 계수: P[j][c] = 1/((k+j) XOR c).
-         * x_j=k+j (코딩 r행), y_c=c (k열) — 범위 분리로 x_j^y_c != 0 보장(gf_inv 정의).
-         * systematic [I|P]가 Cauchy면 MDS → 임의의 k개 수신 시 항상 복구(RS와 동등).
-         * 기존 랜덤 계수의 rank 결핍(여유분==손실수일 때 ~0.4% 복구 실패) 제거.
-         * 전제 k+r<=255는 위 r 클램프(max_fec_packet_num)로 이미 보장됨. */
+        /* Cauchy coefficients: P[j][c] = 1/((k+j) XOR c).
+         * x_j=k+j (r coded rows), y_c=c (k columns) — range separation guarantees x_j^y_c != 0 (gf_inv defined).
+         * If systematic [I|P] has P as Cauchy, it is MDS → always recoverable from any k received (equivalent to RS).
+         * Eliminates the rank deficiency of the previous random coefficients (~0.4% recovery failure when surplus==loss count).
+         * The precondition k+r<=255 is already guaranteed by the r clamp above (max_fec_packet_num). */
         unsigned char xj = (unsigned char)(k + j);
         for (int c = 0; c < k; c++)
             coeff[c] = rnlc_gf_inv((unsigned char)(xj ^ (unsigned char)c));
@@ -260,7 +260,7 @@ int rnlc_encode_manager_t::output(int &n, char **&s_arr, int *&len) {
 }
 
 /* ──────────────────────────────────────────────────────────────────
- * 디코더
+ * Decoder
  * ────────────────────────────────────────────────────────────────── */
 rnlc_decode_manager_t::rnlc_decode_manager_t() {
     rnlc_gf_init();
@@ -378,7 +378,7 @@ int rnlc_decode_manager_t::input(char *s, int len) {
         }
     }
 
-    /* 링버퍼 슬롯 회수 */
+    /* reclaim ring-buffer slot */
     if (fec_data[index].used != 0) {
         u32_t old = fec_data[index].seq;
         anti_replay.set_invaild(old);
@@ -401,7 +401,7 @@ int rnlc_decode_manager_t::input(char *s, int len) {
     rnlc_gen_t &gen = mp[seq];
     gen.group_mp[inner_index] = index;
 
-    /* fast path: systematic 패킷은 도착 즉시 전달 */
+    /* fast path: systematic packets are delivered on arrival */
     if (inner_index < k && !gen.out_done[inner_index]) {
         if (plen >= (int)sizeof(u16_t)) {
             int dlen = read_u16(fec_data[index].buf);
@@ -416,7 +416,7 @@ int rnlc_decode_manager_t::input(char *s, int len) {
         }
     }
 
-    /* 원본 모두 도착 → 복구 불필요 */
+    /* all originals arrived → no recovery needed */
     int sys_cnt = 0;
     for (auto &kv : gen.group_mp)
         if (kv.first < k) sys_cnt++;
@@ -425,7 +425,7 @@ int rnlc_decode_manager_t::input(char *s, int len) {
         gen.fec_done = 1;
         anti_replay.set_invaild(seq);
     } else if ((int)gen.group_mp.size() >= k) {
-        try_decode(seq);  /* 복구분을 output_n에 추가 */
+        try_decode(seq);  /* append recovered items to output_n */
     }
 
     if (output_n > 0) {
@@ -439,12 +439,12 @@ int rnlc_decode_manager_t::input(char *s, int len) {
     return 0;
 }
 
-/* 가우스 소거(full pivoting)로 세대 복구 시도. 성공 시 누락 원본을 output에 추가. */
+/* Attempt to recover a generation via Gaussian elimination (full pivoting). On success, add missing originals to output. */
 int rnlc_decode_manager_t::try_decode(u32_t seq) {
     rnlc_gen_t &gen = mp[seq];
     int k = gen.k;
 
-    /* symbol_len = 수신 행들로부터 추정 (코딩 패킷이 곧 인코더의 symbol_len) */
+    /* symbol_len = estimated from received rows (a coded packet is exactly the encoder's symbol_len) */
     int symbol_len = 0;
     for (auto &kv : gen.group_mp) {
         int ri = kv.second;
@@ -456,7 +456,7 @@ int rnlc_decode_manager_t::try_decode(u32_t seq) {
         return -1;
     }
 
-    /* 작업 행렬 구성: 각 수신 패킷 → (계수[k] | 데이터[symbol_len]) */
+    /* build work matrix: each received packet → (coeff[k] | data[symbol_len]) */
     int nrows = 0;
     for (auto &kv : gen.group_mp) {
         if (nrows >= max_fec_packet_num) break;
@@ -468,7 +468,7 @@ int rnlc_decode_manager_t::try_decode(u32_t seq) {
         memset(drow, 0, symbol_len);
         if (inner < k) {
             crow[inner] = 1;
-            memcpy(drow, fec_data[ri].buf, fec_data[ri].len);  /* 자연 길이, 나머지 0패딩 */
+            memcpy(drow, fec_data[ri].buf, fec_data[ri].len);  /* natural length, remainder zero-padded */
         } else {
             memcpy(crow, fec_data[ri].buf, k);
             int slen = fec_data[ri].len - k;
@@ -477,7 +477,7 @@ int rnlc_decode_manager_t::try_decode(u32_t seq) {
         nrows++;
     }
 
-    /* order[] 인덱스로 행 스왑 (대용량 데이터 행 이동 회피) */
+    /* swap rows via order[] indices (avoids moving bulky data rows) */
     int order[max_fec_packet_num + 5];
     for (int i = 0; i < nrows; i++) order[i] = i;
     int pivot_of_col[max_fec_packet_num + 5];
@@ -492,7 +492,7 @@ int rnlc_decode_manager_t::try_decode(u32_t seq) {
                 break;
             }
         }
-        if (sel < 0) continue;  /* 이 열 피벗 없음 → rank 부족 */
+        if (sel < 0) continue;  /* no pivot for this column → insufficient rank */
 
         int tmp = order[prow];
         order[prow] = order[sel];
@@ -524,13 +524,13 @@ int rnlc_decode_manager_t::try_decode(u32_t seq) {
         return -1;
     }
 
-    /* 완전 복구됨: pivot_of_col[i] 행의 데이터 = 원본 i */
+    /* fully recovered: data in row pivot_of_col[i] = original i */
     gen.fec_done = 1;
     anti_replay.set_invaild(seq);
 
     int recovered_cnt = 0;
     for (int i = 0; i < k; i++) {
-        if (gen.out_done[i]) continue;  /* 이미 fast path로 전달됨 */
+        if (gen.out_done[i]) continue;  /* already delivered via fast path */
         char *src = piv_data_ptr(pivot_of_col[i]);
         char *rec = recovered_ptr(recovered_cnt);
         memcpy(rec, src, symbol_len);

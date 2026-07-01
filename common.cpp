@@ -278,8 +278,8 @@ int address_t::from_str_ip_only(char *str) {
 }
 
 char *address_t::get_str() {
-    // 회전 버퍼: 한 printf/로그 문에서 get_str()를 여러 번 호출해도
-    // 각 호출이 서로 다른 버퍼를 반환하도록 한다 (단일 정적 버퍼 공유 버그 수정).
+    // Rotating buffer: even if get_str() is called multiple times in a single
+    // printf/log statement, each call returns a different buffer (fixes the shared single-static-buffer bug).
     static char res[8][max_addr_len];
     static unsigned idx = 0;
     char *p = res[idx++ & 7];

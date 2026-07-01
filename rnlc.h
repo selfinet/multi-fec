@@ -1,19 +1,19 @@
 /*
- * rnlc.h — Random Linear Network Coding (RNLC) FEC 모드 (--mode 2)
+ * rnlc.h — Random Linear Network Coding (RNLC) FEC mode (--mode 2)
  *
- * 기존 Reed-Solomon(mode 0/1)과 선택 가능한 별도 FEC 알고리즘.
- * 블록(generation) 기반 systematic RLNC:
- *   - 한 세대 = 원본 패킷 k개(= -f x:y 의 x) + 코딩 패킷 r개(= y)
- *   - 원본(systematic) 패킷은 그대로 전송 → 무손실 시 디코드 비용/지연 0
- *   - 코딩 패킷은 GF(256) 위에서 원본들의 랜덤 선형결합
- *   - 디코더는 도착한 임의의 k개(원본+코딩, 1차 독립)로 가우스 소거 복구
+ * A separate FEC algorithm selectable alongside the existing Reed-Solomon (mode 0/1).
+ * Block(generation)-based systematic RLNC:
+ *   - One generation = k original packets (= x in -f x:y) + r coded packets (= y)
+ *   - Original (systematic) packets are sent as-is → zero decode cost/latency when lossless
+ *   - Coded packets are random linear combinations of the originals over GF(256)
+ *   - The decoder recovers via Gaussian elimination from any k arrivals (original+coded, linearly independent)
  *
- * 와이어 포맷 (RS와 동일한 8B 헤더, type=2):
+ * Wire format (same 8B header as RS, type=2):
  *   [4B seq(generation id)][1B type=2][1B k][1B r][1B inner_index]
- *   - inner_index <  k : systematic 패킷, payload = [2B len][data]        (자연 길이)
- *   - inner_index >= k : 코딩 패킷,       payload = [k 계수][코딩 심볼]   (symbol_len)
+ *   - inner_index <  k : systematic packet, payload = [2B len][data]        (natural length)
+ *   - inner_index >= k : coded packet,       payload = [k coeffs][coded symbol]   (symbol_len)
  *
- * GF(256)은 본 모듈 내부에 자체 구현한다 (upstream lib/fec 미수정 원칙).
+ * GF(256) is implemented internally in this module (principle: do not modify upstream lib/fec).
  */
 
 #ifndef RNLC_H_
@@ -23,13 +23,13 @@
 #include "log.h"
 #include "fec_manager.h"  // fec_parameter_t, g_fec_par, max_fec_packet_num
 
-/* RNLC 패킷 1개 최대 크기: 헤더 + 최대 계수벡터 + 심볼 */
+/* Max size of one RNLC packet: header + max coefficient vector + symbol */
 const int rnlc_header_len = sizeof(u32_t) + 4 * sizeof(char);  // 8
 const int rnlc_pkt_max = rnlc_header_len + max_fec_packet_num + buf_len;
 
 /* ──────────────────────────────────────────────────────────────────
- * GF(256) 산술 (primitive polynomial 0x11d) — 본 모듈 한정.
- * 첫 사용 시 1회 테이블 초기화.
+ * GF(256) arithmetic (primitive polynomial 0x11d) — this module only.
+ * Table initialized once on first use.
  * ────────────────────────────────────────────────────────────────── */
 void rnlc_gf_init();
 unsigned char rnlc_gf_mul(unsigned char a, unsigned char b);
@@ -40,18 +40,18 @@ void rnlc_gf_muladd(unsigned char *dst, const unsigned char *src, unsigned char 
 void rnlc_gf_scale(unsigned char *buf, unsigned char scalar, int len);
 
 /* ──────────────────────────────────────────────────────────────────
- * 인코더
+ * Encoder
  * ────────────────────────────────────────────────────────────────── */
 class rnlc_encode_manager_t : not_copy_able_t {
    private:
     u32_t seq;
     fec_parameter_t fec_par;
 
-    int counter;                              /* 현재 세대에 모인 원본 패킷 수 */
-    char *sym;                                /* [max_fec_packet_num][buf_len] 원본 심볼 (lazy) */
-    int sym_len[max_fec_packet_num + 5];      /* 각 원본 심볼 자연 길이 (2 + data_len) */
+    int counter;                              /* number of original packets gathered in the current generation */
+    char *sym;                                /* [max_fec_packet_num][buf_len] original symbols (lazy) */
+    int sym_len[max_fec_packet_num + 5];      /* natural length of each original symbol (2 + data_len) */
 
-    char *out_store;                          /* 출력 패킷 버퍼 (lazy) */
+    char *out_store;                          /* output packet buffer (lazy) */
     char *output_buf[max_fec_packet_num + 100];
     int output_len[max_fec_packet_num + 100];
 
@@ -92,8 +92,8 @@ class rnlc_encode_manager_t : not_copy_able_t {
 };
 
 /* ──────────────────────────────────────────────────────────────────
- * 디코더
- * RS 디코더(fec_decode_manager_t)와 동일한 링버퍼 + map 구조.
+ * Decoder
+ * Same ring-buffer + map structure as the RS decoder (fec_decode_manager_t).
  * ────────────────────────────────────────────────────────────────── */
 struct rnlc_data_t {
     int used;
@@ -101,7 +101,7 @@ struct rnlc_data_t {
     int k;
     int r;
     int idx;          /* inner_index */
-    char buf[buf_len];/* payload (헤더 제외) */
+    char buf[buf_len];/* payload (header excluded) */
     int len;
 };
 
@@ -109,8 +109,8 @@ struct rnlc_gen_t {
     int k = -1;
     int r = -1;
     int fec_done = 0;
-    map<int, int> group_mp;            /* inner_index -> 링버퍼 index */
-    char out_done[max_fec_packet_num + 10] = {0};  /* systematic 원본 i 출력 완료 여부 */
+    map<int, int> group_mp;            /* inner_index -> ring-buffer index */
+    char out_done[max_fec_packet_num + 10] = {0};  /* whether systematic original i has been output */
 };
 
 class rnlc_decode_manager_t : not_copy_able_t {
@@ -126,9 +126,9 @@ class rnlc_decode_manager_t : not_copy_able_t {
 
     char *output_s_arr_buf[max_fec_packet_num + 100];
     int output_len_arr_buf[max_fec_packet_num + 100];
-    char *recovered_store;   /* 복구 심볼 저장 (lazy): max_fec_packet_num * buf_len */
+    char *recovered_store;   /* stores recovered symbols (lazy): max_fec_packet_num * buf_len */
 
-    /* 가우스 소거용 작업 버퍼 (lazy) */
+    /* work buffers for Gaussian elimination (lazy) */
     unsigned char *piv_coeff;  /* [max_fec_packet_num][max_fec_packet_num] */
     char *piv_data;            /* [max_fec_packet_num][buf_len] */
     char has_piv[max_fec_packet_num + 10];
@@ -139,7 +139,7 @@ class rnlc_decode_manager_t : not_copy_able_t {
     unsigned char *piv_coeff_ptr(int row) { return piv_coeff + (size_t)row * max_fec_packet_num; }
     char *piv_data_ptr(int row) { return piv_data + (size_t)row * buf_len; }
 
-    int try_decode(u32_t seq);  /* 가우스 소거 시도. 성공 시 ready_for_output 설정 */
+    int try_decode(u32_t seq);  /* attempt Gaussian elimination; sets ready_for_output on success */
 
    public:
     rnlc_decode_manager_t();

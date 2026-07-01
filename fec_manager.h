@@ -400,7 +400,7 @@ class fec_decode_manager_t : not_copy_able_t {
 
    public:
     fec_decode_manager_t() {
-        /* RNLC(mode 2)에선 RS 디코더가 쓰이지 않으므로 대용량 링버퍼 할당 생략 */
+        /* under RNLC (mode 2) the RS decoder is unused, so skip the large ring-buffer allocation */
         if (g_fec_par.mode != 2) {
             fec_data = new fec_data_t[fec_buff_num + 5];
             assert(fec_data != 0);

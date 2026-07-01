@@ -42,8 +42,10 @@ $(NAME): $(OBJS)
 
 git_version:
 	@{ \
-	  echo 'const char *gitversion = "local-build";'; \
-	  echo "const char *build_date = \"$$(date '+%Y-%m-%d %H:%M:%S %Z')\";"; \
+	  GITDESC="$$(git describe --tags --dirty --always 2>/dev/null)"; \
+	  [ -n "$$GITDESC" ] || GITDESC="unknown"; \
+	  printf 'const char *gitversion = "%s";\n' "$$GITDESC"; \
+	  printf 'const char *build_date = "%s";\n' "$$(date '+%Y-%m-%d %H:%M:%S %Z')"; \
 	} > git_version.h
 
 main.o: git_version.h
