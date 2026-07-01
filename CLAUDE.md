@@ -5,9 +5,11 @@
 - Claude가 생성한 PR은 별도 확인 없이 `dev` 브랜치로 **자동 머지**한다 (머지 방식: merge 커밋).
 - 자동 머지 후 결과(머지 커밋 SHA)를 보고한다. CI가 구성되어 있으면 통과 확인 후 머지한다.
 
-### 테스트 환경 (실행은 테스트망, 빌드/바이너리는 wt5)
+### 테스트 환경 (실행은 테스트망, 빌드/바이너리는 sv1)
 
-- **빌드·실행파일**: 빌드와 배포용 바이너리는 **`wt5`**(=wt5.xdn.kr, Ubuntu x86_64)의 `~/multi-fec`. macOS 로컬은 빌드 불가(Linux 전용 API). `make static-strip` → `multi-fec-dist`. wt5는 각 테스트 호스트에 직접 접근 불가 → 전송은 wt5→로컬→호스트 경유.
+- **빌드·실행파일**: 빌드·개발·배포용 바이너리 작업은 모두 **`sv1`**(hostname `sv1xdnkr`, Ubuntu 24.04 x86_64, gcc 13.3.0)의 `~/multi-fec`에서 한다. macOS 로컬은 빌드 불가(Linux 전용 API). `make static-strip` → `multi-fec-dist`(정적·strip, GLIBC 의존성 없음). sv1은 각 테스트 호스트에 직접 접근 불가 → 전송은 sv1→로컬→호스트 경유.
+  - 2026-07-02 wt5(wt5.xdn.kr)에서 sv1로 이전 완료. 이후 모든 작업은 sv1에서 수행. (구 wt5 환경은 폐기)
+  - 빌드 주의: `make clean` 후 `make -j`는 `git_version.h` 생성 순서 경합으로 실패 → `make git_version` 먼저 실행 후 `make -j$(nproc)`.
 - **실행(테스트)**: 실제 실행·측정은 **테스트망**에서. Server `s.xdn.selfinet.com`(공인 218.154.1.134), Client `c.xdn.selfinet.com`(Atom N2600), Relay `r.xdn.selfinet.com`(LAN 192.168.100.85). 세 호스트 nopasswd sudo, 배포 바이너리 `/usr/sbin/multi-fec-dist`, systemd `multi-fec-{server,client,relay}`.
 - **터널**: multi-fec 경유 WG는 `starlink-fec`(s=10.9.10.1, c=10.9.10.2). 직결 `starlink-xdn`(10.9.9.x)은 미경유 — 측정에 쓰지 말 것.
 - **netem**: s.xdn `ens19` egress에 `delay 25±5ms / loss 15±25%` → **다운스트림(서버→클라)에만 적용**(업스트림 미적용).
@@ -1510,7 +1512,7 @@ MDS로 만드는 정합성 개선**으로서 유효하나(불필요한 복구실
 mode2 UDP out-of-order가 mode1의 2배. **유력 결론: RNLC가 코딩 패킷을 세대 내 systematic 뒤에
 전송(`rnlc.cpp:186-225`)해 손실분 복구가 지연·순서뒤섞임 → WG 위 TCP가 손실로 오판 → cwnd
 collapse → 링크 idle인 채 ~3Mbps 고착**. (fec/original≈2.1x 과다오버헤드는 `-f 20:5`가 모든
-세대에 r=5 적용(`fec_manager.h:94-99`)한 것 — mode1/2 공통, 격차원인 아님.) 다음 검증: wt5
+세대에 r=5 적용(`fec_manager.h:94-99`)한 것 — mode1/2 공통, 격차원인 아님.) 다음 검증: sv1
 WG-루프백+netem으로 재정렬 재현·프로파일(운영 무영향) → 수정방향은 디코드 in-order 전달 또는
 복구지연 단축. 가설 정리(①CPU ②rank결핍 ③지연/재정렬): ①②는 실측 기각, ③ 유력.
 세부: `test-results/2026-06-19-multi-session/downstream-fec/rnlc-decode-bottleneck-analysis.md`.

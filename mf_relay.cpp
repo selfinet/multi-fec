@@ -52,16 +52,16 @@ static int                    g_listen_fd   = -1;
 static address_t              g_upstream;           /* --upstream target */
 static struct ev_loop        *g_loop        = NULL;
 static const struct obfs_ctx *g_obfs        = NULL; /* NULL = transparent */
-static struct obfs_ctx        g_builtin_ctx;        /* 내장 QUIC Initial 응답용 */
+static struct obfs_ctx        g_builtin_ctx;        /* for builtin QUIC Initial response */
 
 #define RELAY_SESSION_TIMEOUT_MS  60000     /* 60 s idle → evict */
 
 /* ────────────────────────────────────────────────────────────────
  * Decoy session management (--decoy ip:port)
  *
- * 서버와 동일한 구조: HMAC 실패 패킷을 로컬 QUIC/HTTPS 서버로
- * 포워딩하고 그 응답을 프로버에게 되돌려 보낸다.
- * 프로버 주소마다 독립 UDP 소켓, 10초 idle → 자동 제거.
+ * Same structure as the server: forward HMAC-failed packets to a local
+ * QUIC/HTTPS server and relay its response back to the prober.
+ * Separate UDP socket per prober address, auto-removed after 10s idle.
  * ──────────────────────────────────────────────────────────────── */
 
 struct decoy_sess_t {
@@ -180,7 +180,7 @@ struct relay_session_t {
     int                    upstream_fd;
     ev_io                  upstream_watcher;
     my_time_t              last_active;
-    const struct obfs_ctx *route_obfs;  /* 이 세션에 매칭된 키의 obfs. NULL=투명 */
+    const struct obfs_ctx *route_obfs;  /* obfs of the key matched for this session. NULL=transparent */
 };
 
 /* Two lookup tables — O(1) in both directions */
@@ -285,14 +285,14 @@ static void probe_respond_builtin(address_t &src)
  * ──────────────────────────────────────────────────────────────── */
 
 /*
- * 새 세션의 upstream 주소와 obfs 컨텍스트를 결정한다.
+ * Determine the upstream address and obfs context for a new session.
  *
- * g_routes 비어 있음 → 단일 upstream 모드 (기존 동작)
+ * g_routes empty → single-upstream mode (legacy behavior)
  *   upstream = g_upstream, obfs = g_obfs
  *
- * g_routes 있음 → 키별 라우팅 모드
- *   각 route의 HMAC을 순서대로 시도. 첫 성공 route를 사용.
- *   모두 실패 → upstream = NULL (close_notify 응답)
+ * g_routes present → key-routing mode
+ *   Try each route's HMAC in order. Use the first successful route.
+ *   All fail → upstream = NULL (close_notify response)
  */
 static const struct obfs_ctx *find_route(const char *buf, int n,
                                          address_t &upstream_out)
@@ -300,18 +300,18 @@ static const struct obfs_ctx *find_route(const char *buf, int n,
     static char decoded[buf_len];
 
     if (g_routes.empty()) {
-        /* 단일 upstream 모드 */
+        /* single-upstream mode */
         if (g_obfs != NULL) {
             int plen = obfs_decode(g_obfs, buf, n,
                                    decoded, (int)sizeof(decoded), NULL);
             if (plen == 0 || (plen < 0 && plen != OBFS_DECODE_INITIAL))
-                return NULL;  /* HMAC 실패 */
+                return NULL;  /* HMAC failure */
         }
         upstream_out = g_upstream;
-        return g_obfs;  /* NULL이면 투명 모드 */
+        return g_obfs;  /* NULL means transparent mode */
     }
 
-    /* 키별 라우팅: 순서대로 HMAC 시도 */
+    /* key routing: try HMAC in order */
     for (const route_entry_t &route : g_routes) {
         int plen = obfs_decode(&route.obfs, buf, n,
                                decoded, (int)sizeof(decoded), NULL);
@@ -320,7 +320,7 @@ static const struct obfs_ctx *find_route(const char *buf, int n,
             return &route.obfs;
         }
     }
-    return NULL;  /* 어떤 키도 불일치 */
+    return NULL;  /* no key matched */
 }
 
 static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/,
@@ -349,7 +349,7 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
         auto it = g_addr_to_sess.find(src);
 
         if (it != g_addr_to_sess.end()) {
-            /* ── 기존 세션: 저장된 obfs로 HMAC 재검증 ── */
+            /* ── existing session: re-verify HMAC with stored obfs ── */
             sess = it->second;
             if (sess->route_obfs != NULL) {
                 static char decoded[buf_len];
@@ -366,12 +366,12 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
                 }
             }
         } else {
-            /* ── 신규 세션: route 탐색으로 upstream 결정 ── */
+            /* ── new session: determine upstream via route lookup ── */
             address_t upstream;
             const struct obfs_ctx *matched_obfs = find_route(buf, n, upstream);
 
             if (matched_obfs == NULL && !g_routes.empty()) {
-                /* 키별 라우팅 모드에서 불일치 */
+                /* no match in key-routing mode */
                 if (g_decoy_enabled)
                     decoy_forward(src, buf, n);
                 else
@@ -381,7 +381,7 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
                 continue;
             }
             if (matched_obfs == NULL && g_obfs != NULL) {
-                /* 단일 키 모드에서 HMAC 실패 */
+                /* HMAC failure in single-key mode */
                 if (g_decoy_enabled)
                     decoy_forward(src, buf, n);
                 else
@@ -459,9 +459,9 @@ void mf_relay_event_loop(address_t &listen_addr, address_t &upstream_addr,
               decoy_addr.get_str());
     }
 
-    /* g_builtin_ctx: HMAC 실패 시 내장 QUIC Initial 응답에 사용할 obfs 컨텍스트.
-     * PSK는 응답의 DCID 토큰 생성에만 쓰이며 프로버가 검증하지 않으므로
-     * 어떤 키를 써도 무방하다. 가용한 키 중 첫 번째를 우선 사용. */
+    /* g_builtin_ctx: obfs context used for the builtin QUIC Initial response on HMAC failure.
+     * The PSK is used only to generate the response's DCID token, which the prober
+     * cannot verify, so any key works. Prefer the first available key. */
     if (g_obfs)
         g_builtin_ctx = *g_obfs;
     else if (!g_routes.empty())

@@ -1,98 +1,98 @@
 #pragma once
 /*
- * obfs.h — GFW/DPI 우회 난독화 계층
+ * obfs.h — GFW/DPI evasion obfuscation layer
  *
- * 지원하는 위장 모드 (--obfs-mode):
+ * Supported disguise modes (--obfs-mode):
  *
  *   QUIC (default)
- *     Priority 1: HMAC 인증 토큰 (SipHash-2-4, 30초 슬롯)
- *     Priority 2: QUIC Short Header 모방 (첫 바이트 0x40–0x7F)
- *     Priority 3: 패킷 크기 버킷 정규화
+ *     Priority 1: HMAC auth token (SipHash-2-4, 30s slot)
+ *     Priority 2: QUIC Short Header mimicry (first byte 0x40–0x7F)
+ *     Priority 3: packet-size bucket normalization
  *
  *   TLS
- *     Priority 1: HMAC 인증 토큰 (동일)
- *     Priority 2: TLS 1.3 Application Data 레코드 모방
+ *     Priority 1: HMAC auth token (same)
+ *     Priority 2: TLS 1.3 Application Data record mimicry
  *                   [0x17][0x03][0x03][len_hi][len_lo] + payload
- *     Priority 3: 패킷 크기 버킷 정규화 (동일)
+ *     Priority 3: packet-size bucket normalization (same)
  *
- * 액티브 프로빙 대응 (--decoy):
- *   HMAC 인증 실패(=외부 프로버) 시 raw 패킷을 decoy 주소로 중계.
- *   decoy는 실제 HTTPS/QUIC 서버(예: nginx, caddy)를 가리킨다.
+ * Active-probing response (--decoy):
+ *   On HMAC auth failure (= external prober), relay the raw packet to the decoy address.
+ *   The decoy points to a real HTTPS/QUIC server (e.g. nginx, caddy).
  *
- * Wire 포맷 요약:
+ * Wire format summary:
  *   QUIC: [1B flags:0x40-0x7F][8B token][1B pad_len][payload][padding]
  *   TLS:  [0x17][0x03][0x03][2B length][8B token][1B pad_len][payload][padding]
  */
 #include <stdint.h>
 #include <stddef.h>
 
-/* ─── 헤더 크기 ─────────────────────────────────────────────── */
+/* ─── Header sizes ──────────────────────────────────────────── */
 #define OBFS_HEADER_QUIC   10     /* 1(flags)+8(token)+1(pad_len) */
 #define OBFS_HEADER_TLS    14     /* 5(TLS record)+8(token)+1(pad_len) */
-#define OBFS_HEADER_SIZE   OBFS_HEADER_QUIC   /* 하위 호환 */
+#define OBFS_HEADER_SIZE   OBFS_HEADER_QUIC   /* backward compat */
 
 #define OBFS_MAX_PADDING   245
 #define OBFS_PSK_LEN       16
 #define OBFS_TOKEN_LEN     8
-#define OBFS_AUTH_INTERVAL 30     /* 인증 토큰 슬롯 길이 (초) */
+#define OBFS_AUTH_INTERVAL 30     /* auth token slot length (seconds) */
 
-/* 패킷 타입 (QUIC 모드 flags 비트[5:4]) */
+/* Packet type (QUIC mode flags bits [5:4]) */
 #define OBFS_TYPE_DATA     0x00
 #define OBFS_TYPE_PROBE    0x01
 #define OBFS_TYPE_PAD      0x02
 #define OBFS_PKT_INITIAL   0x10  /* QUIC Long Header Initial */
 
-/* ─── 위장 모드 ─────────────────────────────────────────────── */
+/* ─── Disguise modes ────────────────────────────────────────── */
 typedef enum {
     OBFS_MODE_QUIC = 0,   /* QUIC Short Header (default) */
     OBFS_MODE_TLS  = 1,   /* TLS Application Data record */
 } obfs_mode_t;
 
-/* 버킷 크기 테이블 */
+/* Bucket size table */
 #define OBFS_BUCKET_COUNT  8
 extern const int obfs_buckets[OBFS_BUCKET_COUNT];
 
-/* ─── 컨텍스트 ───────────────────────────────────────────────── */
+/* ─── Context ────────────────────────────────────────────────── */
 struct obfs_ctx {
     uint8_t     psk[OBFS_PSK_LEN];
-    uint32_t    auth_interval;     /* HMAC 토큰 슬롯 길이 (초) */
-    uint32_t    hop_interval;      /* 포트 호핑 슬롯 길이 (초, 0=비활성화) */
+    uint32_t    auth_interval;     /* HMAC token slot length (seconds) */
+    uint32_t    hop_interval;      /* port-hopping slot length (seconds, 0=disabled) */
     obfs_mode_t mode;         /* OBFS_MODE_QUIC or OBFS_MODE_TLS */
 };
 
-/* 현재 모드의 헤더 크기 */
+/* Header size for the current mode */
 static inline int obfs_hdr_size(const struct obfs_ctx *ctx) {
     return (ctx->mode == OBFS_MODE_TLS) ? OBFS_HEADER_TLS : OBFS_HEADER_QUIC;
 }
 
-/* ─── QUIC Long Header Initial 핸드쉐이크 시뮬레이션 ──────────── */
+/* ─── QUIC Long Header Initial handshake simulation ──────────── */
 /*
- * RFC 9000 §14.1: ClientInitial은 1200B 이상이어야 한다.
- * DPI가 "첫 패킷 = Long Header Initial" 을 확인하면 QUIC로 분류한다.
+ * RFC 9000 §14.1: a ClientInitial must be at least 1200B.
+ * If DPI sees "first packet = Long Header Initial", it classifies the flow as QUIC.
  */
 #define QUIC_INITIAL_SIZE   1200
-#define OBFS_DECODE_INITIAL (-2)  /* obfs_decode 리턴: Client Initial 수신 확인 */
+#define OBFS_DECODE_INITIAL (-2)  /* obfs_decode return: Client Initial received */
 
 /* ─── API ────────────────────────────────────────────────────── */
 
 /*
- * 초기화: key_str에서 PSK 파생, mode 설정
+ * Init: derive PSK from key_str, set mode
  */
 void obfs_init(struct obfs_ctx *ctx, const char *key_str, obfs_mode_t mode);
 
 /*
- * 포트 호핑: 현재 슬롯 번호 반환 (hop_interval==0 → 0)
+ * Port hopping: return current slot number (hop_interval==0 → 0)
  */
 uint64_t obfs_current_slot(const struct obfs_ctx *ctx);
 
 /*
- * 포트 호핑: 슬롯 번호에서 포트 번호 계산 (PSK + slot → 1025-65535)
+ * Port hopping: compute port number from slot number (PSK + slot → 1025-65535)
  */
 uint16_t obfs_port_for_slot(const struct obfs_ctx *ctx, uint64_t slot);
 
 /*
- * 인코딩: payload → wire 포맷
- * 반환값: 쓴 바이트 수, -1=오류
+ * Encode: payload → wire format
+ * Returns: bytes written, -1=error
  */
 int obfs_encode(const struct obfs_ctx *ctx,
                 const void *payload, int payload_len,
@@ -100,12 +100,12 @@ int obfs_encode(const struct obfs_ctx *ctx,
                 uint8_t pkt_type);
 
 /*
- * 디코딩: wire 포맷 → payload  (QUIC Long/Short Header, TLS 자동 판별)
- * 반환값: payload 길이
- *         0  = 인증 실패(묵음 드롭) 또는 Server Initial(무시)
- *        -1  = 포맷 오류
- *        -2  = OBFS_DECODE_INITIAL: 유효한 Client Initial 수신
- *              → mud_lite가 Server Initial 자동 응답
+ * Decode: wire format → payload  (auto-detects QUIC Long/Short Header, TLS)
+ * Returns: payload length
+ *         0  = auth failure (silent drop) or Server Initial (ignored)
+ *        -1  = format error
+ *        -2  = OBFS_DECODE_INITIAL: valid Client Initial received
+ *              → mud_lite auto-replies with Server Initial
  */
 int obfs_decode(const struct obfs_ctx *ctx,
                 const void *in, int in_len,
@@ -113,13 +113,13 @@ int obfs_decode(const struct obfs_ctx *ctx,
                 uint8_t *pkt_type_out);
 
 /*
- * QUIC Long Header Initial 패킷 인코딩 (QUIC_INITIAL_SIZE 바이트 고정).
+ * Encode a QUIC Long Header Initial packet (fixed QUIC_INITIAL_SIZE bytes).
  *
  *   is_server == 0: Client Initial  (SCID[0]=0x00)
- *   is_server != 0: Server Initial  (SCID[0]=0xFF, 클라이언트가 루프 없이 폐기)
+ *   is_server != 0: Server Initial  (SCID[0]=0xFF, client discards without looping)
  *
- * HMAC 토큰을 DCID(8B)에 삽입 — 수신측이 검증한다.
- * 반환값: QUIC_INITIAL_SIZE, 또는 out_max 부족 시 -1.
+ * HMAC token embedded in the DCID (8B) — the receiver verifies it.
+ * Returns: QUIC_INITIAL_SIZE, or -1 if out_max is insufficient.
  */
 int obfs_encode_initial(const struct obfs_ctx *ctx,
                         void *out, int out_max,

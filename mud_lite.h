@@ -1,15 +1,15 @@
 #pragma once
 /*
- * mud_lite.h — glorytun mud에서 libsodium 암호화 제거 버전
+ * mud_lite.h — glorytun mud with libsodium encryption removed
  *
- * 원본: glorytun (https://github.com/angt/glorytun), BSD 2-Clause License,
- *       Copyright (c) Adrien Gallouet <adrien@gallouet.fr>.
- *       전체 라이선스 고지는 mud_lite.c 및 THIRD_PARTY_NOTICES.md 참조.
+ * Origin: glorytun (https://github.com/angt/glorytun), BSD 2-Clause License,
+ *         Copyright (c) Adrien Gallouet <adrien@gallouet.fr>.
+ *         See mud_lite.c and THIRD_PARTY_NOTICES.md for the full license notice.
  *
- * 제거: 키 교환, AEAD 암호화, libsodium 의존성
- * 유지: 멀티패스 경로 선택, RTT 측정, 손실률, 속도 제어, MTU 탐지
+ * Removed: key exchange, AEAD encryption, libsodium dependency
+ * Kept:    multipath path selection, RTT measurement, loss rate, rate control, MTU discovery
  *
- * 패킷 포맷 (wire, obfs 계층 적용 전):
+ * Packet format (wire, before obfs layer applied):
  *   Data : [6B time (bit0=0)] [payload]
  *   Probe: [6B time (bit0=1)] [mud_lite_msg]
  */
@@ -18,14 +18,14 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
-/* obfs 계층 함수 포인터 (순환 의존 방지) */
+/* obfs layer function pointers (avoids circular dependency) */
 typedef int (*mud_obfs_enc_t)(void *ctx,
                               const unsigned char *in,  int in_len,
                               unsigned char       *out, int out_max);
 typedef int (*mud_obfs_dec_t)(void *ctx,
                               const unsigned char *in,  int in_len,
                               unsigned char       *out, int out_max);
-/* QUIC Initial 패킷 생성 함수 포인터
+/* QUIC Initial packet builder function pointer
  * is_server=0: Client Initial, is_server=1: Server Initial */
 typedef int (*mud_obfs_init_t)(void *ctx, void *out, int out_max, int is_server);
 
@@ -81,7 +81,7 @@ struct mud_path_conf {
 struct mud_path {
     struct mud_path_conf conf;
     enum mud_path_status status;
-    union mud_sockaddr   remote;   /* observed remote (NAT 반영) */
+    union mud_sockaddr   remote;   /* observed remote (reflects NAT) */
     struct mud_stat rtt;
     struct {
         uint64_t total;
@@ -106,7 +106,7 @@ struct mud_path {
         size_t min, max, probe, last, ok;
     } mtu;
     uint64_t idle;
-    int64_t  agg_credit;  /* 가중 라운드로빈 크레딧 (aggregate 모드) */
+    int64_t  agg_credit;  /* weighted round-robin credit (aggregate mode) */
 };
 
 struct mud_error {
@@ -116,7 +116,7 @@ struct mud_error {
 };
 struct mud_errors {
     struct mud_error clocksync;
-    struct mud_error auth;      /* 원래 decrypt → auth 실패로 변경 */
+    struct mud_error auth;      /* originally decrypt → changed to auth failure */
 };
 
 struct mud_paths {
@@ -129,16 +129,16 @@ struct mud;
 struct mud *mud_create  (union mud_sockaddr *addr);
 void        mud_delete  (struct mud *);
 
-/* obfs 훅 등록 (선택적)
- * init_fn: QUIC Initial 패킷 생성 함수. NULL이면 Initial 기능 비활성화. */
+/* Register obfs hooks (optional)
+ * init_fn: QUIC Initial packet builder. NULL disables the Initial feature. */
 void mud_set_obfs(struct mud *mud,
                   mud_obfs_enc_t  enc_fn,
                   mud_obfs_dec_t  dec_fn,
                   mud_obfs_init_t init_fn,
                   void           *obfs_ctx);
 
-/* QUIC Client Initial 패킷을 모든 UP 경로로 전송.
- * 이벤트 루프 시작 전 호출 → DPI에게 첫 패킷을 Long Header로 제시. */
+/* Send a QUIC Client Initial packet on every UP path.
+ * Call before the event loop starts → presents the first packet to DPI as a Long Header. */
 int mud_send_initials(struct mud *mud);
 
 int mud_set      (struct mud *, struct mud_conf *);
@@ -146,15 +146,15 @@ int mud_set_path (struct mud *, struct mud_path_conf *);
 
 int mud_update     (struct mud *);
 int mud_send_wait  (struct mud *);
-int mud_send_flush (struct mud *);  /* sendmmsg 큐 즉시 전송 */
+int mud_send_flush (struct mud *);  /* flush sendmmsg queue immediately */
 
 int mud_recv         (struct mud *, void *, size_t);
-int mud_recv_pending (struct mud *);  /* recvmmsg 큐에 미처리 항목 여부 */
+int mud_recv_pending (struct mud *);  /* whether the recvmmsg queue has unprocessed items */
 int mud_send      (struct mud *, const void *, size_t);
 int mud_send_all  (struct mud *, const void *, size_t);
-/* 가중 라운드로빈으로 dup_count개 경로에 전송.
- * dup_count=1: 순수 집계(aggregate), dup_count>1: 집계+중복(aggregate-duplicate).
- * 경로별 tx.rate 비례로 패킷 분배 → 빠른 경로가 더 많은 패킷 처리. */
+/* Send to dup_count paths via weighted round-robin.
+ * dup_count=1: pure aggregate, dup_count>1: aggregate-duplicate.
+ * Distributes packets proportionally to each path's tx.rate → faster paths carry more. */
 int mud_send_next (struct mud *, const void *, size_t, unsigned dup_count);
 
 int    mud_get_errors (struct mud *, struct mud_errors *);

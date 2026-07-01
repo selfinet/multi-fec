@@ -184,7 +184,7 @@ int from_fec_to_normal(conn_info_t &conn_info, char *data, int len, int &out_n, 
             inner_stat.input_packet_size += len;
         }
 
-        /* 패킷 type 바이트(헤더 offset 4)로 RNLC(2) 여부 판별 후 분기 */
+        /* branch on the packet type byte (header offset 4) to detect RNLC(2) */
         int pkt_type = (data != 0 && len >= 5) ? (unsigned char)data[4] : -1;
         if (g_fec_par.mode == 2 || pkt_type == 2) {  /* RNLC */
             conn_info.rnlc_decode_manager.input(data, len);

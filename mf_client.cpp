@@ -31,8 +31,8 @@ extern "C" void mf_client_event_loop(struct mud *mud, const struct obfs_ctx *obf
 static struct mud            *g_mud  = NULL;
 static const struct obfs_ctx *g_obfs = NULL;
 
-/* ── multipath 모드별 송신 헬퍼 ──────────────────────────────────
- * 모든 mud_send 호출 지점에서 동일한 모드 분기 로직을 사용한다. */
+/* ── per-multipath-mode send helper ──────────────────────────────
+ * All mud_send call sites use the same mode-branching logic. */
 static inline int mud_send_mp(struct mud *mud, const void *data, size_t size)
 {
     switch (g_multipath_mode) {
@@ -99,8 +99,8 @@ static void flush_pending_packets()
 }
 
 /* ────────────────────────────────────────────────────────────────
- * recvmmsg 배치 수신 인프라
- * WireGuard 소켓에서 최대 WG_RECV_BATCH개 패킷을 syscall 1회로 수신.
+ * recvmmsg batch-receive infrastructure
+ * Receives up to WG_RECV_BATCH packets from the WireGuard socket in one syscall.
  * ──────────────────────────────────────────────────────────────── */
 
 #define WG_RECV_BATCH 32
@@ -128,7 +128,7 @@ static void init_wg_recvmmsg()
 }
 
 /* ────────────────────────────────────────────────────────────────
- * FEC 인코딩 후 mud 송신 (단일 패킷 처리 헬퍼)
+ * mud send after FEC encoding (single-packet helper)
  * ──────────────────────────────────────────────────────────────── */
 
 static void send_fec_output(conn_info_t &conn_info,
@@ -157,7 +157,7 @@ static void send_fec_output(conn_info_t &conn_info,
 }
 
 /* ────────────────────────────────────────────────────────────────
- * process_one_wg_packet: 단일 WG 패킷 → FEC 인코딩 → mud 큐잉
+ * process_one_wg_packet: single WG packet -> FEC encoding -> mud queuing
  * ──────────────────────────────────────────────────────────────── */
 
 static void process_one_wg_packet(conn_info_t &conn_info,
@@ -206,8 +206,8 @@ static void process_one_wg_packet(conn_info_t &conn_info,
 
 /* ────────────────────────────────────────────────────────────────
  * data_from_local_or_fec_timeout
- *   is_time_out == 0 : recvmmsg 배치 수신 (WireGuard → FEC → mud)
- *   is_time_out == 1 : FEC 타이머 flush
+ *   is_time_out == 0 : recvmmsg batch receive (WireGuard -> FEC -> mud)
+ *   is_time_out == 1 : FEC timer flush
  * ──────────────────────────────────────────────────────────────── */
 
 static void data_from_local_or_fec_timeout(conn_info_t &conn_info, int is_time_out)
@@ -224,10 +224,10 @@ static void data_from_local_or_fec_timeout(conn_info_t &conn_info, int is_time_o
         return;
     }
 
-    /* recvmmsg: WG 소켓에서 최대 WG_RECV_BATCH개 패킷을 한 번에 수신 */
+    /* recvmmsg: receive up to WG_RECV_BATCH packets from the WG socket at once */
     if (!s_wg_mmsg_inited) init_wg_recvmmsg();
 
-    /* recvmmsg는 msg_namelen을 매 호출 전에 리셋해야 함 */
+    /* recvmmsg requires msg_namelen to be reset before each call */
     for (int i = 0; i < WG_RECV_BATCH; i++)
         s_wg_msgs[i].msg_hdr.msg_namelen = sizeof(s_wg_addrs[i]);
 
@@ -243,7 +243,7 @@ static void data_from_local_or_fec_timeout(conn_info_t &conn_info, int is_time_o
                               s_wg_msgs[i].msg_hdr.msg_namelen);
     }
 
-    /* 배치 처리 후 mud 송신 큐를 한 번에 플러시 → sendmmsg 1회 */
+    /* after batch processing, flush the mud send queue at once -> single sendmmsg */
     mud_send_flush(g_mud);
 }
 
@@ -266,7 +266,7 @@ static void mud_recv_and_forward(conn_info_t &conn_info)
             break;
         }
         if (n == 0) {
-            /* probe/keepalive — 큐에 남은 항목이 있으면 계속 처리 */
+            /* probe/keepalive — keep processing if items remain in the queue */
             if (mud_recv_pending(g_mud)) continue;
             break;
         }
@@ -466,16 +466,16 @@ void mf_client_event_loop(struct mud *mud, const struct obfs_ctx *obfs)
     mylog(log_info, "[client] listening at %s, %zu static path(s)\n",
           local_addr.get_str(), g_paths.size());
 
-    /* QUIC Long Header Initial 전송: 이벤트 루프 시작 전에 전송해야
-     * mud probe보다 먼저 나가서 DPI가 올바른 순서로 본다.
-     * → C→S: Initial (Long Header, 1200B)
-     * → S→C: Initial response (Long Header, 1200B)
-     * → 이후: Short Header 데이터 패킷 */
+    /* Send QUIC Long Header Initial: must be sent before the event loop starts
+     * so it goes out ahead of the mud probe and DPI sees the correct order.
+     * -> C->S: Initial (Long Header, 1200B)
+     * -> S->C: Initial response (Long Header, 1200B)
+     * -> after: Short Header data packets */
     {
         int n = mud_send_initials(g_mud);
         if (n > 0) {
             mylog(log_info, "[client] sent QUIC Initial on %d path(s)\n", n);
-            mud_send_flush(g_mud);  /* 이벤트 루프 시작 전 즉시 전송 */
+            mud_send_flush(g_mud);  /* send immediately, before the event loop starts */
         }
     }
 

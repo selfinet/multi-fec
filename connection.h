@@ -244,8 +244,8 @@ struct conn_info_t : not_copy_able_t  // stores info for a raw connection.for cl
 
     fec_encode_manager_t fec_encode_manager;
     fec_decode_manager_t fec_decode_manager;
-    rnlc_encode_manager_t rnlc_encode_manager;  /* --mode 2 (RNLC) 전용 */
-    rnlc_decode_manager_t rnlc_decode_manager;  /* --mode 2 (RNLC) 전용 */
+    rnlc_encode_manager_t rnlc_encode_manager;  /* --mode 2 (RNLC) only */
+    rnlc_decode_manager_t rnlc_decode_manager;  /* --mode 2 (RNLC) only */
     ev_timer timer;
     // my_timer_t timer;
 

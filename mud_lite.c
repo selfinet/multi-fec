@@ -1,9 +1,9 @@
 /*
- * mud_lite.c — glorytun mud, libsodium 암호화 제거 버전
+ * mud_lite.c — glorytun mud with libsodium encryption removed
  *
- * 원본: glorytun/mud/mud.c (2024) — https://github.com/angt/glorytun
- * 변경: 키 교환, AEAD 암호화, sodium 의존성 완전 제거
- *       obfs 훅으로 상위 계층 난독화 위임
+ * Origin: glorytun/mud/mud.c (2024) — https://github.com/angt/glorytun
+ * Changes: fully removed key exchange, AEAD encryption, and sodium dependency
+ *          delegate upper-layer obfuscation to obfs hooks
  *
  * ----------------------------------------------------------------------------
  * Derived from glorytun, distributed under the BSD 2-Clause License:
@@ -32,7 +32,7 @@
  * POSSIBILITY OF SUCH DAMAGE.
  * ----------------------------------------------------------------------------
  *
- * 패킷 포맷:
+ * Packet format:
  *   Data:  [6B time (bit0=0)][payload]
  *   Probe: [6B time (bit0=1)][mud_lite_msg struct]
  */
@@ -58,8 +58,8 @@
 #define MSG_CONFIRM 0
 #endif
 
-/* 80–120ms 범위 랜덤 beat 생성 (경로별 probe 주기 다양화).
- * 경로 포인터와 현재 시각을 엔트로피 소스로 사용해 srand 없이도 분산됨. */
+/* Generate a random beat in the 80–120ms range (varies probe interval per path).
+ * Uses the path pointer and current time as entropy sources, so it is distributed without srand. */
 static uint64_t mud_random_beat(const void *path_ptr)
 {
     uint64_t h = (uint64_t)(uintptr_t)path_ptr ^ (uint64_t)time(NULL);
@@ -75,7 +75,7 @@ static uint64_t mud_random_beat(const void *path_ptr)
 #define MUD_V4V6 0
 #endif
 
-/* ─── 상수 ──────────────────────────────────────────────────────── */
+/* ─── Constants ─────────────────────────────────────────────────── */
 
 #define MUD_ONE_MSEC (UINT64_C(1000))
 #define MUD_ONE_SEC  (1000 * MUD_ONE_MSEC)
@@ -85,12 +85,12 @@ static uint64_t mud_random_beat(const void *path_ptr)
 #define MUD_TIME_BITS    (MUD_TIME_SIZE * 8U)
 #define MUD_TIME_MASK(X) ((X) & ((UINT64_C(1) << MUD_TIME_BITS) - 2))
 
-/* bit0: MSG 플래그 (0=data, 1=probe) */
+/* bit0: MSG flag (0=data, 1=probe) */
 #define MUD_MSG(X)       ((X) & UINT64_C(1))
 #define MUD_MSG_MARK(X)  ((X) | UINT64_C(1))
 #define MUD_MSG_SENT_MAX (5)
 
-/* 암호화 제거 후 오버헤드: 6바이트 시간 헤더만 */
+/* Overhead after removing encryption: only the 6-byte time header */
 #define MUD_TIME_OVERHEAD MUD_TIME_SIZE
 #define MUD_PKT_MAX_SIZE  (1500U)
 #define MUD_MTU_MIN       (576U  + MUD_TIME_OVERHEAD)
@@ -111,7 +111,7 @@ static uint64_t mud_random_beat(const void *path_ptr)
 #define MUD_CTRL_SIZE (CMSG_SPACE(MUD_PKTINFO_SIZE) + \
                        CMSG_SPACE(sizeof(struct in6_pktinfo)))
 
-/* ─── 내부 구조체 ─────────────────────────────────────────────── */
+/* ─── Internal structures ─────────────────────────────────────── */
 
 struct mud_addr {
     union {
@@ -125,7 +125,7 @@ struct mud_addr {
     unsigned char port[2];
 };
 
-/* 경로 프로브 메시지 (암호화 없음, obfs 계층이 보호) */
+/* Path probe message (unencrypted, protected by the obfs layer) */
 struct mud_lite_msg {
     struct {
         unsigned char bytes[sizeof(uint64_t)];
@@ -141,7 +141,7 @@ struct mud_lite_msg {
     struct mud_addr addr;
 };
 
-/* ─── sendmmsg / recvmmsg 배치 큐 ───────────────────────────── */
+/* ─── sendmmsg / recvmmsg batch queues ──────────────────────── */
 
 #define MUD_SEND_QUEUE_CAP  32
 #define MUD_RECV_QUEUE_CAP  32
@@ -149,21 +149,21 @@ struct mud_lite_msg {
 #define MUD_RECV_BUF_MAX    (MUD_PKT_MAX_SIZE + 512)
 
 /*
- * 송신/수신 슬롯.
- * mmsghdr는 여기에 두지 않는다 — sendmmsg/recvmmsg는 연속 배열을 요구하므로
- * struct mmsghdr sq_msgs[] / rq_msgs[] 를 별도로 유지하고 여기 포인터를 가리킨다.
+ * Send/receive slots.
+ * mmsghdr is not kept here — since sendmmsg/recvmmsg require a contiguous array,
+ * struct mmsghdr sq_msgs[] / rq_msgs[] are maintained separately and point back here.
  */
 struct mud_send_slot {
-    unsigned char      buf[MUD_SEND_BUF_MAX]; /* obfs 인코딩된 패킷 */
-    unsigned char      ctrl[MUD_CTRL_SIZE];   /* IP_PKTINFO 제어 메시지 */
-    union mud_sockaddr remote;                 /* 목적지 주소 */
+    unsigned char      buf[MUD_SEND_BUF_MAX]; /* obfs-encoded packet */
+    unsigned char      ctrl[MUD_CTRL_SIZE];   /* IP_PKTINFO control message */
+    union mud_sockaddr remote;                 /* destination address */
     struct iovec       iov;
 };
 
 struct mud_recv_slot {
-    unsigned char      buf[MUD_RECV_BUF_MAX]; /* 수신 원본 패킷 */
-    unsigned char      ctrl[MUD_CTRL_SIZE];   /* IP_PKTINFO 제어 메시지 */
-    union mud_sockaddr remote;                 /* 송신자 주소 */
+    unsigned char      buf[MUD_RECV_BUF_MAX]; /* received raw packet */
+    unsigned char      ctrl[MUD_CTRL_SIZE];   /* IP_PKTINFO control message */
+    union mud_sockaddr remote;                 /* sender address */
     struct iovec       iov;
 };
 
@@ -181,34 +181,34 @@ struct mud {
     uint64_t           window_time;
     uint64_t           base_time;
 
-    /* obfs 훅 */
+    /* obfs hooks */
     mud_obfs_enc_t  obfs_enc;
     mud_obfs_dec_t  obfs_dec;
-    mud_obfs_init_t obfs_init_fn;  /* QUIC Initial 생성 (NULL=비활성) */
+    mud_obfs_init_t obfs_init_fn;  /* QUIC Initial generation (NULL=disabled) */
     void           *obfs_ctx;
 
-    /* sendmmsg 배치 송신 큐 */
+    /* sendmmsg batch send queue */
     struct mud_send_slot *sq;
     struct mmsghdr       *sq_msgs;
     int                   sq_len;
 
-    /* recvmmsg 배치 수신 큐 */
+    /* recvmmsg batch receive queue */
     struct mud_recv_slot *rq;
     struct mmsghdr       *rq_msgs;
     int                   rq_len;
     int                   rq_idx;
 
-    /* duplicate 모드 중복 패킷 제거용 링버퍼 */
+    /* ring buffer for deduplicating packets in duplicate mode */
 #define MUD_DEDUP_SIZE 128
 #define MUD_DEDUP_TTL  (500 * MUD_ONE_MSEC)
     struct {
-        uint64_t pkt_time;   /* 패킷의 sent_time 값 */
-        uint64_t recv_time;  /* 수신 시각 (만료 판단용) */
+        uint64_t pkt_time;   /* the packet's sent_time value */
+        uint64_t recv_time;  /* receive time (for expiry check) */
     } dedup[MUD_DEDUP_SIZE];
     unsigned dedup_idx;
 };
 
-/* ─── 시간 유틸 ──────────────────────────────────────────────── */
+/* ─── Time utilities ─────────────────────────────────────────── */
 
 static inline void
 mud_store(unsigned char *dst, uint64_t src, size_t size)
@@ -252,7 +252,7 @@ mud_timeout(uint64_t now, uint64_t last, uint64_t timeout)
     return (!last) || (MUD_TIME_MASK(now - last) >= timeout);
 }
 
-/* ─── 주소 유틸 ─────────────────────────────────────────────── */
+/* ─── Address utilities ─────────────────────────────────────── */
 
 static inline void
 mud_unmapv4(union mud_sockaddr *addr)
@@ -335,7 +335,7 @@ mud_addr_from_sock(struct mud_addr *addr, union mud_sockaddr *sock)
     return 0;
 }
 
-/* ─── 경로 관리 ─────────────────────────────────────────────── */
+/* ─── Path management ───────────────────────────────────────── */
 
 static struct mud_path *
 mud_get_path(struct mud *mud,
@@ -376,21 +376,21 @@ mud_get_path(struct mud *mud,
     empty->conf.remote = *remote;
     empty->conf.state  = state;
 
-    /* 초기 MTU 범위 설정 */
+    /* set initial MTU range */
     empty->mtu.min = MUD_MTU_MIN;
     empty->mtu.max = MUD_MTU_MAX;
 
     return empty;
 }
 
-/* ─── sendmsg (IP_PKTINFO 포함) ──────────────────────────────── */
+/* ─── sendmsg (with IP_PKTINFO) ──────────────────────────────── */
 
-/* ─── sendmmsg 배치 플러시 ───────────────────────────────────── */
+/* ─── sendmmsg batch flush ───────────────────────────────────── */
 
 int mud_send_flush(struct mud *mud)
 {
     if (!mud->sq_len) return 0;
-    /* sq_msgs[]는 sq[]의 iov/ctrl/remote를 가리키는 연속 배열 */
+    /* sq_msgs[] is a contiguous array pointing at sq[]'s iov/ctrl/remote */
     int sent = sendmmsg(mud->fd, mud->sq_msgs,
                         (unsigned int)mud->sq_len, 0);
     mud->sq_len = 0;
@@ -403,7 +403,7 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
 {
     if (!size || !path) return 0;
 
-    /* 큐가 가득 찼으면 즉시 플러시 */
+    /* flush immediately if the queue is full */
     if (mud->sq_len >= MUD_SEND_QUEUE_CAP)
         mud_send_flush(mud);
 
@@ -411,7 +411,7 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
     struct mud_send_slot *slot = &mud->sq[idx];
     struct msghdr        *msg  = &mud->sq_msgs[idx].msg_hdr;
 
-    /* obfs 인코딩 → 슬롯 버퍼에 직접 기록 */
+    /* obfs encode → write directly into the slot buffer */
     size_t enc_size = size;
     if (mud->obfs_enc) {
         int encoded = mud->obfs_enc(mud->obfs_ctx,
@@ -424,11 +424,11 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
         memcpy(slot->buf, data, enc_size);
     }
 
-    /* iov 설정 */
+    /* set up iov */
     slot->iov.iov_base = slot->buf;
     slot->iov.iov_len  = enc_size;
 
-    /* msghdr 설정 (sq_msgs[idx].msg_hdr) */
+    /* set up msghdr (sq_msgs[idx].msg_hdr) */
     memset(msg,        0, sizeof(*msg));
     memset(slot->ctrl, 0, sizeof(slot->ctrl));
 
@@ -463,7 +463,7 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
         return -1;
     }
 
-    /* flags가 있는 패킷(MSG_CONFIRM probe ack)은 즉시 전송 */
+    /* packets with flags (MSG_CONFIRM probe ack) are sent immediately */
     if (flags) {
         mud_send_flush(mud);
         ssize_t ret = sendmsg(mud->fd, msg, flags);
@@ -475,7 +475,7 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
         return (int)ret;
     }
 
-    /* 큐에 추가 — 통계는 미리 업데이트 (flush 시점과 ~수백 µs 오차 허용) */
+    /* enqueue — stats updated up front (tolerating ~hundreds of µs skew vs flush time) */
     mud->sq_len++;
     path->tx.total++;
     path->tx.bytes += enc_size;
@@ -486,7 +486,7 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
     return (int)enc_size;
 }
 
-/* ─── recvmsg 로컬 주소 추출 ────────────────────────────────── */
+/* ─── recvmsg local address extraction ──────────────────────── */
 
 static int
 mud_localaddr(union mud_sockaddr *addr, struct msghdr *msg)
@@ -514,7 +514,7 @@ mud_localaddr(union mud_sockaddr *addr, struct msghdr *msg)
     return 1;
 }
 
-/* ─── 통계/RTT ──────────────────────────────────────────────── */
+/* ─── Statistics/RTT ────────────────────────────────────────── */
 
 static void
 mud_update_stat(struct mud_stat *stat, uint64_t val)
@@ -567,7 +567,7 @@ mud_update_rl(struct mud *mud, struct mud_path *path, uint64_t now,
     uint64_t rx_dt = MUD_TIME_MASK(now - path->msg.rx.time);
     if (rx_dt >= MUD_ONE_SEC) {
         if (!path->conf.fixed_rate) {
-            /* 누적값이 아닌 이전 branch 1 이후 증분으로 실측 throughput 계산 */
+            /* compute measured throughput from the increment since the previous branch 1, not the cumulative total */
             uint64_t rx_delta = rx_bytes - path->msg.rx.bytes;
             uint64_t measured = (7 * rx_delta * MUD_ONE_SEC) / (8 * rx_dt);
             path->tx.rate = measured > 1000000ULL ? measured : 1000000ULL;  /* min 1MB/s */
@@ -579,8 +579,8 @@ mud_update_rl(struct mud *mud, struct mud_path *path, uint64_t now,
         path->msg.rx.acc      = rx_total;
         path->msg.tx.acc      = tx_total;
         path->msg.rx.acc_time = now;
-        path->msg.rx.time     = now;  /* 1초마다 rate/tx.loss 재계산 */
-        path->msg.rx.bytes    = rx_bytes;  /* delta 기준점 갱신 */
+        path->msg.rx.time     = now;  /* recompute rate/tx.loss every 1s */
+        path->msg.rx.bytes    = rx_bytes;  /* update the delta reference point */
         path->msg.tx.bytes    = tx_bytes;
     } else {
         if (!path->conf.fixed_rate)
@@ -596,7 +596,7 @@ mud_update_rl(struct mud *mud, struct mud_path *path, uint64_t now,
     path->msg.tx.total = tx_total;
 }
 
-/* ─── 경로 프로브 송수신 ─────────────────────────────────────── */
+/* ─── Path probe send/receive ────────────────────────────────── */
 
 static int
 mud_send_msg(struct mud *mud, struct mud_path *path, uint64_t now,
@@ -605,7 +605,7 @@ mud_send_msg(struct mud *mud, struct mud_path *path, uint64_t now,
     unsigned char packet[MUD_PKT_MAX_SIZE];
     struct mud_lite_msg *msg;
 
-    /* probe_size: MTU 탐지용 패딩 크기 */
+    /* probe_size: padding size for MTU discovery */
     size_t msg_size = sizeof(struct mud_lite_msg);
     size_t total    = MUD_TIME_SIZE + msg_size;
 
@@ -634,7 +634,7 @@ mud_send_msg(struct mud *mud, struct mud_path *path, uint64_t now,
 
     mud_addr_from_sock(&msg->addr, &path->remote);
 
-    /* MTU 프로브용 패딩 */
+    /* padding for MTU probe */
     if (total > MUD_TIME_SIZE + msg_size)
         memset(packet + MUD_TIME_SIZE + msg_size, 0,
                total - MUD_TIME_SIZE - msg_size);
@@ -675,17 +675,17 @@ mud_recv_msg(struct mud *mud, struct mud_path *path, uint64_t now,
     path->conf.fixed_rate   = msg->fixed_rate;
     path->conf.loss_limit   = msg->loss_limit;
 
-    /* remote 주소 갱신 (NAT 통과 후 실제 주소) */
+    /* update remote address (actual address after NAT traversal) */
     mud_sock_from_addr(&path->remote, (struct mud_addr *)&msg->addr);
 
     path->msg.set++;
     path->msg.sent = 0;
 
-    /* 응답 프로브 전송 */
+    /* send reply probe */
     mud_send_msg(mud, path, now, tx_time, 0);
 }
 
-/* ─── 경로 상태 머신 ─────────────────────────────────────────── */
+/* ─── Path state machine ─────────────────────────────────────── */
 
 static int
 mud_path_track(struct mud *mud, struct mud_path *path, uint64_t now)
@@ -756,7 +756,7 @@ mud_path_update(struct mud *mud, struct mud_path *path, uint64_t now)
     return 1;
 }
 
-/* ─── 경로 선택 (가중 라운드로빈) ──────────────────────────── */
+/* ─── Path selection (weighted round-robin) ─────────────────── */
 
 static struct mud_path *
 mud_select_path(struct mud *mud, uint16_t cursor)
@@ -772,7 +772,7 @@ mud_select_path(struct mud *mud, uint16_t cursor)
     return NULL;
 }
 
-/* ─── 윈도우 갱신 ────────────────────────────────────────────── */
+/* ─── Window update ──────────────────────────────────────────── */
 
 static void
 mud_update_window(struct mud *mud, uint64_t now)
@@ -821,7 +821,7 @@ mud_create(union mud_sockaddr *addr)
     if (!mud->rq) { free(mud->sq_msgs); free(mud->sq); free(mud->paths); free(mud); return NULL; }
     mud->rq_msgs = (struct mmsghdr *)calloc(MUD_RECV_QUEUE_CAP, sizeof(struct mmsghdr));
     if (!mud->rq_msgs) { free(mud->rq); free(mud->sq_msgs); free(mud->sq); free(mud->paths); free(mud); return NULL; }
-    /* rq_msgs[i]가 rq[i]의 버퍼를 가리키도록 초기화 */
+    /* initialize rq_msgs[i] to point at rq[i]'s buffer */
     for (int i = 0; i < MUD_RECV_QUEUE_CAP; i++) {
         mud->rq[i].iov.iov_base                = mud->rq[i].buf;
         mud->rq[i].iov.iov_len                 = sizeof(mud->rq[i].buf);
@@ -838,7 +838,7 @@ mud_create(union mud_sockaddr *addr)
     mud->conf.keepalive    = 25 * MUD_ONE_SEC;
     mud->conf.timetolerance = 10 * MUD_ONE_SEC;
 
-    /* base_time: monotonic 기준점 */
+    /* base_time: monotonic reference point */
     struct timespec ts_mono, ts_real;
     clock_gettime(CLOCK_MONOTONIC,  &ts_mono);
     clock_gettime(CLOCK_REALTIME,   &ts_real);
@@ -965,7 +965,7 @@ mud_set_path(struct mud *mud, struct mud_path_conf *conf)
     if (!path->tx.rate)
         path->tx.rate = path->conf.tx_max_rate ? path->conf.tx_max_rate : 10000000ULL;  /* 10MB/s initial */
 
-    /* 새 경로 MTU 초기화 */
+    /* initialize MTU for the new path */
     if (!path->mtu.min) {
         path->mtu.min   = MUD_MTU_MIN;
         path->mtu.max   = MUD_MTU_MAX;
@@ -1018,7 +1018,7 @@ mud_update(struct mud *mud)
     mud->mtu  = mtu;
     mud_update_window(mud, now);
 
-    /* probe 메시지 배치 플러시 */
+    /* batch-flush probe messages */
     mud_send_flush(mud);
 
     return mud->window < 1500;
@@ -1039,14 +1039,14 @@ mud_send(struct mud *mud, const void *data, size_t size)
     unsigned char packet[MUD_PKT_MAX_SIZE];
     uint64_t now = mud_now(mud);
 
-    /* 시간 헤더 + 페이로드 */
+    /* time header + payload */
     size_t pkt_size = MUD_TIME_SIZE + size;
     if (pkt_size > sizeof(packet)) { errno = EMSGSIZE; return -1; }
 
     mud_store(packet, now, MUD_TIME_SIZE);
     memcpy(packet + MUD_TIME_SIZE, data, size);
 
-    /* 경로 선택: 마지막 2바이트를 커서로 사용 */
+    /* path selection: use the last 2 bytes as the cursor */
     uint16_t cursor;
     memcpy(&cursor, (const char *)data + (size > 2 ? size - 2 : 0),
            size >= 2 ? 2 : 1);
@@ -1073,16 +1073,16 @@ mud_send_all(struct mud *mud, const void *data, size_t size)
     mud_store(packet, now, MUD_TIME_SIZE);
     memcpy(packet + MUD_TIME_SIZE, data, size);
 
-    /* 모든 RUNNING 경로에 동일 패킷 전송.
-     * mud_send_path()가 window를 감소시키므로 매 호출 전 저장 후 복원하고
-     * 최종적으로 한 번만 차감. */
+    /* send the same packet to all RUNNING paths.
+     * mud_send_path() decrements window, so save and restore it before each call
+     * and deduct only once at the end. */
     uint64_t saved_window = mud->window;
     int sent = 0;
 
     for (unsigned i = 0; i < mud->capacity; i++) {
         struct mud_path *path = &mud->paths[i];
         if (path->status != MUD_RUNNING) continue;
-        mud->window = saved_window;  /* 복원 후 개별 전송 */
+        mud->window = saved_window;  /* restore, then send individually */
         path->idle = now;
         if (mud_send_path(mud, path, now, packet, pkt_size, 0) >= 0)
             sent++;
@@ -1094,7 +1094,7 @@ mud_send_all(struct mud *mud, const void *data, size_t size)
         return -1;
     }
 
-    /* window는 논리적 패킷 1개 크기만큼만 차감 */
+    /* deduct window by only one logical packet's size */
     if (saved_window > pkt_size)
         mud->window = saved_window - pkt_size;
     else
@@ -1118,7 +1118,7 @@ mud_send_next(struct mud *mud, const void *data, size_t size, unsigned dup_count
     mud_store(packet, now, MUD_TIME_SIZE);
     memcpy(packet + MUD_TIME_SIZE, data, size);
 
-    /* RUNNING 경로 수집 + 전체 rate 합산 + 크레딧 적립 */
+    /* collect RUNNING paths + sum total rate + accrue credit */
     uint64_t total_rate = 0;
     unsigned n_running  = 0;
 
@@ -1133,14 +1133,14 @@ mud_send_next(struct mud *mud, const void *data, size_t size, unsigned dup_count
 
     if (!n_running) { errno = EAGAIN; return -1; }
 
-    /* dup_count를 사용 가능한 경로 수로 클램프 */
+    /* clamp dup_count to the number of available paths */
     if (dup_count < 1)           dup_count = 1;
     if (dup_count > n_running)   dup_count = n_running;
 
     uint64_t saved_window = mud->window;
     int sent = 0;
 
-    /* dup_count개 경로에 순차 전송 (크레딧 최대 경로 우선) */
+    /* send to dup_count paths in turn (highest-credit path first) */
     for (unsigned d = 0; d < dup_count; d++) {
         struct mud_path *best       = NULL;
         int64_t          best_cred  = INT64_MIN;
@@ -1156,8 +1156,8 @@ mud_send_next(struct mud *mud, const void *data, size_t size, unsigned dup_count
 
         if (!best) break;
 
-        /* 이 경로의 크레딧을 total_rate만큼 차감 (가중 라운드로빈 핵심).
-         * 다음 선택에서 이 경로가 재선택되지 않도록 크게 감소시킴. */
+        /* deduct total_rate from this path's credit (core of the weighted round-robin).
+         * a large decrease prevents this path from being reselected on the next pick. */
         best->agg_credit -= (int64_t)total_rate;
 
         mud->window = saved_window;
@@ -1172,7 +1172,7 @@ mud_send_next(struct mud *mud, const void *data, size_t size, unsigned dup_count
         return -1;
     }
 
-    /* window는 논리적 패킷 1개 크기만큼만 차감 */
+    /* deduct window by only one logical packet's size */
     if (saved_window > pkt_size)
         mud->window = saved_window - pkt_size;
     else
@@ -1181,8 +1181,8 @@ mud_send_next(struct mud *mud, const void *data, size_t size, unsigned dup_count
     return (int)size;
 }
 
-/* ─── 수신 슬롯 1개를 처리하는 내부 헬퍼 ──────────────────────
- * 반환값: >0 payload 크기, 0 probe/keepalive/드롭
+/* ─── Internal helper that processes a single receive slot ─────
+ * Return value: >0 payload size, 0 probe/keepalive/drop
  * ──────────────────────────────────────────────────────────────── */
 static int
 mud_recv_one(struct mud *mud, void *data, size_t size,
@@ -1260,7 +1260,7 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
         return 0;
     }
 
-    /* 데이터 패킷 — duplicate 중복 제거 */
+    /* data packet — duplicate deduplication */
     {
         unsigned idx = mud->dedup_idx;
         for (unsigned d = 0; d < MUD_DEDUP_SIZE; d++) {
@@ -1291,7 +1291,7 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
     return (int)payload;
 }
 
-/* ─── recvmmsg 배치 수신 ─────────────────────────────────────── */
+/* ─── recvmmsg batch receive ─────────────────────────────────── */
 
 int
 mud_recv_pending(struct mud *mud)
@@ -1303,7 +1303,7 @@ int
 mud_recv(struct mud *mud, void *data, size_t size)
 {
     for (;;) {
-        /* 큐에 남은 항목 처리 */
+        /* process remaining items in the queue */
         while (mud->rq_idx < mud->rq_len) {
             int idx = mud->rq_idx++;
             if (mud->rq_msgs[idx].msg_hdr.msg_flags & (MSG_TRUNC | MSG_CTRUNC))
@@ -1313,11 +1313,11 @@ mud_recv(struct mud *mud, void *data, size_t size)
                                    mud->rq[idx].buf, raw_size,
                                    &mud->rq[idx].remote,
                                    &mud->rq_msgs[idx].msg_hdr);
-            if (ret > 0) return ret;   /* 데이터 패킷 */
-            if (ret == 0) return 0;    /* probe/keepalive — 호출자에게 알림 */
+            if (ret > 0) return ret;   /* data packet */
+            if (ret == 0) return 0;    /* probe/keepalive — notify the caller */
         }
 
-        /* 큐 소진 → recvmmsg로 재충전 */
+        /* queue drained → refill via recvmmsg */
         mud->rq_len = 0;
         mud->rq_idx = 0;
         for (int i = 0; i < MUD_RECV_QUEUE_CAP; i++) {
@@ -1332,7 +1332,7 @@ mud_recv(struct mud *mud, void *data, size_t size)
             return -1;
         }
         mud->rq_len = nrecv;
-        /* 루프 선두로 돌아가 큐 처리 */
+        /* loop back to the top to process the queue */
     }
 }
 
