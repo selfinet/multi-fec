@@ -9,6 +9,8 @@
 
 - **빌드·실행파일**: 빌드·개발·배포용 바이너리 작업은 모두 **`sv1`**(hostname `sv1xdnkr`, Ubuntu 24.04 x86_64, gcc 13.3.0)의 `~/multi-fec`에서 한다. macOS 로컬은 빌드 불가(Linux 전용 API). `make static-strip` → `multi-fec-dist`(정적·strip, GLIBC 의존성 없음). sv1은 각 테스트 호스트에 직접 접근 불가 → 전송은 sv1→로컬→호스트 경유.
   - 2026-07-02 wt5(wt5.xdn.kr)에서 sv1로 이전 완료. 이후 모든 작업은 sv1에서 수행. (구 wt5 환경은 폐기)
+  - **sv1은 현재 셸이 도는 머신 자체**(`hostname`=`sv1xdnkr`, `/etc/hosts`에서 `127.0.1.1`로 해석). `ssh sv1`은 연결 거부되므로 SSH하지 말고 이 셸에서 직접 실행한다.
+  - `--version` 표기: `common.h`의 `MULTI_FEC_VERSION`("1.0.0") + Makefile `git_version`이 `git describe --tags --dirty --always`로 넣는 실제 리비전 + 빌드시각. (구버전은 git 리비전만 표기했음)
   - 빌드 주의: `make clean` 후 `make -j`는 `git_version.h` 생성 순서 경합으로 실패 → `make git_version` 먼저 실행 후 `make -j$(nproc)`.
 - **실행(테스트)**: 실제 실행·측정은 **테스트망**에서. Server `s.xdn.selfinet.com`(공인 218.154.1.134), Client `c.xdn.selfinet.com`(Atom N2600), Relay `r.xdn.selfinet.com`(LAN 192.168.100.85). 세 호스트 nopasswd sudo, 배포 바이너리 `/usr/sbin/multi-fec-dist`, systemd `multi-fec-{server,client,relay}`.
 - **터널**: multi-fec 경유 WG는 `starlink-fec`(s=10.9.10.1, c=10.9.10.2). 직결 `starlink-xdn`(10.9.9.x)은 미경유 — 측정에 쓰지 말 것.
