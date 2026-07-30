@@ -231,6 +231,8 @@ Controls how packets are distributed across multiple `--path` entries.
 |------|----------|---------------|
 | `failover` | Active-Standby. `--path` 순서대로 우선순위(pref 0,1,2...). 상위 경로가 살아있는 한 하위는 대기. 장애 시 자동 전환. | 메인/백업 인터페이스 |
 | `duplicate` | 모든 경로에 동일 패킷을 **동시** 전송. 수신측이 중복 자동 제거. 어느 한 경로만 살아있어도 패킷 전달 보장. | 2개 회선 동시 가용성 극대화 |
+| `aggregate` | 경로별로 **서로 다른** 패킷을 `tx.rate` 비례 가중 라운드로빈으로 분배. 처리량이 경로 대역폭의 **합산**이 된다. | 복수 ISP 회선 대역폭 합산 |
+| `aggregate-duplicate` | 패킷마다 `--dup-factor`개 경로에 동시 전송. 집계와 이중화의 중간. 경로 수보다 크면 자동 클램프. | 3경로 이상에서 처리량·안정성 균형 |
 
 ```
 # 예: eth0 장애 시 wlan0으로 자동 전환
@@ -238,13 +240,25 @@ Controls how packets are distributed across multiple `--path` entries.
 
 # 예: eth0+wlan0 동시 전송, 어느 쪽이든 도착하면 성공
 --path 192.168.1.10:SERVER:443 --path 10.0.0.2:SERVER:443 --multipath-mode duplicate
+
+# 예: 두 회선 대역폭 합산
+--path 192.168.1.10:SERVER:443 --path 10.0.0.2:SERVER:443 --multipath-mode aggregate
+
+# 예: 3경로 중 패킷당 2경로로 전송 (어느 2개가 살아있으면 정상)
+--path ISP-A:SERVER:443 --path ISP-B:SERVER:443 --path ISP-C:SERVER:443 \
+    --multipath-mode aggregate-duplicate --dup-factor 2
 ```
 
 > **Duplicate 모드 동작 원리**
 > - 클라이언트: 각 FEC 패킷을 모든 경로로 동시 발송 (인터페이스별 `IP_PKTINFO` 사용)
-> - 서버: `mud_recv()`가 패킷 타임스탬프 기반 dedup 링버퍼(128엔트리, 500ms TTL)로
->   중복을 자동 제거 → 첫 번째로 도착한 패킷만 처리
+> - 서버: `mud_recv()`가 dedup 테이블(1024엔트리 직접사상, 500ms TTL)로 중복을 자동 제거
+>   → 첫 번째로 도착한 패킷만 처리. 판정 키는 **패킷 타임스탬프 + 페이로드 해시**다
+>   (타임스탬프 단독으로는 해상도가 2µs여서 같은 버스트의 서로 다른 패킷이 중복으로 오판됐다)
 > - 대역폭 소비: 경로 수 × 원래 트래픽. 두 경로면 2배.
+>
+> **`--multipath-mode` / `--dup-factor` 는 FIFO 런타임 변경을 지원하지 않는다** — 재시작 필요.
+> 클라이언트와 서버는 각자의 설정으로 독립 동작하므로, 다운스트림에도 같은 모드를 적용하려면
+> 서버에도 동일한 `--multipath-mode`를 지정해야 한다.
 
 ### `--obfs-mode M`  *(default: `quic`)*
 Choose the protocol mimicry mode for obfuscation.

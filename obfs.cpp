@@ -209,7 +209,16 @@ encode_quic(const struct obfs_ctx *ctx,
     if (wire_len > out_max) return -1;
 
     uint8_t *p = (uint8_t *)out;
-    p[0] = (uint8_t)(0x40 | (token[0] & 0x3F) | ((pkt_type & 0x03) << 4));
+    /* pkt_type is deliberately not packed into p[0]: bits 4-5 of the (token[0]
+     * & 0x3F) mask overlap (pkt_type << 4), so the decoder's (p[0] >> 4) & 0x03
+     * read back a value corrupted by the token and misclassified DATA as
+     * PROBE/PAD. No caller consumed the field, so it is dropped from the wire
+     * byte rather than given more header space. p[0]'s low bits are decorative:
+     * the authoritative token[0] travels in p[8] and is the only copy verified,
+     * and peers only test (p[0] & 0xC0) == 0x40 to recognise QUIC — so this
+     * stays compatible with unpatched builds in both directions. */
+    p[0] = (uint8_t)(0x40 | (token[0] & 0x3F));
+    (void)pkt_type;
     memcpy(p + 1, token + 1, 7);
     p[8] = token[0];
     p[9] = (uint8_t)pad_len;
@@ -308,7 +317,9 @@ decode_quic(const struct obfs_ctx *ctx,
     int     payload_len = in_len - OBFS_HEADER_QUIC - (int)pad_len;
     if (payload_len < 0 || payload_len > out_max) return -1;
 
-    if (pkt_type_out) *pkt_type_out = (uint8_t)((p[0] >> 4) & 0x03);
+    /* p[0] no longer carries a packet type (see encode_quic); report DATA, which
+     * is what decode_tls has always done. */
+    if (pkt_type_out) *pkt_type_out = OBFS_TYPE_DATA;
     memcpy(out, p + OBFS_HEADER_QUIC, (size_t)payload_len);
     return payload_len;
 }

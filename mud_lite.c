@@ -198,14 +198,14 @@ struct mud {
     int                   rq_len;
     int                   rq_idx;
 
-    /* ring buffer for deduplicating packets in duplicate mode */
-#define MUD_DEDUP_SIZE 128
+    /* direct-mapped table for deduplicating packets in duplicate mode */
+#define MUD_DEDUP_SIZE 1024   /* must stay a power of two (index masking) */
 #define MUD_DEDUP_TTL  (500 * MUD_ONE_MSEC)
     struct {
         uint64_t pkt_time;   /* the packet's sent_time value */
         uint64_t recv_time;  /* receive time (for expiry check) */
+        uint64_t hash;       /* payload content hash (see mud_dedup_hash) */
     } dedup[MUD_DEDUP_SIZE];
-    unsigned dedup_idx;
 };
 
 /* ─── Time utilities ─────────────────────────────────────────── */
@@ -244,6 +244,36 @@ mud_time_now(void)
     clock_gettime(CLOCK_REALTIME, &tv);
     return MUD_TIME_MASK((uint64_t)tv.tv_sec  * MUD_ONE_SEC
                        + (uint64_t)tv.tv_nsec / MUD_ONE_MSEC);
+}
+
+/* Non-cryptographic content hash of a packet payload, used to key the dedup
+ * table. Consumes 8 bytes per round, so a 1450-byte packet costs ~180 rounds. */
+static inline uint64_t
+mud_dedup_hash(const unsigned char *p, size_t len)
+{
+    uint64_t h = UINT64_C(0xcbf29ce484222325) ^ (uint64_t)len;
+    size_t   i = 0;
+
+    for (; i + sizeof(uint64_t) <= len; i += sizeof(uint64_t)) {
+        uint64_t v;
+        memcpy(&v, p + i, sizeof(v));
+        h ^= v;
+        h *= UINT64_C(0x100000001b3);
+        h ^= h >> 29;
+    }
+    for (; i < len; i++) {
+        h ^= (uint64_t)p[i];
+        h *= UINT64_C(0x100000001b3);
+    }
+    h ^= h >> 32;
+    return h;
+}
+
+static inline unsigned
+mud_dedup_index(uint64_t pkt_time, uint64_t hash)
+{
+    uint64_t k = (pkt_time ^ hash) * UINT64_C(0x9e3779b97f4a7c15);
+    return (unsigned)((k >> 32) & (MUD_DEDUP_SIZE - 1));
 }
 
 static inline int
@@ -1260,21 +1290,41 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
         return 0;
     }
 
-    /* data packet — duplicate deduplication */
+    /* data packet — duplicate deduplication.
+     *
+     * The key is (sent timestamp, payload hash), never the timestamp alone.
+     * MUD_TIME_MASK clears bit0 because that bit carries the MSG flag, so
+     * timestamps only carry 2µs resolution and a burst of *distinct* packets —
+     * one FEC group flush is 20+ back-to-back sendto calls — routinely lands in
+     * a single bucket. Keying on the timestamp alone therefore discarded
+     * distinct packets as false duplicates (measured: 145 of 6000 packets, and
+     * in failover mode, where nothing is ever duplicated). Mixing in a hash of
+     * the payload keeps real duplicates — byte-identical copies sent over
+     * several paths share both timestamp and hash — while distinct packets no
+     * longer collide.
+     *
+     * The table is direct-mapped, so a duplicate whose slot was overwritten in
+     * the meantime slips through. That direction is safe: a duplicate reaching
+     * the FEC decoder just rewrites the same group slot, and WireGuard above it
+     * rejects replays on its own. Dropping a distinct packet is not safe, which
+     * is why this side is now exact.
+     *
+     * Receive-side only — the wire format is untouched, so a patched peer
+     * interoperates with an unpatched one in either direction. */
     {
-        unsigned idx = mud->dedup_idx;
-        for (unsigned d = 0; d < MUD_DEDUP_SIZE; d++) {
-            if (!mud->dedup[d].recv_time) continue;
-            if (MUD_TIME_MASK(now - mud->dedup[d].recv_time) > MUD_DEDUP_TTL) {
-                mud->dedup[d].recv_time = 0;
-                continue;
-            }
-            if (mud->dedup[d].pkt_time == pure_time)
-                return 0;
-        }
+        uint64_t hash = mud_dedup_hash(decoded + MUD_TIME_SIZE,
+                                       (size_t)decoded_size - MUD_TIME_SIZE);
+        unsigned idx  = mud_dedup_index(pure_time, hash);
+
+        if (mud->dedup[idx].recv_time &&
+            MUD_TIME_MASK(now - mud->dedup[idx].recv_time) <= MUD_DEDUP_TTL &&
+            mud->dedup[idx].pkt_time == pure_time &&
+            mud->dedup[idx].hash     == hash)
+            return 0;
+
         mud->dedup[idx].pkt_time  = pure_time;
         mud->dedup[idx].recv_time = now;
-        mud->dedup_idx = (idx + 1) % MUD_DEDUP_SIZE;
+        mud->dedup[idx].hash      = hash;
     }
 
     size_t payload = (size_t)decoded_size - MUD_TIME_SIZE;
