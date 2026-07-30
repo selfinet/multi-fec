@@ -108,8 +108,72 @@ static void flush_server_pending()
 
 /* session_id(8B) → canonical address_t
  * Even if the same client connects via multiple POPs, the first source
- * address seen is used as the canonical key, keeping a single conn_info. */
-static unordered_map<uint64_t, address_t> g_session_to_addr;
+ * address seen is used as the canonical key, keeping a single conn_info.
+ *
+ * Entries expire: session_id is 8 bytes chosen by the client, so without
+ * expiry the map grew without bound — a sender holding a valid auth token
+ * could inflate it with random ids, and it also accumulated one dead entry
+ * per client restart. SESSION_MAX caps it independently of the sweep, evicting
+ * the least recently seen entry so a flood cannot starve live sessions. */
+struct session_entry_t {
+    address_t addr;
+    my_time_t last_seen;
+};
+static unordered_map<uint64_t, session_entry_t> g_session_to_addr;
+
+#define SESSION_TTL_MS  (300 * 1000)          /* 5 min idle → evict */
+#define SESSION_MAX     (max_conn_num * 4)    /* hard cap, tied to conn limit */
+
+/* Drop entries idle for longer than SESSION_TTL_MS. */
+static void session_sweep(my_time_t now)
+{
+    for (auto it = g_session_to_addr.begin(); it != g_session_to_addr.end(); ) {
+        if (now - it->second.last_seen > (my_time_t)SESSION_TTL_MS) {
+            mylog(log_debug, "[server] session %016llx expired\n",
+                  (unsigned long long)it->first);
+            it = g_session_to_addr.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+/* Register a new session, keeping the map within SESSION_MAX.
+ * Returns false when the entry could not be inserted. */
+static bool session_insert(uint64_t sid, const address_t &addr, my_time_t now)
+{
+    if (g_session_to_addr.size() >= (size_t)SESSION_MAX) {
+        session_sweep(now);
+
+        /* still full → evict the least recently seen entry */
+        if (g_session_to_addr.size() >= (size_t)SESSION_MAX) {
+            auto lru = g_session_to_addr.begin();
+            for (auto it = g_session_to_addr.begin();
+                 it != g_session_to_addr.end(); ++it) {
+                if (it->second.last_seen < lru->second.last_seen) lru = it;
+            }
+            if (lru == g_session_to_addr.end()) return false;
+            mylog(log_info, "[server] session table full (%zu), evicting %016llx\n",
+                  g_session_to_addr.size(), (unsigned long long)lru->first);
+            g_session_to_addr.erase(lru);
+        }
+    }
+
+    session_entry_t &e = g_session_to_addr[sid];
+    e.addr      = addr;
+    e.last_seen = now;
+    return true;
+}
+
+static void session_cleanup_cb(struct ev_loop * /*loop*/, struct ev_timer * /*w*/,
+                               int /*revents*/)
+{
+    size_t before = g_session_to_addr.size();
+    session_sweep((my_time_t)get_current_time());
+    if (before != g_session_to_addr.size())
+        mylog(log_debug, "[server] session sweep: %zu → %zu\n",
+              before, g_session_to_addr.size());
+}
 
 /* ────────────────────────────────────────────────────────────────
  * Server TOTP sockets (port hopping)
@@ -645,14 +709,16 @@ static void server_totp_io_cb(struct ev_loop * /*loop*/, struct ev_io *watcher, 
         memcpy(&sid, dec_buf, SESSION_ID_LEN);
 
         address_t routing_addr;
+        my_time_t now_ms = (my_time_t)get_current_time();
         auto sit = g_session_to_addr.find(sid);
         if (sit == g_session_to_addr.end()) {
-            g_session_to_addr[sid] = src_addr;
+            if (!session_insert(sid, src_addr, now_ms)) continue;
             routing_addr = src_addr;
             mylog(log_info, "[server] totp: new session %016llx from %s\n",
                   (unsigned long long)sid, src_addr.get_str());
         } else {
-            routing_addr = sit->second;
+            sit->second.last_seen = now_ms;
+            routing_addr = sit->second.addr;
             if (!(routing_addr == src_addr))
                 mylog(log_debug, "[server] totp: session %016llx alt path %s\n",
                       (unsigned long long)sid, src_addr.get_str());
@@ -876,14 +942,16 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
         memcpy(&sid, recv_buf, SESSION_ID_LEN);
 
         address_t routing_addr;
+        my_time_t now_ms = (my_time_t)get_current_time();
         auto sit = g_session_to_addr.find(sid);
         if (sit == g_session_to_addr.end()) {
-            g_session_to_addr[sid] = src_addr;
+            if (!session_insert(sid, src_addr, now_ms)) continue;
             routing_addr = src_addr;
             mylog(log_info, "[server] new session %016llx from %s\n",
                   (unsigned long long)sid, src_addr.get_str());
         } else {
-            routing_addr = sit->second;
+            sit->second.last_seen = now_ms;
+            routing_addr = sit->second.addr;
             if (!(routing_addr == src_addr)) {
                 mylog(log_debug, "[server] session %016llx: alt path %s\n",
                       (unsigned long long)sid, src_addr.get_str());
@@ -910,8 +978,9 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
         memcpy(&sid2, recv_buf, SESSION_ID_LEN);
         auto sit2 = g_session_to_addr.find(sid2);
         if (sit2 == g_session_to_addr.end()) continue; /* new session handled on next event */
+        sit2->second.last_seen = (my_time_t)get_current_time();
 
-        process_mud_data(sit2->second,
+        process_mud_data(sit2->second.addr,
                          recv_buf + SESSION_ID_LEN,
                          n2 - SESSION_ID_LEN);
     }
@@ -1008,6 +1077,12 @@ void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obfs,
         ev_timer_init(&decoy_timer, decoy_cleanup_cb, 10.0, 10.0);
         ev_timer_start(loop, &decoy_timer);
     }
+
+    /* session table sweep: drop session_ids idle past SESSION_TTL_MS.
+     * Unconditional — unlike the decoy timer, this is not tied to an option. */
+    struct ev_timer session_timer;
+    ev_timer_init(&session_timer, session_cleanup_cb, 30.0, 30.0);
+    ev_timer_start(loop, &session_timer);
 
     mylog(log_info, "[server] listening, forwarding to WireGuard at %s\n",
           g_wg_addr.get_str());
