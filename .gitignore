@@ -10,6 +10,7 @@ git_version.h
 /multi-fec-dist
 /multi-fec-asan
 /test_rnlc_unit
+/test_fec_decode_bounds
 
 # Python
 __pycache__/

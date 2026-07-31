@@ -56,6 +56,18 @@ static struct obfs_ctx        g_builtin_ctx;        /* for builtin QUIC Initial 
 
 #define RELAY_SESSION_TIMEOUT_MS  60000     /* 60 s idle → evict */
 
+/* 동시 세션 상한.
+ *
+ * 세션 하나가 upstream 소켓 + ev_io watcher 를 하나씩 잡으므로 세션 수가 곧 FD 수다.
+ * idle 만료(60초)만으로는 부족했다 — 소스 포트를 계속 바꿔가며 보내면 만료가 오기
+ * 전에 FD 가 고갈된다. 특히 -k / --route 없이 --upstream 만 준 투명 중계 모드에서는
+ * HMAC 검증이 없어(find_route() 가 g_obfs==NULL 을 그대로 반환) 아무나 이걸 할 수
+ * 있다. 서버는 v1.0.3 에서 SESSION_MAX + LRU 를 갖췄는데 릴레이만 빠져 있었다.
+ *
+ * 값은 서버 SESSION_MAX(max_conn_num*4) 와 같게 맞췄다. 기본 max_conn_num=200 이면
+ * 800 세션 = 800 FD 로, 기본 RLIMIT_NOFILE(1024) 안에 리슨/타이머/decoy 몫을 남긴다. */
+#define RELAY_SESSION_MAX  (max_conn_num * 4)
+
 /* ────────────────────────────────────────────────────────────────
  * Decoy session management (--decoy ip:port)
  *
@@ -201,6 +213,59 @@ static void delete_session(relay_session_t *sess)
     mylog(log_info, "[relay] session removed: client=%s fd=%d\n",
           sess->client_addr.get_str(), sess->upstream_fd);
     delete sess;
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Helper: drop sessions idle past RELAY_SESSION_TIMEOUT_MS
+ *
+ * No unit conversion: get_current_time() and last_active are both in
+ * milliseconds, and so is the timeout. The stray ×1000 that used to be here
+ * stretched the 60 s idle limit to ~16.7 hours, pinning one upstream socket and
+ * watcher per client address for that long.
+ * ──────────────────────────────────────────────────────────────── */
+
+static size_t session_sweep(my_time_t now)
+{
+    std::vector<relay_session_t *> to_del;
+
+    for (auto &kv : g_fd_to_sess) {
+        relay_session_t *s = kv.second;
+        if (now - s->last_active > (my_time_t)RELAY_SESSION_TIMEOUT_MS)
+            to_del.push_back(s);
+    }
+    for (relay_session_t *s : to_del)
+        delete_session(s);
+
+    return to_del.size();
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Helper: make room for one more session
+ *
+ * Sweep first so a burst that merely outlived its idle window is reclaimed
+ * without disturbing live sessions; only if that is not enough evict the least
+ * recently active one, so a flood cannot starve an established client.
+ * Returns false when no slot could be freed — caller drops the packet.
+ * ──────────────────────────────────────────────────────────────── */
+
+static bool session_reserve_slot(my_time_t now)
+{
+    if (g_addr_to_sess.size() < (size_t)RELAY_SESSION_MAX) return true;
+
+    session_sweep(now);
+    if (g_addr_to_sess.size() < (size_t)RELAY_SESSION_MAX) return true;
+
+    relay_session_t *lru = NULL;
+    for (auto &kv : g_fd_to_sess) {
+        if (lru == NULL || kv.second->last_active < lru->last_active)
+            lru = kv.second;
+    }
+    if (lru == NULL) return false;
+
+    mylog(log_info, "[relay] session table full (%zu), evicting LRU\n",
+          g_addr_to_sess.size());
+    delete_session(lru);
+    return true;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -391,6 +456,14 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
                 continue;
             }
 
+            /* Cap the table before allocating the socket, not after: the point
+             * of the limit is to never hold more than RELAY_SESSION_MAX FDs. */
+            if (!session_reserve_slot(get_current_time())) {
+                mylog(log_warn, "[relay] session table full, dropping %s\n",
+                      src.get_str());
+                continue;
+            }
+
             int ufd = new_upstream_fd(upstream);
             if (ufd < 0) continue;
 
@@ -426,24 +499,10 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
 static void cleanup_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/,
                        int /*revents*/)
 {
-    my_time_t now = get_current_time();
-    std::vector<relay_session_t *> to_del;
+    size_t n = session_sweep(get_current_time());
 
-    for (auto &kv : g_fd_to_sess) {
-        relay_session_t *s = kv.second;
-        /* No unit conversion: get_current_time() and last_active are both in
-         * milliseconds, and so is the timeout. The stray ×1000 that used to be
-         * here stretched the 60 s idle limit to ~16.7 hours, pinning one
-         * upstream socket and watcher per client address for that long. */
-        if (now - s->last_active > (my_time_t)RELAY_SESSION_TIMEOUT_MS)
-            to_del.push_back(s);
-    }
-    for (relay_session_t *s : to_del)
-        delete_session(s);
-
-    if (!to_del.empty())
-        mylog(log_debug, "[relay] cleanup: removed %zu stale sessions\n",
-              to_del.size());
+    if (n != 0)
+        mylog(log_debug, "[relay] cleanup: removed %zu stale sessions\n", n);
 }
 
 /* ────────────────────────────────────────────────────────────────

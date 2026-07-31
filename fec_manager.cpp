@@ -510,6 +510,35 @@ int fec_decode_manager_t::input(char *s, int len) {
         mylog(log_warn, "data_num+redundant_num>=max_fec_packet_num\n");
         return -1;
     }
+    /* upstream 예외 수정: type / inner_index 는 와이어에서 온 무검증 바이트다.
+     *
+     * obfs 인증 토큰은 SipHash(시간슬롯, PSK) 라 페이로드를 인증하지 않고, CRC 경로
+     * (do_cook/de_cook)도 이 프로젝트에선 쓰지 않는다(mf_client.cpp 주석). 즉 여기
+     * 도달하는 바이트는 사실상 무인증 입력이다. inner_index 상한이 없으면 그룹에
+     * 존재하지 않는 슬롯이 "채워진 것"으로 집계되어 about_to_fec 이 성립하고, 정작
+     * 복원에 필요한 조각은 모자란 상태로 rs_decode2() 가 -1 을 반환한다.
+     *
+     * type 은 0(mode 0) / 1(mode 1) 만 유효하다. 2 는 RNLC 이고 misc.cpp 에서
+     * 이미 분기되므로 여기 오지 않으며, 3 이상은 아래에서 type==1 로 취급되므로
+     * 함께 거른다.
+     *
+     * inner_index 의 상한은 그룹 크기지만, mode 1 의 systematic 패킷은 그룹
+     * 파라미터를 아직 모르므로 data_num=0/redundant_num=0 으로 나간다(위 인코더).
+     * 그 경우엔 배열 한계만 확인하고, 그룹 파라미터가 확정된 뒤 아래에서 다시 본다. */
+    if (type != 0 && type != 1) {
+        mylog(log_warn, "invaild type=%d\n", type);
+        return -1;
+    }
+    if (data_num != 0) {
+        if (inner_index >= data_num + redundant_num) {
+            mylog(log_warn, "invaild inner_index=%d, data_num=%d redundant_num=%d\n",
+                  inner_index, data_num, redundant_num);
+            return -1;
+        }
+    } else if (inner_index >= max_fec_packet_num) {
+        mylog(log_warn, "invaild inner_index=%d (group size unknown)\n", inner_index);
+        return -1;
+    }
     if (!anti_replay.is_vaild(seq)) {
         mylog(log_trace, "!anti_replay.is_vaild(seq) ,seq =%u\n", seq);
         return 0;
@@ -547,6 +576,16 @@ int fec_decode_manager_t::input(char *s, int len) {
                 return -1;
             }
         }
+    }
+
+    /* 그룹 크기가 확정됐으면 (data_num==0 으로 들어온 패킷까지) 여기서 다시 본다.
+     * 파라미터를 모르는 동안 먼저 도착한 패킷은 검증할 수 없으므로 이 검사만으로는
+     * 부족하다 — 실제 abort 방어는 아래 복호 단계의 반환값 확인이 담당한다. */
+    if (mp[seq].data_num != -1 &&
+        inner_index >= mp[seq].data_num + mp[seq].redundant_num) {
+        mylog(log_warn, "invaild inner_index=%d for group x=%d y=%d\n",
+              inner_index, mp[seq].data_num, mp[seq].redundant_num);
+        return -1;
     }
 
     // mylog(log_info,"mp.size()=%d index=%d\n",mp.size(),index);
@@ -629,8 +668,16 @@ int fec_decode_manager_t::input(char *s, int len) {
                     y_got++;
                 fec_tmp_arr[it->first] = fec_data[it->second].buf;
             }
-            assert(rs_decode2(group_data_num, group_data_num + group_redundant_num, fec_tmp_arr, len) == 0);  // the input data has been modified in-place
-            // this line should always succeed
+            /* 원래 assert 였다. 복호 실패는 "일어날 수 없다"는 전제였지만, 그룹 구성은
+             * 와이어 바이트로 정해지므로 원격에서 실패를 만들 수 있었다(무인증 abort).
+             * 조각이 모자라면 그룹만 버린다. assert 로 두면 NDEBUG 빌드에서 검사 자체가
+             * 사라져 손상된 배열로 복원을 강행하게 되는 문제도 함께 없앤다. */
+            if (rs_decode2(group_data_num, group_data_num + group_redundant_num, fec_tmp_arr, len) != 0) {  // the input data has been modified in-place
+                mylog(log_warn, "rs_decode2 failed,seq=%u x=%d y=%d cnt=%d\n",
+                      seq, group_data_num, group_redundant_num, (int)inner_mp.size());
+                anti_replay.set_invaild(seq);
+                goto end;
+            }
             mp[seq].fec_done = 1;
 
             if (debug_fec_dec)
@@ -707,7 +754,13 @@ int fec_decode_manager_t::input(char *s, int len) {
             }
             mylog(log_trace, "fec done,%d %d,missed_packet_counter=%d\n", group_data_num, group_redundant_num, missed_packet_counter);
 
-            assert(rs_decode2(group_data_num, group_data_num + group_redundant_num, output_s_arr_buf, max_len) == 0);  // this should always succeed
+            /* type==0 쪽과 동일한 이유로 assert 에서 분리했다. */
+            if (rs_decode2(group_data_num, group_data_num + group_redundant_num, output_s_arr_buf, max_len) != 0) {
+                mylog(log_warn, "rs_decode2 failed,seq=%u x=%d y=%d cnt=%d\n",
+                      seq, group_data_num, group_redundant_num, (int)inner_mp.size());
+                anti_replay.set_invaild(seq);
+                goto end;
+            }
             mp[seq].fec_done = 1;
 
             int sum_ori = 0;
