@@ -153,16 +153,22 @@ struct mud_lite_msg {
  * mmsghdr is not kept here — since sendmmsg/recvmmsg require a contiguous array,
  * struct mmsghdr sq_msgs[] / rq_msgs[] are maintained separately and point back here.
  */
+/* The control buffers are cast to struct cmsghdr by the CMSG_* macros, which
+ * require its alignment. buf[] above is not a multiple of 8, so without this
+ * the ctrl arrays landed on a 4-byte boundary and every CMSG access was
+ * misaligned (UBSan flagged it on each send and receive). */
+#define MUD_CTRL_ALIGNED __attribute__((aligned(__alignof__(struct cmsghdr))))
+
 struct mud_send_slot {
     unsigned char      buf[MUD_SEND_BUF_MAX]; /* obfs-encoded packet */
-    unsigned char      ctrl[MUD_CTRL_SIZE];   /* IP_PKTINFO control message */
+    unsigned char      ctrl[MUD_CTRL_SIZE] MUD_CTRL_ALIGNED;  /* IP_PKTINFO cmsg */
     union mud_sockaddr remote;                 /* destination address */
     struct iovec       iov;
 };
 
 struct mud_recv_slot {
     unsigned char      buf[MUD_RECV_BUF_MAX]; /* received raw packet */
-    unsigned char      ctrl[MUD_CTRL_SIZE];   /* IP_PKTINFO control message */
+    unsigned char      ctrl[MUD_CTRL_SIZE] MUD_CTRL_ALIGNED;  /* IP_PKTINFO cmsg */
     union mud_sockaddr remote;                 /* sender address */
     struct iovec       iov;
 };
@@ -522,6 +528,12 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
 static int
 mud_localaddr(union mud_sockaddr *addr, struct msghdr *msg)
 {
+    /* Zero first. Only the family and address are filled in below, and the
+     * caller passes an uninitialised union — so the port stayed indeterminate
+     * and was read by mud_unmapv4() and stored into path->conf.local. Nothing
+     * compares that port today, but it made the value nondeterministic. */
+    memset(addr, 0, sizeof(*addr));
+
     struct cmsghdr *cmsg = CMSG_FIRSTHDR(msg);
     for (; cmsg; cmsg = CMSG_NXTHDR(msg, cmsg)) {
         if (cmsg->cmsg_level == IPPROTO_IP &&

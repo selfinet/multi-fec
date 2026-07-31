@@ -47,6 +47,7 @@ WireGuard와 네트워크 사이에서 동작하며 **FEC 손실 복구**, **다
 make -j$(nproc)        # 동적 링크 빌드 → ./multi-fec        (~279 KB)
 make static            # 정적 링크 빌드 → ./multi-fec-static  (~1.5 MB)
 make static-strip      # 배포용 정적 빌드 → ./multi-fec-dist  (~1.3 MB, 심볼 제거)
+make asan              # ASAN+UBSAN 빌드 → ./multi-fec-asan   (진단용, 배포 금지)
 make clean             # 클린
 ```
 
@@ -121,7 +122,7 @@ multi-fec -r -l 0.0.0.0:443 \
 | 옵션 | 기본값 | 설명 |
 |------|--------|------|
 | `-l ip:port` | 필수 | 로컬 리슨 주소 |
-| `-k keystring` | `default-key` | PSK (릴레이는 선택) |
+| `-k keystring` | — (**필수**) | PSK. client/server 필수, `--disable-obfs` 시 면제 (릴레이는 선택) |
 | `--obfs-mode quic\|tls` | `quic` | 패킷 위장 모드 |
 | `--auth-interval N` | `30` | HMAC 토큰 슬롯 길이(초). 양쪽 동일 설정 필수. 권장 `60` |
 | `--report N` | `0` | 통계 리포트 주기(초) |
@@ -221,9 +222,13 @@ journalctl -u multi-fec-server -f
 ## 테스트
 
 ```bash
-python3 test_relay_routing.py    # 릴레이 키별 라우팅 (7 케이스)
-python3 test_all_options.py      # 전체 CLI 옵션 (90 케이스)
-python3 test_perf_stability.py   # 성능·안정성 (26 케이스)
+python3 test_relay_routing.py         # 릴레이 키별 라우팅 (7 케이스)
+python3 test_all_options.py           # 전체 CLI 옵션 (90 케이스)
+python3 test_perf_stability.py        # 성능·안정성 (26 케이스)
+python3 test_downstream_multi.py      # 다중 클라이언트 다운스트림 전달 (24 케이스)
+python3 test_relay_session_expiry.py  # 릴레이 idle 세션 FD 회수
+python3 test_rnlc.py                  # RNLC end-to-end (9 케이스)
+make test-rnlc-unit                   # RNLC 유닛 (11 케이스)
 ```
 
 ---

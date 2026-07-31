@@ -656,7 +656,7 @@ int fec_decode_manager_t::input(char *s, int len) {
             int max_len = -1;
             int fec_result_ok = 1;
             int data_check_ok = 1;
-            int debug_num = inner_mp.size();
+            /* int debug_num = inner_mp.size();  — diagnostic only, unused */
 
             int missed_packet[max_fec_packet_num + 5];
             int missed_packet_counter = 0;
