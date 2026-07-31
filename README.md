@@ -227,6 +227,7 @@ python3 test_all_options.py           # 전체 CLI 옵션 (90 케이스)
 python3 test_perf_stability.py        # 성능·안정성 (26 케이스)
 python3 test_downstream_multi.py      # 다중 클라이언트 다운스트림 전달 (24 케이스)
 python3 test_relay_session_expiry.py  # 릴레이 idle 세션 FD 회수
+sudo python3 test_path_failure.py     # 경로 절단·열화·지연차 (8 케이스, root 필요)
 python3 test_rnlc.py                  # RNLC end-to-end (9 케이스)
 make test-rnlc-unit                   # RNLC 유닛 (11 케이스)
 ```
