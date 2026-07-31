@@ -54,23 +54,38 @@ make_token(const struct obfs_ctx *ctx, uint64_t slot, uint8_t token[8])
     memcpy(token, &h, 8);
 }
 
+/* memcmp may return at the first differing byte, so comparing an authenticator
+ * with it leaks how many leading bytes matched. The leak is tiny next to the
+ * jitter of a UDP round trip, but a fixed-time compare costs nothing. */
+static int
+token_equal(const uint8_t *a, const uint8_t *b, size_t len)
+{
+    uint8_t diff = 0;
+    for (size_t i = 0; i < len; i++)
+        diff |= (uint8_t)(a[i] ^ b[i]);
+    return diff == 0;
+}
+
 static int
 verify_token(const struct obfs_ctx *ctx, const uint8_t token[8])
 {
     uint64_t slot = current_slot(ctx);
     uint8_t expected[8];
+    int ok = 0;
 
+    /* Check every slot in the accepted window and or the results together, so
+     * the work done does not depend on which slot matched. */
     make_token(ctx, slot, expected);
-    if (memcmp(token, expected, 8) == 0) return 1;
+    ok |= token_equal(token, expected, 8);
 
     if (slot > 0) {
         make_token(ctx, slot - 1, expected);
-        if (memcmp(token, expected, 8) == 0) return 1;
+        ok |= token_equal(token, expected, 8);
     }
     make_token(ctx, slot + 1, expected);
-    if (memcmp(token, expected, 8) == 0) return 1;
+    ok |= token_equal(token, expected, 8);
 
-    return 0;
+    return ok;
 }
 
 /* ─── Padding size selection ───────────────────────────────────── */

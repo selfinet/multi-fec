@@ -67,6 +67,13 @@ static int           s_pending_count = 0;
 
 static void enqueue_pending(const char *data, int len)
 {
+    /* Bound the copy the same way the server's queue does: pending_pkt_t::data
+     * is a fixed buffer and a negative len would turn into a huge size_t. */
+    if (data == NULL || len <= 0 || len > (int)sizeof(s_pending_q[0].data)) {
+        mylog(log_warn, "[client] invalid pending packet len=%d (max %zu)\n",
+              len, sizeof(s_pending_q[0].data));
+        return;
+    }
     if (s_pending_count == PENDING_Q_CAP) {
         /* Ring full: drop oldest to keep the latest packets */
         s_pending_head = (s_pending_head + 1) % PENDING_Q_CAP;

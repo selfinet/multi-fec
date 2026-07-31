@@ -47,17 +47,25 @@ extern "C" void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obf
 static struct mud            *g_mud  = NULL;
 static const struct obfs_ctx *g_obfs = NULL;
 
-static inline int mud_send_mp(struct mud *mud, const void *data, size_t size)
+/* Downstream send, restricted to the paths of one client.
+ *
+ * `peer` identifies the destination client (see peer_of()); 0 falls back to
+ * "any path", which is what a single-client server effectively had before.
+ * Without the restriction the mode helpers below pick a path out of the whole
+ * table, so with two or more clients a packet for A leaves over B's path and is
+ * dropped by B as an unknown conv. */
+static inline int mud_send_mp(struct mud *mud, const void *data, size_t size,
+                              uint64_t peer)
 {
     switch (g_multipath_mode) {
     case MULTIPATH_DUPLICATE:
-        return mud_send_all(mud, data, size);
+        return mud_send_all_peer(mud, peer, data, size);
     case MULTIPATH_AGGREGATE:
-        return mud_send_next(mud, data, size, 1);
+        return mud_send_next_peer(mud, peer, data, size, 1);
     case MULTIPATH_AGGREGATE_DUPLICATE:
-        return mud_send_next(mud, data, size, g_dup_factor);
+        return mud_send_next_peer(mud, peer, data, size, g_dup_factor);
     default:
-        return mud_send(mud, data, size);
+        return mud_send_peer(mud, peer, data, size);
     }
 }
 static struct ev_loop        *g_loop = NULL;
@@ -69,9 +77,21 @@ static struct ev_loop        *g_loop = NULL;
 
 #define SERVER_PENDING_Q_CAP 4096
 
+/* A packet stuck at the head must not block the rest of the queue forever:
+ * before peer scoping, any RUNNING path could drain it, but a packet addressed
+ * to a client that went away has no path to wait for. Dropping by age rather
+ * than by "does this peer have a RUNNING path right now" matters — path status
+ * flaps between RUNNING and DEGRADED on every beat, and a reachability test
+ * discarded live traffic during those dips (measured: 28 packets lost per 400). */
+#define SERVER_PENDING_TTL_MS 1000
+
 struct server_pending_pkt_t {
-    char data[buf_len];
-    int  len;
+    char      data[buf_len];
+    int       len;
+    uint64_t  peer;  /* destination client — a queued packet outlives the call
+                      * that produced it, so the destination has to travel with
+                      * it rather than be re-derived at flush time */
+    my_time_t ts;    /* enqueue time, for the TTL above */
 };
 
 static server_pending_pkt_t s_srv_pending_q[SERVER_PENDING_Q_CAP];
@@ -79,15 +99,25 @@ static int                  s_srv_pending_head  = 0;
 static int                  s_srv_pending_tail  = 0;
 static int                  s_srv_pending_count = 0;
 
-static void enqueue_server_pending(const char *data, int len)
+static void enqueue_server_pending(const char *data, int len, uint64_t peer)
 {
+    /* Bound the copy: p.data is buf_len bytes and a negative len would become a
+     * huge size_t. Callers only pass FEC encoder output today, so this is a
+     * guard rather than a live fix. */
+    if (data == NULL || len <= 0 || len > buf_len) {
+        mylog(log_warn, "[server] invalid pending packet len=%d (max %d)\n",
+              len, buf_len);
+        return;
+    }
     if (s_srv_pending_count >= SERVER_PENDING_Q_CAP) {
         mylog(log_debug, "[server] pending queue full, drop pkt len=%d\n", len);
         return;
     }
     server_pending_pkt_t &p = s_srv_pending_q[s_srv_pending_tail];
     memcpy(p.data, data, (size_t)len);
-    p.len = len;
+    p.len  = len;
+    p.peer = peer;
+    p.ts   = (my_time_t)get_current_time();
     s_srv_pending_tail = (s_srv_pending_tail + 1) % SERVER_PENDING_Q_CAP;
     s_srv_pending_count++;
 }
@@ -96,8 +126,16 @@ static void flush_server_pending()
 {
     while (s_srv_pending_count > 0) {
         server_pending_pkt_t &p = s_srv_pending_q[s_srv_pending_head];
-        int ret = mud_send_mp(g_mud, p.data, p.len);
-        if (ret < 0) break;  /* window still short — retry next tick */
+        int ret = mud_send_mp(g_mud, p.data, p.len, p.peer);
+        if (ret < 0) {
+            /* Window still short → retry on the next tick, unless the entry has
+             * aged out (peer gone), in which case skip it so the queue drains. */
+            if ((my_time_t)get_current_time() - p.ts
+                    <= (my_time_t)SERVER_PENDING_TTL_MS)
+                break;
+            mylog(log_debug, "[server] dropping stale queued pkt len=%d peer=%016llx\n",
+                  p.len, (unsigned long long)p.peer);
+        }
         s_srv_pending_head = (s_srv_pending_head + 1) % SERVER_PENDING_Q_CAP;
         s_srv_pending_count--;
     }
@@ -124,6 +162,58 @@ static unordered_map<uint64_t, session_entry_t> g_session_to_addr;
 #define SESSION_TTL_MS  (300 * 1000)          /* 5 min idle → evict */
 #define SESSION_MAX     (max_conn_num * 4)    /* hard cap, tied to conn limit */
 
+/* ── Peer tagging ────────────────────────────────────────────────
+ *
+ * A downstream packet is produced from a conn_info, which is keyed by the
+ * session's canonical address; the mud paths it may leave over are keyed by the
+ * addresses the session actually arrives from (more than one when the client
+ * reaches us through several POPs). These two maps connect the pair so that
+ * mud_send_mp() can be restricted to the destination client's paths.
+ *
+ * The session id doubles as the peer id. 0 is reserved for "untagged", so a
+ * client that happened to draw an all-zero session id is folded onto 1. */
+static inline uint64_t peer_of(uint64_t sid) { return sid ? sid : 1ULL; }
+
+static unordered_map<address_t, uint64_t> g_addr_to_peer;
+
+static void peer_bind(const address_t &addr, uint64_t peer)
+{
+    g_addr_to_peer[const_cast<address_t &>(addr)] = peer;
+}
+
+/* Only drop the mapping if it still belongs to this peer: a client that
+ * restarts with a fresh session id but the same source port replaces the entry,
+ * and the old session's expiry must not delete the new one. */
+static void peer_unbind(const address_t &addr, uint64_t peer)
+{
+    auto it = g_addr_to_peer.find(const_cast<address_t &>(addr));
+    if (it != g_addr_to_peer.end() && it->second == peer)
+        g_addr_to_peer.erase(it);
+}
+
+static uint64_t peer_for_addr(const address_t &addr)
+{
+    auto it = g_addr_to_peer.find(const_cast<address_t &>(addr));
+    return it == g_addr_to_peer.end() ? 0 : it->second;
+}
+
+/* Mark the path this packet arrived on as belonging to `peer`, so downstream
+ * traffic for that client can be confined to it. */
+static void peer_tag_path(const address_t &src, uint64_t peer)
+{
+    address_t a = src;
+    union mud_sockaddr ms;
+    memset(&ms, 0, sizeof(ms));
+    if (a.get_type() == AF_INET)
+        ms.sin = a.inner.ipv4;
+    else
+        ms.sin6 = a.inner.ipv6;
+
+    if (mud_set_path_peer(g_mud, &ms, peer) < 0)
+        mylog(log_trace, "[server] no mud path yet for %s (peer %016llx)\n",
+              a.get_str(), (unsigned long long)peer);
+}
+
 /* Drop entries idle for longer than SESSION_TTL_MS. */
 static void session_sweep(my_time_t now)
 {
@@ -131,6 +221,7 @@ static void session_sweep(my_time_t now)
         if (now - it->second.last_seen > (my_time_t)SESSION_TTL_MS) {
             mylog(log_debug, "[server] session %016llx expired\n",
                   (unsigned long long)it->first);
+            peer_unbind(it->second.addr, peer_of(it->first));
             it = g_session_to_addr.erase(it);
         } else {
             ++it;
@@ -155,6 +246,7 @@ static bool session_insert(uint64_t sid, const address_t &addr, my_time_t now)
             if (lru == g_session_to_addr.end()) return false;
             mylog(log_info, "[server] session table full (%zu), evicting %016llx\n",
                   g_session_to_addr.size(), (unsigned long long)lru->first);
+            peer_unbind(lru->second.addr, peer_of(lru->first));
             g_session_to_addr.erase(lru);
         }
     }
@@ -162,6 +254,7 @@ static bool session_insert(uint64_t sid, const address_t &addr, my_time_t now)
     session_entry_t &e = g_session_to_addr[sid];
     e.addr      = addr;
     e.last_seen = now;
+    peer_bind(addr, peer_of(sid));
     return true;
 }
 
@@ -447,9 +540,10 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
                                (const struct sockaddr *)&conn_info.addr.inner,
                                conn_info.addr.get_len());
                 } else {
-                    int r2 = mud_send_mp(g_mud, pkt_out_arr[i], pkt_out_len[i]);
+                    uint64_t peer = peer_for_addr(conn_info.addr);
+                    int r2 = mud_send_mp(g_mud, pkt_out_arr[i], pkt_out_len[i], peer);
                     if (r2 < 0 && errno == EAGAIN)
-                        enqueue_server_pending(pkt_out_arr[i], pkt_out_len[i]);
+                        enqueue_server_pending(pkt_out_arr[i], pkt_out_len[i], peer);
                 }
             }
         }
@@ -475,10 +569,11 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
                     mylog(log_debug, "[server] totp sendto: %s\n", strerror(errno));
             }
         } else {
-            int ret2 = mud_send_mp(g_mud, out_arr[i], out_len[i]);
+            uint64_t peer = peer_for_addr(addr);
+            int ret2 = mud_send_mp(g_mud, out_arr[i], out_len[i], peer);
             if (ret2 < 0) {
                 if (errno == EAGAIN)
-                    enqueue_server_pending(out_arr[i], out_len[i]);
+                    enqueue_server_pending(out_arr[i], out_len[i], peer);
                 else
                     mylog(log_debug, "[server] mud_send failed: %s\n", strerror(errno));
             }
@@ -941,22 +1036,42 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
         uint64_t sid = 0;
         memcpy(&sid, recv_buf, SESSION_ID_LEN);
 
+        /* Source of the packet mud_recv() actually returned.
+         *
+         * peek_buf/src_addr above come from a separate MSG_PEEK, which only
+         * matches when mud's recvmmsg batch happens to be empty. Under load the
+         * batch holds packets from several clients, so the peeked address
+         * belongs to a different packet — using it bound sessions and paths to
+         * the wrong client. */
+        address_t data_addr = src_addr;
+        union mud_sockaddr real_remote;
+        if (mud_get_last_remote(g_mud, &real_remote) == 0)
+            data_addr.from_sockaddr((struct sockaddr *)&real_remote,
+                                    real_remote.sa.sa_family == AF_INET
+                                        ? sizeof(real_remote.sin)
+                                        : sizeof(real_remote.sin6));
+
         address_t routing_addr;
         my_time_t now_ms = (my_time_t)get_current_time();
         auto sit = g_session_to_addr.find(sid);
         if (sit == g_session_to_addr.end()) {
-            if (!session_insert(sid, src_addr, now_ms)) continue;
-            routing_addr = src_addr;
+            if (!session_insert(sid, data_addr, now_ms)) continue;
+            routing_addr = data_addr;
             mylog(log_info, "[server] new session %016llx from %s\n",
-                  (unsigned long long)sid, src_addr.get_str());
+                  (unsigned long long)sid, data_addr.get_str());
         } else {
             sit->second.last_seen = now_ms;
             routing_addr = sit->second.addr;
-            if (!(routing_addr == src_addr)) {
+            if (!(routing_addr == data_addr)) {
                 mylog(log_debug, "[server] session %016llx: alt path %s\n",
-                      (unsigned long long)sid, src_addr.get_str());
+                      (unsigned long long)sid, data_addr.get_str());
             }
         }
+
+        /* Claim the arriving path for this session. Done on every packet, not
+         * just the first, so a path recreated after an idle timeout is retagged
+         * and multi-POP sessions collect all of their paths. */
+        peer_tag_path(data_addr, peer_of(sid));
 
         /* Strip session_id before FEC processing */
         process_mud_data(routing_addr,
