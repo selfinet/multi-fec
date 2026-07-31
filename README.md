@@ -18,7 +18,7 @@ WireGuard와 네트워크 사이에서 동작하며 **FEC 손실 복구**, **다
 
 | 기능 | 설명 |
 |------|------|
-| **FEC 손실 복구** | Reed-Solomon 기반 전방 오류 정정. `x:y` 비율로 데이터 x개당 복구 y개 전송 → 재전송 없이 패킷 손실 복구 |
+| **FEC 손실 복구** | 전방 오류 정정으로 재전송 없이 패킷 손실 복구. `x:y` 비율로 데이터 x개당 복구 y개 전송. Reed-Solomon(`--mode 0/1`)과 RNLC(`--mode 2`) 선택 |
 | **멀티패스** | 단일 UDP 소켓 + `IP_PKTINFO`로 여러 경로 동시 사용. failover / duplicate / aggregate / aggregate-duplicate 4개 모드 |
 | **대역폭 집계** | `aggregate` 모드로 복수 ISP 회선·해저케이블 대역폭을 실제로 합산 (tx.rate 비례 가중 분배) |
 | **GFW 난독화** | QUIC/TLS 위장 + SipHash HMAC 인증. RFC 9000 준수 QUIC Initial 핸드쉐이크 시뮬레이션 |
@@ -153,7 +153,7 @@ multi-fec -r -l 0.0.0.0:443 \
 |------|--------|------|
 | `-f x:y` | `20:10` | FEC 비율. x=데이터, y=복구 패킷 수 |
 | `--fec-timeout N` | `8` | FEC 그룹 flush 대기(ms) |
-| `--mode 0\|1` | `0` | 0=대역폭 절약(큐 기반), 1=저지연 |
+| `--mode 0\|1\|2` | `0` | 0=대역폭 절약(큐 기반, RS), 1=저지연(RS), 2=RNLC. 클라이언트/서버 동일 설정 필수 |
 | `--mtu N` | `1250` | FEC 패킷 MTU (WG MTU 1300 기준 1250 권장) |
 | `--decode-buf N` | `2000` | FEC 디코더 링버퍼 크기 |
 
