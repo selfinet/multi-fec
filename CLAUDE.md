@@ -12,7 +12,8 @@
   - 2026-07-02 wt5(wt5.xdn.kr)에서 sv1로 이전 완료. 이후 모든 작업은 sv1에서 수행. (구 wt5 환경은 폐기)
   - **sv1은 현재 셸이 도는 머신 자체**(`hostname`=`sv1xdnkr`, `/etc/hosts`에서 `127.0.1.1`로 해석). `ssh sv1`은 연결 거부되므로 SSH하지 말고 이 셸에서 직접 실행한다.
   - `--version` 표기: `common.h`의 `MULTI_FEC_VERSION`("1.0.0") + Makefile `git_version`이 `git describe --tags --dirty --always`로 넣는 실제 리비전 + 빌드시각. (구버전은 git 리비전만 표기했음)
-  - 빌드 주의: `make clean` 후 `make -j`는 `git_version.h` 생성 순서 경합으로 실패 → `make git_version` 먼저 실행 후 `make -j$(nproc)`.
+  - 빌드: `make clean` 후 곧바로 `make -j$(nproc)` 해도 된다. (v1.0.3에서 `git_version.h`를 실제 파일 타깃으로 바꿔 병렬 빌드 경합을 없앴다 — §20-바. 그 전에는 `make git_version`을 먼저 실행해야 했다.)
+  - 메모리·미정의동작 점검이 필요하면 `make asan` → `./multi-fec-asan` (테스트 스크립트에 `BIN=./multi-fec-asan`).
 - **실행(테스트)**: 실제 실행·측정은 **테스트망**에서. Server `s.xdn.selfinet.com`(공인 218.154.1.134), Client `c.xdn.selfinet.com`(Atom N2600), Relay `r.xdn.selfinet.com`(LAN 192.168.100.85). 세 호스트 nopasswd sudo, 배포 바이너리 `/usr/sbin/multi-fec-dist`, systemd `multi-fec-{server,client,relay}`.
 - **터널**: multi-fec 경유 WG는 `starlink-fec`(s=10.9.10.1, c=10.9.10.2). 직결 `starlink-xdn`(10.9.9.x)은 미경유 — 측정에 쓰지 말 것.
 - **netem**: s.xdn `ens19` egress에 `delay 25±5ms / loss 15±25%` → **다운스트림(서버→클라)에만 적용**(업스트림 미적용).
@@ -396,7 +397,7 @@ MTU = 1300
 | 옵션 | 값 범위 | 기본값 | 설명 |
 |------|---------|--------|------|
 | `-l ip:port` | — | 필수 | 로컬 리슨 주소. 클라이언트=WG 프록시포트, 서버=리슨포트 |
-| `-k keystring` | 문자열 최대 999자 | `"default-key"` | PSK. 릴레이는 선택(없으면 투명 중계) |
+| `-k keystring` | 문자열 최대 999자 | — (**필수**) | PSK. client/server는 필수(`--disable-obfs` 시 면제) — 미지정 시 기동 거부. 릴레이는 선택(없으면 투명 중계) |
 | `--obfs-mode M` | `quic` \| `tls` | `quic` | 패킷 위장 모드 |
 | `--disable-obfs` | — | 비활성 | obfs 완전 비활성화 (테스트용) |
 | `--fifo PATH` | 파일경로 | 없음 | 런타임 커맨드 FIFO |
@@ -546,6 +547,7 @@ best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
 make -j$(nproc)        # 동적 링크 빌드 → ./multi-fec        (~279 KB)
 make static            # 정적 링크 빌드 → ./multi-fec-static  (~1.5 MB)
 make static-strip      # 배포용 정적 빌드 → ./multi-fec-dist  (~1.3 MB, 심볼 제거)
+make asan              # ASAN+UBSAN 빌드 → ./multi-fec-asan   (진단용, 배포 금지)
 make clean             # 클린
 ```
 
@@ -558,6 +560,7 @@ make clean             # 클린
 | `make` | `multi-fec` | 279 KB | 개발/테스트 |
 | `make static` | `multi-fec-static` | 1.5 MB | 정적 빌드 (심볼 포함) |
 | `make static-strip` | `multi-fec-dist` | 1.3 MB | 배포용 (권장) |
+| `make asan` | `multi-fec-asan` | 16 MB | 메모리/UB 진단 (ASAN+UBSAN) |
 
 ### GLIBC 버전 불일치 오류 대응
 
@@ -1706,7 +1709,87 @@ RUNNING↔DEGRADED로 흔들려 **살아 있는 트래픽을 버렸다**(400패�
 
 ---
 
+### 20. 보안/성능/누수 리뷰 7건 중 6건 수정 (2026-07-31, v1.0.3)
+
+두 번째 리뷰(보안·성능·누수 관점)를 전부 코드로 검증했다. 리뷰가 High로 올린 3건 중 실제로 운영에
+영향이 있는 것은 릴레이 세션 만료였다. **와이어 포맷 무변경.**
+
+> **upstream 예외**: 아래 §20-다는 `packet.cpp` / `connection.{h,cpp}` — UDPspeeder 유래 코드다.
+> "upstream 미수정" 원칙의 예외로 반영했다. 판단 근거는 ① 셋 다 명백한 결함(경계 검사 누락·미초기화),
+> ② 수정이 각 3~5줄로 국소적, ③ 상위 계층에서 우회 불가. 변경 지점에 이유 주석을 남겼다.
+
+#### 20-가. 릴레이 세션 idle 만료 60초 → 실제 16.7시간 (실동작 결함)
+
+**파일**: `mf_relay.cpp` `cleanup_cb()`
+
+```c
+#define RELAY_SESSION_TIMEOUT_MS  60000            /* ms */
+if (now - s->last_active > TIMEOUT_MS * 1000LL)    /* ← ms에 다시 ×1000 */
+```
+`get_current_time()`과 `last_active` 모두 ms(`common.cpp:420`)인데 비교식에서 1000을 더 곱해
+60,000,000 ms = **16.7시간**이 됐다. 릴레이는 클라이언트 (src_ip, src_port)마다 **upstream 소켓 +
+ev_watcher**를 잡으므로 소스 포트가 계속 바뀌는 환경(NAT 재바인딩, 포트 호핑)에서 FD가 고갈된다.
+같은 파일의 decoy 세션은 `time(NULL)` 초 단위로 올바르게 비교해(`> 10`) 두 단위가 섞인 것이 원인.
+
+**A/B 실측** (`test_relay_session_expiry.py`, 세션 12개 생성 후 75초 대기):
+
+| | 세션 생성 후 FD | 75초 후 FD |
+|---|---|---|
+| 수정 전 | 18 | **18 (회수 없음)** |
+| 수정 후 | 18 | **6 (기준 복귀)** |
+
+#### 20-나. `-k` 미지정 시 공개된 기본 키로 동작
+
+`g_key_string`의 기본값이 소스에 박힌 `"default-key"`라, client/server에서 `-k`를 빠뜨리면
+**공개 문자열이 그대로 PSK**가 된다. UDP 포트에 도달 가능한 누구나 인증 패킷을 만들 수 있다.
+obfs가 켜져 있으면 `-k`를 필수로 요구하고 없으면 기동을 거부하도록 했다(exit 1).
+`--disable-obfs`는 PSK 자체가 없으므로 면제, 릴레이는 투명 중계와 `--route` 때문에 기존대로 선택.
+
+> 동작 변경이다. `-k` 없이 뜨던 구성은 이제 기동에 실패한다. 운영 unit은 모두 KEY를 지정하므로 영향 없음.
+
+#### 20-다. upstream 코드 3건 (경계 검사·초기화)
+
+- **`packet.cpp:get_conv()`** — 길이 확인 전에 conv 4바이트를 `memcpy`했다. 호출지
+  (`mf_server.cpp`, `mf_client.cpp`) 모두 FEC 디코드 출력을 검사 없이 넘기므로, 출력이 4바이트
+  미만이면 유효 데이터 범위를 넘겨 읽는다(큰 정적 버퍼 안이라 크래시 대신 쓰레기 conv id).
+  검증을 `memcpy` 앞으로 옮겼다.
+- **`connection.cpp:conn_manager_t()`** — `clear_it`을 초기화하지 않고 `clear_conn()`에서 바로
+  `it = clear_it`로 사용했다. 표준상 UB지만, 전역 객체가 0으로 초기화되고 libstdc++에서 0인
+  iterator가 `end()`와 같게 비교되어 우연히 동작했다. 생성자에서 `mp.end()`로 초기화.
+- **`connection.h:conv_manager_t()`** — 생성자가 `long long last_clear_time = 0;`으로 **동명의
+  지역 변수**를 선언해 멤버가 초기화되지 않았다. conv cleanup 주기가 미초기화 값에 의존.
+  (매 translation unit마다 뜨던 `unused variable 'last_clear_time'` 경고의 정체이기도 하다)
+
+#### 20-라. mud_lite 미초기화·정렬
+
+- `mud_localaddr()`이 family와 주소만 채우고 **포트를 채우지 않아** 호출자의 미초기화 값이
+  `mud_unmapv4()`에서 읽히고 `path->conf.local`에 저장됐다. 비교에 포트를 쓰지 않아 무해했지만
+  값이 비결정적이었다 → 진입 시 zero 초기화.
+- `mud_send_slot` / `mud_recv_slot`의 `ctrl[]`이 2012바이트 `buf[]` 뒤에 와 4바이트 경계에
+  놓였는데, `CMSG_*` 매크로는 `struct cmsghdr` 정렬을 요구한다 → 매 송수신마다 UBSan 정렬 위반.
+  `__alignof__(struct cmsghdr)` 정렬 지정으로 해소. **이 수정 후 ASAN+UBSAN 완전 클린.**
+
+#### 20-마. 세션 만료 시 경로 태그까지 해제
+
+§19-가의 peer 태깅은 세션 만료 시 canonical 매핑만 지웠고, 경로에 남은 `peer_id`는 그대로였다.
+실제 해는 없다(유휴 경로는 RUNNING이 아니게 되어 선택 대상에서 빠지고, 주소가 재사용되면 매 패킷
+재태깅된다). 다만 테이블 정합성을 위해 `session_entry_t`에 관측 주소 목록을 두고 만료·축출 시
+모두 해제하도록 했다. 아울러 LRU 축출로 매핑이 사라진 살아있는 세션은 다음 패킷에서 재바인딩해,
+잠깐이라도 "전체 경로 선택"으로 되돌아가지 않게 했다.
+
+#### 20-바. 빌드
+
+`make clean && make -j`가 실패했다 — `git_version.h`를 만드는 **실제 파일 타깃이 없고**
+phony `git_version`과 `all: git_version $(NAME)`의 순서에만 의존해, 병렬 빌드에서 `main.o`가
+헤더보다 먼저 시작했다. `git_version.h: FORCE` 파일 타깃으로 바꿨고 `make git_version`은 별칭으로
+유지된다. **이 문서 상단의 "make git_version 먼저 실행" 우회 절차는 더 이상 필요 없다.**
+
+`make asan`(ASAN+UBSAN) 타깃을 추가하고 미사용 변수 경고 6건을 정리해 **빌드 경고 0**이 됐다.
+
+---
+
 **테스트 스크립트:**
+- `test_relay_session_expiry.py` — 릴레이 idle 세션 만료로 FD가 실제 회수되는지 검증. §20-가 회귀 방지.
 - `test_downstream_multi.py` — 다중 클라이언트 **다운스트림** 전달 검증 (모드 4종 × 세션 1/2/4 × FEC on/off = 24 케이스). 기존 스위트가 업스트림만 보던 공백을 메운다. §19-가 회귀 방지.
 - `test_relay_routing.py` — 릴레이 키별 라우팅 7개 케이스
 - `test_all_options.py` — 전체 CLI 옵션 90개 케이스

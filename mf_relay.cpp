@@ -431,7 +431,11 @@ static void cleanup_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/,
 
     for (auto &kv : g_fd_to_sess) {
         relay_session_t *s = kv.second;
-        if (now - s->last_active > (my_time_t)RELAY_SESSION_TIMEOUT_MS * 1000LL)
+        /* No unit conversion: get_current_time() and last_active are both in
+         * milliseconds, and so is the timeout. The stray ×1000 that used to be
+         * here stretched the 60 s idle limit to ~16.7 hours, pinning one
+         * upstream socket and watcher per client address for that long. */
+        if (now - s->last_active > (my_time_t)RELAY_SESSION_TIMEOUT_MS)
             to_del.push_back(s);
     }
     for (relay_session_t *s : to_del)

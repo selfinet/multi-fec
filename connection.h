@@ -42,7 +42,11 @@ struct conv_manager_t  // manage the udp connections
 
     conv_manager_t() {
         // clear_it=conv_last_active_time.begin();
-        long long last_clear_time = 0;
+        /* Assign the member. The original declared a same-named local here, so
+         * the member stayed uninitialised and conv cleanup timing depended on
+         * whatever was in that memory (this is the source of the repeated
+         * "unused variable 'last_clear_time'" warning). */
+        last_clear_time = 0;
         additional_clear_function = 0;
     }
     ~conv_manager_t() {

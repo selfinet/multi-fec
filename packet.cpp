@@ -325,14 +325,17 @@ int put_conv(u32_t conv, const char *input, int len_in, char *&output, int &len_
     return 0;
 }
 int get_conv(u32_t &conv, const char *input, int len_in, char *&output, int &len_out) {
+    /* Length check first: the original read the 4-byte conv before testing it,
+     * so a FEC decode result shorter than 4 bytes was read past its end. Both
+     * call sites pass decoder output straight through without a guard. */
+    if (len_in < (int)sizeof(u32_t)) {
+        mylog(log_debug, "packet too short for conv (len_in=%d)\n", len_in);
+        return -1;
+    }
     u32_t n_conv;
     memcpy(&n_conv, input, sizeof(n_conv));
     conv = ntohl(n_conv);
     output = (char *)input + sizeof(n_conv);
     len_out = len_in - (int)sizeof(n_conv);
-    if (len_out < 0) {
-        mylog(log_debug, "len_out<0\n");
-        return -1;
-    }
     return 0;
 }

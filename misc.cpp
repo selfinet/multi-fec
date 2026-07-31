@@ -240,7 +240,7 @@ int handle_command(char *s) {
     while (len >= 1 && s[len - 1] == '\n')
         s[len - 1] = 0;
     mylog(log_info, "got data from fifo,len=%d,s=[%s]\n", len, s);
-    int a = -1, b = -1;
+    int a = -1;  /* b was declared here but never used */
     if (strncmp(s, "fec", strlen("fec")) == 0) {
         mylog(log_info, "got command [fec]\n");
         char tmp_str[max_fec_packet_num * 10 + 100];
@@ -340,7 +340,7 @@ int unit_test() {
         printf("\n");
     }
 
-    int i, j, k;
+    int i;  /* j, k were declared here but never used */
     void *code = fec_new(3, 6);
     char arr[6][100] =
         {
@@ -549,7 +549,7 @@ int unit_test() {
 
 void process_arg(int argc, char *argv[]) {
     int is_client = 0, is_server = 0;
-    int i, j, k;
+    int i;  /* j, k were declared here but never used */
     int opt;
     static struct option long_options[] =
         {
