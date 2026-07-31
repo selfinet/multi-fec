@@ -22,6 +22,8 @@ import threading
 import sys
 import os
 import signal
+import re
+import tempfile
 
 # ─── SipHash-2-4 ────────────────────────────────────────────────────────────
 
@@ -170,7 +172,7 @@ def is_quic_server_initial(data: bytes) -> bool:
             data[14] == 0x08 and                     # SCID len=8
             data[15] == 0xFF)                        # Server Initial marker
 
-def run_tests(relay_proc):
+def run_tests(relay_proc, log_path):
     # upstream 리스너 시작
     ua = UpstreamListener(9001, 'upstreamA(keyA)')
     ub = UpstreamListener(9002, 'upstreamB(keyB)')
@@ -250,6 +252,17 @@ def run_tests(relay_proc):
     added = ua.count() - a_before
     check(f'upstream A 10패킷 수신 (got {added})', added == 10)
 
+    # ── TC6: 기동 로그에 PSK 평문이 없어야 한다 (지문만) ───────────────────
+    # route 키는 info 레벨로 기록되고 journald 는 그것을 영구 보관한다.
+    # 평문으로 찍으면 로그를 읽을 수 있는 누구에게나 PSK 를 넘기는 셈이다.
+    print('\n[TC6] 기동 로그에 PSK 평문 없음 (지문만)')
+    with open(log_path, 'r', errors='replace') as f:
+        log_text = f.read()
+    leaked = [k for k in ('keyA', 'keyB') if k in log_text]
+    check(f'키 평문 미노출 (노출: {leaked or "없음"})', not leaked)
+    fps = sorted(set(re.findall(r'kf:[0-9a-f]{8}', log_text)))
+    check(f'키별 지문 기록됨 ({fps})', len(fps) >= 2)
+
     # 정리
     rx.close()
     tx.close()
@@ -268,32 +281,39 @@ def main():
         sys.exit(1)
 
     print('릴레이 시작 중...')
+    # 로그를 파일로 받는다 — TC6 에서 기동 로그를 읽어야 하므로 PIPE 로는 곤란
+    log_f = tempfile.NamedTemporaryFile(mode='w+', suffix='.log',
+                                        prefix='relay-routing-', delete=False)
+    log_path = log_f.name
     relay = subprocess.Popen(
         [bin_path, '-r', '-l', '127.0.0.1:9000',
          '--route', 'keyA 127.0.0.1:9001',
          '--route', 'keyB 127.0.0.1:9002',
          '--log-level', '4'],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+        stdout=log_f, stderr=subprocess.STDOUT
     )
 
     time.sleep(0.4)  # 릴레이 준비 대기
 
     if relay.poll() is not None:
-        out, _ = relay.communicate()
+        log_f.flush()
         print('릴레이 시작 실패:')
-        print(out.decode())
+        print(open(log_path, errors='replace').read())
+        os.unlink(log_path)
         sys.exit(1)
 
     print(f'릴레이 PID={relay.pid}')
 
     try:
-        ok = run_tests(relay)
+        ok = run_tests(relay, log_path)
     finally:
         relay.terminate()
         try:
             relay.wait(timeout=2)
         except subprocess.TimeoutExpired:
             relay.kill()
+        log_f.close()
+        os.unlink(log_path)
 
     sys.exit(0 if ok else 1)
 

@@ -1957,13 +1957,60 @@ obfs 인증 토큰은 `SipHash(시간슬롯, PSK)`라 **페이로드를 인증�
 
 ---
 
+### 23. PSK가 로그에 평문으로 기록됨 (2026-08-01, v1.0.6)
+
+**파일**: `obfs.h` / `obfs.cpp`(`obfs_key_fingerprint()` 신설), `main.cpp`, `mf_relay.cpp`, `misc.cpp`
+
+**증상**: `--route` 로 등록한 키가 **info 레벨**로 평문 출력됐다. 기본 로그 레벨이 4(info+)이고
+운영은 systemd 로 돌리므로 **journald 에 영구 보관**된다 — 로그를 읽을 수 있는 사람 누구에게나
+PSK 가 넘어간다. 로그 파일 반출·지원 티켓 첨부·백업으로도 퍼진다.
+
+```
+route added: key=MySecretKey upstream=1.2.3.4:443            ← main.cpp
+[relay]   route[0] key=MySecretKey upstream=1.2.3.4:443      ← mf_relay.cpp
+```
+
+**확인한 범위**: `-k` 로 준 PSK 자체는 어디에도 로깅되지 않았다(`main.cpp` 의 `case 'k'` 는 저장만
+한다). 노출은 `--route` 키뿐이며, 위 두 줄이 유일한 실제 경로였다.
+
+**수정**: 되돌릴 수 없는 짧은 지문으로 대체했다.
+
+```c
+#define OBFS_KEY_FP_LEN 12       /* "kf:" + 8 hex + NUL */
+void obfs_key_fingerprint(const char *key_str, char *out, size_t out_len);
+/* → "kf:330d27b8" (키 없음: "kf:-") */
+```
+
+`derive_psk()` 와 같은 SipHash 를 쓰지만 **파생 상수를 분리**했다 — 지문은 로그로 나가므로 와이어에
+쓰이는 값의 접두사가 되어선 안 된다. 같은 키는 항상 같은 지문이라 **어느 키에 관한 줄인지 구분하고
+상대 설정과 대조**할 수 있다. 애초에 키를 찍던 이유가 그것뿐이었다.
+
+**한계 (의도한 것)**: 지문은 식별자이고 커밋이 아니다. 32비트만 노출되며, 후보 키를 이미 가진
+사람은 지문으로 그 추측을 확인할 수 있다. 키를 추측할 수 있는 상대에게는 로그 줄이 필요 없으므로
+받아들일 만한 성질이다. 또 `-k`/`--route` 는 CLI 인자이므로 **`ps` 출력과 systemd unit 파일에는
+여전히 키가 보인다** — 이 수정의 범위는 로그다.
+
+**함께 처리 (도달 불가, 예방적)**: `misc.cpp` `process_arg()` 는 명령행 전체를 info 로 덤프하고
+`key=%s` 를 debug 로 찍었다. **호출부가 없어**(multi-fec 은 `main.cpp:parse_args()` 로 파싱) 현재
+실행 경로가 아니지만, 나중에 연결하면 조용히 키를 흘리게 되므로 값 부분을 `<redacted>` 로 가리고
+debug 줄도 지문으로 바꿨다. `-k SECRET` / `-kSECRET` / `--key[=]SECRET` / `--route[=]"key ip:port"`
+네 형태를 모두 처리한다.
+
+**운영 조치**: 이미 기록된 로그에는 평문 키가 남아 있다. 바이너리 교체만으로 사라지지 않으므로,
+노출 범위가 신경 쓰이면 **키 교체**(양쪽 동시)나 journal 정리를 별도로 해야 한다.
+
+**회귀 방지**: `test_relay_routing.py` TC6 — 기동 로그에 키 평문이 없고 키별 지문이 기록되는지
+확인(9/9). 전 스위트 통과.
+
+---
+
 **테스트 스크립트:**
 - `test_fec_decode_bounds.cpp` — FEC(RS) 디코더 경계 검사 7개 케이스 (`make test-fec-bounds`). §22-가 회귀 방지.
 - `test_relay_session_cap.py` — 릴레이 동시 세션 상한·LRU 축출 4개 케이스. §22-나 회귀 방지. `BIN=` 로 A/B 비교 가능.
 - `test_path_failure.py` — 경로 절단·열화·지연차 × duplicate/aggregate 8종. §21-가 회귀 방지. **root 필요**(격리 netns 생성, 운영 무영향).
 - `test_relay_session_expiry.py` — 릴레이 idle 세션 만료로 FD가 실제 회수되는지 검증. §20-가 회귀 방지.
 - `test_downstream_multi.py` — 다중 클라이언트 **다운스트림** 전달 검증 (모드 4종 × 세션 1/2/4 × FEC on/off = 24 케이스). 기존 스위트가 업스트림만 보던 공백을 메운다. §19-가 회귀 방지.
-- `test_relay_routing.py` — 릴레이 키별 라우팅 7개 케이스
+- `test_relay_routing.py` — 릴레이 키별 라우팅 9개 케이스 (TC6 = 로그에 PSK 평문 없음, §23 회귀 방지)
 - `test_all_options.py` — 전체 CLI 옵션 90개 케이스
 - `test_perf_stability.py` — 성능·안정성 26개 케이스
 - `test_rnlc_unit.cpp` — RNLC 인코드/디코드 결정적 유닛 테스트 11개 케이스 (`make test-rnlc-unit`)

@@ -31,6 +31,34 @@ derive_psk(uint8_t psk[OBFS_PSK_LEN], const char *key_str)
 }
 
 void
+obfs_key_fingerprint(const char *key_str, char *out, size_t out_len)
+{
+    if (out == NULL || out_len == 0) return;
+    if (out_len < OBFS_KEY_FP_LEN) { out[0] = '\0'; return; }
+
+    if (key_str == NULL || key_str[0] == '\0') {
+        /* No key at all — say so rather than fingerprinting the empty string,
+         * so "transparent relay" is not mistaken for "some key I can't read". */
+        memcpy(out, "kf:-", 5);
+        return;
+    }
+
+    /* Separate derivation constant from derive_psk(): the fingerprint travels
+     * into logs, so it must not be a prefix of anything used on the wire. */
+    static const uint8_t fp_key[16] = {
+        0x6d, 0x75, 0x6c, 0x74, 0x69, 0x2d, 0x66, 0x65,
+        0x63, 0x2d, 0x6b, 0x66, 0x2d, 0x76, 0x31, 0x00
+    };
+    uint64_t h = siphash24((const uint8_t *)key_str, strlen(key_str), fp_key);
+
+    static const char hex[] = "0123456789abcdef";
+    out[0] = 'k'; out[1] = 'f'; out[2] = ':';
+    for (int i = 0; i < 8; i++)
+        out[3 + i] = hex[(h >> (4 * (7 - i))) & 0xF];
+    out[OBFS_KEY_FP_LEN - 1] = '\0';
+}
+
+void
 obfs_init(struct obfs_ctx *ctx, const char *key_str, obfs_mode_t mode)
 {
     memset(ctx, 0, sizeof(*ctx));

@@ -423,8 +423,11 @@ static void parse_args(int argc, char *argv[])
             }
             obfs_init(&entry.obfs, entry.key_str, g_obfs_mode);
             g_routes.push_back(entry);
-            mylog(log_info, "route added: key=%s upstream=%s\n",
-                  entry.key_str, addr_str);
+            /* Fingerprint, never the key itself — this line lands in journald
+             * and used to publish the PSK to anyone who can read the log. */
+            char kfp[OBFS_KEY_FP_LEN];
+            obfs_key_fingerprint(entry.key_str, kfp, sizeof(kfp));
+            mylog(log_info, "route added: key=%s upstream=%s\n", kfp, addr_str);
             break;
         }
 

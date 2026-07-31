@@ -10,7 +10,7 @@
 
 /* Project semantic version (source-controlled). Combined at runtime with the
  * git revision and build date from the Makefile-generated git_version.h. */
-#define MULTI_FEC_VERSION "1.0.5"
+#define MULTI_FEC_VERSION "1.0.6"
 
 //#define __STDC_FORMAT_MACROS 1
 #include <inttypes.h>
