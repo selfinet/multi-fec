@@ -107,8 +107,11 @@ struct fec_parameter_t {
             rs_par[now_x - 1].x = now_x;
             rs_par[now_x - 1].y = now_y;
 
-            double now_ratio = double(par_vec[i].y) / par_vec[i].x;
-            double pre_ratio = double(par_vec[i - 1].y) / par_vec[i - 1].x;
+            /* Only the commented-out interpolation below used these; kept as
+             * comments so the disabled formula still reads, without emitting an
+             * unused-variable warning on every translation unit. */
+            // double now_ratio = double(par_vec[i].y) / par_vec[i].x;
+            // double pre_ratio = double(par_vec[i - 1].y) / par_vec[i - 1].x;
 
             // double k= double(now_y-pre_y)/double(now_x-pre_x);
             for (int j = pre_x + 1; j <= now_x - 1; j++) {

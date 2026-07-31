@@ -154,8 +154,9 @@ static void flush_server_pending()
  * per client restart. SESSION_MAX caps it independently of the sweep, evicting
  * the least recently seen entry so a flood cannot starve live sessions. */
 struct session_entry_t {
-    address_t addr;
+    address_t addr;                  /* canonical address — the conn_info key */
     my_time_t last_seen;
+    std::vector<address_t> paths;    /* every address this session arrives from */
 };
 static unordered_map<uint64_t, session_entry_t> g_session_to_addr;
 
@@ -174,6 +175,11 @@ static unordered_map<uint64_t, session_entry_t> g_session_to_addr;
  * client that happened to draw an all-zero session id is folded onto 1. */
 static inline uint64_t peer_of(uint64_t sid) { return sid ? sid : 1ULL; }
 
+/* Canonical address → peer. Deliberately canonical-only: the lookup exists to
+ * answer "which peer does this conn_info belong to", and conn_info is keyed by
+ * the canonical address. Alternate POP addresses are recorded on the session
+ * entry's path list instead — they never need a reverse lookup, but they do
+ * need to be released when the session goes away. */
 static unordered_map<address_t, uint64_t> g_addr_to_peer;
 
 static void peer_bind(const address_t &addr, uint64_t peer)
@@ -214,6 +220,28 @@ static void peer_tag_path(const address_t &src, uint64_t peer)
               a.get_str(), (unsigned long long)peer);
 }
 
+/* Record an address this session arrives from, so the tag can be released when
+ * the session ends. Bounded by the path table size — a session cannot occupy
+ * more mud paths than exist. */
+static void session_note_path(session_entry_t &e, const address_t &addr)
+{
+    for (const address_t &a : e.paths)
+        if (a == addr) return;
+    if (e.paths.size() >= (size_t)MUD_PATH_MAX) return;
+    e.paths.push_back(addr);
+}
+
+/* Release everything a session owns: the canonical peer mapping and the peer
+ * tag on every path it was reaching us over. Without the second part a path
+ * kept pointing at a dead peer; harmless in practice (an idle path stops being
+ * RUNNING and so is never selected) but it left the tables disagreeing. */
+static void session_release(const session_entry_t &e, uint64_t sid)
+{
+    peer_unbind(e.addr, peer_of(sid));
+    for (const address_t &a : e.paths)
+        peer_tag_path(a, 0);
+}
+
 /* Drop entries idle for longer than SESSION_TTL_MS. */
 static void session_sweep(my_time_t now)
 {
@@ -221,7 +249,7 @@ static void session_sweep(my_time_t now)
         if (now - it->second.last_seen > (my_time_t)SESSION_TTL_MS) {
             mylog(log_debug, "[server] session %016llx expired\n",
                   (unsigned long long)it->first);
-            peer_unbind(it->second.addr, peer_of(it->first));
+            session_release(it->second, it->first);
             it = g_session_to_addr.erase(it);
         } else {
             ++it;
@@ -246,7 +274,7 @@ static bool session_insert(uint64_t sid, const address_t &addr, my_time_t now)
             if (lru == g_session_to_addr.end()) return false;
             mylog(log_info, "[server] session table full (%zu), evicting %016llx\n",
                   g_session_to_addr.size(), (unsigned long long)lru->first);
-            peer_unbind(lru->second.addr, peer_of(lru->first));
+            session_release(lru->second, lru->first);
             g_session_to_addr.erase(lru);
         }
     }
@@ -254,6 +282,8 @@ static bool session_insert(uint64_t sid, const address_t &addr, my_time_t now)
     session_entry_t &e = g_session_to_addr[sid];
     e.addr      = addr;
     e.last_seen = now;
+    e.paths.clear();
+    e.paths.push_back(addr);
     peer_bind(addr, peer_of(sid));
     return true;
 }
@@ -1066,6 +1096,12 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
                 mylog(log_debug, "[server] session %016llx: alt path %s\n",
                       (unsigned long long)sid, data_addr.get_str());
             }
+            session_note_path(sit->second, data_addr);
+            /* Restore the canonical mapping if an LRU eviction dropped it while
+             * the session stayed live — otherwise this session would silently
+             * fall back to "any path" until it was re-inserted. */
+            if (peer_for_addr(routing_addr) == 0)
+                peer_bind(routing_addr, peer_of(sid));
         }
 
         /* Claim the arriving path for this session. Done on every packet, not

@@ -708,6 +708,23 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    /* client/server: -k required whenever obfs is on.
+     *
+     * g_key_string defaults to a literal that ships in the source, so omitting
+     * -k silently made the PSK public knowledge: anyone who can reach the UDP
+     * port could then forge authenticated packets. Refuse to start rather than
+     * run with a known key. --disable-obfs has no PSK at all, so it is exempt,
+     * and relay keeps -k optional because it also serves as a transparent
+     * forwarder (its key-based routing supplies keys through --route). */
+    if ((program_mode == client_mode || program_mode == server_mode) &&
+        !g_disable_obfs && !g_key_set) {
+        fprintf(stderr, "error: specify -k <key> in %s mode\n",
+                program_mode == client_mode ? "client" : "server");
+        fprintf(stderr, "  the built-in default key is public — it authenticates nothing\n");
+        fprintf(stderr, "  use the same key on client and server, or pass --disable-obfs for local tests\n");
+        return 1;
+    }
+
     /* relay: at least one of --upstream or --route required. FEC not needed → enter directly */
     /* If --route is parsed before --obfs-mode, the route obfs mode is initialized to the
      * default (QUIC). Reapply the final g_obfs_mode after parsing to ensure order independence. */

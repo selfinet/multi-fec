@@ -121,6 +121,12 @@ forwards decrypted payloads to.
 **Pre-shared key** for HMAC authentication and PSK derivation.
 Must be identical on client and server. Any printable string, up to 999 chars.
 
+**Required** in client and server mode unless `--disable-obfs` is given: the
+built-in default is a literal that ships in the source, so it authenticates
+nothing. Starting without `-k` is refused (since v1.0.3). Relay keeps it
+optional — it also runs as a transparent forwarder, and `--route` supplies its
+own keys.
+
 ```
 -k "my-secret-key-2024"
 ```
@@ -470,7 +476,7 @@ Control **ANSI color output** in log messages. Color is enabled by default.
 | `--multipath-mode M` | client | `failover` | `failover` or `duplicate` |
 | `--wg ip:port` | server | — | WireGuard upstream address |
 | `--upstream ip:port` | relay | — | Server address to forward to |
-| `-k keystring` | client/server | `default-key` | Pre-shared key (not needed for relay) |
+| `-k keystring` | client/server | — (**required**) | Pre-shared key. Mandatory unless `--disable-obfs`; optional for relay |
 | **FEC** | | | |
 | `-f x:y` | client/server | `20:10` | FEC data:parity ratio |
 | `--fec-timeout N` | client/server | `8` ms | FEC group flush timeout (ms) |

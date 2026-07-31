@@ -34,6 +34,11 @@ void server_clear_function(u64_t u64)  // used in conv_manager in server mode.fo
 conn_manager_t::conn_manager_t() {
     mp.reserve(10007);
     last_clear_time = 0;
+    /* clear_conn() starts from clear_it, so it must be a valid iterator.
+     * Leaving it indeterminate was undefined behaviour; it only worked because
+     * the global instance is zero-initialised and a zeroed libstdc++ iterator
+     * happens to compare equal to end(). */
+    clear_it = mp.end();
 }
 int conn_manager_t::exist(address_t addr) {
     if (mp.find(addr) != mp.end()) {
