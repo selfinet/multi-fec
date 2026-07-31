@@ -400,8 +400,13 @@ class fec_decode_manager_t : not_copy_able_t {
 
    public:
     fec_decode_manager_t() {
-        fec_data = new fec_data_t[fec_buff_num + 5];
-        assert(fec_data != 0);
+        /* under RNLC (mode 2) the RS decoder is unused, so skip the large ring-buffer allocation */
+        if (g_fec_par.mode != 2) {
+            fec_data = new fec_data_t[fec_buff_num + 5];
+            assert(fec_data != 0);
+        } else {
+            fec_data = 0;
+        }
         clear();
     }
     /*
@@ -421,8 +426,9 @@ class fec_decode_manager_t : not_copy_able_t {
         mp.clear();
         mp.rehash(fec_buff_num * 3);
 
-        for (int i = 0; i < (int)fec_buff_num; i++)
-            fec_data[i].used = 0;
+        if (fec_data != 0)
+            for (int i = 0; i < (int)fec_buff_num; i++)
+                fec_data[i].used = 0;
         ready_for_output = 0;
         index = 0;
 

@@ -278,9 +278,13 @@ int address_t::from_str_ip_only(char *str) {
 }
 
 char *address_t::get_str() {
-    static char res[max_addr_len];
-    to_str(res);
-    return res;
+    // Rotating buffer: even if get_str() is called multiple times in a single
+    // printf/log statement, each call returns a different buffer (fixes the shared single-static-buffer bug).
+    static char res[8][max_addr_len];
+    static unsigned idx = 0;
+    char *p = res[idx++ & 7];
+    to_str(p);
+    return p;
 }
 void address_t::to_str(char *s) {
     // static char res[max_addr_len];

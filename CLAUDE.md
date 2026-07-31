@@ -4,6 +4,19 @@
 
 - Claude가 생성한 PR은 별도 확인 없이 `dev` 브랜치로 **자동 머지**한다 (머지 방식: merge 커밋).
 - 자동 머지 후 결과(머지 커밋 SHA)를 보고한다. CI가 구성되어 있으면 통과 확인 후 머지한다.
+- **변경 이력은 `CHANGELOG.md`에 버전·날짜별로 기록**한다. 버전은 `common.h`의 `MULTI_FEC_VERSION`과 일치시키고, 기능/프로토콜/버그 수정처럼 동작에 영향 있는 변경은 버전을 올린 뒤(MAJOR=비호환·MINOR=기능추가·PATCH=버그) 새 섹션을 추가한다. 문서/테스트만 바뀌면 버전 유지하고 `[Unreleased]`에 날짜 항목만 누적한다. 상세 배경은 "버그 수정 이력" §에 두고 CHANGELOG는 요약+참조만. (규칙 전문은 CHANGELOG.md 상단)
+
+### 테스트 환경 (실행은 테스트망, 빌드/바이너리는 sv1)
+
+- **빌드·실행파일**: 빌드·개발·배포용 바이너리 작업은 모두 **`sv1`**(hostname `sv1xdnkr`, Ubuntu 24.04 x86_64, gcc 13.3.0)의 `~/multi-fec`에서 한다. macOS 로컬은 빌드 불가(Linux 전용 API). `make static-strip` → `multi-fec-dist`(정적·strip, GLIBC 의존성 없음). sv1은 각 테스트 호스트에 직접 접근 불가 → 전송은 sv1→로컬→호스트 경유.
+  - 2026-07-02 wt5(wt5.xdn.kr)에서 sv1로 이전 완료. 이후 모든 작업은 sv1에서 수행. (구 wt5 환경은 폐기)
+  - **sv1은 현재 셸이 도는 머신 자체**(`hostname`=`sv1xdnkr`, `/etc/hosts`에서 `127.0.1.1`로 해석). `ssh sv1`은 연결 거부되므로 SSH하지 말고 이 셸에서 직접 실행한다.
+  - `--version` 표기: `common.h`의 `MULTI_FEC_VERSION`("1.0.0") + Makefile `git_version`이 `git describe --tags --dirty --always`로 넣는 실제 리비전 + 빌드시각. (구버전은 git 리비전만 표기했음)
+  - 빌드 주의: `make clean` 후 `make -j`는 `git_version.h` 생성 순서 경합으로 실패 → `make git_version` 먼저 실행 후 `make -j$(nproc)`.
+- **실행(테스트)**: 실제 실행·측정은 **테스트망**에서. Server `s.xdn.selfinet.com`(공인 218.154.1.134), Client `c.xdn.selfinet.com`(Atom N2600), Relay `r.xdn.selfinet.com`(LAN 192.168.100.85). 세 호스트 nopasswd sudo, 배포 바이너리 `/usr/sbin/multi-fec-dist`, systemd `multi-fec-{server,client,relay}`.
+- **터널**: multi-fec 경유 WG는 `starlink-fec`(s=10.9.10.1, c=10.9.10.2). 직결 `starlink-xdn`(10.9.9.x)은 미경유 — 측정에 쓰지 말 것.
+- **netem**: s.xdn `ens19` egress에 `delay 25±5ms / loss 15±25%` → **다운스트림(서버→클라)에만 적용**(업스트림 미적용).
+- **운영 변경 시**: mode 전환은 `.service` ExecStart `--mode N` 하드코딩(FIFO는 mode2 미지원)이라 sed+daemon-reload+restart. 측정 후 **반드시 mode1+원본 바이너리로 원복**(unit 백업, 바이너리 `.bak-precauchy` 보관).
 
 ## 프로젝트 개요
 
@@ -32,6 +45,7 @@ WireGuard와 네트워크 사이에서 동작하며 FEC 복구, 다중 경로 �
 | `mud_lite.c / mud_lite.h` | glorytun 멀티패스 경로 관리 (RTT/손실 기반) |
 | `mf_common.h` | 공유 타입: PathSpec, multipath_mode_t, session_id, route_entry_t |
 | `siphash.h` | SipHash-2-4 구현 (obfs HMAC용) |
+| `rnlc.cpp / rnlc.h` | RNLC(Random Linear Network Coding) FEC 모드 — `--mode 2` (GF(256) + 가우스 소거) |
 
 upstream 코드 (수정 없음): `fec_manager`, `lib/fec`, `lib/rs`, `connection`, `packet`, `misc`, `log`, `common`
 
@@ -455,7 +469,7 @@ best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
 |------|---------|--------|------|
 | `-f x:y` | `x`≥1, `y`≥0 | `20:10` | FEC 비율. x=데이터, y=복구 패킷 수. 예: `10:3` |
 | `--fec-timeout N` | `0`–∞ (ms) | `8` | FEC 그룹 flush 대기. 내부: N×1000 µs |
-| `--mode 0\|1` | `0` \| `1` | `0` | FEC 모드. 0=bandwidth-saving(큐 기반), 1=low-latency |
+| `--mode 0\|1\|2` | `0` \| `1` \| `2` | `0` | FEC 모드. 0=bandwidth-saving(큐 기반), 1=low-latency(RS), 2=RNLC(Random Linear Network Coding). 클라이언트/서버 동일 설정 필수 |
 | `--mtu N` | `100`–`1500` (bytes) | `1250` | FEC 패킷 MTU. WG MTU 1300 기준 1250 권장 |
 | `-q N` / `--queue-len N` | `1`–`10000` | `200` | FEC 인코드 큐 길이 (mode 0에만 적용) |
 | `--decode-buf N` | `300`–`20000` | `2000` | FEC 디코더 링버퍼 크기 |
@@ -651,6 +665,7 @@ ExecStartPre=/bin/mkdir -p /run/multi-fec
 ExecStart=/usr/local/bin/multi-fec -r \
     -l ${LISTEN} --upstream ${UPSTREAM} \
     -k ${KEY} --obfs-mode ${OBFS_MODE} \
+    --auth-interval ${AUTH_INTERVAL} \
     --log-level ${LOG_LEVEL} \
     ${DECOY:+--decoy ${DECOY}}
 Restart=on-failure
@@ -678,6 +693,7 @@ ExecStart=/usr/local/bin/multi-fec -r \
     -l ${LISTEN} \
     --route "${KEY_A} ${UPSTREAM_A}" \
     --route "${KEY_B} ${UPSTREAM_B}" \
+    --auth-interval ${AUTH_INTERVAL} \
     --log-level ${LOG_LEVEL} \
     ${DECOY:+--decoy ${DECOY}}
 Restart=on-failure
@@ -694,9 +710,14 @@ KEY_A=keyA
 UPSTREAM_A=1.2.3.4:443
 KEY_B=keyB
 UPSTREAM_B=5.6.7.8:443
+AUTH_INTERVAL=60       # ★ 클라이언트/서버와 반드시 동일. 불일치 시 모든 패킷이 probe로 폐기됨
 DECOY=127.0.0.1:8443   # 미사용 시 이 줄 삭제 → 내장 QUIC Server Initial로 자동 응답
 LOG_LEVEL=4
 ```
+
+> ⚠️ **릴레이 `--auth-interval` 주의**: 릴레이도 HMAC을 검증하므로 `--auth-interval` 값이 클라이언트/서버와 반드시 일치해야 한다(기본 30, 권장 60).
+> 불일치 시 HMAC 토큰 슬롯(`time/auth_interval`)이 어긋나 릴레이가 클라이언트 패킷을 GFW probe로 간주해 조용히 폐기한다.
+> 증상: 해당 경로 DEGRADED(rx=0), 릴레이에 `[relay] new session` 로그 없음, `ss -unp`에 upstream 소켓 없음.
 
 ```bash
 systemctl daemon-reload
@@ -1415,10 +1436,287 @@ srand((unsigned)(ts.tv_sec ^ ts.tv_nsec));
 | 15초 연속 처리 | 손실 0.0% | ✓ |
 | HMAC 슬롯 경계 | ±1 수락, ±2 정확히 거부 | ✓ |
 
+---
+
+### 16. RNLC FEC 모드 추가 (`--mode 2`)
+
+**파일**: `rnlc.cpp`, `rnlc.h`, `connection.h`, `misc.cpp`, `mf_client.cpp`, `mf_server.cpp`, `main.cpp`, `fec_manager.h`, `Makefile`
+
+**배경**: 기존 FEC는 Reed-Solomon(`lib/fec`, `lib/rs`)뿐. 선택 가능한 별도 FEC 알고리즘으로
+Random Linear Network Coding을 `--mode 2`로 추가. RS와 동일하게 `-f x:y`(x=세대 크기 k, y=코딩 패킷 수 r) 사용.
+
+**설계** (블록 기반 systematic RLNC):
+- 한 세대 = 원본 k개 + 코딩 r개(GF(256) 위 원본들의 랜덤 선형결합)
+- 원본(systematic) 패킷은 그대로 전송 → 무손실 시 디코드 비용/지연 0
+- 디코더는 도착한 임의의 k개(원본+코딩, 1차 독립)를 가우스 소거로 복구
+- GF(256)은 `rnlc.cpp` 내부 자체 구현 (primitive poly 0x11d) — upstream `lib/fec` 미수정 원칙 유지
+
+**와이어 포맷** (RS와 동일한 8B 헤더 재사용, `type=2`):
+```
+[4B seq(generation id)][1B type=2][1B k][1B r][1B inner_index]
+- inner_index <  k : systematic 패킷, payload = [2B len][data]      (자연 길이)
+- inner_index >= k : 코딩 패킷,       payload = [k 계수][코딩 심볼]  (symbol_len 고정)
+```
+
+**통합 방식**:
+- `misc.cpp` `from_normal_to_fec`/`from_fec_to_normal`에서 분기.
+  인코드: `g_fec_par.mode==2`이면 `rnlc_encode_manager` 사용.
+  디코드: 패킷 type 바이트(헤더 offset 4)가 2이거나 `mode==2`이면 `rnlc_decode_manager` 사용.
+- `conn_info_t`에 `rnlc_encode_manager` / `rnlc_decode_manager` 추가.
+- 대용량 버퍼는 mode==2일 때만 lazy 할당. mode==2에선 RS `fec_decode_manager` 링버퍼 할당을 생략해
+  연결당 메모리 중복(약 2×) 제거.
+
+**RS(mode 0/1) 대비 차이**:
+- RS는 고정 위치 복호(systematic + parity), RLNC는 계수벡터를 실어 임의 부분집합으로 복구.
+- 둘 다 MDS급: k+r 중 임의 k개 도착 시 복구. RLNC는 코딩 패킷마다 k바이트 계수 오버헤드.
+- 클라이언트/서버 `--mode` 동일 설정 필수(비대칭 불가).
+
+**테스트** (2026-06-17):
+- `test_rnlc_unit` (`make test-rnlc-unit`) — 인코드→임의 드롭→디코드 결정적 복구 검증 11/11 통과.
+  GF(256) 역원·분배법칙, 10:5/20:10 최대손실 복구, sys+coded 혼합손실, 손실>r 복구불가 판정 포함.
+- `test_rnlc.py` — 실제 client/server 바이너리 end-to-end 통합·무결성·생존 9/9 통과.
+- ASAN+UBSAN 스트레스(k=20, 버스트, 가변 크기)에서 RNLC 경로 메모리 오류 0건.
+- mode 0/1(RS) e2e 회귀 정상(200/200, corrupt=0).
+
+**제약/향후**: 현재는 블록(generation) 단위. 릴레이 recoding(중간 노드 재부호화)이나 sliding-window는 미구현.
+
+---
+
+### 17. RNLC 코딩 계수 랜덤 → Cauchy(MDS) 교체
+
+**파일**: `rnlc.cpp` — `rnlc_encode_manager_t::input()` 코딩 패킷 계수 생성
+
+**배경**: 10세션 다운스트림 측정(2026-06-19, netem 15%)에서 RNLC(mode2) TCP goodput이
+RS(mode1)의 ~1/4(2.93 vs 12.0 Mbps). UDP는 8Mbit/s를 거의 다 통과(7.96)했고 디코드
+연산량도 사소(~4.5M byte-op/s)해 **CPU 병목이 아니라 잔여손실(0.68% vs RS 0.006%, 100배)이
+TCP를 무너뜨린 것**으로 판명(TCP BW ∝ 1/√loss).
+
+**원인**: 코딩 계수가 순수 난수(`get_fake_random_number() & 0xFF`)라 수신 코딩 패킷들이
+1차 종속일 확률(여유분==손실수일 때 ~0.4%)이 있어 손실 ≤ r 인데도 복구 실패. RS(Vandermonde,
+MDS)는 임의 k개 수신 시 항상 복구하므로 이 실패가 없음.
+
+**수정**: 계수를 **Cauchy 행렬**로 — `P[j][c] = 1/((k+j) XOR c)` (x_j=k+j 코딩 r행,
+y_c=c k열, 범위 분리로 x_j⊕y_c≠0 보장). systematic `[I|P]`에서 P가 Cauchy면 모든 정방
+부분행렬 가역 → **MDS** → RS와 동일하게 임의 k개 수신 시 복구 보장. 디코더는 계수를 wire에서
+읽어 일반 가우스 소거하므로 **무변경**. 전제 k+r≤255는 기존 r 클램프로 보장.
+
+**검증**: `test_rnlc_unit` 11/11(최대손실 복구가 이제 결정적). 전체 빌드 정상.
+
+**⚠️ 측정 결과 — 처리량 개선은 미검증**: Cauchy 바이너리를 s.xdn/c.xdn에 배포해 mode2
+다운스트림 재측정(2026-06-19) 결과 **TCP 2.5~3.0 Mbps로 기존(2.93)과 변화 없음**. 즉
+"랜덤계수 rank결핍 잔여손실이 TCP를 무너뜨렸다"는 가설은 **검증 실패**(잔여손실을 고쳐도
+TCP가 안 오름). UDP는 고정 1200B에서 0% 손실로 회귀 없음 확인. 본 수정은 **RNLC를 진짜
+MDS로 만드는 정합성 개선**으로서 유효하나(불필요한 복구실패 ~0.4% 제거), throughput 격차의
+원인은 아니다. 측정 후 운영은 원본 바이너리+mode1로 원복.
+
+**근본원인 — CPU 병목도 데이터로 기각, 지연/재정렬이 유력**: c.xdn(Atom N2600) pidstat 측정
+결과 mode1 12.4Mbps@CPU65% vs mode2 3.04Mbps@CPU33%. mode2가 처리량 1/4인데 CPU는 더
+낮음(놀고 있음) → **디코드 CPU 병목 아님 확정**. 즉 mode2는 무언가를 기다린다(지연). 단서:
+mode2 UDP out-of-order가 mode1의 2배. **유력 결론: RNLC가 코딩 패킷을 세대 내 systematic 뒤에
+전송(`rnlc.cpp:186-225`)해 손실분 복구가 지연·순서뒤섞임 → WG 위 TCP가 손실로 오판 → cwnd
+collapse → 링크 idle인 채 ~3Mbps 고착**. (fec/original≈2.1x 과다오버헤드는 `-f 20:5`가 모든
+세대에 r=5 적용(`fec_manager.h:94-99`)한 것 — mode1/2 공통, 격차원인 아님.) 다음 검증: sv1
+WG-루프백+netem으로 재정렬 재현·프로파일(운영 무영향) → 수정방향은 디코드 in-order 전달 또는
+복구지연 단축. 가설 정리(①CPU ②rank결핍 ③지연/재정렬): ①②는 실측 기각, ③ 유력.
+세부: `test-results/2026-06-19-multi-session/downstream-fec/rnlc-decode-bottleneck-analysis.md`.
+
+---
+
+### 18. 소스 리뷰 지적 8건 검증 후 3건 수정 (2026-07-31, v1.0.1)
+
+리뷰에서 제기된 결함 8건 + 경미 3건을 전부 코드로 검증했다. 사실로 확인되고 자체 코드에 속하는 3건을 수정.
+**세 수정 모두 와이어 포맷 무변경** — 교차 조합 16종(신규/수정전/운영배포본 × server/client × failover/duplicate)
+실측 전달률 100%로 구버전 양방향 호환 확인.
+
+#### 18-가. mud dedup 오탐으로 정상 패킷 폐기 (치명적, 실측 확정)
+
+**파일**: `mud_lite.c` — `mud_recv()` dedup 블록, `mud_dedup_hash()`/`mud_dedup_index()` 신설
+
+**증상**: 버스트 트래픽에서 원인 불명의 패킷 손실. `--multipath-mode failover`처럼 **복제가 전혀 없는 모드에서도** 발생.
+
+**원인**: dedup 판정 키가 패킷 타임스탬프(`pure_time`) **단독**이었다.
+```c
+if (mud->dedup[d].pkt_time == pure_time) return 0;   /* 수정 전 */
+```
+`MUD_TIME_MASK(X) = X & ((1<<48) - 2)`가 bit0을 지우는데, 이건 실수가 아니라 **bit0을 `MUD_MSG`
+data/probe 플래그로 쓰는 glorytun 설계**다(`MUD_MSG(X) = X & 1`). 그 대가로 타임스탬프 해상도가 **2µs**가 되고,
+FEC 그룹 flush는 `-f 20:5`에서 25개를 연속 `sendto`하므로 서로 다른 패킷이 같은 2µs 버킷에 들어가
+**두 번째 이후가 조용히 폐기**됐다. dedup 블록에 모드 게이트도 없어 복제가 원천적으로 없는 모드에서도 실행됐다.
+
+**실측** (계측 빌드, 루프백 단일 경로, `--disable-fec`, failover):
+| | 수정 전 | 수정 후 |
+|---|---|---|
+| dedup 도달 패킷 | 5,841 | 6,000 |
+| **dedup 폐기** | **160** | **0** |
+| 0.2ms 간격(2.6k pps) 손실 | 1.40% | 0.00% |
+| 버스트(20k pps) 손실 | 12.70% | 1.96% (수신기 병목분) |
+
+**수정**: 키를 `(타임스탬프, 페이로드 해시)`로 보강하고, 128엔트리 링버퍼 선형탐색을
+**1024엔트리 직접사상**으로 교체(패킷당 128회 비교 제거).
+```c
+uint64_t hash = mud_dedup_hash(decoded + MUD_TIME_SIZE, decoded_size - MUD_TIME_SIZE);
+unsigned idx  = mud_dedup_index(pure_time, hash);
+if (slot 유효 && TTL 내 && pkt_time 일치 && hash 일치) return 0;
+```
+진짜 복제본은 바이트가 동일하니 해시도 같아 정상 제거되고, 서로 다른 패킷은 해시가 달라 충돌하지 않는다.
+
+> **설계 판단**: 리뷰는 "키에 시퀀스 추가"를 처방했지만 그러면 mud 헤더 6바이트가 늘어 **와이어 호환이 깨진다**.
+> 페이로드 해시는 수신측만 바뀌어 호환성이 유지되므로 이쪽을 택했다.
+> 또 "duplicate 계열에서만 dedup 실행" 게이트는 **넣지 않았다** — 클라이언트/서버가 각자 자기
+> `--multipath-mode`로 동작하므로, 클라이언트만 duplicate인 구성에서 서버가 dedup을 꺼버리는 부작용이 생긴다.
+>
+> **잔존 한계**: 직접사상이라 슬롯이 덮인 복제본은 통과할 수 있다(무해 — FEC 디코더는 같은 그룹 슬롯을
+> 재기록하고 WireGuard가 재생을 거부한다). 반대로 **바이트까지 완전히 동일한 서로 다른 패킷**이 같은 2µs에
+> 들어오면 여전히 폐기된다. 와이어에 시퀀스가 없는 한 이 둘은 원리적으로 구분 불가이며, 실제 페이로드는
+> WireGuard 패킷(고유 카운터 포함)이라 발생하지 않는다. 합성 테스트에서 동일 페이로드를 보내면 재현된다.
+
+#### 18-나. 서버 세션 테이블 무한 증가
+
+**파일**: `mf_server.cpp` — `g_session_to_addr`, `session_sweep()`/`session_insert()`/`session_cleanup_cb()` 신설
+
+**원인**: `unordered_map<uint64_t, address_t> g_session_to_addr`에 `erase`·만료·상한이 **전혀 없었다**.
+`session_id`는 클라이언트가 만드는 8바이트이므로 유효 토큰 보유자가 무작위 id를 주입하면 메모리가 무제한 증가하고,
+공격이 없어도 클라이언트 재시작마다 죽은 엔트리가 누적됐다. `conn_manager`에는 `max_conn_num = 200` 상한이
+있지만 **세션 맵은 그 상한과 무관**하게 자란다.
+
+**수정**: 값 타입을 `session_entry_t{addr, last_seen}`으로 바꿔 5분 유휴 만료(30초 주기 `ev_timer` sweep,
+`--decoy` 여부와 무관하게 무조건 등록) + `SESSION_MAX = max_conn_num × 4` 상한과 LRU 축출 추가.
+
+**실제 관측된 영향**: 인증을 통과한 발신자만 엔트리를 만들 수 있고, 운영에서 실제로 문제가 된 것은
+클라이언트 재시작마다 죽은 엔트리가 누적되어 해제되지 않는 쪽이었다.
+
+#### 18-다. obfs `pkt_type` 필드 손상
+
+**파일**: `obfs.cpp` — `encode_quic()` / `decode_quic()`
+
+**원인**: `p[0] = 0x40 | (token[0] & 0x3F) | ((pkt_type & 0x03) << 4)` — `0x3F` 마스크가 비트 0–5를 덮는데
+`pkt_type`이 비트 4–5를 쓰므로 OR 충돌. 디코더가 `(p[0] >> 4) & 0x03`으로 읽어 토큰 값에 따라 DATA를
+PROBE/PAD로 오분류했다. 소비처가 없어 무증상이었다.
+
+**수정**: 와이어 바이트에서 `pkt_type`을 제거하고 디코더는 `OBFS_TYPE_DATA`를 반환(`decode_tls`와 동일).
+**구버전 무영향 근거**: 인증에 쓰이는 `token[0]`은 `p[8]`에 원본 그대로 실려 그것만 검증되고(`obfs.cpp` encode/decode),
+`p[0]`은 QUIC 판별용 `(p[0] & 0xC0) == 0x40`만 확인되므로 하위 6비트는 장식이다.
+
+#### 18-라. 이번 릴리스에서 다루지 않은 항목
+
+리뷰 지적 중 나머지는 이번 범위에서 제외했다. 사유는 항목별로 ① 사용자가 수정을 거절한 사안,
+② `fec_manager.cpp` / `packet.cpp` 등 **upstream(UDPspeeder) 코드**라 "upstream 미수정" 원칙과 충돌,
+③ 기본 설정에서 발현되지 않아 설계 판단이 선행되어야 하는 사안으로 나뉜다.
+
+> **이 리포는 공개 저장소다.** 미수정 항목의 위치·조건·재현 방법은 여기에 적지 않는다.
+> 상세 목록과 우선순위는 리포 밖 내부 기록(`~/mf-verify/UNFIXED-INTERNAL.md`)에 둔다.
+
+#### 18-마. 리뷰 지적 중 사실과 달랐던 것
+
+- **"dedup 링 크기 128로 상향"** — `MUD_DEDUP_SIZE`는 **이미 128**이었다. 다만 20k pps에서 링이 5.6ms마다
+  순환해 의도한 500ms 창이 실효 축소되는 별개 문제가 있었고, 1024 직접사상 교체로 해소.
+- **"`MUD_TIME_MASK`의 LSB 제거가 결함"** — bit0은 `MUD_MSG` 플래그다(설계). 처방은 마스크 수정이 아니라 키 보강.
+- **"판정 키를 `pkt_time + 시퀀스`로 변경"** — 시퀀스는 와이어 변경이라 호환성이 깨진다. 페이로드 해시로 대체.
+
+---
+
+### 19. 다중 클라이언트 다운스트림 오배송 외 5건 (2026-07-31, v1.0.2)
+
+추가 리뷰 지적 8건을 전부 코드로 검증했다. 리뷰가 "높음"으로 올린 항목들은 실제로는 종료 시 1회 회수 또는
+현재 도달 불가 경로였고, 리뷰가 "추가 확인 필요"로 미뤄둔 항목이 유일한 실동작 결함이었다.
+**모든 수정 와이어 포맷 무변경, 서버 단독 수정** — 구버전 클라이언트가 그대로 결함에서 복구된다.
+
+#### 19-가. 다중 클라이언트 다운스트림 오배송 (실동작 결함, 실측 확정)
+
+**파일**: `mud_lite.c` / `mud_lite.h` (`peer_id`, `mud_send_*_peer`, `mud_set_path_peer`), `mf_server.cpp`
+
+**증상**: 서버 1개가 클라이언트 2개 이상을 서비스하면 일부 클라이언트의 다운스트림이 통째로 사라진다.
+업스트림은 정상이라 진단이 어렵다. 내용 오염(cross-talk)은 발생하지 않는다.
+
+**원인**: 클라이언트는 "peer 1개 + 경로 여러 개"지만 서버는 반대로 "소켓 1개 + 클라이언트 여러 개"다.
+`mud_send()`는 `mud_select_path()`로 **전체 경로 표**에서 경로를 고르므로 A의 패킷이 B의 경로로 나간다.
+받은 B는 conv가 자기 것이 아니므로 조용히 폐기(`[client] conv not found`) → A 입장에서는 손실.
+
+**모드별 발현** (루프백, 클라이언트 2개, 각 200패킷 왕복):
+
+| multipath-mode | 수정 전 | 수정 후 |
+|---|---|---|
+| `failover` (기본) | 200 / **0** — 한쪽 완전 불통 | 98% / 100% |
+| `duplicate` (운영 설정) | 200 / 198 — 동작하나 **전 클라이언트로 복제(N배 증폭)** | 정상, 증폭 해소 |
+| `aggregate` | 98 / 98 — 각자 **자기 몫의 ~1/N만** | 96% / 98% |
+
+운영이 `duplicate`였던 덕에 증상이 증폭 대가로 가려져 있었다. 기존 테스트가 놓친 이유는
+`test_scale_sessions.py`의 cross-talk 검사가 wg sink 도착분(**업스트림만**)을 보기 때문이다.
+
+**수정**: `mud_path`에 `peer_id`를 두고, 서버가 수신 시 그 경로를 세션에 귀속시킨 뒤
+`mud_send_peer()` / `mud_send_all_peer()` / `mud_send_next_peer()`로 **목적지 세션의 경로 집합에
+한정해** 전송한다. 그 집합 안에서는 기존 `--multipath-mode` 정책이 그대로 적용된다.
+`peer_id == 0`은 "미태깅 = 전체 매칭"이라 클라이언트 측과 단일 클라이언트 서버는 **동작이 이전과 동일**
+(peer 0일 때 가중치 합은 기존 `mud->rate`를 그대로 사용해 선택 결과까지 일치시켰다).
+
+> **다중 POP**: 한 세션이 여러 주소로 도착하므로 매 패킷마다 도착 경로를 재태깅한다.
+> 세션 id를 peer id로 그대로 쓰고, 0은 예약값이라 all-zero 세션 id만 1로 접는다.
+
+#### 19-나. `mud_recv()` 반환 패킷의 출처 오판 (19-가의 전제)
+
+**파일**: `mud_lite.c` (`last_remote`, `mud_get_last_remote()`), `mf_server.cpp` (`mud_io_cb`)
+
+`mud_io_cb`는 `recvfrom(MSG_PEEK)`로 송신자 주소를 얻고 나서 `mud_recv()`로 패킷을 소비한다.
+그런데 `mud_recv()`는 소켓이 아니라 **자체 recvmmsg 배치 큐(`rq`, 32슬롯)** 에서 패킷을 꺼낸다.
+큐에 여러 클라이언트의 패킷이 섞여 있으면 peek이 본 패킷과 `mud_recv()`가 돌려준 패킷이 **다르다**.
+
+결과적으로 `session_id`의 canonical 주소와 경로 태깅이 엉뚱한 클라이언트에 묶였다.
+징후는 근거 없는 `[server] session ...: alt path ...` 로그였다(단일 클라이언트에선 무해).
+`mud_get_last_remote()`를 추가해 `rq[idx].remote`(실제 출처)를 쓰도록 고쳤고, 이 수정 없이는
+19-가의 경로 태깅이 항상 어긋난다. 수정 후 `alt path` 로그 0건.
+
+#### 19-다. `mud_delete()` / `mud_create()` 오류경로 누수
+
+`sq`·`sq_msgs`·`rq`·`rq_msgs` 4블록이 해제되지 않았다. `mud->fd`를 `calloc` 직후 `-1`로 설정해
+부분 초기화 객체도 `mud_delete()`가 안전하게 정리하게 하고(기존엔 `fd=0`이라 `mud_delete` 재사용 시
+**stdin을 닫을** 위험), `mud_create()`에 5번 중복돼 있던 free 캐스케이드를 `goto err` 하나로 통합했다.
+
+ASAN A/B 실측: 수정 전 **정확히 140,288 B** 누수 리포트 → 수정 후 0건.
+호출은 종료 직전 1회뿐이고 재생성 경로가 없어 **실사용 영향은 없었다**(리뷰는 "높음"으로 평가).
+
+#### 19-라. pending 큐 하드닝 + 목적지·TTL 보존
+
+`enqueue_server_pending()` / `enqueue_pending()`(클라이언트)에 `NULL`·음수·버퍼 초과 검증을 추가했다.
+호출자가 FEC 인코더 출력뿐이라 현재 도달 불가 경로이므로 하드닝이다(리뷰는 "높음"으로 평가).
+
+아울러 큐 엔트리에 **목적지 peer와 enqueue 시각**을 실었다. 목적지를 flush 시점에 다시 유도할 수 없기
+때문이고(리뷰 8번이 지적한 부분), 목적지가 사라진 패킷이 큐 머리를 막지 않도록 **TTL 1초** 초과분만
+폐기한다. 처음에는 "peer에 RUNNING 경로가 있는지"로 판정했는데, 경로 상태가 beat마다
+RUNNING↔DEGRADED로 흔들려 **살아 있는 트래픽을 버렸다**(400패킷당 28건 손실 실측) → 시간 기준으로 교체.
+
+#### 19-마. obfs 인증 토큰 상수 시간 비교
+
+`memcmp(token, expected, 8)` → `token_equal()`. 허용 슬롯(현재/±1)을 모두 계산한 뒤 결과를 OR 하므로
+어느 슬롯이 맞았는지도 수행시간에 남지 않는다. 판정 결과는 동일.
+
+단, 이 시스템에는 타이밍보다 강한 신호가 이미 있다 — 인증 실패 시 내장 QUIC Initial을 **응답**하므로
+(§11) 공격자는 응답 유무로 성패를 구분할 수 있고, 그건 액티브 프로빙 대응상 의도된 설계다.
+따라서 실질 위험 감소는 작지만 비용도 없다.
+
+#### 19-바. 리뷰 처방을 따르지 않은 것
+
+- **setsockopt 반환값 검사**: 리뷰는 실패 시 `goto err_fd`를 제안했으나 **그대로 적용하면 IPv4 기동이
+  전부 실패한다.** IPv4 소켓에 `IPV6_RECVPKTINFO`를 설정하면 설계상 항상 실패한다(실측
+  `ENOPROTOOPT`, 반대 조합은 성공). 두 패밀리 옵션을 모두 시도하고 하나가 실패하는 것을 전제로 한
+  코드이므로 무시가 맞고, 그 이유를 주석으로 남겼다. 필수인 `fcntl` 비차단 설정만 검증을 추가했다.
+- **PRNG 고정시드 / 동시 접근**: 고정시드는 2026-07-24에 검증 후 수정하지 않기로 결정된 사안.
+  동시 접근은 스레드를 만들지 않는 단일 이벤트 루프라 현재 무해.
+- **pending 큐 만원 정책 통일**: 서버는 최신 폐기, 클라이언트는 최오래 폐기로 엇갈려 있다.
+  결함이 아니라 정책 선택이고, 19-라의 TTL 도입으로 큐 머리 막힘은 해소되므로 그대로 두었다.
+
+---
+
 **테스트 스크립트:**
+- `test_downstream_multi.py` — 다중 클라이언트 **다운스트림** 전달 검증 (모드 4종 × 세션 1/2/4 × FEC on/off = 24 케이스). 기존 스위트가 업스트림만 보던 공백을 메운다. §19-가 회귀 방지.
 - `test_relay_routing.py` — 릴레이 키별 라우팅 7개 케이스
 - `test_all_options.py` — 전체 CLI 옵션 90개 케이스
 - `test_perf_stability.py` — 성능·안정성 26개 케이스
+- `test_rnlc_unit.cpp` — RNLC 인코드/디코드 결정적 유닛 테스트 11개 케이스 (`make test-rnlc-unit`)
+- `test_rnlc.py` — RNLC end-to-end 통합 검증 9개 케이스
+- `test_scale_sessions.py` — 다중 세션(session_id) 부하/스케일 + 아징 소크 테스트 (루프백 단일 호스트). 세션 수를 늘리며 서버 RSS/CPU/처리량/세션 간 cross-talk 측정. `--aging N`으로 장시간 소크(주기 샘플링·누수/크래시/cross-talk 감지). 1프로세스=1세션.
+- `aging_rt_server.py` / `aging_rt_clients.py` — 실제 토폴로지(c→r→s) 다중 세션 아징 하베스트. 서버+sink(s측), 클라이언트 N개+태그 생성기(c측)로 분리. 평행 테스트 체인(:4443)으로 운영(:443) 비침습. 10세션 3h 검증 완료(누수0·crosstalk0·전달99.85%).
+
+> 다운스트림 FEC 측정은 합성 왕복으로 불가(양방향 mud/FEC 결합으로 신호 묻힘). 실제 WG `starlink-fec` 터널(s=10.9.10.1, c=10.9.10.2) 위 `iperf3 -R`로 측정. 실측: mode1 다운 12.0Mbps/잔여손실0.006%, mode2(RNLC) 2.93Mbps/0.68% (netem 15%, fec 20:5).
 
 **참고 문서:**
 - `DEPLOY_EXAMPLES.md` — 10가지 배포 시나리오별 전체 설정 예제

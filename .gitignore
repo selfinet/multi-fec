@@ -8,10 +8,18 @@ git_version.h
 /multi-fec
 /multi-fec-static
 /multi-fec-dist
+/test_rnlc_unit
 
 # Python
 __pycache__/
 *.pyc
+
+# Aging/test run artifacts
+aging10_*.log
+.aging10_ts
+
+# macOS
+.DS_Store
 
 # Claude local settings
 .claude/settings.local.json

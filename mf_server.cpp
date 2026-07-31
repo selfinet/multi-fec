@@ -47,31 +47,51 @@ extern "C" void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obf
 static struct mud            *g_mud  = NULL;
 static const struct obfs_ctx *g_obfs = NULL;
 
-static inline int mud_send_mp(struct mud *mud, const void *data, size_t size)
+/* Downstream send, restricted to the paths of one client.
+ *
+ * `peer` identifies the destination client (see peer_of()); 0 falls back to
+ * "any path", which is what a single-client server effectively had before.
+ * Without the restriction the mode helpers below pick a path out of the whole
+ * table, so with two or more clients a packet for A leaves over B's path and is
+ * dropped by B as an unknown conv. */
+static inline int mud_send_mp(struct mud *mud, const void *data, size_t size,
+                              uint64_t peer)
 {
     switch (g_multipath_mode) {
     case MULTIPATH_DUPLICATE:
-        return mud_send_all(mud, data, size);
+        return mud_send_all_peer(mud, peer, data, size);
     case MULTIPATH_AGGREGATE:
-        return mud_send_next(mud, data, size, 1);
+        return mud_send_next_peer(mud, peer, data, size, 1);
     case MULTIPATH_AGGREGATE_DUPLICATE:
-        return mud_send_next(mud, data, size, g_dup_factor);
+        return mud_send_next_peer(mud, peer, data, size, g_dup_factor);
     default:
-        return mud_send(mud, data, size);
+        return mud_send_peer(mud, peer, data, size);
     }
 }
 static struct ev_loop        *g_loop = NULL;
 
 /* ────────────────────────────────────────────────────────────────
- * Pending packet queue — mud EAGAIN 시 패킷을 버퍼링.
- * mud_update_cb (100ms) 에서 window 여유 생기면 flush.
+ * Pending packet queue — buffers packets on mud EAGAIN.
+ * Flushed in mud_update_cb (100ms) when window has room.
  * ──────────────────────────────────────────────────────────────── */
 
-#define SERVER_PENDING_Q_CAP 512
+#define SERVER_PENDING_Q_CAP 4096
+
+/* A packet stuck at the head must not block the rest of the queue forever:
+ * before peer scoping, any RUNNING path could drain it, but a packet addressed
+ * to a client that went away has no path to wait for. Dropping by age rather
+ * than by "does this peer have a RUNNING path right now" matters — path status
+ * flaps between RUNNING and DEGRADED on every beat, and a reachability test
+ * discarded live traffic during those dips (measured: 28 packets lost per 400). */
+#define SERVER_PENDING_TTL_MS 1000
 
 struct server_pending_pkt_t {
-    char data[buf_len];
-    int  len;
+    char      data[buf_len];
+    int       len;
+    uint64_t  peer;  /* destination client — a queued packet outlives the call
+                      * that produced it, so the destination has to travel with
+                      * it rather than be re-derived at flush time */
+    my_time_t ts;    /* enqueue time, for the TTL above */
 };
 
 static server_pending_pkt_t s_srv_pending_q[SERVER_PENDING_Q_CAP];
@@ -79,15 +99,25 @@ static int                  s_srv_pending_head  = 0;
 static int                  s_srv_pending_tail  = 0;
 static int                  s_srv_pending_count = 0;
 
-static void enqueue_server_pending(const char *data, int len)
+static void enqueue_server_pending(const char *data, int len, uint64_t peer)
 {
+    /* Bound the copy: p.data is buf_len bytes and a negative len would become a
+     * huge size_t. Callers only pass FEC encoder output today, so this is a
+     * guard rather than a live fix. */
+    if (data == NULL || len <= 0 || len > buf_len) {
+        mylog(log_warn, "[server] invalid pending packet len=%d (max %d)\n",
+              len, buf_len);
+        return;
+    }
     if (s_srv_pending_count >= SERVER_PENDING_Q_CAP) {
         mylog(log_debug, "[server] pending queue full, drop pkt len=%d\n", len);
         return;
     }
     server_pending_pkt_t &p = s_srv_pending_q[s_srv_pending_tail];
     memcpy(p.data, data, (size_t)len);
-    p.len = len;
+    p.len  = len;
+    p.peer = peer;
+    p.ts   = (my_time_t)get_current_time();
     s_srv_pending_tail = (s_srv_pending_tail + 1) % SERVER_PENDING_Q_CAP;
     s_srv_pending_count++;
 }
@@ -96,30 +126,157 @@ static void flush_server_pending()
 {
     while (s_srv_pending_count > 0) {
         server_pending_pkt_t &p = s_srv_pending_q[s_srv_pending_head];
-        int ret = mud_send_mp(g_mud, p.data, p.len);
-        if (ret < 0) break;  /* 아직 window 부족 — 다음 tick에 재시도 */
+        int ret = mud_send_mp(g_mud, p.data, p.len, p.peer);
+        if (ret < 0) {
+            /* Window still short → retry on the next tick, unless the entry has
+             * aged out (peer gone), in which case skip it so the queue drains. */
+            if ((my_time_t)get_current_time() - p.ts
+                    <= (my_time_t)SERVER_PENDING_TTL_MS)
+                break;
+            mylog(log_debug, "[server] dropping stale queued pkt len=%d peer=%016llx\n",
+                  p.len, (unsigned long long)p.peer);
+        }
         s_srv_pending_head = (s_srv_pending_head + 1) % SERVER_PENDING_Q_CAP;
         s_srv_pending_count--;
     }
     mud_send_flush(g_mud);
 }
 
-/* session_id 맵은 아래에 선언 */
+/* session_id map is declared below */
 
 /* session_id(8B) → canonical address_t
- * 동일 클라이언트가 여러 POP을 통해 접속해도 첫 번째로 본 source address를
- * 기준 키로 사용, conn_info를 하나로 유지한다. */
-static unordered_map<uint64_t, address_t> g_session_to_addr;
+ * Even if the same client connects via multiple POPs, the first source
+ * address seen is used as the canonical key, keeping a single conn_info.
+ *
+ * Entries expire: session_id is 8 bytes chosen by the client, so without
+ * expiry the map grew without bound — a sender holding a valid auth token
+ * could inflate it with random ids, and it also accumulated one dead entry
+ * per client restart. SESSION_MAX caps it independently of the sweep, evicting
+ * the least recently seen entry so a flood cannot starve live sessions. */
+struct session_entry_t {
+    address_t addr;
+    my_time_t last_seen;
+};
+static unordered_map<uint64_t, session_entry_t> g_session_to_addr;
+
+#define SESSION_TTL_MS  (300 * 1000)          /* 5 min idle → evict */
+#define SESSION_MAX     (max_conn_num * 4)    /* hard cap, tied to conn limit */
+
+/* ── Peer tagging ────────────────────────────────────────────────
+ *
+ * A downstream packet is produced from a conn_info, which is keyed by the
+ * session's canonical address; the mud paths it may leave over are keyed by the
+ * addresses the session actually arrives from (more than one when the client
+ * reaches us through several POPs). These two maps connect the pair so that
+ * mud_send_mp() can be restricted to the destination client's paths.
+ *
+ * The session id doubles as the peer id. 0 is reserved for "untagged", so a
+ * client that happened to draw an all-zero session id is folded onto 1. */
+static inline uint64_t peer_of(uint64_t sid) { return sid ? sid : 1ULL; }
+
+static unordered_map<address_t, uint64_t> g_addr_to_peer;
+
+static void peer_bind(const address_t &addr, uint64_t peer)
+{
+    g_addr_to_peer[const_cast<address_t &>(addr)] = peer;
+}
+
+/* Only drop the mapping if it still belongs to this peer: a client that
+ * restarts with a fresh session id but the same source port replaces the entry,
+ * and the old session's expiry must not delete the new one. */
+static void peer_unbind(const address_t &addr, uint64_t peer)
+{
+    auto it = g_addr_to_peer.find(const_cast<address_t &>(addr));
+    if (it != g_addr_to_peer.end() && it->second == peer)
+        g_addr_to_peer.erase(it);
+}
+
+static uint64_t peer_for_addr(const address_t &addr)
+{
+    auto it = g_addr_to_peer.find(const_cast<address_t &>(addr));
+    return it == g_addr_to_peer.end() ? 0 : it->second;
+}
+
+/* Mark the path this packet arrived on as belonging to `peer`, so downstream
+ * traffic for that client can be confined to it. */
+static void peer_tag_path(const address_t &src, uint64_t peer)
+{
+    address_t a = src;
+    union mud_sockaddr ms;
+    memset(&ms, 0, sizeof(ms));
+    if (a.get_type() == AF_INET)
+        ms.sin = a.inner.ipv4;
+    else
+        ms.sin6 = a.inner.ipv6;
+
+    if (mud_set_path_peer(g_mud, &ms, peer) < 0)
+        mylog(log_trace, "[server] no mud path yet for %s (peer %016llx)\n",
+              a.get_str(), (unsigned long long)peer);
+}
+
+/* Drop entries idle for longer than SESSION_TTL_MS. */
+static void session_sweep(my_time_t now)
+{
+    for (auto it = g_session_to_addr.begin(); it != g_session_to_addr.end(); ) {
+        if (now - it->second.last_seen > (my_time_t)SESSION_TTL_MS) {
+            mylog(log_debug, "[server] session %016llx expired\n",
+                  (unsigned long long)it->first);
+            peer_unbind(it->second.addr, peer_of(it->first));
+            it = g_session_to_addr.erase(it);
+        } else {
+            ++it;
+        }
+    }
+}
+
+/* Register a new session, keeping the map within SESSION_MAX.
+ * Returns false when the entry could not be inserted. */
+static bool session_insert(uint64_t sid, const address_t &addr, my_time_t now)
+{
+    if (g_session_to_addr.size() >= (size_t)SESSION_MAX) {
+        session_sweep(now);
+
+        /* still full → evict the least recently seen entry */
+        if (g_session_to_addr.size() >= (size_t)SESSION_MAX) {
+            auto lru = g_session_to_addr.begin();
+            for (auto it = g_session_to_addr.begin();
+                 it != g_session_to_addr.end(); ++it) {
+                if (it->second.last_seen < lru->second.last_seen) lru = it;
+            }
+            if (lru == g_session_to_addr.end()) return false;
+            mylog(log_info, "[server] session table full (%zu), evicting %016llx\n",
+                  g_session_to_addr.size(), (unsigned long long)lru->first);
+            peer_unbind(lru->second.addr, peer_of(lru->first));
+            g_session_to_addr.erase(lru);
+        }
+    }
+
+    session_entry_t &e = g_session_to_addr[sid];
+    e.addr      = addr;
+    e.last_seen = now;
+    peer_bind(addr, peer_of(sid));
+    return true;
+}
+
+static void session_cleanup_cb(struct ev_loop * /*loop*/, struct ev_timer * /*w*/,
+                               int /*revents*/)
+{
+    size_t before = g_session_to_addr.size();
+    session_sweep((my_time_t)get_current_time());
+    if (before != g_session_to_addr.size())
+        mylog(log_debug, "[server] session sweep: %zu → %zu\n",
+              before, g_session_to_addr.size());
+}
 
 /* ────────────────────────────────────────────────────────────────
- * 서버 TOTP 소켓 (포트 호핑)
+ * Server TOTP sockets (port hopping)
  *
- * mud_lite는 단일 소켓만 지원하므로, TOTP 포트마다 별도 raw UDP 소켓을
- * 생성하고 ev_io로 직접 관리한다.
+ * mud_lite supports only a single socket, so a separate raw UDP socket is
+ * created per TOTP port and managed directly via ev_io.
  *
- * 수신 방향: TOTP 소켓 → obfs_decode → session_id → process_mud_data
- * 송신 방향: obfs_encode → sendto(totp_fd, client_addr)
- *            (mud_send를 우회해 동일 TOTP 포트로 직접 응답)
+ * Recv direction: TOTP socket → obfs_decode → session_id → process_mud_data
+ * Send direction: obfs_encode → sendto(totp_fd, client_addr)
+ *            (bypasses mud_send to reply directly on the same TOTP port)
  * ──────────────────────────────────────────────────────────────── */
 
 struct totp_entry_t {
@@ -133,24 +290,24 @@ struct totp_entry_t {
 static totp_entry_t g_totp_entries[SERVER_TOTP_MAX];
 static uint64_t     g_totp_cur_slot = (uint64_t)-1;
 
-/* client_addr → TOTP fd (서버→클라이언트 직접 송신에 사용) */
+/* client_addr → TOTP fd (used for direct server→client sends) */
 static unordered_map<address_t, int> g_addr_to_totp_fd;
 
 /* ────────────────────────────────────────────────────────────────
  * Decoy session management (--decoy ip:port)
  *
- * GFW 액티브 프로빙 대응: HMAC 인증 실패 패킷을 실제 QUIC/HTTPS 서버로
- * 포워딩하고 그 응답을 프로버에게 되돌려 보낸다.
- * 프로버 입장에서는 정상적인 QUIC 서버처럼 보인다.
+ * GFW active-probing countermeasure: forward HMAC-auth-failed packets to a
+ * real QUIC/HTTPS server and relay its response back to the prober.
+ * To the prober it looks like a normal QUIC server.
  *
- * 각 프로버 주소마다 독립 UDP 소켓을 생성 (decoy가 연결을 구분하기 위함).
- * 10초 idle → 세션 자동 제거.
+ * A separate UDP socket is created per prober address (so the decoy can
+ * distinguish connections). Sessions auto-removed after 10s idle.
  * ──────────────────────────────────────────────────────────────── */
 
 struct decoy_sess_t {
     address_t prober_addr;
-    int       listen_fd;    /* mud fd 또는 TOTP fd: 응답을 이 fd로 sendto */
-    int       decoy_fd;     /* decoy 서버로 connect된 UDP 소켓 */
+    int       listen_fd;    /* mud fd or TOTP fd: response is sendto'd on this fd */
+    int       decoy_fd;     /* UDP socket connect()ed to the decoy server */
     ev_io     watcher;
     time_t    last_active;
 };
@@ -330,7 +487,7 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
 
         int fd = fd_manager.to_fd(fd64);
 
-        /* recvmmsg로 WireGuard 소켓을 배치 드레인 */
+        /* Batch-drain the WireGuard socket with recvmmsg */
 #define SRV_WG_BATCH 32
         static struct mmsghdr srv_wg_msgs[SRV_WG_BATCH];
         static struct iovec   srv_wg_iovecs[SRV_WG_BATCH];
@@ -383,9 +540,10 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
                                (const struct sockaddr *)&conn_info.addr.inner,
                                conn_info.addr.get_len());
                 } else {
-                    int r2 = mud_send_mp(g_mud, pkt_out_arr[i], pkt_out_len[i]);
+                    uint64_t peer = peer_for_addr(conn_info.addr);
+                    int r2 = mud_send_mp(g_mud, pkt_out_arr[i], pkt_out_len[i], peer);
                     if (r2 < 0 && errno == EAGAIN)
-                        enqueue_server_pending(pkt_out_arr[i], pkt_out_len[i]);
+                        enqueue_server_pending(pkt_out_arr[i], pkt_out_len[i], peer);
                 }
             }
         }
@@ -398,7 +556,7 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
     mylog(log_trace, "[server] fec output n=%d\n", out_n);
 
     for (int i = 0; i < out_n; i++) {
-        /* TOTP 포트로 접속한 클라이언트: obfs_encode 후 동일 TOTP 소켓으로 직접 응답 */
+        /* Client connected via a TOTP port: obfs_encode then reply directly on the same TOTP socket */
         auto totp_it = g_addr_to_totp_fd.find(addr);
         if (g_obfs && totp_it != g_addr_to_totp_fd.end()) {
             char enc_buf[buf_len + 300];
@@ -411,10 +569,11 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
                     mylog(log_debug, "[server] totp sendto: %s\n", strerror(errno));
             }
         } else {
-            int ret2 = mud_send_mp(g_mud, out_arr[i], out_len[i]);
+            uint64_t peer = peer_for_addr(addr);
+            int ret2 = mud_send_mp(g_mud, out_arr[i], out_len[i], peer);
             if (ret2 < 0) {
                 if (errno == EAGAIN)
-                    enqueue_server_pending(out_arr[i], out_len[i]);
+                    enqueue_server_pending(out_arr[i], out_len[i], peer);
                 else
                     mylog(log_debug, "[server] mud_send failed: %s\n", strerror(errno));
             }
@@ -452,6 +611,8 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
 
         ci.fec_encode_manager.set_data(&ci);
         ci.fec_encode_manager.set_loop_and_cb(g_loop, fec_encode_cb);
+        ci.rnlc_encode_manager.set_data(&ci);
+        ci.rnlc_encode_manager.set_loop_and_cb(g_loop, fec_encode_cb);
 
         mylog(log_info, "[server] new client %s\n",
               const_cast<address_t&>(src_addr).get_str());
@@ -556,11 +717,11 @@ static void conn_timer_cb(struct ev_loop * /*loop*/, struct ev_timer *watcher, i
 }
 
 /* ────────────────────────────────────────────────────────────────
- * 내장 QUIC Server Initial 응답 전송 (--decoy 미설정 시 기본 동작)
+ * Send builtin QUIC Server Initial response (default when --decoy unset)
  *
- * RFC 9000 §17.2.2 Long Header Initial 1200B 고정.
- * SCID[0]=0xFF → Server Initial 마커.
- * 프로버 입장에서 정상 QUIC 서버 응답으로 보임.
+ * RFC 9000 §17.2.2 Long Header Initial, fixed 1200B.
+ * SCID[0]=0xFF → Server Initial marker.
+ * Looks like a normal QUIC server response to the prober.
  * ──────────────────────────────────────────────────────────────── */
 static void probe_respond_builtin(int fd, address_t &src)
 {
@@ -574,7 +735,7 @@ static void probe_respond_builtin(int fd, address_t &src)
         static char buf[QUIC_INITIAL_SIZE + 256];
         int n = obfs_encode_initial(g_obfs, buf, sizeof(buf), 1);
         if (n <= 0) return;
-        /* 0-255 바이트 랜덤 추가: QUIC coalesced packet 영역으로 크기 변동 */
+        /* Append 0-255 random bytes: QUIC coalesced-packet area, varies size */
         int extra = rand() % 256;
         for (int i = n; i < n + extra; i++)
             buf[i] = (char)(rand() & 0xFF);
@@ -584,7 +745,7 @@ static void probe_respond_builtin(int fd, address_t &src)
 }
 
 /* ────────────────────────────────────────────────────────────────
- * TOTP 소켓 관리
+ * TOTP socket management
  * ──────────────────────────────────────────────────────────────── */
 
 static void server_totp_io_cb(struct ev_loop * /*loop*/, struct ev_io *watcher, int revents)
@@ -611,7 +772,7 @@ static void server_totp_io_cb(struct ev_loop * /*loop*/, struct ev_io *watcher, 
         uint8_t pkt_type = 0;
         int n = obfs_decode(g_obfs, raw_buf, (int)rn, dec_buf, sizeof(dec_buf), &pkt_type);
         if (n <= 0) {
-            /* n<0: 알 수 없는 포맷, n==0: HMAC 인증 실패 — 프로버로 판정 */
+            /* n<0: unknown format, n==0: HMAC auth failure — treated as prober */
             if (rn >= 1) {
                 address_t src;
                 src.from_sockaddr((struct sockaddr *)&ss, ssl);
@@ -635,22 +796,24 @@ static void server_totp_io_cb(struct ev_loop * /*loop*/, struct ev_io *watcher, 
         address_t src_addr;
         src_addr.from_sockaddr((struct sockaddr *)&ss, ssl);
 
-        /* 이 클라이언트의 응답 경로를 TOTP 소켓으로 등록 */
+        /* Register this client's reply path as the TOTP socket */
         g_addr_to_totp_fd[src_addr] = e->fd;
 
-        /* session_id 라우팅 (mud_io_cb와 동일) */
+        /* session_id routing (same as mud_io_cb) */
         uint64_t sid = 0;
         memcpy(&sid, dec_buf, SESSION_ID_LEN);
 
         address_t routing_addr;
+        my_time_t now_ms = (my_time_t)get_current_time();
         auto sit = g_session_to_addr.find(sid);
         if (sit == g_session_to_addr.end()) {
-            g_session_to_addr[sid] = src_addr;
+            if (!session_insert(sid, src_addr, now_ms)) continue;
             routing_addr = src_addr;
             mylog(log_info, "[server] totp: new session %016llx from %s\n",
                   (unsigned long long)sid, src_addr.get_str());
         } else {
-            routing_addr = sit->second;
+            sit->second.last_seen = now_ms;
+            routing_addr = sit->second.addr;
             if (!(routing_addr == src_addr))
                 mylog(log_debug, "[server] totp: session %016llx alt path %s\n",
                       (unsigned long long)sid, src_addr.get_str());
@@ -665,7 +828,7 @@ static void server_add_totp_socket(struct ev_loop *loop, uint64_t slot)
     if (!g_obfs) return;
     uint16_t port = obfs_port_for_slot(g_obfs, slot);
 
-    /* 메인 listen 포트와 충돌 방지 */
+    /* Avoid collision with the main listen port */
     uint16_t main_port = ntohs(local_addr.get_type() == AF_INET6
                                ? local_addr.inner.ipv6.sin6_port
                                : local_addr.inner.ipv4.sin_port);
@@ -675,7 +838,7 @@ static void server_add_totp_socket(struct ev_loop *loop, uint64_t slot)
         return;
     }
 
-    /* 빈 슬롯 찾기 */
+    /* Find an empty slot */
     totp_entry_t *e = NULL;
     for (int i = 0; i < SERVER_TOTP_MAX; i++) {
         if (!g_totp_entries[i].active) { e = &g_totp_entries[i]; break; }
@@ -739,7 +902,7 @@ static void server_remove_totp_socket(uint64_t slot)
 
         ev_io_stop(g_loop, &e.watcher);
 
-        /* g_addr_to_totp_fd에서 이 fd를 가진 항목 제거 */
+        /* Remove entries in g_addr_to_totp_fd that hold this fd */
         for (auto it = g_addr_to_totp_fd.begin(); it != g_addr_to_totp_fd.end(); ) {
             if (it->second == e.fd) it = g_addr_to_totp_fd.erase(it);
             else ++it;
@@ -766,11 +929,11 @@ static void server_update_totp_ports(struct ev_loop *loop)
           (unsigned long long)new_slot);
 
     if (g_totp_cur_slot == (uint64_t)-1) {
-        /* 최초 실행: 이전 슬롯(standby) + 현재 슬롯 */
+        /* First run: previous slot (standby) + current slot */
         if (new_slot > 0) server_add_totp_socket(loop, new_slot - 1);
         server_add_totp_socket(loop, new_slot);
     } else {
-        /* 슬롯 전환: 2슬롯 전 제거, 현재 슬롯 추가 */
+        /* Slot switch: remove slot from 2 ago, add current slot */
         if (new_slot >= 2) server_remove_totp_socket(new_slot - 2);
         server_add_totp_socket(loop, new_slot);
     }
@@ -815,9 +978,9 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
         if (n < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
                 break;
-            /* HMAC 인증 실패 = 외부 프로버(GFW 액티브 프로빙 등).
+            /* HMAC auth failure = external prober (GFW active probing, etc.).
              *
-             * peek_buf의 첫 바이트로 probe 종류 판별:
+             * Determine probe type from the first byte of peek_buf:
              *   0x16 → TLS Handshake (ClientHello)
              *   0x17 → TLS Application Data
              *   0x15 → TLS Alert
@@ -825,12 +988,12 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
              *   0xC0+ → QUIC Long Header (Initial)
              *   0x40-0x7F → QUIC Short Header
              *
-             * 모든 경우에 TLS close_notify Alert를 응답한다.
-             *   → 프로버 입장: "TLS 서버이지만 연결을 닫음" = 정상 동작
-             *   → GFW: 443 포트에 TLS 서버 존재 확인 → 차단 회피
+             * In all cases respond with a TLS close_notify Alert.
+             *   → prober's view: "a TLS server that closed the connection" = normal behavior
+             *   → GFW: confirms a TLS server exists on port 443 → avoids blocking
              *
-             * TCP/443 프로브는 multi-fec와 무관하게 nginx/caddy가 처리.
-             * (TCP와 UDP는 커널에서 독립 — 같은 포트 동시 바인딩 가능) */
+             * TCP/443 probes are handled by nginx/caddy independently of multi-fec.
+             * (TCP and UDP are independent in the kernel — same port can be bound simultaneously) */
             if (pn >= 1) {
                 if (g_decoy_enabled) {
                     decoy_forward(src_addr, mfd, peek_buf, (int)pn);
@@ -873,20 +1036,42 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
         uint64_t sid = 0;
         memcpy(&sid, recv_buf, SESSION_ID_LEN);
 
+        /* Source of the packet mud_recv() actually returned.
+         *
+         * peek_buf/src_addr above come from a separate MSG_PEEK, which only
+         * matches when mud's recvmmsg batch happens to be empty. Under load the
+         * batch holds packets from several clients, so the peeked address
+         * belongs to a different packet — using it bound sessions and paths to
+         * the wrong client. */
+        address_t data_addr = src_addr;
+        union mud_sockaddr real_remote;
+        if (mud_get_last_remote(g_mud, &real_remote) == 0)
+            data_addr.from_sockaddr((struct sockaddr *)&real_remote,
+                                    real_remote.sa.sa_family == AF_INET
+                                        ? sizeof(real_remote.sin)
+                                        : sizeof(real_remote.sin6));
+
         address_t routing_addr;
+        my_time_t now_ms = (my_time_t)get_current_time();
         auto sit = g_session_to_addr.find(sid);
         if (sit == g_session_to_addr.end()) {
-            g_session_to_addr[sid] = src_addr;
-            routing_addr = src_addr;
+            if (!session_insert(sid, data_addr, now_ms)) continue;
+            routing_addr = data_addr;
             mylog(log_info, "[server] new session %016llx from %s\n",
-                  (unsigned long long)sid, src_addr.get_str());
+                  (unsigned long long)sid, data_addr.get_str());
         } else {
-            routing_addr = sit->second;
-            if (!(routing_addr == src_addr)) {
+            sit->second.last_seen = now_ms;
+            routing_addr = sit->second.addr;
+            if (!(routing_addr == data_addr)) {
                 mylog(log_debug, "[server] session %016llx: alt path %s\n",
-                      (unsigned long long)sid, src_addr.get_str());
+                      (unsigned long long)sid, data_addr.get_str());
             }
         }
+
+        /* Claim the arriving path for this session. Done on every packet, not
+         * just the first, so a path recreated after an idle timeout is retagged
+         * and multi-POP sessions collect all of their paths. */
+        peer_tag_path(data_addr, peer_of(sid));
 
         /* Strip session_id before FEC processing */
         process_mud_data(routing_addr,
@@ -894,10 +1079,10 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
                          n - SESSION_ID_LEN);
     }
 
-    /* recvmmsg 큐에 남은 항목 drain
-     * MSG_PEEK 루프가 소켓 버퍼 소진으로 종료된 후에도
-     * recvmmsg 배치로 수신된 미처리 패킷이 남아 있을 수 있다.
-     * 이미 인증된 패킷이므로 probe 처리 없이 session_id 라우팅만 수행. */
+    /* Drain items left in the recvmmsg queue.
+     * Even after the MSG_PEEK loop ends by exhausting the socket buffer,
+     * unprocessed packets received in the recvmmsg batch may remain.
+     * They are already authenticated, so do session_id routing only, no probe handling. */
     while (mud_recv_pending(g_mud)) {
         int n2 = mud_recv(g_mud, recv_buf, sizeof(recv_buf));
         if (n2 < 0) break;
@@ -907,9 +1092,10 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
         uint64_t sid2 = 0;
         memcpy(&sid2, recv_buf, SESSION_ID_LEN);
         auto sit2 = g_session_to_addr.find(sid2);
-        if (sit2 == g_session_to_addr.end()) continue; /* 새 세션은 다음 이벤트에서 처리 */
+        if (sit2 == g_session_to_addr.end()) continue; /* new session handled on next event */
+        sit2->second.last_seen = (my_time_t)get_current_time();
 
-        process_mud_data(sit2->second,
+        process_mud_data(sit2->second.addr,
                          recv_buf + SESSION_ID_LEN,
                          n2 - SESSION_ID_LEN);
     }
@@ -967,7 +1153,7 @@ void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obfs,
 
     /* ev_timer: mud_update every 100ms */
     struct ev_timer mud_timer;
-    ev_timer_init(&mud_timer, mud_update_cb, 0.1, 0.1);
+    ev_timer_init(&mud_timer, mud_update_cb, 0.02, 0.02);
     ev_timer_start(loop, &mud_timer);
 
     /* ev_timer: global connection cleanup */
@@ -985,7 +1171,7 @@ void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obfs,
     ev_init(&prepare_watcher, prepare_cb);
     ev_prepare_start(loop, &prepare_watcher);
 
-    /* TOTP 포트 호핑 타이머 (hop_interval > 0 일 때만) */
+    /* TOTP port-hopping timer (only when hop_interval > 0) */
     struct ev_timer totp_timer;
     if (g_obfs && g_obfs->hop_interval > 0) {
         memset(g_totp_entries, 0, sizeof(g_totp_entries));
@@ -1000,12 +1186,18 @@ void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obfs,
               g_obfs->hop_interval, iv);
     }
 
-    /* decoy cleanup timer: 10초마다 idle 세션 제거 */
+    /* decoy cleanup timer: remove idle sessions every 10s */
     struct ev_timer decoy_timer;
     if (g_decoy_enabled) {
         ev_timer_init(&decoy_timer, decoy_cleanup_cb, 10.0, 10.0);
         ev_timer_start(loop, &decoy_timer);
     }
+
+    /* session table sweep: drop session_ids idle past SESSION_TTL_MS.
+     * Unconditional — unlike the decoy timer, this is not tied to an option. */
+    struct ev_timer session_timer;
+    ev_timer_init(&session_timer, session_cleanup_cb, 30.0, 30.0);
+    ev_timer_start(loop, &session_timer);
 
     mylog(log_info, "[server] listening, forwarding to WireGuard at %s\n",
           g_wg_addr.get_str());
