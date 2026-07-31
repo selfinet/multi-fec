@@ -535,9 +535,14 @@ void mf_relay_event_loop(address_t &listen_addr, address_t &upstream_addr,
     if (!g_routes.empty()) {
         mylog(log_info, "[relay] listen=%s  mode=key-routing  routes=%zu\n",
               listen_addr.get_str(), g_routes.size());
-        for (size_t i = 0; i < g_routes.size(); i++)
+        for (size_t i = 0; i < g_routes.size(); i++) {
+            /* Fingerprint only. See obfs_key_fingerprint(): this is an info-level
+             * line, so printing the key handed the PSK to every log reader. */
+            char kfp[OBFS_KEY_FP_LEN];
+            obfs_key_fingerprint(g_routes[i].key_str, kfp, sizeof(kfp));
             mylog(log_info, "[relay]   route[%zu] key=%s upstream=%s\n",
-                  i, g_routes[i].key_str, g_routes[i].upstream_addr.get_str());
+                  i, kfp, g_routes[i].upstream_addr.get_str());
+        }
     } else {
         mylog(log_info, "[relay] listen=%s  upstream=%s  hmac=%s\n",
               listen_addr.get_str(),

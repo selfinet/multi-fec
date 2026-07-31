@@ -124,3 +124,23 @@ int obfs_decode(const struct obfs_ctx *ctx,
 int obfs_encode_initial(const struct obfs_ctx *ctx,
                         void *out, int out_max,
                         int is_server);
+
+/* Buffer size obfs_key_fingerprint() needs, including the NUL. */
+#define OBFS_KEY_FP_LEN 12      /* "kf:" + 8 hex digits + NUL ("kf:-" when empty) */
+
+/*
+ * Write a short, stable, non-reversible identifier for a PSK into out.
+ *
+ * Logs must never carry the PSK itself: the relay/server log at info level and
+ * journald keeps that forever, so one readable log line hands over the shared
+ * secret. A fingerprint still lets an operator tell which key a line refers to
+ * and match it against the peer's configuration, which is the only reason the
+ * key was ever printed.
+ *
+ * Derived with the same SipHash the PSK derivation uses, so recovering the key
+ * from the fingerprint is as hard as breaking the authentication itself. Note
+ * this is an identifier, not a commitment: 32 bits of it are shown, and a
+ * caller who already guesses a candidate key can confirm the guess. That is
+ * acceptable here — anyone able to guess the key does not need the log line.
+ */
+void obfs_key_fingerprint(const char *key_str, char *out, size_t out_len);
