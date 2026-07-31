@@ -90,6 +90,12 @@ static uint64_t mud_random_beat(const void *path_ptr)
 #define MUD_MSG_MARK(X)  ((X) | UINT64_C(1))
 #define MUD_MSG_SENT_MAX (5)
 
+/* Nothing received on a path for this long → treat it as dead (see
+ * mud_path_update). Roughly 10 beats at the 80–120ms probe interval, so it is
+ * well clear of ordinary jitter while still reacting fast enough that an
+ * aggregate rotation does not keep feeding a black hole. */
+#define MUD_PATH_DEAD_TIMEOUT (MUD_ONE_SEC)
+
 /* Overhead after removing encryption: only the 6-byte time header */
 #define MUD_TIME_OVERHEAD MUD_TIME_SIZE
 #define MUD_PKT_MAX_SIZE  (1500U)
@@ -206,7 +212,20 @@ struct mud {
     int                   rq_idx;
 
     /* direct-mapped table for deduplicating packets in duplicate mode */
-#define MUD_DEDUP_SIZE 1024   /* must stay a power of two (index masking) */
+/* Must stay a power of two (index masking).
+ *
+ * Sized for path skew, not for the packet rate alone. A duplicate arrives
+ * `skew` after its twin, so `skew × pps` other packets are inserted in between;
+ * with a direct-mapped table the twin's slot is overwritten with probability
+ * ~(skew × pps)/size and the duplicate then slips through to the FEC decoder.
+ * Measured at 30ms skew: 1024 leaked 2.7% at 500pps, 10.9% at 2000pps and
+ * 24.0% at 5000pps; 16384 brings those to 0.2 / 0.7 / 2.3%. Leaked duplicates
+ * are harmless (WireGuard rejects the replay) but they waste receive work.
+ *
+ * Cost is small: 24B per entry, and measured RSS grew only 8KB because
+ * untouched pages stay unmapped. RTT and CPU are unchanged — the lookup is a
+ * single indexed access either way. */
+#define MUD_DEDUP_SIZE 16384
 #define MUD_DEDUP_TTL  (500 * MUD_ONE_MSEC)
     struct {
         uint64_t pkt_time;   /* the packet's sent_time value */
@@ -761,6 +780,28 @@ mud_path_update(struct mud *mud, struct mud_path *path, uint64_t now)
         default:     return 0;
     }
     if (path->conf.state == MUD_DOWN) return 0;
+
+    /* Hard liveness timeout.
+     *
+     * This has to come before the MTU branch below. That branch treats "5
+     * probes with no answer" as "the MTU probe was too big", shrinks the MTU
+     * and clears msg.sent — reasonable on its own, but it never concludes, so
+     * msg.sent cycles 1..5 forever and a path that is completely gone stays
+     * RUNNING with tx.loss=0 (tx.loss is only recomputed when a probe answer
+     * arrives, which never happens either). Measured: a severed path kept
+     * taking its full share of an aggregate rotation for 30+ seconds, losing
+     * 37.7% of the stream; duplicate mode hid it because the surviving path
+     * carried everything.
+     *
+     * rx.time advances on any packet received over the path, data or probe, so
+     * a healthy path — even an idle one, which still exchanges probes every
+     * beat — never trips this. A path that recovers gets rx.time refreshed and
+     * returns to RUNNING on the next update. */
+    if (path->rx.time &&
+        mud_timeout(now, path->rx.time, MUD_PATH_DEAD_TIMEOUT)) {
+        path->status = MUD_DEGRADED;
+        return 0;
+    }
 
     if (path->msg.sent >= MUD_MSG_SENT_MAX) {
         if (path->mtu.probe) {

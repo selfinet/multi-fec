@@ -8,6 +8,7 @@ git_version.h
 /multi-fec
 /multi-fec-static
 /multi-fec-dist
+/multi-fec-asan
 /test_rnlc_unit
 
 # Python
@@ -33,3 +34,4 @@ libev/config.h
 libev/config.log
 libev/config.status
 libev/autom4te.cache/
+
