@@ -180,6 +180,7 @@ struct mud {
     uint64_t           window;
     uint64_t           window_time;
     uint64_t           base_time;
+    union mud_sockaddr last_remote;  /* source of the last packet mud_recv() returned */
 
     /* obfs hooks */
     mud_obfs_enc_t  obfs_enc;
@@ -788,14 +789,40 @@ mud_path_update(struct mud *mud, struct mud_path *path, uint64_t now)
 
 /* ─── Path selection (weighted round-robin) ─────────────────── */
 
-static struct mud_path *
-mud_select_path(struct mud *mud, uint16_t cursor)
+/* peer 0 matches every path, so untagged callers see no change in behaviour. */
+static inline int
+mud_peer_match(const struct mud_path *path, uint64_t peer)
 {
-    uint64_t k = ((uint64_t)cursor * mud->rate) >> 16;
+    return !peer || path->peer_id == peer;
+}
+
+/* Sum of tx.rate over the sendable paths of `peer`.
+ * For peer 0 this is mud->rate, which mud_update_all() already maintains — use
+ * it verbatim so the untagged selection stays bit-identical to before. */
+static uint64_t
+mud_peer_rate(struct mud *mud, uint64_t peer)
+{
+    if (!peer) return mud->rate;
+
+    uint64_t rate = 0;
+    for (unsigned i = 0; i < mud->capacity; i++) {
+        struct mud_path *path = &mud->paths[i];
+        if (path->status != MUD_RUNNING) continue;
+        if (!mud_peer_match(path, peer)) continue;
+        rate += path->tx.rate;
+    }
+    return rate;
+}
+
+static struct mud_path *
+mud_select_path(struct mud *mud, uint16_t cursor, uint64_t peer)
+{
+    uint64_t k = ((uint64_t)cursor * mud_peer_rate(mud, peer)) >> 16;
 
     for (unsigned i = 0; i < mud->capacity; i++) {
         struct mud_path *path = &mud->paths[i];
         if (path->status != MUD_RUNNING) continue;
+        if (!mud_peer_match(path, peer)) continue;
         if (k < path->tx.rate) return path;
         k -= path->tx.rate;
     }
@@ -837,20 +864,24 @@ mud_create(union mud_sockaddr *addr)
     struct mud *mud = (struct mud *)calloc(1, sizeof(struct mud));
     if (!mud) return NULL;
 
+    /* -1, not the 0 that calloc leaves behind: every failure path below hands
+     * the object to mud_delete(), which would otherwise close stdin. */
+    mud->fd = -1;
+
     mud->capacity = MUD_PATH_MAX;
     mud->paths    = (struct mud_path *)calloc(mud->capacity, sizeof(struct mud_path));
-    if (!mud->paths) { free(mud); return NULL; }
+    if (!mud->paths) goto err;
 
     mud->sq = (struct mud_send_slot *)calloc(MUD_SEND_QUEUE_CAP, sizeof(struct mud_send_slot));
-    if (!mud->sq) { free(mud->paths); free(mud); return NULL; }
+    if (!mud->sq) goto err;
     mud->sq_msgs = (struct mmsghdr *)calloc(MUD_SEND_QUEUE_CAP, sizeof(struct mmsghdr));
-    if (!mud->sq_msgs) { free(mud->sq); free(mud->paths); free(mud); return NULL; }
+    if (!mud->sq_msgs) goto err;
     mud->sq_len = 0;
 
     mud->rq = (struct mud_recv_slot *)calloc(MUD_RECV_QUEUE_CAP, sizeof(struct mud_recv_slot));
-    if (!mud->rq) { free(mud->sq_msgs); free(mud->sq); free(mud->paths); free(mud); return NULL; }
+    if (!mud->rq) goto err;
     mud->rq_msgs = (struct mmsghdr *)calloc(MUD_RECV_QUEUE_CAP, sizeof(struct mmsghdr));
-    if (!mud->rq_msgs) { free(mud->rq); free(mud->sq_msgs); free(mud->sq); free(mud->paths); free(mud); return NULL; }
+    if (!mud->rq_msgs) goto err;
     /* initialize rq_msgs[i] to point at rq[i]'s buffer */
     for (int i = 0; i < MUD_RECV_QUEUE_CAP; i++) {
         mud->rq[i].iov.iov_base                = mud->rq[i].buf;
@@ -889,7 +920,13 @@ mud_create(union mud_sockaddr *addr)
         addrlen = sizeof(struct sockaddr_in6);
     }
     if (fd < 0) goto err;
+    mud->fd = fd;   /* owned from here on, so mud_delete() closes it */
 
+    /* Return values are deliberately ignored: the two PKTINFO options are set
+     * for both families and exactly one of them fails by design (IPv4 socket +
+     * IPV6_RECVPKTINFO reports ENOPROTOOPT, and vice versa), while REUSEPORT and
+     * V6ONLY are platform-dependent. Treating any of these as fatal would break
+     * every IPv4 bind. */
     mud_sso_int(fd, SOL_SOCKET, SO_REUSEADDR, 1);
     mud_sso_int(fd, SOL_SOCKET, SO_REUSEPORT, 1);
 #if MUD_V4V6
@@ -902,21 +939,20 @@ mud_create(union mud_sockaddr *addr)
     mud_sso_int(fd, IPPROTO_IP, MUD_DFRAG, IP_PMTUDISC_PROBE);
 #endif
 
+    /* Non-blocking mode is not optional — the event loop drives every send and
+     * receive off EAGAIN, so a blocking socket would stall it. */
     {
         int flags = fcntl(fd, F_GETFL, 0);
-        fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+        if (flags < 0) goto err;
+        if (fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0) goto err;
     }
 
-    if (bind(fd, &addr->sa, addrlen)) goto err_fd;
+    if (bind(fd, &addr->sa, addrlen)) goto err;
 
-    mud->fd = fd;
     return mud;
 
-err_fd:
-    close(fd);
 err:
-    free(mud->paths);
-    free(mud);
+    mud_delete(mud);
     return NULL;
 }
 
@@ -925,6 +961,12 @@ mud_delete(struct mud *mud)
 {
     if (!mud) return;
     if (mud->fd >= 0) close(mud->fd);
+    /* Every buffer mud_create() allocated, including the send/receive batch
+     * queues that were previously leaked here and on its error paths. */
+    free(mud->rq_msgs);
+    free(mud->rq);
+    free(mud->sq_msgs);
+    free(mud->sq);
     free(mud->paths);
     free(mud);
 }
@@ -1061,7 +1103,35 @@ mud_send_wait(struct mud *mud)
 }
 
 int
-mud_send(struct mud *mud, const void *data, size_t size)
+mud_get_last_remote(struct mud *mud, union mud_sockaddr *out)
+{
+    if (!mud || !out) { errno = EINVAL; return -1; }
+    if (mud->last_remote.sa.sa_family != AF_INET &&
+        mud->last_remote.sa.sa_family != AF_INET6) { errno = ENOENT; return -1; }
+    *out = mud->last_remote;
+    return 0;
+}
+
+int
+mud_set_path_peer(struct mud *mud, union mud_sockaddr *remote, uint64_t peer)
+{
+    if (!mud || !remote) { errno = EINVAL; return -1; }
+
+    for (unsigned i = 0; i < mud->capacity; i++) {
+        struct mud_path *path = &mud->paths[i];
+        if (path->conf.state == MUD_EMPTY) continue;
+        if (mud_cmp_addr(&path->conf.remote, remote) ||
+            mud_cmp_port(&path->conf.remote, remote))
+            continue;
+        path->peer_id = peer;
+        return 0;
+    }
+    errno = ENOENT;
+    return -1;
+}
+
+int
+mud_send_peer(struct mud *mud, uint64_t peer, const void *data, size_t size)
 {
     if (!size) return 0;
     if (mud->window < 1500) { errno = EAGAIN; return -1; }
@@ -1081,7 +1151,7 @@ mud_send(struct mud *mud, const void *data, size_t size)
     memcpy(&cursor, (const char *)data + (size > 2 ? size - 2 : 0),
            size >= 2 ? 2 : 1);
 
-    struct mud_path *path = mud_select_path(mud, cursor);
+    struct mud_path *path = mud_select_path(mud, cursor, peer);
     if (!path) { errno = EAGAIN; return -1; }
 
     path->idle = now;
@@ -1089,7 +1159,13 @@ mud_send(struct mud *mud, const void *data, size_t size)
 }
 
 int
-mud_send_all(struct mud *mud, const void *data, size_t size)
+mud_send(struct mud *mud, const void *data, size_t size)
+{
+    return mud_send_peer(mud, 0, data, size);
+}
+
+int
+mud_send_all_peer(struct mud *mud, uint64_t peer, const void *data, size_t size)
 {
     if (!size) return 0;
     if (mud->window < 1500) { errno = EAGAIN; return -1; }
@@ -1112,6 +1188,7 @@ mud_send_all(struct mud *mud, const void *data, size_t size)
     for (unsigned i = 0; i < mud->capacity; i++) {
         struct mud_path *path = &mud->paths[i];
         if (path->status != MUD_RUNNING) continue;
+        if (!mud_peer_match(path, peer)) continue;
         mud->window = saved_window;  /* restore, then send individually */
         path->idle = now;
         if (mud_send_path(mud, path, now, packet, pkt_size, 0) >= 0)
@@ -1134,7 +1211,14 @@ mud_send_all(struct mud *mud, const void *data, size_t size)
 }
 
 int
-mud_send_next(struct mud *mud, const void *data, size_t size, unsigned dup_count)
+mud_send_all(struct mud *mud, const void *data, size_t size)
+{
+    return mud_send_all_peer(mud, 0, data, size);
+}
+
+int
+mud_send_next_peer(struct mud *mud, uint64_t peer, const void *data, size_t size,
+                   unsigned dup_count)
 {
     if (!size) return 0;
     if (mud->window < 1500) { errno = EAGAIN; return -1; }
@@ -1155,6 +1239,7 @@ mud_send_next(struct mud *mud, const void *data, size_t size, unsigned dup_count
     for (unsigned i = 0; i < mud->capacity; i++) {
         struct mud_path *path = &mud->paths[i];
         if (path->status != MUD_RUNNING) continue;
+        if (!mud_peer_match(path, peer)) continue;
         uint64_t r = path->tx.rate ? path->tx.rate : 1000000ULL;
         path->agg_credit += (int64_t)r;
         total_rate += r;
@@ -1178,6 +1263,7 @@ mud_send_next(struct mud *mud, const void *data, size_t size, unsigned dup_count
         for (unsigned i = 0; i < mud->capacity; i++) {
             struct mud_path *path = &mud->paths[i];
             if (path->status != MUD_RUNNING) continue;
+            if (!mud_peer_match(path, peer)) continue;
             if (path->agg_credit > best_cred) {
                 best_cred = path->agg_credit;
                 best      = path;
@@ -1209,6 +1295,12 @@ mud_send_next(struct mud *mud, const void *data, size_t size, unsigned dup_count
         mud->window = 0;
 
     return (int)size;
+}
+
+int
+mud_send_next(struct mud *mud, const void *data, size_t size, unsigned dup_count)
+{
+    return mud_send_next_peer(mud, 0, data, size, dup_count);
 }
 
 /* ─── Internal helper that processes a single receive slot ─────
@@ -1363,6 +1455,11 @@ mud_recv(struct mud *mud, void *data, size_t size)
                                    mud->rq[idx].buf, raw_size,
                                    &mud->rq[idx].remote,
                                    &mud->rq_msgs[idx].msg_hdr);
+            /* Publish the source of *this* packet. The caller cannot recover it
+             * by peeking the socket: the batch below may hold several packets
+             * from different clients, so a peek returns whichever packet is next
+             * in the socket buffer, not the one returned here. */
+            if (ret >= 0) mud->last_remote = mud->rq[idx].remote;
             if (ret > 0) return ret;   /* data packet */
             if (ret == 0) return 0;    /* probe/keepalive — notify the caller */
         }

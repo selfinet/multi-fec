@@ -107,6 +107,7 @@ struct mud_path {
     } mtu;
     uint64_t idle;
     int64_t  agg_credit;  /* weighted round-robin credit (aggregate mode) */
+    uint64_t peer_id;     /* owning peer (0 = untagged, matches every send) */
 };
 
 struct mud_error {
@@ -156,6 +157,32 @@ int mud_send_all  (struct mud *, const void *, size_t);
  * dup_count=1: pure aggregate, dup_count>1: aggregate-duplicate.
  * Distributes packets proportionally to each path's tx.rate → faster paths carry more. */
 int mud_send_next (struct mud *, const void *, size_t, unsigned dup_count);
+
+/* Peer-scoped sends.
+ *
+ * A client has one peer (the server) reachable over several paths, so the
+ * plain sends above are correct there. A server has the opposite shape: one
+ * socket, one path set, many clients — selecting a path globally sends client
+ * A's downstream packet over client B's path. The receiving client drops it as
+ * an unknown conv, so the traffic is silently lost rather than mis-delivered.
+ *
+ * Tag each path with the client it belongs to via mud_set_path_peer(), then
+ * send with the matching peer id. peer 0 means "untagged": it matches every
+ * path, so mud_send()/mud_send_all()/mud_send_next() keep their old behaviour
+ * exactly, and a server with a single client selects from the same path set it
+ * did before. */
+int mud_set_path_peer (struct mud *, union mud_sockaddr *remote, uint64_t peer);
+
+/* Source address of the packet mud_recv() returned most recently.
+ * mud_recv() drains an internal recvmmsg batch, so a caller that separately
+ * peeks the socket to learn the sender can observe a different packet than the
+ * one it was handed. Servers must use this instead of a peeked address. */
+int mud_get_last_remote (struct mud *, union mud_sockaddr *out);
+
+int mud_send_peer      (struct mud *, uint64_t peer, const void *, size_t);
+int mud_send_all_peer  (struct mud *, uint64_t peer, const void *, size_t);
+int mud_send_next_peer (struct mud *, uint64_t peer, const void *, size_t,
+                        unsigned dup_count);
 
 int    mud_get_errors (struct mud *, struct mud_errors *);
 int    mud_get_fd     (struct mud *);
