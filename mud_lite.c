@@ -1468,6 +1468,25 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
         return 0;
     }
 
+    /* Path accounting happens *before* the dedup decision below.
+     *
+     * A duplicate copy still arrived on this path — discarding it is a delivery
+     * decision, not a path loss event. Counting only the copy that survives
+     * dedup makes the slower of two duplicate paths look almost totally lossy,
+     * because its copy always arrives second and is dropped here. That was
+     * harmless while rx.loss was dead code, but v1.0.7 wired rx.loss into the
+     * MUD_LOSSY test, so the slower path started being excluded outright:
+     * measured with 25ms/30ms paths, the 30ms one reported rx.loss near 100%
+     * and dropped to LOSSY under load while carrying its share fine.
+     *
+     * It also starves path->rx.time, which drives MUD_PATH_DEAD_TIMEOUT — a
+     * path whose copies are all deduped would eventually look dead. */
+    path->idle          = now;
+    path->rx.total++;
+    path->rx.time       = now;
+    path->rx.bytes     += (size_t)decoded_size;
+    mud->last_recv_time = now;
+
     /* data packet — duplicate deduplication.
      *
      * The key is (sent timestamp, payload hash), never the timestamp alone.
@@ -1509,12 +1528,6 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
     if (payload > size) return 0;
 
     memcpy(data, decoded + MUD_TIME_SIZE, payload);
-
-    path->idle      = now;
-    path->rx.total++;
-    path->rx.time   = now;
-    path->rx.bytes += (size_t)decoded_size;
-    mud->last_recv_time = now;
 
     return (int)payload;
 }
