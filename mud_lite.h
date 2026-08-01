@@ -98,6 +98,11 @@ struct mud_path {
             uint64_t acc;
             uint64_t acc_time;
         } tx, rx;
+        /* The tx/rx blocks above mirror what the *peer* reported. Loss is a
+         * cross-side ratio (what one end sent vs what the other end received),
+         * so it also needs snapshots of our own counters — these two. */
+        uint64_t loss_tx_acc;   /* snapshot of path->tx.total */
+        uint64_t loss_rx_acc;   /* snapshot of path->rx.total */
         uint64_t time;
         uint64_t sent;
         uint64_t set;
