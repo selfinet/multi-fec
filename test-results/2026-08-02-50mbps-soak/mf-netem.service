@@ -1,0 +1,15 @@
+[Unit]
+Description=multi-fec 경로별 임피어먼트 (netem) — 테스트망 전용
+# tc 는 인터페이스가 올라온 뒤에 걸어야 한다. 링크가 나갔다 들어오면 qdisc 가
+# 사라지므로, 인터페이스를 재설정한 뒤에는 이 서비스를 다시 시작해야 한다.
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/local/sbin/mf-netem.sh apply
+ExecStop=/usr/local/sbin/mf-netem.sh clear
+
+[Install]
+WantedBy=multi-user.target
