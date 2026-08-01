@@ -2105,8 +2105,48 @@ LOSSY 경로는 모든 송신 함수에서 제외된다(`mud_send_all` / `mud_se
 
 ---
 
+### 25. dedup 된 사본이 경로 수신 카운터에 안 잡혀 느린 경로가 배제됨 (2026-08-02, v1.0.8)
+
+**파일**: `mud_lite.c` — `mud_recv()` 데이터 패킷 경로
+
+§24-나에서 `rx.loss`를 살린 직후 테스트망 검증에서 드러난 후속 결함이다. **와이어 무변경.**
+
+**증상**: duplicate 2경로에 편도 25ms/5%(path[0]), 30ms/2%(path[1]) 임피어먼트를 걸었더니
+**손실이 낮은 path[1]이 LOSSY로 배제**됐다. 로그의 `loss=31%`(≈79/255)는 임계 200을 넘지
+않으므로 `tx.loss`가 아니라 **`rx.loss`가 트립**시킨 것이다(로그는 `tx.loss`만 찍는다).
+
+**원인**: `mud_recv()`가 중복 사본을 버릴 때 `return 0` 하는 지점이 `path->rx.total++` **앞**이었다.
+
+```c
+if (중복) return 0;          /* ← 여기서 반환 */
+...
+path->rx.total++;            /* ← 여기까지 못 옴 */
+path->rx.time   = now;
+path->rx.bytes += decoded_size;
+```
+
+duplicate에서 두 사본은 경로 지연차만큼 벌어져 도착하고 **느린 쪽이 항상 두 번째**다. 그 사본은
+매번 dedup에 걸리므로 느린 경로의 `rx.total`은 probe 분량만 늘고, `rx.loss = (peer 송신 −
+내 수신)/peer 송신`이 100%에 가깝게 나온다. `rx.loss`가 죽은 코드였던 v1.0.6까지는 무해했고,
+v1.0.7이 이를 판정에 연결하면서 발현했다.
+
+**수정**: 경로 카운팅을 dedup 판정 **앞으로** 이동. 중복 사본도 **그 경로로 실제 도착한 것**이므로
+폐기는 전달 계층의 결정이지 경로 손실이 아니다.
+
+**함께 해소된 것**: `path->rx.time`도 같은 이유로 갱신되지 않았다. 이 값은 §21-가의
+`MUD_PATH_DEAD_TIMEOUT` 생존 판정을 구동하므로, **사본이 전부 dedup되는 경로는 살아 있는데도
+죽은 것으로 판정될 수 있었다.** `rx.bytes`는 rate 추정에 쓰이는데, 실제로 도착한 바이트를 세는
+쪽이 맞다.
+
+> **교훈**: 오래 죽어 있던 코드를 살릴 때는 그 값을 공급하는 경로가 그동안 정확했는지 함께
+> 확인해야 한다. `rx.loss`는 계산식만 없었던 게 아니라 **입력 카운터도 duplicate 모드에서
+> 틀려 있었다.** §24의 유닛 테스트는 `mud_update_rl()`만 구동하므로 `mud_recv()`의 dedup 경로를
+> 타지 않아 이 결함을 잡지 못했다 — 실측 검증이 잡았다.
+
+---
+
 **테스트 스크립트:**
-- `test_path_loss_unit.c` — 경로 손실률 계산 유닛 테스트 10개 케이스 (`make test-path-loss`). §24 회귀 방지.
+- `test_path_loss_unit.c` — 경로 손실률 계산 유닛 테스트 10개 케이스 (`make test-path-loss`). §24 회귀 방지. **주의**: `mud_update_rl()`만 직접 구동하므로 `mud_recv()`의 dedup 경로(§25)는 커버하지 않는다.
 - `test_fec_decode_bounds.cpp` — FEC(RS) 디코더 경계 검사 7개 케이스 (`make test-fec-bounds`). §22-가 회귀 방지.
 - `test_relay_session_cap.py` — 릴레이 동시 세션 상한·LRU 축출 4개 케이스. §22-나 회귀 방지. `BIN=` 로 A/B 비교 가능.
 - `test_path_failure.py` — 경로 절단·열화·지연차 × duplicate/aggregate 8종. §21-가 회귀 방지. **root 필요**(격리 netns 생성, 운영 무영향).
