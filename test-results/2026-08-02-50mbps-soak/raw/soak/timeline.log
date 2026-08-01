@@ -1,0 +1,12 @@
+1785601520 SOAK start  rate=6Mbps 양방향  total=18000s  chunk=1800s  limit=48Mbps
+1785603321 chunk1 완료  sent=1125000 lost=1 (8.9e-05%) ooo=47455 rc=0  남은=16200s
+1785605126 chunk2 완료  sent=1125000 lost=0 (0%) ooo=47630 rc=0  남은=14394s
+1785606932 chunk3 완료  sent=1125000 lost=1 (8.9e-05%) ooo=47674 rc=0  남은=12588s
+1785608738 chunk4 완료  sent=1125000 lost=0 (0%) ooo=561216 rc=0  남은=10782s
+1785610544 chunk5 완료  sent=1125000 lost=0 (0%) ooo=47743 rc=0  남은=8976s
+1785612350 chunk6 완료  sent=1125000 lost=0 (0%) ooo=47576 rc=0  남은=7170s
+1785614155 chunk7 완료  sent=1125000 lost=0 (0%) ooo=48322 rc=0  남은=5365s
+1785615961 chunk8 완료  sent=1125000 lost=0 (0%) ooo=47617 rc=0  남은=3559s
+1785617767 chunk9 완료  sent=1125000 lost=4 (0.00036%) ooo=47979 rc=0  남은=1753s
+1785619521 chunk10 완료  sent=1092500 lost=0 (0%) ooo=46584 rc=0  남은=-1s
+1785619526 SOAK 완료 (청크 10개)
