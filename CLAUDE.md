@@ -2004,13 +2004,116 @@ debug 줄도 지문으로 바꿨다. `-k SECRET` / `-kSECRET` / `--key[=]SECRET`
 
 ---
 
+### 24. 경로 손실률이 서로 반대 방향의 카운터로 계산됨 (2026-08-01, v1.0.7)
+
+FEC 파라미터 튜닝 측정 중 `path[0]`이 부하만 걸리면 LOSSY로 떨어져 duplicate가 한 경로로
+축소되는 것을 발견해 역추적했다. **와이어 포맷 무변경** — probe가 싣는 필드는 그대로이고
+수신측 해석만 바뀐다. 한쪽만 교체해도 된다.
+
+**증상**: netem 10%가 걸린 경로가 `loss=93%`로 보고돼 `MUD_LOSSY`(임계 200/255 = 78.4%)로
+떨어지고, 그 상태에서 나오지 못한다. duplicate가 사실상 failover가 되고 aggregate는 대역폭이
+반토막 난다. 유휴에서는 정상값(5~16%)을 보이므로 부하를 걸어야만 재현된다.
+
+```
+22:19:50  path[0] RUNNING  loss=15%  tx=168668 rx=146894   ← 유휴, 정상
+22:20:20  path[0] LOSSY    loss=93%  tx=169238 rx=147333   ← 부하 시작 ~8초 후
+22:21:20  path[0] LOSSY    loss=94%  tx=170148 rx=148169   ← +455/30s = probe 만
+```
+
+누적 실손실은 `(170148−148169)/170148 = 12.9%`로 netem과 맞는다. **보고값만 틀렸다.**
+
+#### 24-가. `tx.loss`가 peer의 송신 수와 peer의 수신 수를 비교했다
+
+**파일**: `mud_lite.c` `mud_update_rl()`, `mud_lite.h` (`msg.loss_tx_acc` / `msg.loss_rx_acc` 신설)
+
+```c
+/* 수정 전 */
+uint64_t tx_acc = tx_total - path->msg.tx.acc;
+uint64_t rx_acc = rx_total - path->msg.rx.acc;
+if (tx_acc && rx_acc <= tx_acc)
+    path->tx.loss = (tx_acc - rx_acc) * 255U / tx_acc;
+```
+
+`tx_total`·`rx_total`은 **둘 다 peer의 probe에서 읽은 값**이다(`mud_recv_msg()`). 즉
+`(peer가 보낸 수 − peer가 받은 수) ÷ peer가 보낸 수` — **같은 쪽의 서로 반대 방향 카운터**다.
+손실률은 "한쪽이 보낸 수 vs 반대쪽이 받은 수"여야 하고, 필요한 `path->tx.total`은
+`mud_send_path()`에서 정확히 유지되고 있는데 쓰이지 않았다.
+
+**유휴에서는 우연히 맞는다.** probe는 받으면 즉시 답신하므로 양방향 패킷 수가 균형을 이뤄
+실측으로 수렴한다 — 이 결함이 오래 드러나지 않은 이유이고, 진단 시 유휴 상태만 보면 정상으로
+보이는 이유다. **트래픽이 비대칭이 되는 순간 방향 불균형을 손실로 보고한다.**
+
+**수정**: 각 방향을 반대쪽 카운터와 짝지어 계산한다. 자기 카운터 스냅샷용으로 `msg` 구조체에
+`loss_tx_acc` / `loss_rx_acc` 2개를 추가했다(기존 `msg.tx.acc` / `msg.rx.acc`는 peer 미러라
+의미를 그대로 뒀다).
+
+```c
+uint64_t tx_acc = path->tx.total - path->msg.loss_tx_acc; /* 내가 보낸 수   */
+uint64_t rx_acc = rx_total       - path->msg.rx.acc;      /* peer 가 받은 수 */
+if (tx_acc)
+    path->tx.loss = rx_acc >= tx_acc ? 0 : (tx_acc - rx_acc) * 255U / tx_acc;
+```
+
+현재 probe는 `path->rx.total` 증가 **전에** 처리되지만 스냅샷도 같은 지점에서 뜨므로 상쇄된다.
+남는 편차는 probe 도착 시점의 in-flight(≈1 RTT분)가 손실로 잡히는 것인데, 1초 창에 RTT
+25~40ms면 3~4% 수준이라 78.4% 임계에 영향이 없다.
+
+#### 24-나. `path->rx.loss`가 한 번도 대입되지 않았다
+
+`mud_path_update()`의 LOSSY 판정은 `tx.loss > limit || rx.loss > limit`인데 `rx.loss`는
+**읽기만 하고 어디서도 쓰지 않아** 상시 0이었다. 판정식 절반이 죽은 코드였다.
+`(peer 송신 수 − 내 수신 수) ÷ peer 송신 수`로 채웠다.
+
+#### 24-다. 래치 — 한 번 걸리면 풀리지 않는다
+
+LOSSY 경로는 모든 송신 함수에서 제외된다(`mud_send_all` / `mud_send_next` / `mud_select_path`
+등 6곳의 `status != MUD_RUNNING → continue`). 그러면:
+
+1. 클라이언트 path0 LOSSY → 데이터 송신 중단, probe만 남음
+2. 서버는 자기 판단으로 path0에 하향 데이터를 계속 보냄
+3. 다음 probe의 서버 카운터: tx 델타 큼(하향 데이터) / rx 델타 작음(probe뿐)
+4. → 비율이 더 올라가 **LOSSY 유지**
+
+수치가 맞는다: 하향 1 Mbps ÷ 1200B × FEC 1.33 ≈ 138 pps + probe 10 = ~148, 서버 수신은
+클라이언트 probe ~9 pps → `(148−9)/148 = 93.9%`. 관측 93~94%.
+
+`rx_acc <= tx_acc` 가드도 한몫했다 — 조건이 깨지는 창에서 갱신을 **통째로 건너뛰어** 직전 값이
+남았다. 손실이 관측되지 않으면 0으로 갱신하도록 바꿔 이 경로를 끊었다.
+
+#### 24-라. 검증
+
+`test_path_loss_unit.c` (`make test-path-loss`) — `mud_update_rl()`이 static이라 `mud_lite.c`를
+통째로 include해 직접 구동한다. **10/10 통과**, 같은 테스트를 수정 전 코드에 돌리면 **5/10 실패**:
+
+| 케이스 | 수정 전 | 수정 후 |
+|---|---|---|
+| 대칭 무손실 | 0 | 0 |
+| 상향 10% 손실 (대칭 트래픽) | 25 | 25 ← 균형 상태에선 원래 맞았다 |
+| **하향 10% 손실 → `rx.loss`** | **0** (미대입) | **25** |
+| **비대칭 (하향 데이터만, 실제 상향 손실 10%)** | **239** = 93.7% | **25** = 10% |
+| **높은 손실 후 회복 → 0 복귀** | **236** (래치) | **0** |
+| 송신 0인 창 → 직전 값 유지 | 255 | 25 (유지) |
+
+전체 회귀: RNLC 유닛 11/11, FEC 경계 7/7, CLI 90/90, 릴레이 라우팅 9/9, RNLC e2e 9/9,
+다운스트림 다중 24/24. 빌드 경고 0.
+
+> **부수 수정**: `make test-fec-bounds`가 v1.0.6부터 링크 실패했다 — `misc.o`가 §23에서 추가한
+> `obfs_key_fingerprint()`를 참조하는데 `FEC_BOUNDS_TEST_OBJS`에 `obfs.o`가 없었다. 추가했다.
+
+**측정 근거**: `test-results/2026-08-01-fec-tuning/REPORT.md` §11-다.
+**미반영**: 테스트망 배포본은 아직 v1.0.6이라 래치가 그대로 있다.
+
+---
+
 **테스트 스크립트:**
+- `test_path_loss_unit.c` — 경로 손실률 계산 유닛 테스트 10개 케이스 (`make test-path-loss`). §24 회귀 방지.
 - `test_fec_decode_bounds.cpp` — FEC(RS) 디코더 경계 검사 7개 케이스 (`make test-fec-bounds`). §22-가 회귀 방지.
 - `test_relay_session_cap.py` — 릴레이 동시 세션 상한·LRU 축출 4개 케이스. §22-나 회귀 방지. `BIN=` 로 A/B 비교 가능.
 - `test_path_failure.py` — 경로 절단·열화·지연차 × duplicate/aggregate 8종. §21-가 회귀 방지. **root 필요**(격리 netns 생성, 운영 무영향).
 - `test_relay_session_expiry.py` — 릴레이 idle 세션 만료로 FD가 실제 회수되는지 검증. §20-가 회귀 방지.
 - `test_downstream_multi.py` — 다중 클라이언트 **다운스트림** 전달 검증 (모드 4종 × 세션 1/2/4 × FEC on/off = 24 케이스). 기존 스위트가 업스트림만 보던 공백을 메운다. §19-가 회귀 방지.
 - `test_relay_routing.py` — 릴레이 키별 라우팅 9개 케이스 (TC6 = 로그에 PSK 평문 없음, §23 회귀 방지)
+- `mf_ladder2.sh` (`test-results/2026-08-01-fec-tuning/`) — 테스트망 부하 계단 하네스 v2. TCP 는 `--fq-rate` 커널 페이싱, 워치독 트립 시 캡 절반 자동 재시도. **테스트망에서만 실행**
 - `test_all_options.py` — 전체 CLI 옵션 90개 케이스
 - `test_perf_stability.py` — 성능·안정성 26개 케이스
 - `test_rnlc_unit.cpp` — RNLC 인코드/디코드 결정적 유닛 테스트 11개 케이스 (`make test-rnlc-unit`)
