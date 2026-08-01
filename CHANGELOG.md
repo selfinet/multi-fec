@@ -30,6 +30,15 @@ _다음 릴리스에 포함될 변경. 문서/테스트만 바뀐 경우 여기�
   (증폭 2.67배)로 확인. 2026-08-01 §7-3 이 예측한 **FEC 증폭 톱니**(3.02 → 2.66 → 2.84 → 2.67)
   를 실측했다. 계단 하네스 자체 결함 2건(트립 라벨 지연·rc 미확인)은 보고서 §2-2 에 기록.
 
+- 문서/테스트 · 2026-08-02 — 자원 샘플러에 **시스템 전체 per-CPU 이용률** 수집 추가
+  (`test-results/2026-08-02-50mbps-soak/mf_sampler3.sh`). 기존 `mf_sampler2.sh` 는 multi-fec
+  **프로세스 하나의** CPU 만 봤다(`/proc/PID/stat`, 100% = 논리 CPU 1개). 그래서 c 의 46.2% 가
+  1코어 기준이라는 것은 알아도 **softirq·WireGuard·iperf3 를 포함한 머신 총량은 알 수 없었다**.
+  `<out>_cpu.csv` 사이드카에 코어별 `usr/nice/sys/iowait/irq/soft/steal/idle` 을 남긴다.
+  기존 CSV 스키마 무변경. mpstat 바이너리 대신 동일 소스인 `/proc/stat` 델타를 쓴다 —
+  r 에 sysstat 미설치, ko_KR 로케일에서 소수점이 `,` 로 찍혀 CSV 가 깨짐, `mpstat -P ALL 1 1`
+  은 60초 중 1초만 표본. sv1 에서 `mpstat -P ALL` 과 교차검증(오차 ≤0.4%p).
+
 
 ---
 

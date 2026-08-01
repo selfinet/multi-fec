@@ -2154,6 +2154,7 @@ v1.0.7이 이를 판정에 연결하면서 발현했다.
 - `test_downstream_multi.py` — 다중 클라이언트 **다운스트림** 전달 검증 (모드 4종 × 세션 1/2/4 × FEC on/off = 24 케이스). 기존 스위트가 업스트림만 보던 공백을 메운다. §19-가 회귀 방지.
 - `test_relay_routing.py` — 릴레이 키별 라우팅 9개 케이스 (TC6 = 로그에 PSK 평문 없음, §23 회귀 방지)
 - `mf_ladder2.sh` (`test-results/2026-08-01-fec-tuning/`) — 테스트망 부하 계단 하네스 v2. TCP 는 `--fq-rate` 커널 페이싱, 워치독 트립 시 캡 절반 자동 재시도. **테스트망에서만 실행**
+- `mf_sampler3.sh` (`test-results/2026-08-02-50mbps-soak/`) — 자원 샘플러 v3. v2 의 프로세스 CPU/RSS/FD/iface/netem 에 더해 **시스템 전체 per-CPU** 를 `<out>_cpu.csv` 사이드카로 남긴다(`/proc/stat` 델타, mpstat 과 동일 항목·수식). v2 는 프로세스 하나만 봐서 softirq·WG·부하생성기를 포함한 머신 총량을 알 수 없었다. **주의**: 프로세스 `cpu_pct` 는 논리 CPU 1개=100% 기준이고 사이드카는 코어별 100% 기준이라 스케일이 다르다. **테스트망에서만 실행**
 - `test_all_options.py` — 전체 CLI 옵션 90개 케이스
 - `test_perf_stability.py` — 성능·안정성 26개 케이스
 - `test_rnlc_unit.cpp` — RNLC 인코드/디코드 결정적 유닛 테스트 11개 케이스 (`make test-rnlc-unit`)
