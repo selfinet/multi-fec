@@ -30,6 +30,9 @@
 #      장시간 런에서는 기저를 주기적으로 다시 재는 편이 좋다.
 set -u
 S=${S:-s.xdn.selfinet.com}
+# 부하 생성기가 도는 호스트들. 워치독은 여기서도 죽여야 한다 —
+# 2026-08-03: sv1 로컬에서만 pkill 해서 원격 부하가 안 죽고 무방비로 계속 돌았다.
+KILL_HOSTS=${GW_KILL_HOSTS:-"c.xdn.selfinet.com r.xdn.selfinet.com s.xdn.selfinet.com"}
 IFACE=${GW_IFACE:-ens18}
 LIMIT=${GW_LIMIT:-70}          # gw ens18 방향당 한도
 BASE=${GW_BASE:-23}            # 타 장비 기저 (유휴 실측)
@@ -48,12 +51,15 @@ U
 }
 
 sample() {  # → 우리 몫 Mbps
-  local a b r0 t0 r1 t1
-  a=$(ssh $S "awk -v i=\"$IFACE:\" '\$1==i{print \$2, \$10}' /proc/net/dev" 2>/dev/null)
-  sleep $INTERVAL
-  b=$(ssh $S "awk -v i=\"$IFACE:\" '\$1==i{print \$2, \$10}' /proc/net/dev" 2>/dev/null)
-  read -r r0 t0 <<< "$a"; read -r r1 t1 <<< "$b"
-  awk -v x=$((r1-r0)) -v y=$((t1-t0)) -v s=$INTERVAL 'BEGIN{printf "%.2f", (x+y)*8/s/1e6}'
+  # ⚠️ 반드시 **원격에서 두 시점을 모두 재고 경과시간도 원격 시계로** 계산한다.
+  # 2026-08-03: 예전 구현은 `ssh → sleep N → ssh` 후 N 으로 나눴다. ssh 왕복(~0.6s)이
+  # 경과에 더해지는데 분모는 N 이라 1초 창에서 1.6배 과대보고했고, 그 허위 초과로
+  # 워치독이 트립해 자식 multi-fec 을 고아로 남겼다. 그 고아들이 SO_REUSEPORT 로
+  # 다음 런의 포트를 나눠 가져 세션 절반이 조용히 죽는 오염을 세 번 만들었다.
+  ssh $S "a=\$(awk -v i=\"$IFACE:\" '\$1==i{print \$2+\$10}' /proc/net/dev); t0=\$(date +%s.%N)
+          sleep $INTERVAL
+          b=\$(awk -v i=\"$IFACE:\" '\$1==i{print \$2+\$10}' /proc/net/dev); t1=\$(date +%s.%N)
+          awk -v x=\$((b-a)) -v s=\$t0 -v e=\$t1 'BEGIN{d=e-s; if(d<=0)d=$INTERVAL; printf \"%.2f\", x*8/d/1e6}'" 2>/dev/null
 }
 
 case "${1:-}" in
@@ -86,12 +92,32 @@ case "${1:-}" in
   watch)
     PAT=${2:?중단할 프로세스 패턴}
     echo "[gwguard] 감시 시작 — 트립 $KILL_AT Mbps (한도 $LIMIT, 기저 $BASE)"
+    streak=0
     while true; do
       v=$(sample)
       over=$(awk -v v=$v -v k=$KILL_AT 'BEGIN{print (v>k)?1:0}')
-      if [ "$over" = 1 ]; then
+      # 단발 버스트(경로 probe·window 방출)로 죽지 않도록 3회 연속에서만 트립한다.
+      # 2026-08-03: 1회 트립으로 1시간 런이 시작 직후 죽었다.
+      if [ "$over" = 1 ]; then streak=$((streak+1)); else streak=0; fi
+      if [ "$streak" -ge 3 ]; then
         echo "[gwguard] $(date +%H:%M:%S) 초과 ${v} > ${KILL_AT} Mbps → '$PAT' 중단"
-        pkill -f "$PAT"; ssh $S "pkill -f '$PAT'" 2>/dev/null
+        # ⚠️ 부모만 죽이면 자식 multi-fec 이 고아로 남아 리슨 포트를 계속 잡는다.
+        # 2026-08-03: 그 고아 8개가 이후 런의 포트를 SO_REUSEPORT 로 나눠 가져
+        # 세션 절반이 조용히 죽는 현상을 만들었다. 자식까지 확실히 정리한다.
+        # 로컬(ssh 래퍼 포함) — 자식까지
+        for p in $(pgrep -f "$PAT"); do
+            pkill -9 -P "$p" 2>/dev/null
+            kill -9 "$p" 2>/dev/null
+        done
+        pkill -9 -f "$PAT" 2>/dev/null
+        # 원격 — 부하 생성기는 c 에서 돌고 그 자식이 multi-fec 이다.
+        # 부모만 죽이면 자식이 고아가 되어 SO_REUSEPORT 로 다음 런의 포트를
+        # 나눠 가지므로 세션 절반이 조용히 죽는다(2026-08-03 실제 발생).
+        for H in $KILL_HOSTS; do
+            ssh -o ConnectTimeout=5 "$H" "for p in \$(pgrep -f '$PAT'); do
+                    sudo pkill -9 -P \$p 2>/dev/null; sudo kill -9 \$p 2>/dev/null; done
+                sudo pkill -9 -f '$PAT' 2>/dev/null" 2>/dev/null
+        done
         exit 2
       fi
     done ;;
