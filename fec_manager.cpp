@@ -30,7 +30,14 @@ const int decode_fast_send = 1;
 int short_packet_optimize = 1;
 int header_overhead = 40;
 
-u32_t fec_buff_num = 6000;  // how many packet can fec_decode_manager hold. shouldnt be very large,or it will cost huge memory
+/* upstream 예외 수정 (v1.0.9): 기본값 6000 -> 2000.
+ * 이 링은 conn_info_t 멤버라 **연결마다** 잡히고 clear() 가 전 엔트리를 만져 전부 상주한다.
+ * sizeof(fec_data_t)=3828B 이므로 6000 이면 연결당 22MB — max_conn_num(200) 에서 4.6GB 가 되어
+ * CPU 보다 메모리가 먼저 상한이 된다. 축출은 시간이 아니라 도착 개수(index++ 라운드로빈)라
+ * RTT/지터와 무관하고, 필요 개수 = (fec-timeout + 경로 지연차 + 지터폭) x 디코더 pps 다.
+ * 단일 스레드 상한(15.9Mbps ~ 2150pps)에서 300ms 폭이어도 ~650 이므로 2000 이면 3배 여유.
+ * 실측(2026-08-02, 지연차 70ms): 8000/2000/300 전부 손실 0/37,500. 상세는 CHANGELOG 1.0.9. */
+u32_t fec_buff_num = 2000;  // how many packet can fec_decode_manager hold. PER CONNECTION: 2.2MB + N*3828B
 
 blob_encode_t::blob_encode_t() {
     clear();

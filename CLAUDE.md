@@ -475,7 +475,7 @@ best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
 | `--mode 0\|1\|2` | `0` \| `1` \| `2` | `0` | FEC 모드. 0=bandwidth-saving(큐 기반), 1=low-latency(RS), 2=RNLC(Random Linear Network Coding). 클라이언트/서버 동일 설정 필수 |
 | `--mtu N` | `100`–`1500` (bytes) | `1250` | FEC 패킷 MTU. WG MTU 1300 기준 1250 권장 |
 | `-q N` / `--queue-len N` | `1`–`10000` | `200` | FEC 인코드 큐 길이 (mode 0에만 적용) |
-| `--decode-buf N` | `300`–`20000` | `6000` | FEC 디코더 링버퍼 (패킷 수). **연결당** 할당 — 엔트리 3,828 B → 연결당 `2.2 MB + N×3.8 KB`. 6000이면 24 MB/연결 |
+| `--decode-buf N` | `300`–`20000` | `2000` | FEC 디코더 링버퍼 (패킷 수). **연결당** 할당 — 엔트리 3,828 B → 연결당 `2.2 MB + N×3.8 KB` (2000이면 9.4 MB/연결). v1.0.9에서 6000→2000 |
 | `--disable-fec` | — | 비활성 | FEC 완전 비활성화 (passthrough) |
 
 **`--decode-buf` 산정** — 링은 시간이 아니라 **패킷 개수**로 축출한다(`fec_manager.cpp` 끝의
