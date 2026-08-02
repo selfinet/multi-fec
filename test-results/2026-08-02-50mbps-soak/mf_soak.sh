@@ -19,8 +19,10 @@ D=${D:-/tmp/mfsoak}
 S=${S:-10.9.10.1}
 IF=${IF:-enp2s0}
 LIMIT=${LIMIT:-6000000}      # B/s = 48 Mbps (gw 대리지표 TX+RX)
-WIN=${WIN:-5}
+WIN=${WIN:-1}                # 워치독 창(초). 계단과 동일하게 1 로 (초과 노출 최소화)
 PORT=${PORT:-5201}
+AMP=${AMP:-3.2}              # gw 증폭 추정치. 계단 실측 2.66~3.02 에 여유
+SAFETY=${SAFETY:-88}         # 프리플라이트 게이트 = LIMIT 의 % (계단과 동일)
 
 mkdir -p "$D"
 : > "$D/timeline.log"; : > "$D/rate.csv"; : > "$D/trip"; : > "$D/chunks.csv"
@@ -45,7 +47,19 @@ ifctr(){ awk -v i="$IF:" '$1==i{print $2, $10}' /proc/net/dev; }
 ping -D -i 1 -O "$S" > "$D/ping.log" 2>&1 & PG=$!
 trap 'kill $WD $PG 2>/dev/null; echo DONE > "$D/phase"' EXIT
 
-log "SOAK start  rate=${RATE}Mbps 양방향  total=${TOTAL}s  chunk=${CHUNK}s  limit=$(( LIMIT*8/1000000 ))Mbps"
+# ── 프리플라이트: 시작 전에 gw 부하를 예측해 넘길 것 같으면 아예 돌지 않는다.
+# 워치독은 창이 끝난 뒤 판정하므로 첫 초과 창을 못 막는다 — 5시간짜리를
+# 그 상태로 시작하면 안 된다. (REPORT.md §2-2)
+PRED=$(awk -v r="$RATE" -v a="$AMP" 'BEGIN{printf "%.0f", 2*r*1e6/8*a}')
+PREDM=$(awk -v v="$PRED" 'BEGIN{printf "%.2f", v*8/1e6}')
+GATE=$(( LIMIT * SAFETY / 100 ))
+if [ "$PRED" -gt "$GATE" ]; then
+    echo "거부: ${RATE}Mbps 는 gw 예측 ${PREDM}Mbps 로 게이트 $(( GATE*8/1000000 ))Mbps 초과" >&2
+    echo "      (증폭 ${AMP}x 기준). 레이트를 낮추거나 AMP 를 실측값으로 조정할 것." >&2
+    exit 1
+fi
+
+log "SOAK start  rate=${RATE}Mbps 양방향  total=${TOTAL}s  chunk=${CHUNK}s  limit=$(( LIMIT*8/1000000 ))Mbps  gw예측=${PREDM}Mbps"
 
 END=$(( $(date +%s) + TOTAL )); n=0
 while [ "$(date +%s)" -lt "$END" ]; do
