@@ -196,7 +196,7 @@ forced encoding. Larger values allow better grouping at the cost of higher memor
 -q 50       # low-memory devices
 ```
 
-### `--decode-buf N`  *(default: `6000`)*
+### `--decode-buf N`  *(default: `2000`)*
 **FEC decoder ring buffer, in packets** (300–20000). Entries are evicted strictly by
 arrival count (round-robin index), **not by time** — so RTT does not affect sizing.
 What matters is the spread of arrival times *within one group*.
@@ -494,7 +494,7 @@ Control **ANSI color output** in log messages. Color is enabled by default.
 | `--mode 0\|1` | client/server | `0` | FEC mode: 0=bandwidth-saving, 1=low-latency |
 | `--mtu N` | client/server | `1250` | FEC packet MTU (bytes) |
 | `-q N` / `--queue-len N` | client/server | `200` | FEC encode queue length |
-| `--decode-buf N` | client/server | `6000` | FEC decoder ring buffer, packets (300–20000). **Per connection**; recommend `2000` |
+| `--decode-buf N` | client/server | `2000` | FEC decoder ring buffer, packets (300–20000). **Per connection** |
 | `--disable-fec` | client/server | off | Disable FEC entirely |
 | **Network** | | | |
 | `--sock-buf N` | all | OS | UDP socket buffer size (kB) |
