@@ -156,7 +156,7 @@ multi-fec -r -l 0.0.0.0:443 \
 | `--fec-timeout N` | `8` | FEC 그룹 flush 대기(ms) |
 | `--mode 0\|1\|2` | `0` | 0=대역폭 절약(큐 기반, RS), 1=저지연(RS), 2=RNLC. 클라이언트/서버 동일 설정 필수 |
 | `--mtu N` | `1250` | FEC 패킷 MTU (WG MTU 1300 기준 1250 권장) |
-| `--decode-buf N` | `2000` | FEC 디코더 링버퍼 크기 |
+| `--decode-buf N` | `2000` | FEC 디코더 링버퍼 (패킷 수, **연결당** 할당) |
 
 > 전체 옵션은 `multi-fec -h` 또는 [`OPTIONS.md`](OPTIONS.md) 참고.
 

@@ -187,7 +187,9 @@ static void print_help(const char *prog)
         "  --mode 0|1|2          FEC mode: 0=bandwidth-saving, 1=low-latency, 2=RNLC  [default: 0]\n"
         "  --mtu N               FEC packet MTU bytes  [default: 1250]\n"
         "  -q N / --queue-len N  FEC encode queue length (mode 0)  [default: 200]\n"
-        "  --decode-buf N        FEC decoder ring buffer size (300-20000)  [default: 2000]\n"
+        "  --decode-buf N        FEC decoder ring buffer, in packets (300-20000)  [default: 2000]\n"
+        "                        Allocated PER CONNECTION, ~3.8 KB/entry:\n"
+        "                        2000 -> 7.3 MB/conn, 8000 -> 29 MB/conn, 20000 -> 73 MB/conn\n"
         "  --disable-fec         Disable FEC entirely (passthrough mode)\n"
         "\n"
         "Network options:\n"
@@ -423,8 +425,11 @@ static void parse_args(int argc, char *argv[])
             }
             obfs_init(&entry.obfs, entry.key_str, g_obfs_mode);
             g_routes.push_back(entry);
-            mylog(log_info, "route added: key=%s upstream=%s\n",
-                  entry.key_str, addr_str);
+            /* Fingerprint, never the key itself — this line lands in journald
+             * and used to publish the PSK to anyone who can read the log. */
+            char kfp[OBFS_KEY_FP_LEN];
+            obfs_key_fingerprint(entry.key_str, kfp, sizeof(kfp));
+            mylog(log_info, "route added: key=%s upstream=%s\n", kfp, addr_str);
             break;
         }
 

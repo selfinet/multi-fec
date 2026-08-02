@@ -19,7 +19,7 @@ SRCS_CXX = main.cpp obfs.cpp port_hopper.cpp mf_client.cpp mf_server.cpp mf_rela
 
 OBJS = $(SRCS_C:.c=.o) $(SRCS_CXX:.cpp=.o)
 
-.PHONY: all static static-strip clean git_version test-rnlc-unit test-fec-bounds asan FORCE
+.PHONY: all static static-strip clean git_version test-rnlc-unit test-fec-bounds test-path-loss asan FORCE
 
 all: $(NAME)
 
@@ -33,13 +33,20 @@ test-rnlc-unit: $(RNLC_TEST_OBJS)
 
 # RS(mode 0/1) 디코더 경계 검사 테스트 — 와이어의 inner_index/type 을 조작해도
 # abort 하지 않고 그룹만 버리는지 확인 (CLAUDE.md §22-가 회귀 방지)
-FEC_BOUNDS_TEST_OBJS = fec_manager.o rnlc.o common.o log.o my_ev.o misc.o \
+FEC_BOUNDS_TEST_OBJS = fec_manager.o rnlc.o common.o log.o my_ev.o misc.o obfs.o \
                        packet.o connection.o fd_manager.o delay_manager.o \
                        lib/fec.o lib/rs.o crc32/Crc32.o
 test-fec-bounds: $(FEC_BOUNDS_TEST_OBJS)
 	$(CXX) $(CXXFLAGS) -o test_fec_decode_bounds test_fec_decode_bounds.cpp \
 	    $(FEC_BOUNDS_TEST_OBJS) -lrt -lpthread
 	./test_fec_decode_bounds
+
+# 경로 손실률 계산 테스트 — 방향별 손실이 반대쪽 카운터와 짝지어 계산되는지,
+# 비대칭 트래픽에서 LOSSY 로 오판·래치하지 않는지 (CLAUDE.md §24 회귀 방지)
+# mud_update_rl() 이 static 이라 mud_lite.c 를 통째로 include 한다 → 링크 객체 없음
+test-path-loss:
+	$(CC) $(CFLAGS) -o test_path_loss_unit test_path_loss_unit.c -lrt -lpthread
+	./test_path_loss_unit
 
 # ASAN/UBSAN 빌드: 메모리 오류·미정의 동작 검출용 (배포용 아님)
 # 사용: make asan → ./multi-fec-asan  (테스트 스크립트에 BIN=./multi-fec-asan)
@@ -93,4 +100,4 @@ main.o: git_version.h
 
 clean:
 	rm -f $(NAME) $(NAME)-static $(NAME)-dist $(OBJS) test_rnlc_unit \
-	      test_fec_decode_bounds git_version.h
+	      test_fec_decode_bounds test_path_loss_unit git_version.h

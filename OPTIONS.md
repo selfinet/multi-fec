@@ -197,12 +197,23 @@ forced encoding. Larger values allow better grouping at the cost of higher memor
 ```
 
 ### `--decode-buf N`  *(default: `2000`)*
-**FEC decoder ring buffer size** (300–20000 packets). Larger buffers allow the decoder
-to recover from more reordering and burst loss at the cost of more memory.
+**FEC decoder ring buffer, in packets** (300–20000). Entries are evicted strictly by
+arrival count (round-robin index), **not by time** — so RTT does not affect sizing.
+What matters is the spread of arrival times *within one group*.
 
 ```
---decode-buf 2000    # default
---decode-buf 5000    # high-loss / high-reorder links
+required N  =  (fec-timeout + path skew + jitter) x decoder pps x safety
+```
+
+At the single-thread ceiling (15.9 Mbps ~ 2,150 pps) a 300 ms spread needs only ~650.
+**`2000` covers the entire usable range with 3x headroom.**
+
+The ring is allocated **per connection** and fully resident:
+`2.2 MB + N x 3,828 B` (measured: 2000 -> 9.4 MB, 8000 -> 31.7 MB per connection).
+On a server with many clients this, not CPU, becomes the binding limit.
+
+```
+--decode-buf 2000    # recommended
 --decode-buf 300     # minimum (embedded / low-memory)
 ```
 
@@ -483,7 +494,7 @@ Control **ANSI color output** in log messages. Color is enabled by default.
 | `--mode 0\|1` | client/server | `0` | FEC mode: 0=bandwidth-saving, 1=low-latency |
 | `--mtu N` | client/server | `1250` | FEC packet MTU (bytes) |
 | `-q N` / `--queue-len N` | client/server | `200` | FEC encode queue length |
-| `--decode-buf N` | client/server | `2000` | FEC decoder ring buffer (300–20000) |
+| `--decode-buf N` | client/server | `2000` | FEC decoder ring buffer, packets (300–20000). **Per connection** |
 | `--disable-fec` | client/server | off | Disable FEC entirely |
 | **Network** | | | |
 | `--sock-buf N` | all | OS | UDP socket buffer size (kB) |

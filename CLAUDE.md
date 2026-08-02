@@ -172,7 +172,7 @@ PROBING → RUNNING → LOSSY
 ```
 - `RUNNING`: 데이터 전송 가능
 - `LOSSY`: tx.loss > loss_limit → 데이터 전송 차단 (probe만 유지)
-- `DEGRADED`: RTT 초과
+- `DEGRADED`: 생존 타임아웃(`rx.time` 기준 1초 무수신) 또는 probe 무응답. **RTT 기반 판정은 없다** — `mud_path_update()`에 RTT 분기가 존재하지 않고, `mud_send_next_peer()`의 aggregate 분배도 `tx.rate`만 본다
 - `WAITING`: PASSIVE 경로 beat 타임아웃
 
 **LOSSY 판정 공식**:
@@ -475,11 +475,79 @@ best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
 | `--mode 0\|1\|2` | `0` \| `1` \| `2` | `0` | FEC 모드. 0=bandwidth-saving(큐 기반), 1=low-latency(RS), 2=RNLC(Random Linear Network Coding). 클라이언트/서버 동일 설정 필수 |
 | `--mtu N` | `100`–`1500` (bytes) | `1250` | FEC 패킷 MTU. WG MTU 1300 기준 1250 권장 |
 | `-q N` / `--queue-len N` | `1`–`10000` | `200` | FEC 인코드 큐 길이 (mode 0에만 적용) |
-| `--decode-buf N` | `300`–`20000` | `2000` | FEC 디코더 링버퍼 크기 |
+| `--decode-buf N` | `300`–`20000` | `2000` | FEC 디코더 링버퍼 (패킷 수). **연결당** 할당 — 엔트리 3,828 B → 연결당 `2.2 MB + N×3.8 KB` (2000이면 9.4 MB/연결). v1.0.9에서 6000→2000 |
 | `--disable-fec` | — | 비활성 | FEC 완전 비활성화 (passthrough) |
+
+**`--decode-buf` 산정** — 링은 시간이 아니라 **패킷 개수**로 축출한다(`fec_manager.cpp` 끝의
+`index++; if (index == fec_buff_num) index = 0;` — 시간 기반 만료 없음). 그래서 RTT 는 무관하고,
+한 그룹의 패킷이 도착하는 **시간 폭**만 문제가 된다.
+
+```
+필요 N  =  (--fec-timeout + 경로 지연차 + 지터폭) × 디코더 도착 pps × 안전계수
+링 한 바퀴 = N ÷ 디코더 pps       (디코더 pps = 앱 pps × FEC 증폭, dedup 이후)
+```
+
+단일 스레드 상한(15.9 Mbps ≈ 2,150 pps)에서 지연차+지터가 300ms 여도 필요 N ≈ 650 이다.
+**N=2000 이면 이 상한 전 구간을 3배 여유로 덮는다.** 그 이상은 연결당 메모리만 쓴다.
+연결당 비용 = `2.2 MB + N × 3,828 B` (실측: 2000→9.4 MB, 8000→31.7 MB).
 
 **FEC x:y 내부 파라미터**: 그룹 크기 1~x에 대해 복구 비율 y 적용.
 예: `10:3` → 데이터 1~10패킷 + 복구 3패킷/그룹.
+
+**mode 1은 원본을 즉시 보낸다 — 그룹이 차기를 기다리지 않는다.**
+`fec_manager.cpp`의 `encode_fast_send`가 상수 1이라, `input()`의 else 분기가 매 패킷마다
+`output_n=1`로 그 패킷을 곧바로 내보낸다(systematic, 헤더 `data_num=0`). 그룹이 닫힐 때
+(`counter == x` 또는 `--fec-timeout` 만료) 나가는 것은 **아직 안 보낸 마지막 데이터 1개 +
+패리티**뿐이다. `about_to_fec` 분기가 데이터로 `actual_data_num - 1` 하나만 내보내는 것이
+그 증거다 — 앞선 x−1개가 버퍼에 있었다면 통째로 유실된다.
+
+| | mode 0 | mode 1 |
+|---|---|---|
+| 원본 편도 지연 | **최대 `--fec-timeout`** (blob에 모아 shard로 분할) | **0** |
+| `--fec-timeout`이 늘리는 것 | 전 패킷 지연 | **손실분 복구 지연만** |
+
+실측이 뒷받침한다: `--fec-timeout` 5→10에서 유휴 RTT **+0.75ms**. 원본이 버퍼링된다면
+유휴(g=1, 항상 타이머 flush)에서 정확히 +5ms가 나와야 한다.
+따라서 mode 1에서 `--fec-timeout` 상향의 대가는 "모든 패킷이 느려짐"이 아니라
+**"잃은 패킷의 복구가 늦어짐"** 이다.
+
+**`-f`는 쉼표로 다중 쌍을 줄 수 있다** — `-f 5:1,20:4` 처럼. 문서화돼 있지 않았지만
+`rs_from_str`이 원래 지원하는 문법이고, **단일 쌍만 쓰면 저레이트에서 오버헤드가 폭증한다.**
+
+첫 쌍은 `fec_manager.h`의 "special treatment for first parameter"에 의해 **y가 그룹 크기
+1..x 전 구간에 평탄하게 펼쳐진다.** 즉 `-f 20:5`는 "그룹 20개에 패리티 5개"가 아니라
+**"그룹이 몇 개든 패리티 5개"** 다. 그룹 크기는 트래픽이 정한다:
+
+```
+g = 1 + floor(pps × fec-timeout)        (fec_manager.cpp — one-shot 타이머가 그룹 첫 패킷에서 무장)
+```
+
+`--fec-timeout 5`에서 g=20에 도달하려면 **3,800 pps**(1200B 기준 단방향 36.5 Mbps)가 필요하다.
+운영 레이트는 대개 그 아래라 g는 1~2에 머물고 y를 그대로 지불한다.
+**실측: `-f 20:5` 유휴 오버헤드 6.54배.** `-f 5:1,20:4` + `--fec-timeout 10`으로 1.33배.
+
+다중 쌍의 보간 결과는 손으로 유도하면 정수 절단 때문에 틀린다. `5:1,20:4`의 실제 테이블:
+
+| 그룹 크기 g | 1–5 | 6–10 | 11–15 | 16–20 |
+|---|---|---|---|---|
+| 패리티 y | 1 | 2 | 3 | 4 |
+
+`x`는 **그룹 최대 크기**다(`counter == get_tail().x`에서 flush). `-f 2:1`처럼 x를 작게 두면
+고레이트에서도 그룹이 2로 묶여 오버헤드가 50%에 고착된다. tail의 `20:y`는 트래픽이 많을 때
+오버헤드를 회복시키는 장치이며 저레이트에서는 발동하지 않아 비용이 0이다.
+
+**⚠️ 회선 사용량은 부하에 단조증가하지 않는다 (톱니).** `g`가 계단이고 패리티 테이블도
+계단이라, `g`가 패리티 경계를 넘는 순간 오버헤드가 튄다. 실측 증폭(앱 총량 대비,
+duplicate 2경로, `5:1,20:4`/t10):
+
+| 앱 각 방향 | 2 Mbps | 4 Mbps | 6 Mbps | 8 Mbps |
+|---|---|---|---|---|
+| g | 3 | 5 | 7 | 9 |
+| 패리티 y | 1 | 1 | 2 | 2 |
+| 증폭 | 3.02× | **2.66×** ← 최적점 | 2.84× | 2.67× |
+
+**레이트가 경계 바로 위에 걸리면 회선을 10~13% 더 먹는다.** 튜닝 시 목표 레이트가 경계의
+어느 쪽인지 확인할 것. → `test-results/2026-08-02-50mbps-soak/REPORT.md` §2-1
 
 ### 시뮬레이션/디버그 옵션
 
@@ -763,7 +831,7 @@ multi-fec -c \
   --fec-timeout 20 \
   --mode 0 \
   --mtu 1250 \
-  --decode-buf 8000 \
+  --decode-buf 2000 \
   --queue-len 500 \
   --sock-buf 4096 \
   --report 30
@@ -783,7 +851,7 @@ multi-fec -s \
   --fec-timeout 20 \
   --mode 0 \
   --mtu 1250 \
-  --decode-buf 8000 \
+  --decode-buf 2000 \
   --queue-len 500 \
   --sock-buf 4096 \
   --report 30
@@ -814,7 +882,7 @@ MTU = 1300
 |------|-----|------|
 | `--fec-timeout 20` | 8→20ms | RTT 200ms 환경에서 8ms는 너무 짧아 그룹 조기 플러시 |
 | `--mode 0` | 큐 기반 | 대용량 전송 시 FEC 그룹 효율 극대화. 높은 레이턴시라 큐잉 영향 적음 |
-| `--decode-buf 8000` | 2000→8000 | 높은 지터로 패킷이 늦게 도착해도 FEC 그룹 유지 가능 |
+| `--decode-buf 2000` | 기본 6000→2000 | **연결당** 할당이라 다중 클라이언트 서버에서 메모리가 먼저 상한이 된다. 크기 기준은 시간이 아니라 개수다 — 아래 산정식 참고 |
 | `--queue-len 500` | 200→500 | 고대역폭 경로에서 FEC 인코더 큐 여유 확보 |
 | `--sock-buf 4096` | OS기본→4MB | BDP 500KB 이상 구간에서 커널 버퍼 부족 시 처리량 저하 방지 |
 | `--auth-interval 60` | 30→60 | GFW 슬롯 경계 탐지 어렵게 |
@@ -1957,13 +2025,204 @@ obfs 인증 토큰은 `SipHash(시간슬롯, PSK)`라 **페이로드를 인증�
 
 ---
 
+### 23. PSK가 로그에 평문으로 기록됨 (2026-08-01, v1.0.6)
+
+**파일**: `obfs.h` / `obfs.cpp`(`obfs_key_fingerprint()` 신설), `main.cpp`, `mf_relay.cpp`, `misc.cpp`
+
+**증상**: `--route` 로 등록한 키가 **info 레벨**로 평문 출력됐다. 기본 로그 레벨이 4(info+)이고
+운영은 systemd 로 돌리므로 **journald 에 영구 보관**된다 — 로그를 읽을 수 있는 사람 누구에게나
+PSK 가 넘어간다. 로그 파일 반출·지원 티켓 첨부·백업으로도 퍼진다.
+
+```
+route added: key=MySecretKey upstream=1.2.3.4:443            ← main.cpp
+[relay]   route[0] key=MySecretKey upstream=1.2.3.4:443      ← mf_relay.cpp
+```
+
+**확인한 범위**: `-k` 로 준 PSK 자체는 어디에도 로깅되지 않았다(`main.cpp` 의 `case 'k'` 는 저장만
+한다). 노출은 `--route` 키뿐이며, 위 두 줄이 유일한 실제 경로였다.
+
+**수정**: 되돌릴 수 없는 짧은 지문으로 대체했다.
+
+```c
+#define OBFS_KEY_FP_LEN 12       /* "kf:" + 8 hex + NUL */
+void obfs_key_fingerprint(const char *key_str, char *out, size_t out_len);
+/* → "kf:330d27b8" (키 없음: "kf:-") */
+```
+
+`derive_psk()` 와 같은 SipHash 를 쓰지만 **파생 상수를 분리**했다 — 지문은 로그로 나가므로 와이어에
+쓰이는 값의 접두사가 되어선 안 된다. 같은 키는 항상 같은 지문이라 **어느 키에 관한 줄인지 구분하고
+상대 설정과 대조**할 수 있다. 애초에 키를 찍던 이유가 그것뿐이었다.
+
+**한계 (의도한 것)**: 지문은 식별자이고 커밋이 아니다. 32비트만 노출되며, 후보 키를 이미 가진
+사람은 지문으로 그 추측을 확인할 수 있다. 키를 추측할 수 있는 상대에게는 로그 줄이 필요 없으므로
+받아들일 만한 성질이다. 또 `-k`/`--route` 는 CLI 인자이므로 **`ps` 출력과 systemd unit 파일에는
+여전히 키가 보인다** — 이 수정의 범위는 로그다.
+
+**함께 처리 (도달 불가, 예방적)**: `misc.cpp` `process_arg()` 는 명령행 전체를 info 로 덤프하고
+`key=%s` 를 debug 로 찍었다. **호출부가 없어**(multi-fec 은 `main.cpp:parse_args()` 로 파싱) 현재
+실행 경로가 아니지만, 나중에 연결하면 조용히 키를 흘리게 되므로 값 부분을 `<redacted>` 로 가리고
+debug 줄도 지문으로 바꿨다. `-k SECRET` / `-kSECRET` / `--key[=]SECRET` / `--route[=]"key ip:port"`
+네 형태를 모두 처리한다.
+
+**운영 조치**: 이미 기록된 로그에는 평문 키가 남아 있다. 바이너리 교체만으로 사라지지 않으므로,
+노출 범위가 신경 쓰이면 **키 교체**(양쪽 동시)나 journal 정리를 별도로 해야 한다.
+
+**회귀 방지**: `test_relay_routing.py` TC6 — 기동 로그에 키 평문이 없고 키별 지문이 기록되는지
+확인(9/9). 전 스위트 통과.
+
+---
+
+### 24. 경로 손실률이 서로 반대 방향의 카운터로 계산됨 (2026-08-01, v1.0.7)
+
+FEC 파라미터 튜닝 측정 중 `path[0]`이 부하만 걸리면 LOSSY로 떨어져 duplicate가 한 경로로
+축소되는 것을 발견해 역추적했다. **와이어 포맷 무변경** — probe가 싣는 필드는 그대로이고
+수신측 해석만 바뀐다. 한쪽만 교체해도 된다.
+
+**증상**: netem 10%가 걸린 경로가 `loss=93%`로 보고돼 `MUD_LOSSY`(임계 200/255 = 78.4%)로
+떨어지고, 그 상태에서 나오지 못한다. duplicate가 사실상 failover가 되고 aggregate는 대역폭이
+반토막 난다. 유휴에서는 정상값(5~16%)을 보이므로 부하를 걸어야만 재현된다.
+
+```
+22:19:50  path[0] RUNNING  loss=15%  tx=168668 rx=146894   ← 유휴, 정상
+22:20:20  path[0] LOSSY    loss=93%  tx=169238 rx=147333   ← 부하 시작 ~8초 후
+22:21:20  path[0] LOSSY    loss=94%  tx=170148 rx=148169   ← +455/30s = probe 만
+```
+
+누적 실손실은 `(170148−148169)/170148 = 12.9%`로 netem과 맞는다. **보고값만 틀렸다.**
+
+#### 24-가. `tx.loss`가 peer의 송신 수와 peer의 수신 수를 비교했다
+
+**파일**: `mud_lite.c` `mud_update_rl()`, `mud_lite.h` (`msg.loss_tx_acc` / `msg.loss_rx_acc` 신설)
+
+```c
+/* 수정 전 */
+uint64_t tx_acc = tx_total - path->msg.tx.acc;
+uint64_t rx_acc = rx_total - path->msg.rx.acc;
+if (tx_acc && rx_acc <= tx_acc)
+    path->tx.loss = (tx_acc - rx_acc) * 255U / tx_acc;
+```
+
+`tx_total`·`rx_total`은 **둘 다 peer의 probe에서 읽은 값**이다(`mud_recv_msg()`). 즉
+`(peer가 보낸 수 − peer가 받은 수) ÷ peer가 보낸 수` — **같은 쪽의 서로 반대 방향 카운터**다.
+손실률은 "한쪽이 보낸 수 vs 반대쪽이 받은 수"여야 하고, 필요한 `path->tx.total`은
+`mud_send_path()`에서 정확히 유지되고 있는데 쓰이지 않았다.
+
+**유휴에서는 우연히 맞는다.** probe는 받으면 즉시 답신하므로 양방향 패킷 수가 균형을 이뤄
+실측으로 수렴한다 — 이 결함이 오래 드러나지 않은 이유이고, 진단 시 유휴 상태만 보면 정상으로
+보이는 이유다. **트래픽이 비대칭이 되는 순간 방향 불균형을 손실로 보고한다.**
+
+**수정**: 각 방향을 반대쪽 카운터와 짝지어 계산한다. 자기 카운터 스냅샷용으로 `msg` 구조체에
+`loss_tx_acc` / `loss_rx_acc` 2개를 추가했다(기존 `msg.tx.acc` / `msg.rx.acc`는 peer 미러라
+의미를 그대로 뒀다).
+
+```c
+uint64_t tx_acc = path->tx.total - path->msg.loss_tx_acc; /* 내가 보낸 수   */
+uint64_t rx_acc = rx_total       - path->msg.rx.acc;      /* peer 가 받은 수 */
+if (tx_acc)
+    path->tx.loss = rx_acc >= tx_acc ? 0 : (tx_acc - rx_acc) * 255U / tx_acc;
+```
+
+현재 probe는 `path->rx.total` 증가 **전에** 처리되지만 스냅샷도 같은 지점에서 뜨므로 상쇄된다.
+남는 편차는 probe 도착 시점의 in-flight(≈1 RTT분)가 손실로 잡히는 것인데, 1초 창에 RTT
+25~40ms면 3~4% 수준이라 78.4% 임계에 영향이 없다.
+
+#### 24-나. `path->rx.loss`가 한 번도 대입되지 않았다
+
+`mud_path_update()`의 LOSSY 판정은 `tx.loss > limit || rx.loss > limit`인데 `rx.loss`는
+**읽기만 하고 어디서도 쓰지 않아** 상시 0이었다. 판정식 절반이 죽은 코드였다.
+`(peer 송신 수 − 내 수신 수) ÷ peer 송신 수`로 채웠다.
+
+#### 24-다. 래치 — 한 번 걸리면 풀리지 않는다
+
+LOSSY 경로는 모든 송신 함수에서 제외된다(`mud_send_all` / `mud_send_next` / `mud_select_path`
+등 6곳의 `status != MUD_RUNNING → continue`). 그러면:
+
+1. 클라이언트 path0 LOSSY → 데이터 송신 중단, probe만 남음
+2. 서버는 자기 판단으로 path0에 하향 데이터를 계속 보냄
+3. 다음 probe의 서버 카운터: tx 델타 큼(하향 데이터) / rx 델타 작음(probe뿐)
+4. → 비율이 더 올라가 **LOSSY 유지**
+
+수치가 맞는다: 하향 1 Mbps ÷ 1200B × FEC 1.33 ≈ 138 pps + probe 10 = ~148, 서버 수신은
+클라이언트 probe ~9 pps → `(148−9)/148 = 93.9%`. 관측 93~94%.
+
+`rx_acc <= tx_acc` 가드도 한몫했다 — 조건이 깨지는 창에서 갱신을 **통째로 건너뛰어** 직전 값이
+남았다. 손실이 관측되지 않으면 0으로 갱신하도록 바꿔 이 경로를 끊었다.
+
+#### 24-라. 검증
+
+`test_path_loss_unit.c` (`make test-path-loss`) — `mud_update_rl()`이 static이라 `mud_lite.c`를
+통째로 include해 직접 구동한다. **10/10 통과**, 같은 테스트를 수정 전 코드에 돌리면 **5/10 실패**:
+
+| 케이스 | 수정 전 | 수정 후 |
+|---|---|---|
+| 대칭 무손실 | 0 | 0 |
+| 상향 10% 손실 (대칭 트래픽) | 25 | 25 ← 균형 상태에선 원래 맞았다 |
+| **하향 10% 손실 → `rx.loss`** | **0** (미대입) | **25** |
+| **비대칭 (하향 데이터만, 실제 상향 손실 10%)** | **239** = 93.7% | **25** = 10% |
+| **높은 손실 후 회복 → 0 복귀** | **236** (래치) | **0** |
+| 송신 0인 창 → 직전 값 유지 | 255 | 25 (유지) |
+
+전체 회귀: RNLC 유닛 11/11, FEC 경계 7/7, CLI 90/90, 릴레이 라우팅 9/9, RNLC e2e 9/9,
+다운스트림 다중 24/24. 빌드 경고 0.
+
+> **부수 수정**: `make test-fec-bounds`가 v1.0.6부터 링크 실패했다 — `misc.o`가 §23에서 추가한
+> `obfs_key_fingerprint()`를 참조하는데 `FEC_BOUNDS_TEST_OBJS`에 `obfs.o`가 없었다. 추가했다.
+
+**측정 근거**: `test-results/2026-08-01-fec-tuning/REPORT.md` §11-다.
+**미반영**: 테스트망 배포본은 아직 v1.0.6이라 래치가 그대로 있다.
+
+---
+
+### 25. dedup 된 사본이 경로 수신 카운터에 안 잡혀 느린 경로가 배제됨 (2026-08-02, v1.0.8)
+
+**파일**: `mud_lite.c` — `mud_recv()` 데이터 패킷 경로
+
+§24-나에서 `rx.loss`를 살린 직후 테스트망 검증에서 드러난 후속 결함이다. **와이어 무변경.**
+
+**증상**: duplicate 2경로에 편도 25ms/5%(path[0]), 30ms/2%(path[1]) 임피어먼트를 걸었더니
+**손실이 낮은 path[1]이 LOSSY로 배제**됐다. 로그의 `loss=31%`(≈79/255)는 임계 200을 넘지
+않으므로 `tx.loss`가 아니라 **`rx.loss`가 트립**시킨 것이다(로그는 `tx.loss`만 찍는다).
+
+**원인**: `mud_recv()`가 중복 사본을 버릴 때 `return 0` 하는 지점이 `path->rx.total++` **앞**이었다.
+
+```c
+if (중복) return 0;          /* ← 여기서 반환 */
+...
+path->rx.total++;            /* ← 여기까지 못 옴 */
+path->rx.time   = now;
+path->rx.bytes += decoded_size;
+```
+
+duplicate에서 두 사본은 경로 지연차만큼 벌어져 도착하고 **느린 쪽이 항상 두 번째**다. 그 사본은
+매번 dedup에 걸리므로 느린 경로의 `rx.total`은 probe 분량만 늘고, `rx.loss = (peer 송신 −
+내 수신)/peer 송신`이 100%에 가깝게 나온다. `rx.loss`가 죽은 코드였던 v1.0.6까지는 무해했고,
+v1.0.7이 이를 판정에 연결하면서 발현했다.
+
+**수정**: 경로 카운팅을 dedup 판정 **앞으로** 이동. 중복 사본도 **그 경로로 실제 도착한 것**이므로
+폐기는 전달 계층의 결정이지 경로 손실이 아니다.
+
+**함께 해소된 것**: `path->rx.time`도 같은 이유로 갱신되지 않았다. 이 값은 §21-가의
+`MUD_PATH_DEAD_TIMEOUT` 생존 판정을 구동하므로, **사본이 전부 dedup되는 경로는 살아 있는데도
+죽은 것으로 판정될 수 있었다.** `rx.bytes`는 rate 추정에 쓰이는데, 실제로 도착한 바이트를 세는
+쪽이 맞다.
+
+> **교훈**: 오래 죽어 있던 코드를 살릴 때는 그 값을 공급하는 경로가 그동안 정확했는지 함께
+> 확인해야 한다. `rx.loss`는 계산식만 없었던 게 아니라 **입력 카운터도 duplicate 모드에서
+> 틀려 있었다.** §24의 유닛 테스트는 `mud_update_rl()`만 구동하므로 `mud_recv()`의 dedup 경로를
+> 타지 않아 이 결함을 잡지 못했다 — 실측 검증이 잡았다.
+
+---
+
 **테스트 스크립트:**
+- `test_path_loss_unit.c` — 경로 손실률 계산 유닛 테스트 10개 케이스 (`make test-path-loss`). §24 회귀 방지. **주의**: `mud_update_rl()`만 직접 구동하므로 `mud_recv()`의 dedup 경로(§25)는 커버하지 않는다.
 - `test_fec_decode_bounds.cpp` — FEC(RS) 디코더 경계 검사 7개 케이스 (`make test-fec-bounds`). §22-가 회귀 방지.
 - `test_relay_session_cap.py` — 릴레이 동시 세션 상한·LRU 축출 4개 케이스. §22-나 회귀 방지. `BIN=` 로 A/B 비교 가능.
 - `test_path_failure.py` — 경로 절단·열화·지연차 × duplicate/aggregate 8종. §21-가 회귀 방지. **root 필요**(격리 netns 생성, 운영 무영향).
 - `test_relay_session_expiry.py` — 릴레이 idle 세션 만료로 FD가 실제 회수되는지 검증. §20-가 회귀 방지.
 - `test_downstream_multi.py` — 다중 클라이언트 **다운스트림** 전달 검증 (모드 4종 × 세션 1/2/4 × FEC on/off = 24 케이스). 기존 스위트가 업스트림만 보던 공백을 메운다. §19-가 회귀 방지.
-- `test_relay_routing.py` — 릴레이 키별 라우팅 7개 케이스
+- `test_relay_routing.py` — 릴레이 키별 라우팅 9개 케이스 (TC6 = 로그에 PSK 평문 없음, §23 회귀 방지)
+- `mf_ladder2.sh` (`test-results/2026-08-01-fec-tuning/`) — 테스트망 부하 계단 하네스 v2. TCP 는 `--fq-rate` 커널 페이싱, 워치독 트립 시 캡 절반 자동 재시도. **테스트망에서만 실행**
+- `mf_sampler3.sh` (`test-results/2026-08-02-50mbps-soak/`) — 자원 샘플러 v3. v2 의 프로세스 CPU/RSS/FD/iface/netem 에 더해 **시스템 전체 per-CPU** 를 `<out>_cpu.csv` 사이드카로 남긴다(`/proc/stat` 델타, mpstat 과 동일 항목·수식). v2 는 프로세스 하나만 봐서 softirq·WG·부하생성기를 포함한 머신 총량을 알 수 없었다. **주의**: 프로세스 `cpu_pct` 는 논리 CPU 1개=100% 기준이고 사이드카는 코어별 100% 기준이라 스케일이 다르다. **테스트망에서만 실행**
 - `test_all_options.py` — 전체 CLI 옵션 90개 케이스
 - `test_perf_stability.py` — 성능·안정성 26개 케이스
 - `test_rnlc_unit.cpp` — RNLC 인코드/디코드 결정적 유닛 테스트 11개 케이스 (`make test-rnlc-unit`)

@@ -10,7 +10,7 @@ FEC(전방 오류 정정), 다중 경로 전송, GFW/DPI 우회 난독화를 제
 ### 일반 빌드 (동적 링크)
 
 ```bash
-cd /home/stevekim/multi_udp/multi_fec
+cd ~/multi-fec
 make -j$(nproc)
 # 결과물: ./multi-fec (약 274 KB)
 ```
@@ -58,8 +58,8 @@ docker run --rm \
 
 **해결 방법 3: 실행 서버에서 직접 빌드**
 ```bash
-scp -r /path/to/multi_fec user@서버:~/
-ssh user@서버 "cd ~/multi_fec && apt install -y g++ make && make -j\$(nproc)"
+scp -r /path/to/multi-fec user@서버:~/
+ssh user@서버 "cd ~/multi-fec && apt install -y g++ make && make -j\$(nproc)"
 ```
 
 | 방법 | 바이너리 크기 | 이식성 | 비고 |

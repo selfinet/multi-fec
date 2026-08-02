@@ -200,7 +200,7 @@ multi-fec -s \
   --mode 0 \
   --fec-timeout 20 \
   --mtu 1250 \
-  --decode-buf 4000 \
+  --decode-buf 2000 \
   --queue-len 300 \
   --sock-buf 4096 \
   --report 30 \
@@ -222,7 +222,7 @@ multi-fec -c \
   --mode 0 \
   --fec-timeout 20 \
   --mtu 1250 \
-  --decode-buf 4000 \
+  --decode-buf 2000 \
   --queue-len 300 \
   --sock-buf 4096 \
   --report 30 \
@@ -234,7 +234,7 @@ multi-fec -c \
 
 - `-f 20:4` (오버헤드 20%): 5% 손실 시 FEC 그룹당 최대 ~16% 손실까지 복구 가능.
 - `--fec-timeout 20`: RTT 150ms 환경에서 8ms flush는 그룹이 조기 종료되어 FEC 효율 저하. 20ms로 그룹 완성 대기.
-- `--decode-buf 4000`: 높은 지터 환경에서 늦게 도착하는 FEC 그룹을 링버퍼에 유지.
+- `--decode-buf 2000`: 링버퍼는 **시간이 아니라 패킷 개수**로 축출하므로 RTT·지터가 커도 개수 요구는 늘지 않는다. 필요 개수 = `(fec-timeout + 경로 지연차 + 지터폭) × 디코더 pps` 이고, 단일 스레드 상한(15.9 Mbps)에서 300ms 폭이어도 약 650 이다. **연결당** 할당(`2.2 MB + N×3.8 KB`)이라 키우면 다중 클라이언트 수용량만 깎인다.
 - `--sock-buf 4096`: BDP = 150ms × 10Mbps ≈ 187KB. 커널 기본 버퍼(~212KB)가 부족한 고대역 구간 대비.
 - `--auth-interval 60`: HMAC 슬롯 길이를 60초로 늘려 슬롯 경계 시각 통계 분석 탐지를 어렵게 함.
 
@@ -251,7 +251,7 @@ FEC=20:4
 FEC_MODE=0
 FEC_TIMEOUT=20
 MTU=1250
-DECODE_BUF=4000
+DECODE_BUF=2000
 QUEUE_LEN=300
 SOCK_BUF=4096
 REPORT=30
@@ -328,7 +328,7 @@ multi-fec -s \
   --mode 0 \
   --fec-timeout 20 \
   --mtu 1250 \
-  --decode-buf 8000 \
+  --decode-buf 2000 \
   --queue-len 500 \
   --sock-buf 4096 \
   --report 30 \
@@ -378,7 +378,7 @@ multi-fec -c \
   --mode 0 \
   --fec-timeout 20 \
   --mtu 1250 \
-  --decode-buf 8000 \
+  --decode-buf 2000 \
   --queue-len 500 \
   --sock-buf 4096 \
   --report 30 \
@@ -389,7 +389,7 @@ multi-fec -c \
 ### 옵션 선택 이유
 
 - `--multipath-mode aggregate`: mud_lite가 tx.rate 비례 가중 라운드로빈으로 경로별 다른 패킷을 분배. 두 케이블의 처리량이 실제로 합산된다.
-- `--decode-buf 8000`: 두 경로의 RTT가 다를 때(홍콩 120ms, 도쿄 80ms) 늦게 도착하는 그룹 유지. FEC 복구율 유지에 필수.
+- `--decode-buf 2000`: 링버퍼는 **시간이 아니라 패킷 개수**로 축출하므로 RTT·지터가 커도 개수 요구는 늘지 않는다. 필요 개수 = `(fec-timeout + 경로 지연차 + 지터폭) × 디코더 pps` 이고, 단일 스레드 상한(15.9 Mbps)에서 300ms 폭이어도 약 650 이다. **연결당** 할당(`2.2 MB + N×3.8 KB`)이라 키우면 다중 클라이언트 수용량만 깎인다.
 
 ### systemd — 릴레이 (HK/JP 공통)
 
@@ -508,7 +508,7 @@ multi-fec -s \
   --mode 0 \
   --fec-timeout 20 \
   --mtu 1250 \
-  --decode-buf 4000 \
+  --decode-buf 2000 \
   --queue-len 300 \
   --sock-buf 4096 \
   --decoy 127.0.0.1:8443 \
@@ -531,7 +531,7 @@ multi-fec -c \
   --mode 0 \
   --fec-timeout 20 \
   --mtu 1250 \
-  --decode-buf 4000 \
+  --decode-buf 2000 \
   --queue-len 300 \
   --sock-buf 4096 \
   --report 30 \
@@ -558,7 +558,7 @@ FEC=20:4
 FEC_MODE=0
 FEC_TIMEOUT=20
 MTU=1250
-DECODE_BUF=4000
+DECODE_BUF=2000
 QUEUE_LEN=300
 SOCK_BUF=4096
 DECOY=127.0.0.1:8443
@@ -791,7 +791,7 @@ multi-fec -s \
   --mode 0 \
   --fec-timeout 15 \
   --mtu 1250 \
-  --decode-buf 8000 \
+  --decode-buf 2000 \
   --queue-len 500 \
   --sock-buf 8192 \
   --report 30 \
@@ -816,7 +816,7 @@ multi-fec -c \
   --mode 0 \
   --fec-timeout 15 \
   --mtu 1250 \
-  --decode-buf 8000 \
+  --decode-buf 2000 \
   --queue-len 500 \
   --sock-buf 8192 \
   --report 30 \
@@ -845,7 +845,7 @@ FEC=20:3
 FEC_MODE=0
 FEC_TIMEOUT=15
 MTU=1250
-DECODE_BUF=8000
+DECODE_BUF=2000
 QUEUE_LEN=500
 SOCK_BUF=8192
 REPORT=30
@@ -1017,7 +1017,7 @@ WantedBy=multi-user.target
 
 ---
 
-## 시나리오 8 — 고손실 링크 (FEC 강화, decode-buf 확대)
+## 시나리오 8 — 고손실 링크 (FEC 강화)
 
 **대상**: Starlink, 저궤도 위성, 4G/5G 백홀 등 손실 10~25% + 지터 50~200ms 환경.
 
@@ -1051,7 +1051,7 @@ multi-fec -s \
   --mode 0 \
   --fec-timeout 30 \
   --mtu 1200 \
-  --decode-buf 12000 \
+  --decode-buf 2000 \
   --queue-len 600 \
   --sock-buf 4096 \
   --report 30 \
@@ -1073,7 +1073,7 @@ multi-fec -c \
   --mode 0 \
   --fec-timeout 30 \
   --mtu 1200 \
-  --decode-buf 12000 \
+  --decode-buf 2000 \
   --queue-len 600 \
   --sock-buf 4096 \
   --report 30 \
@@ -1085,7 +1085,7 @@ multi-fec -c \
 
 - `-f 20:7` (오버헤드 35%): 최대 ~25% 손실까지 FEC 복구. 15% 평균 손실에 버스트 대비 여유 포함.
 - `--fec-timeout 30`: 지터 100ms 환경에서 30ms flush는 빠른 축. 200ms 지터라면 50~80ms로 늘린다.
-- `--decode-buf 12000`: 지터 100ms + RTT 600ms(위성) 환경에서 FEC 그룹이 순서를 벗어나 수백ms 후 도착 가능. 링버퍼가 작으면 그룹이 제거되어 FEC 복구 불가.
+- `--decode-buf 2000`: 링버퍼는 **시간이 아니라 패킷 개수**로 축출하므로 RTT·지터가 커도 개수 요구는 늘지 않는다. 필요 개수 = `(fec-timeout + 경로 지연차 + 지터폭) × 디코더 pps` 이고, 단일 스레드 상한(15.9 Mbps)에서 300ms 폭이어도 약 650 이다. **연결당** 할당(`2.2 MB + N×3.8 KB`)이라 키우면 다중 클라이언트 수용량만 깎인다.
 
 ### FEC 비율 조정 가이드 (FIFO 런타임)
 
@@ -1115,7 +1115,7 @@ FEC=20:7
 FEC_MODE=0
 FEC_TIMEOUT=30
 MTU=1200
-DECODE_BUF=12000
+DECODE_BUF=2000
 QUEUE_LEN=600
 SOCK_BUF=4096
 REPORT=30
@@ -1181,7 +1181,7 @@ multi-fec -s \
   --mode 0 \
   --fec-timeout 20 \
   --mtu 1250 \
-  --decode-buf 4000 \
+  --decode-buf 2000 \
   --sock-buf 4096 \
   --report 30 \
   --log-level 4 \
@@ -1201,7 +1201,7 @@ multi-fec -s \
   --mode 0 \
   --fec-timeout 20 \
   --mtu 1250 \
-  --decode-buf 4000 \
+  --decode-buf 2000 \
   --sock-buf 4096 \
   --report 30 \
   --log-level 4 \
@@ -1239,7 +1239,7 @@ multi-fec -c \
   --mode 0 \
   --fec-timeout 20 \
   --mtu 1250 \
-  --decode-buf 4000 \
+  --decode-buf 2000 \
   --sock-buf 4096 \
   --report 30 \
   --log-level 4
@@ -1442,14 +1442,14 @@ WantedBy=multi-user.target
 | # | 시나리오 | multipath-mode | FEC | --mode | fec-timeout | decode-buf | obfs | auth-interval |
 |---|---------|----------------|-----|--------|-------------|------------|------|---------------|
 | 1 | 국내 단일 경로 | failover | 20:2 | 0 | 8 | 2000 | quic | 30 |
-| 2 | 국제 단일 경로 | failover | 20:4 | 0 | 20 | 4000 | quic | 60 |
-| 3 | 국제 + 릴레이 2개 집계 | aggregate | 20:4 | 0 | 20 | 8000 | quic | 60 |
-| 4 | GFW 우회 | failover | 20:4 | 0 | 20 | 4000 | quic + decoy | 60 |
+| 2 | 국제 단일 경로 | failover | 20:4 | 0 | 20 | 2000 | quic | 60 |
+| 3 | 국제 + 릴레이 2개 집계 | aggregate | 20:4 | 0 | 20 | 2000 | quic | 60 |
+| 4 | GFW 우회 | failover | 20:4 | 0 | 20 | 2000 | quic + decoy | 60 |
 | 5 | 고가용성 duplicate | duplicate | 20:2 | 0 | 10 | 2000 | quic | 60 |
-| 6 | 3경로 집계+이중화 | aggregate-duplicate (dup=2) | 20:3 | 0 | 15 | 8000 | quic | 60 |
+| 6 | 3경로 집계+이중화 | aggregate-duplicate (dup=2) | 20:3 | 0 | 15 | 2000 | quic | 60 |
 | 7 | 최고속도 저손실 | failover | 20:1 / disable | 0 | 5 | 2000 | disable | 30 |
-| 8 | 고손실 위성/LTE | failover | 20:7 | 0 | 30 | 12000 | quic | 60 |
-| 9 | 릴레이 키별 라우팅 | failover | 20:4 | 0 | 20 | 4000 | quic | 60 |
+| 8 | 고손실 위성/LTE | failover | 20:7 | 0 | 30 | 2000 | quic | 60 |
+| 9 | 릴레이 키별 라우팅 | failover | 20:4 | 0 | 20 | 2000 | quic | 60 |
 | 10 | 게임/화상통화 | failover | 10:3 | **1** | **5** | 2000 | quic | 60 |
 
 ---

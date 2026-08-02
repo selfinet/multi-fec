@@ -634,12 +634,45 @@ mud_update_rl(struct mud *mud, struct mud_path *path, uint64_t now,
             uint64_t measured = (7 * rx_delta * MUD_ONE_SEC) / (8 * rx_dt);
             path->tx.rate = measured > 1000000ULL ? measured : 1000000ULL;  /* min 1MB/s */
         }
-        uint64_t tx_acc = tx_total - path->msg.tx.acc;
-        uint64_t rx_acc = rx_total - path->msg.rx.acc;
-        if (tx_acc && rx_acc <= tx_acc)
-            path->tx.loss = (tx_acc - rx_acc) * 255U / tx_acc;
+        /* Loss is a cross-side measurement: what one end sent versus what the
+         * other end reports receiving. Both tx_total and rx_total arrive in the
+         * peer's probe (mud_recv_msg), so pairing them compares the peer's send
+         * count against the peer's receive count — two opposite directions.
+         *
+         * That approximates the real loss as long as the link carries nothing
+         * but probes, because every probe draws a reply and the two directions
+         * stay balanced. It is why idle readings looked correct. Under
+         * asymmetric traffic it measures the imbalance instead: a path carrying
+         * downstream data but no upstream data reported 93% loss against a real
+         * 13%, tripped MUD_LOSSY (limit 200/255 = 78.4%), and then latched —
+         * LOSSY excludes the path from every send function, which removes the
+         * upstream side of the ratio and keeps the reading high indefinitely.
+         *
+         * Pair each direction with the counter from the other end instead. The
+         * current probe is not yet in path->rx.total (mud_recv bumps it after
+         * this call) but the snapshot is taken at the same point, so it cancels.
+         *
+         * rx_acc >= tx_acc means we observed no loss in this window; leaving
+         * tx.loss untouched there is what let a stale high value persist. */
+        uint64_t tx_acc = path->tx.total - path->msg.loss_tx_acc; /* we sent  */
+        uint64_t rx_acc = rx_total       - path->msg.rx.acc;      /* peer got */
+        if (tx_acc)
+            path->tx.loss = rx_acc >= tx_acc
+                          ? 0 : (tx_acc - rx_acc) * 255U / tx_acc;
+
+        /* Same for the reverse direction. path->rx.loss was read by
+         * mud_path_update() but never assigned anywhere, so half of the
+         * MUD_LOSSY test was dead code. */
+        uint64_t peer_tx_acc = tx_total       - path->msg.tx.acc;      /* peer sent */
+        uint64_t own_rx_acc  = path->rx.total - path->msg.loss_rx_acc; /* we got    */
+        if (peer_tx_acc)
+            path->rx.loss = own_rx_acc >= peer_tx_acc
+                          ? 0 : (peer_tx_acc - own_rx_acc) * 255U / peer_tx_acc;
+
         path->msg.rx.acc      = rx_total;
         path->msg.tx.acc      = tx_total;
+        path->msg.loss_tx_acc = path->tx.total;
+        path->msg.loss_rx_acc = path->rx.total;
         path->msg.rx.acc_time = now;
         path->msg.rx.time     = now;  /* recompute rate/tx.loss every 1s */
         path->msg.rx.bytes    = rx_bytes;  /* update the delta reference point */
@@ -1435,6 +1468,25 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
         return 0;
     }
 
+    /* Path accounting happens *before* the dedup decision below.
+     *
+     * A duplicate copy still arrived on this path — discarding it is a delivery
+     * decision, not a path loss event. Counting only the copy that survives
+     * dedup makes the slower of two duplicate paths look almost totally lossy,
+     * because its copy always arrives second and is dropped here. That was
+     * harmless while rx.loss was dead code, but v1.0.7 wired rx.loss into the
+     * MUD_LOSSY test, so the slower path started being excluded outright:
+     * measured with 25ms/30ms paths, the 30ms one reported rx.loss near 100%
+     * and dropped to LOSSY under load while carrying its share fine.
+     *
+     * It also starves path->rx.time, which drives MUD_PATH_DEAD_TIMEOUT — a
+     * path whose copies are all deduped would eventually look dead. */
+    path->idle          = now;
+    path->rx.total++;
+    path->rx.time       = now;
+    path->rx.bytes     += (size_t)decoded_size;
+    mud->last_recv_time = now;
+
     /* data packet — duplicate deduplication.
      *
      * The key is (sent timestamp, payload hash), never the timestamp alone.
@@ -1476,12 +1528,6 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
     if (payload > size) return 0;
 
     memcpy(data, decoded + MUD_TIME_SIZE, payload);
-
-    path->idle      = now;
-    path->rx.total++;
-    path->rx.time   = now;
-    path->rx.bytes += (size_t)decoded_size;
-    mud->last_recv_time = now;
 
     return (int)payload;
 }

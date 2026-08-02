@@ -7,6 +7,8 @@
 
 #include "misc.h"
 
+#include "obfs.h"   /* obfs_key_fingerprint() — keep the PSK out of the log */
+
 char fifo_file[1000] = "";
 
 int mtu_warn = 1350;
@@ -622,8 +624,34 @@ void process_arg(int argc, char *argv[]) {
 
     mylog(log_info, "argc=%d ", argc);
 
+    /* Dump the command line with secret-bearing values redacted.
+     *
+     * This is an info-level line, so without redaction a single log record hands
+     * the PSK to everyone who can read the journal — and journald keeps it. The
+     * key arrives as "-k SECRET", "-kSECRET", "--key[=]SECRET", or as the first
+     * field of --route's "key ip:port".
+     *
+     * (No live caller reaches this function today — multi-fec parses its own
+     * arguments in main.cpp:parse_args(). The redaction is here so that wiring
+     * process_arg() up later cannot silently start publishing the key.) */
+    int redact_next = 0;
     for (i = 0; i < argc; i++) {
-        log_bare(log_info, "%s ", argv[i]);
+        const char *a = argv[i];
+        if (redact_next) {
+            log_bare(log_info, "<redacted> ");
+            redact_next = 0;
+            continue;
+        }
+        if (strcmp(a, "-k") == 0 || strcmp(a, "--key") == 0 ||
+            strcmp(a, "--route") == 0) {
+            redact_next = 1;                 /* option name is fine; its value is not */
+        } else if ((strncmp(a, "-k", 2) == 0 && a[2] != '\0') ||
+                   strncmp(a, "--key=", 6) == 0 ||
+                   strncmp(a, "--route=", 8) == 0) {
+            log_bare(log_info, "<redacted> ");
+            continue;
+        }
+        log_bare(log_info, "%s ", a);
     }
     log_bare(log_info, "\n");
 
@@ -634,7 +662,11 @@ void process_arg(int argc, char *argv[]) {
         switch (opt) {
             case 'k':
                 sscanf(optarg, "%s\n", key_string);
-                mylog(log_debug, "key=%s\n", key_string);
+                {   /* fingerprint, not the key — see obfs_key_fingerprint() */
+                    char kfp[OBFS_KEY_FP_LEN];
+                    obfs_key_fingerprint(key_string, kfp, sizeof(kfp));
+                    mylog(log_debug, "key=%s\n", kfp);
+                }
                 if (strlen(key_string) == 0) {
                     mylog(log_fatal, "key len=0??\n");
                     myexit(-1);
