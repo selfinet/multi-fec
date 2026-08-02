@@ -1,0 +1,2 @@
+cond,delay0,delay1,skew_ms,rtt_ms,recv,lost,loss_pct,reord,reord_pct,disp_avg,disp_max,gw_Mbps,tcp_Mbps,tcp_retr
+D,10ms,80ms,70,24.519,37500,0,0.0,1601,4.2693,5.54,44,18.39,7.71,124
