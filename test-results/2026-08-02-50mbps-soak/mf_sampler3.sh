@@ -5,6 +5,15 @@
 # 시스템 전체 per-CPU 이용률 (mpstat -P ALL 과 동일 항목)
 #   → <out>_cpu.csv          ★ v3 추가분
 #
+# ★ 2026-08-02 추가: 호스트 UDP 카운터(/proc/net/snmp) — <out.csv> 뒤에 컬럼 추가
+#   CPU% 만 보면 포화를 늦게 안다. 이벤트 루프가 소켓을 못 비우면 커널 수신 버퍼가 차고
+#   **커널이 조용히 버리는데** 애플리케이션은 에러를 못 받는다. 이 드롭은 /proc/net/snmp 의
+#   RcvbufErrors 로만 보이며, 열화 순서는 ① RTT 상승 ② 커널 드롭 ③ FEC 복구 마감 초과
+#   ④ 종단 손실 이다. 즉 **RcvbufErrors 증가가 CPU% 보다 이른 실질 경보**다.
+#   rcvbuf_d(직전 샘플 대비 증가분)가 0 이 아니면 그 시점부터 이미 흘리고 있다는 뜻.
+#   주의: 호스트 전체 값이라 multi-fec 만의 것이 아니다(iperf3·WG 등 포함). 귀속이 필요하면
+#   `ss -unmp` 의 소켓별 드롭을 따로 봐야 한다.
+#
 # v2(mf_sampler2.sh) 대비 변경: per-CPU 사이드카 CSV 추가. 기존 CSV 스키마는 무변경이라
 # 기존 분석 스크립트가 그대로 동작한다.
 #
@@ -21,9 +30,9 @@ L=$1; IF=$2; SVC=$3; OUT=$4; DUR=$5; IV=$6
 END=$(( $(date +%s) + DUR ))
 HZ=$(getconf CLK_TCK)
 SYS_OUT="${OUT%.csv}_cpu.csv"
-echo "ts,label,pid,cpu_pct,rss_kb,fds,if_tx_bytes,if_rx_bytes,b11_sent,b11_drop,b12_sent,b12_drop" > "$OUT"
+echo "ts,label,pid,cpu_pct,rss_kb,fds,if_tx_bytes,if_rx_bytes,b11_sent,b11_drop,b12_sent,b12_drop,udp_in,udp_inerr,udp_rcvbuferr,udp_sndbuferr,rcvbuf_d" > "$OUT"
 echo "ts,label,cpu,usr,nice,sys,iowait,irq,soft,steal,guest,gnice,idle,busy" > "$SYS_OUT"
-prev_cpu=""; prev_t=""; prev_stat=""
+prev_cpu=""; prev_t=""; prev_stat=""; prev_rcv=""
 while [ "$(date +%s)" -lt "$END" ]; do
   now=$(date +%s)
   pid=$(systemctl show -p MainPID --value "$SVC" 2>/dev/null)
@@ -69,6 +78,14 @@ while [ "$(date +%s)" -lt "$END" ]; do
      read b11s b11d < <(tc -s class show dev "$IF" 2>/dev/null | awk '/class prio 1:1 /{f=1;next} f&&/Sent/{gsub(/,/,"",$2); gsub(/,/,"",$7); print $2, $7; exit}')
      read b12s b12d < <(tc -s class show dev "$IF" 2>/dev/null | awk '/class prio 1:2 /{f=1;next} f&&/Sent/{gsub(/,/,"",$2); gsub(/,/,"",$7); print $2, $7; exit}')
   fi
-  echo "$now,$L,$pid,$cpu,$rss,$fds,$tx,$rx,$b11s,$b11d,$b12s,$b12d" >> "$OUT"
+  # ── 호스트 UDP 카운터 ──────────────────────────────────────────────────────
+  # /proc/net/snmp 의 두 번째 "Udp:" 줄이 값이다:
+  #   $2 InDatagrams  $4 InErrors  $6 RcvbufErrors  $7 SndbufErrors
+  read -r uin uerr urcv usnd < <(awk '/^Udp:/{if(++n==2){print $2, $4, $6, $7; exit}}' /proc/net/snmp)
+  rcvd=""
+  [ -n "$prev_rcv" ] && rcvd=$(( ${urcv:-0} - prev_rcv ))
+  prev_rcv=${urcv:-0}
+
+  echo "$now,$L,$pid,$cpu,$rss,$fds,$tx,$rx,$b11s,$b11d,$b12s,$b12d,$uin,$uerr,$urcv,$usnd,$rcvd" >> "$OUT"
   sleep "$IV"
 done
