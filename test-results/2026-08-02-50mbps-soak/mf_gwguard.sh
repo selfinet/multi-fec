@@ -41,7 +41,7 @@ KILL_AT=$(awk -v a=$AVAIL -v t=$TRIP 'BEGIN{printf "%.1f", a*t/100}')
 usage() { cat <<U
 사용법:
   $0 sample                     # 현재 우리 몫(Mbps) 1회 출력
-  $0 budget <앱_각방향_Mbps>     # 그 레이트가 한도 안인지 사전 판정
+  $0 budget <세션당_각방향_Mbps> [세션수] [fec-timeout] [MTU]   # 사전 판정
   $0 watch "<중단할 명령 패턴>"   # 초과 시 해당 프로세스를 죽이며 감시 (포그라운드)
 환경변수: GW_LIMIT($LIMIT) GW_BASE($BASE) GW_TRIP($TRIP%) → 트립 $KILL_AT Mbps
 U
@@ -59,13 +59,29 @@ sample() {  # → 우리 몫 Mbps
 case "${1:-}" in
   sample) echo "$(sample) Mbps  (한도 $LIMIT − 기저 $BASE = 가용 $AVAIL, 트립 $KILL_AT)" ;;
   budget)
-    APP=${2:?앱 각 방향 Mbps}
-    awk -v app=$APP -v av=$AVAIL -v k=$KILL_AT -v lim=$LIMIT -v b=$BASE 'BEGIN{
-      g=app*2*3.54
-      printf "앱 각 방향 %.2f Mbps → gw 우리몫 %.1f, 총계 %.1f / 한도 %d (%.0f%%)\n", app,g,g+b,lim,(g+b)/lim*100
-      if (g>av)      { print "  ✗ 한도 초과 — 실행 금지"; exit 1 }
-      else if (g>k)  { printf "  △ 트립선(%.1f) 초과 — 레이트를 낮출 것\n", k; exit 1 }
-      else             printf "  ✓ 안전 (여유 %.1f Mbps)\n", av-g
+    # 사용: budget <세션당 각방향 Mbps> [세션수] [fec-timeout ms] [MTU바이트]
+    #
+    # ⚠️ 상수 계수 3.54 를 쓰면 안 된다 (2026-08-02 실측으로 확인).
+    # FEC 오버헤드는 그룹 크기 g 에 달렸고 g 는 **세션당 레이트**가 정한다:
+    #     g = 1 + floor(pps x fec-timeout),  pps = R x 1e6 / (8 x MTU)
+    # 6 Mbps/세션이면 g=7 -> 오버헤드 29% 지만, 0.6 Mbps/세션이면 g=1 ->
+    # 데이터1+패리티1 = **오버헤드 100%** 다. 상수 계수는 저레이트 다세션에서
+    # 항상 과소평가하고, 실제로 8세션x0.6 런에서 예측 34.0 vs 실측 44.3 (1.30배)
+    # 으로 한도의 96% 까지 갔다.
+    R=${2:?세션당 각 방향 Mbps}; NS=${3:-1}; FT=${4:-10}; MTU=${5:-1200}
+    awk -v r=$R -v ns=$NS -v ft=$FT -v mtu=$MTU -v av=$AVAIL -v k=$KILL_AT -v lim=$LIMIT -v b=$BASE 'BEGIN{
+      pps = r*1e6/(8*mtu)
+      g   = 1 + int(pps*ft/1000); if (g>20) g=20
+      # -f 5:1,20:4 보간 테이블
+      y = (g<=5)?1:((g<=10)?2:((g<=15)?3:4))
+      amp = (g+y)/g                    # FEC 증폭
+      f   = amp * 2 * 1.36             # x duplicate 2사본 x obfs 패딩·헤더
+      gw  = r * ns * 2 * f             # 양방향
+      printf "세션 %d x 각 방향 %.2f Mbps  (g=%d, y=%d → FEC %.2fx, 계수 %.2f)\n", ns, r, g, y, amp, f
+      printf "  gw 우리몫 %.1f, 총계 %.1f / 한도 %d (%.0f%%)\n", gw, gw+b, lim, (gw+b)/lim*100
+      if (gw>av)      { printf "  ✗ 한도 초과 (가용 %.1f) — 실행 금지\n", av; exit 1 }
+      else if (gw>k)  { printf "  △ 트립선(%.1f) 초과 — 레이트/세션수를 낮출 것\n", k; exit 1 }
+      else              printf "  ✓ 안전 (여유 %.1f Mbps)\n", av-gw
     }' ;;
   watch)
     PAT=${2:?중단할 프로세스 패턴}
