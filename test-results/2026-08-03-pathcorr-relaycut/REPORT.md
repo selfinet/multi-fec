@@ -12,6 +12,7 @@
 | 릴레이 단절(aggregate) | 미착수 |
 | gw 800 Mbps 사고 | 원인 구조 규명, 라우팅 수정 완료. **인과는 미확정** |
 | 라우팅 루프 제거 | ✅ c·s 양쪽 (런타임 + netplan + WG hook) |
+| 설정 고정 | ✅ c·s 부팅 자동기동(원래 `disabled` 였음) + r 의 `.85` DHCP→static |
 
 ---
 
@@ -99,7 +100,7 @@ pkill -f 'rc_echo[.]py'      # ← 이 명령을 실행하는 원격 셸 자신�
 
 재개 전 고쳐야 할 것:
 1. `rc_run.sh` 의 `pkill` 을 브래킷 패턴으로
-2. **규칙 변경 반영** — 프로브 목적지를 WG IP 로 (§5)
+2. **규칙 변경 반영** — 프로브 목적지를 WG IP 로 (§6)
 3. 부하 전 `mf_gwguard.sh watch` 기동
 
 ---
@@ -224,7 +225,125 @@ ip route replace 192.168.200.0/24 via 192.168.100.1 dev enp2s0
 
 ---
 
-## 5. 확정된 테스트 규칙 (사용자 지시)
+## 5. 설정 고정 (사용자 지시)
+
+라우팅을 고쳐도 **재부팅을 견디지 못하면 의미가 없다.** 현재 구성을 기준선으로 고정하면서
+두 가지 구멍을 찾았다.
+
+### 5-1. c·s 의 서비스가 부팅 시 안 올라왔다
+
+```
+변경 전   c: multi-fec-client[active/disabled]  wg-quick@starlink-fec[active/disabled]
+          s: multi-fec-server[active/disabled]  wg-quick@starlink-fec[active/disabled]
+          r: multi-fec-relay[active/enabled]    multi-fec-relay@b[active/enabled]
+```
+
+**c·s 는 수동 기동 상태로만 떠 있었다** — 재부팅하면 터널 체인이 안 올라온다. `crontab`·
+`rc.local` 등 다른 기동 경로도 없음을 확인했다. `starlink-fec` 은 테스트 전용이 아니라 c 가
+인터넷 프리픽스 48개를 실어 보내는 실사용 터널이므로 자동기동이 맞다고 판단해 `enable` 했다
+(`systemctl enable` 은 실행 중 서비스를 건드리지 않는다).
+
+라우팅만 고쳐놓고 이걸 놓쳤다면 다음 재부팅에 조용히 끊겼을 것이다.
+
+> `wg-quick@starlink-xdn`(직결)은 c=enabled / s=disabled 로 **비대칭**이다. 측정에 쓰지 않는
+> 터널이라 손대지 않았다.
+
+### 5-2. r 의 `.85` 가 DHCP 산물이었다
+
+```
+변경 전   ens18: 192.168.100.85/24  ← DHCP (LIFETIME 7200, 서버 = gw)
+                 192.168.100.86/24  ← static
+          default via 192.168.100.1  proto dhcp  metric 100
+```
+
+**secondary 가 primary 보다 안정적인 상태였다.** 위험은 둘이다:
+
+| 시나리오 | DHCP 일 때 | static 전환 후 |
+|---|---|---|
+| gw 가 `.85` 를 다른 장비에 배정 | 릴레이 `LISTEN=192.168.100.85:443` **바인딩 실패 → 기동 거부 → path[0] 소실** | 영향 없음 |
+| DHCP 서버 무응답 | **default route 소멸 → r→s 불가 → 두 경로 동시 사망** | 영향 없음 |
+
+부팅 후 **21주간 리스 갱신 약 3,650회 동안 `.85` 가 유지**돼 왔다 — gw 에 MAC 예약이 걸려
+있을 가능성이 높지만 gw 조회는 금지 범위라 확인하지 못했다. 다만 위 표대로 multi-fec 관점에서는
+static 이 두 경우 모두 낫기 때문에 전환했다.
+
+**전환 전 검토에서 걸러낸 3가지:**
+
+1. **`dhcp4: false` 명시 필요.** netplan 은 파일을 **키 단위로 병합**하므로 이 줄이 없으면
+   `50-cloud-init.yaml` 의 `dhcp4: true` 가 살아남는다. 기존 `99-relay-secondary.yaml` 이
+   `addresses` 만 얹어 DHCP 와 공존했던 것이 그 증거다.
+2. **DHCP 가 주던 것 전수 대체.** 리스에 있던 것은 주소·넷마스크·`ROUTER`·`DNS` 네 가지 →
+   `addresses` / `routes: default` / `nameservers` 로 덮었다.
+3. **MTU.** 생성 설정에 `UseMTU=true` 가 있어 DHCP 가 MTU 를 줄 수 있었다. 리스를 확인해
+   **MTU 옵션이 없음**을 보고 진행했다(1500 유지). 있었다면 static 전환이 `--mtu 1350`
+   전제를 흔들었을 것이다.
+
+생성 결과를 diff 로 등가 확인한 뒤 적용했다:
+
+```diff
+ [Network]
+-DHCP=ipv4
+ LinkLocalAddressing=ipv6
++Address=192.168.100.85/24
+ Address=192.168.100.86/24
++DNS=8.8.8.8
+-[DHCP]
+-RouteMetric=100
+-UseMTU=true
++[Route]
++Destination=0.0.0.0/0
++Gateway=192.168.100.1
+```
+
+DHCP 항목이 **같은 값의 static 항목으로 1:1 대체**된다. 사라지는 `8.8.8.8 via .1`·
+`.1 scope link` 호스트 라우트는 default 와 온링크 `/24` 가 덮으므로 무해하다.
+
+### 5-3. ⚠️ r 에 `netplan apply` 하는 절차
+
+**r 은 `ens18` 로만 접근 가능하고 콘솔이 없다** — 설정이 틀리면 원격 복구가 불가능하고 릴레이
+2개가 동시에 죽는다. 안전망을 걸고 진행했다:
+
+```bash
+# ③ 180초 후 자동 원복 예약 (SSH 끊겨도 살아남는 transient unit)
+sudo systemd-run --unit=netplan-revert --on-active=180 /bin/bash -c \
+  'cp <백업> /etc/netplan/99-relay-secondary.yaml && netplan apply'
+# ④ apply 도 detached 로 (SSH 끊겨도 완주)
+sudo systemd-run --unit=netplan-apply-now /usr/sbin/netplan apply
+# ⑤ 재접속·주소·라우팅·DNS·MTU·릴레이·s도달 확인 → ⑥ 타이머 stop
+```
+
+`netplan try` 는 TTY 확인이 필요해 **비대화형에서는 항상 되돌아가므로 쓸 수 없다.**
+
+### 5-4. 고정된 기준선
+
+| 호스트 | 주소 | 라우팅 | 부팅 자동기동 |
+|---|---|---|---|
+| c | `.141/24` + `.50.1/24` static | default → gw, `.200.0/24` → gw | client, wg-fec, mf-netem |
+| r | `.85/24` + `.86/24` **static** | default → gw (`proto static`) | relay, relay@b, mf-netem |
+| s | `.200.254/24` static | `.100.0/24` → gw | server, wg-fec |
+
+**기준값**: WG 터널 RTT 54.3~54.9 ms, s→릴레이 1.00 ms, c→s `.254` 1.30 ms,
+유휴 시 s ens18 RX/TX 약 120/210 kbps. r 의 DHCP 리스 파일 **0개**.
+
+`netplan apply` 는 c·s 에서는 **미실행**(런타임이 이미 올바르고 운영 호스트 단절 위험 회피),
+r 에서만 안전망을 걸고 실행했다. 생성물에 `[Route]` 가 들어간 것을 확인했으므로 c·s 도
+다음 부팅에 적용된다.
+
+### 5-5. 삭제한 잔재 (사용자 승인)
+
+- **루프 라우트 담긴 백업** — c·s 의 netplan/postup/postdown `*.bak-20260803`,
+  `/tmp/route-backup-*.bin`. **복원하면 루프가 되살아난다.** 정상 설정은 라이브 파일에 있고
+  c 의 프리픽스 48개도 온전하다.
+- **c `client.conf` 의 `DEST_C=192.168.100.85:8443`** — 가리키는 릴레이가 없어진 잔재
+  (미사용 변수라 무해했음). unit 은 `${DEST_A}`/`${DEST_B}` 만 참조.
+- **하네스 스크립트** — c·r·s 의 `/tmp/pc_*`, `/tmp/rc_*`. 리포에 사본 있음(§7).
+- **s `/etc/rc.local`** — 실행권한 없고 `rc-local` 도 inactive 인 완전 사문. 삭제 전 확인:
+  참조 프로세스 0개, 넣는다는 라우트 4개 전부 부재. multi-fec 무관한 타 서비스 중계 설정이
+  들어 있었고 **내용은 복원 불가**다.
+
+---
+
+## 6. 확정된 테스트 규칙 (사용자 지시)
 
 **규칙 1 — 트래픽 테스트는 WG IP 사이에서만.**
 
@@ -246,7 +365,7 @@ raw UDP 를 쏴서 하부 전송망을 건드렸고 그게 §3-4 의 루프 조�
 
 ---
 
-## 6. 하네스
+## 7. 하네스
 
 | 파일 | 호스트 | 역할 | 트래픽 생성 |
 |---|---|---|---|
@@ -267,7 +386,7 @@ raw UDP 를 쏴서 하부 전송망을 건드렸고 그게 §3-4 의 루프 조�
 
 ---
 
-## 7. 남은 과제
+## 8. 남은 과제
 
 | 순위 | 항목 | 비고 |
 |---|---|---|
