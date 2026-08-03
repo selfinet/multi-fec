@@ -19,6 +19,10 @@ ap.add_argument("--size", type=int, default=1000)
 ap.add_argument("--bucket-ms", type=int, default=100)
 ap.add_argument("--out", required=True)
 ap.add_argument("--drain", type=float, default=3.0, help="송신 후 회수 대기(초)")
+ap.add_argument("--mark-at", default="",
+                help="쉼표로 구분한 절대 epoch 목록. 각 시각에 자기 시간축 위치를 기록한다. "
+                     "절단·복구 시각을 sv1 에서 ssh 로 찍으면 ssh 왕복(~1s)이 그대로 오차가 "
+                     "되므로, 여기서 자기 시계로 직접 표시한다.")
 a = ap.parse_args()
 
 h, p = a.dest.rsplit(":", 1)
@@ -66,6 +70,23 @@ def rx():
 th = threading.Thread(target=rx, daemon=True)
 th.start()
 
+# 절대시각 마커 — 각 epoch 까지 자기 시계로 sleep 한 뒤 그 순간의 t_us 를 남긴다.
+# 이렇게 하면 절단 시각이 **프로브 자신의 시간축에서 직접** 확정되므로
+# t0_wall 산술이나 호스트 간 시계차에 의존하지 않는다.
+marks = []
+
+
+def marker():
+    for i, ts in enumerate([float(x) for x in a.mark_at.split(",") if x.strip()]):
+        d = ts - time.time()
+        if d > 0:
+            time.sleep(d)
+        marks.append((i, int((time.perf_counter() - t0) * 1e6)))
+
+
+if a.mark_at:
+    threading.Thread(target=marker, daemon=True).start()
+
 interval = 1.0 / a.pps
 total = int(a.pps * a.secs)
 for seq in range(total):
@@ -88,6 +109,8 @@ th.join(timeout=2)
 
 with open(a.out, "w") as f:
     f.write("# t0_wall=%.6f pps=%d secs=%g\n" % (t0_wall, a.pps, a.secs))
+    for i, us in marks:
+        f.write("# mark%d_ms=%.1f\n" % (i, us / 1000.0))
     f.write("t_ms,sent,recv,rtt_p50_us,rtt_max_us\n")
     for i in range(NB):
         if sent_b[i] == 0 and recv_b[i] == 0:

@@ -104,19 +104,27 @@ case "${1:-}" in
         # ⚠️ 부모만 죽이면 자식 multi-fec 이 고아로 남아 리슨 포트를 계속 잡는다.
         # 2026-08-03: 그 고아 8개가 이후 런의 포트를 SO_REUSEPORT 로 나눠 가져
         # 세션 절반이 조용히 죽는 현상을 만들었다. 자식까지 확실히 정리한다.
+        # ⚠️ 원격 kill 은 **bracket 패턴**을 써야 한다.
+        # 2026-08-03: 아래 ssh 커맨드라인에는 패턴 문자열이 그대로 들어 있어
+        # `pgrep -f "$PAT"` 가 **그 셸 자신**을 매치했다. 루프가 자기를 kill -9 하면
+        # 뒤따르는 `pkill -9 -f` 가 실행되지 않아 **정작 부하가 살아남는다.**
+        # 가드가 부하를 못 멈추는 것은 가드가 없는 것과 같다(800 Mbps 사고와 같은 구조).
+        # '[r]c_probe.py' 는 정규식으로 'rc_probe.py' 를 매치하지만, 이 문자열이 든
+        # 커맨드라인에는 'rc_probe.py' 가 나타나지 않아 자기를 매치하지 않는다.
+        BPAT="[${PAT:0:1}]${PAT:1}"
         # 로컬(ssh 래퍼 포함) — 자식까지
-        for p in $(pgrep -f "$PAT"); do
+        for p in $(pgrep -f "$BPAT"); do
             pkill -9 -P "$p" 2>/dev/null
             kill -9 "$p" 2>/dev/null
         done
-        pkill -9 -f "$PAT" 2>/dev/null
+        pkill -9 -f "$BPAT" 2>/dev/null
         # 원격 — 부하 생성기는 c 에서 돌고 그 자식이 multi-fec 이다.
         # 부모만 죽이면 자식이 고아가 되어 SO_REUSEPORT 로 다음 런의 포트를
         # 나눠 가지므로 세션 절반이 조용히 죽는다(2026-08-03 실제 발생).
         for H in $KILL_HOSTS; do
-            ssh -o ConnectTimeout=5 "$H" "for p in \$(pgrep -f '$PAT'); do
+            ssh -o ConnectTimeout=5 "$H" "for p in \$(pgrep -f '$BPAT'); do
                     sudo pkill -9 -P \$p 2>/dev/null; sudo kill -9 \$p 2>/dev/null; done
-                sudo pkill -9 -f '$PAT' 2>/dev/null" 2>/dev/null
+                sudo pkill -9 -f '$BPAT' 2>/dev/null; exit 0" 2>/dev/null
         done
         exit 2
       fi

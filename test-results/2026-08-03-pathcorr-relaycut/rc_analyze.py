@@ -17,20 +17,32 @@ for line in open(ev_path):
 
 rows = []
 t0_wall = None
+marks = {}
 for line in open(csv_path):
     line = line.strip()
     if line.startswith("#"):
         for tok in line.lstrip("# ").split():
             if tok.startswith("t0_wall="):
                 t0_wall = float(tok.split("=", 1)[1])
+            elif tok.startswith("mark") and "_ms=" in tok:
+                k, v = tok.split("=", 1)
+                marks[k] = float(v)
         continue
     if line.startswith("t_ms"):
         continue
     p = line.split(",")
     rows.append((int(p[0]), int(p[1]), int(p[2]), int(p[3]), int(p[4])))
 
-cut_ms = (float(ev["t_cut"]) - t0_wall) * 1000
-res_ms = (float(ev["t_restore"]) - t0_wall) * 1000
+# 절단·복구 위치는 **프로브가 자기 시간축에 남긴 마커**를 쓴다.
+# sv1 에서 ssh 로 찍은 시각은 왕복 ~1s 가 그대로 오차가 되고(버킷은 100ms),
+# ssh 세션 설정 때문에 오프셋 측정 자체가 +0.5s 편향된다(2026-08-03 실측).
+axis = "마커(프로브 자체 시계)"
+if "mark0_ms" in marks and "mark1_ms" in marks:
+    cut_ms, res_ms = marks["mark0_ms"], marks["mark1_ms"]
+else:
+    axis = "t0_wall 산술 — ⚠️ 마커 없음, 호스트 간 시계차만큼 오차"
+    cut_ms = (float(ev["t_cut"]) - t0_wall) * 1000
+    res_ms = (float(ev["t_restore"]) - t0_wall) * 1000
 
 
 def window(lo, hi):
@@ -57,6 +69,9 @@ def first_recovered(start_ms, need=3):
 print("=" * 66)
 print("릴레이 단절 — %s   (절단 t=%.0fms, 복구 t=%.0fms)"
       % (ev.get("method", "?"), cut_ms, res_ms))
+print("시간축 기준: %s" % axis)
+if ev.get("r_after"):
+    print("복구 후 r 상태: %s  (기대: active active 0)" % ev["r_after"].strip())
 print("=" * 66)
 print()
 for name, lo, hi in [
