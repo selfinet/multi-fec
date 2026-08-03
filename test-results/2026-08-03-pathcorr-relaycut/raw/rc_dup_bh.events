@@ -1,0 +1,8 @@
+method=blackhole
+tag=dup_bh
+t_cut=1785770421
+t_restore=1785770481
+pps=200 secs=180 size=1000 dest=10.9.10.1:40010
+r_after=active active 0 
+mark0_ms=48661.5
+mark1_ms=108673.6

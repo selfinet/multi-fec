@@ -1,3 +1,8 @@
-t_cut=1785735910.029623744
-t_restore=1785735977.028770519
 method=stop
+tag=dup_stop
+t_cut=1785770072
+t_restore=1785770132
+pps=200 secs=180 size=1000 dest=10.9.10.1:40010
+r_after=active active 0 
+mark0_ms=48895.4
+mark1_ms=108905.3
