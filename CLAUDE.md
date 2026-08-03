@@ -14,9 +14,16 @@
   - `--version` 표기: `common.h`의 `MULTI_FEC_VERSION`("1.0.0") + Makefile `git_version`이 `git describe --tags --dirty --always`로 넣는 실제 리비전 + 빌드시각. (구버전은 git 리비전만 표기했음)
   - 빌드: `make clean` 후 곧바로 `make -j$(nproc)` 해도 된다. (v1.0.3에서 `git_version.h`를 실제 파일 타깃으로 바꿔 병렬 빌드 경합을 없앴다 — §20-바. 그 전에는 `make git_version`을 먼저 실행해야 했다.)
   - 메모리·미정의동작 점검이 필요하면 `make asan` → `./multi-fec-asan` (테스트 스크립트에 `BIN=./multi-fec-asan`).
-- **실행(테스트)**: 실제 실행·측정은 **테스트망**에서. Server `s.xdn.selfinet.com`(공인 218.154.1.134), Client `c.xdn.selfinet.com`(Atom N2600), Relay `r.xdn.selfinet.com`(LAN 192.168.100.85). 세 호스트 nopasswd sudo, 배포 바이너리 `/usr/sbin/multi-fec-dist`, systemd `multi-fec-{server,client,relay}`.
+- **실행(테스트)**: 실제 실행·측정은 **테스트망**에서. Server `s.xdn.selfinet.com`(**리슨은 사설 `192.168.200.254:443` 전용** — ens18 사설 IP에만 바인딩하며 공인 218.154.1.134 로는 서비스하지 않는다), Client `c.xdn.selfinet.com`(Atom N2600, 192.168.100.141), Relay `r.xdn.selfinet.com`(LAN `192.168.100.85` + `192.168.100.86` static). 세 호스트 nopasswd sudo, 배포 바이너리 `/usr/sbin/multi-fec-dist`, systemd `multi-fec-{server,client,relay}`.
+- **경로 구성 (2026-08-02 개편)**: **2경로 모두 릴레이 경유**. 릴레이 인스턴스가 2개여야 한다 — 한 프로세스가 두 IP를 받으면 클라이언트 mud 의 단일 UDP 소켓 때문에 두 경로가 같은 세션·같은 upstream 소켓으로 합쳐진다.
+  ```
+  path[0]  c ──► r 192.168.100.85:443 (multi-fec-relay)   ──► gw ──► s 192.168.200.254:443
+  path[1]  c ──► r 192.168.100.86:443 (multi-fec-relay@b) ──► gw ──► s 192.168.200.254:443
+  ```
+  `c→r` 은 온링크(같은 /24)라 **gw 를 타지 않는다**. gw 를 지나는 것은 `r↔s` 구간뿐이므로 gw 부하 대리지표는 **`s` 의 `ens18` RX+TX**다. 두 경로가 릴레이 호스트 `r` 과 gw 를 공유하므로 **호스트·회선 장애는 분리되지 않는다**(프로세스 장애만 분리).
 - **터널**: multi-fec 경유 WG는 `starlink-fec`(s=10.9.10.1, c=10.9.10.2). 직결 `starlink-xdn`(10.9.9.x)은 미경유 — 측정에 쓰지 말 것.
-- **netem**: s.xdn `ens19` egress에 `delay 25±5ms / loss 15±25%` → **다운스트림(서버→클라)에만 적용**(업스트림 미적용).
+- **netem**: `mf-netem.service`(systemd oneshot, c·r 양쪽 enabled)로 **`c↔r` 구간**에 경로별 적용. 현재 값 **path[0](.85) 편도 25ms/5%, path[1](.86) 편도 30ms/2%** (= RTT 50/60ms, **양방향**). 값 변경은 `/etc/multi-fec/netem.conf` 수정 후 c·r **양쪽** `systemctl restart mf-netem`. 링크 플랩 시 qdisc 가 사라지므로 재적용 필요.
+  > ⚠️ **u32 필터는 dst IP 뿐 아니라 `dport 443` 까지 매치한다.** 다른 포트로 프로브를 쏘면 band 3(무임피어먼트)로 빠져 **netem 을 전혀 받지 않는다** — 측정이 조용히 무의미해진다. 프로브를 실제 경로와 같은 조건에 두려면 `pref 2` 로 프로브 포트용 필터를 추가하고 끝나면 지운다(`test-results/2026-08-03-pathcorr-relaycut/pc_setup.sh`).
 - **운영 변경 시**: mode 전환은 `.service` ExecStart `--mode N` 하드코딩(FIFO는 mode2 미지원)이라 sed+daemon-reload+restart. 측정 후 **반드시 mode1+원본 바이너리로 원복**(unit 백업, 바이너리 `.bak-precauchy` 보관).
 
 ## 프로젝트 개요
