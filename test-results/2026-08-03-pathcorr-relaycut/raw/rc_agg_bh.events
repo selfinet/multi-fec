@@ -1,0 +1,8 @@
+method=blackhole
+tag=agg_bh
+t_cut=1785772340
+t_restore=1785772400
+pps=200 secs=180 size=1000 dest=10.9.10.1:40010
+r_after=active active 0 
+mark0_ms=48388.8
+mark1_ms=108400.8
