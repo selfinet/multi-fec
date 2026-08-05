@@ -2512,6 +2512,7 @@ routing 이 필수**다(소스별 `ip rule` + 테이블). 없으면 `IP_B` 소�
 - `test_downstream_multi.py` — 다중 클라이언트 **다운스트림** 전달 검증 (모드 4종 × 세션 1/2/4 × FEC on/off = 24 케이스). 기존 스위트가 업스트림만 보던 공백을 메운다. §19-가 회귀 방지.
 - `test_relay_routing.py` — 릴레이 키별 라우팅 9개 케이스 (TC6 = 로그에 PSK 평문 없음, §23 회귀 방지)
 - `mf_ladder2.sh` (`test-results/2026-08-01-fec-tuning/`) — 테스트망 부하 계단 하네스 v2. TCP 는 `--fq-rate` 커널 페이싱, 워치독 트립 시 캡 절반 자동 재시도. **테스트망에서만 실행**
+- `ifdelta.sh` (`test-results/2026-08-06-postmove-loadtest/`) — 전 호스트 전 인터페이스 RX/TX 델타. 시험 트래픽이 테스트망 밖으로 새는지 확인하는 데 쓴다(원격에서 두 시점을 모두 재고 원격 시계로 나눈다). **테스트망에서만 실행**
 - `mf_gwguard.sh` (`test-results/2026-08-02-50mbps-soak/`) — **부하 감시·차단. 모든 부하 하네스가 이걸 쓴다.** 2026-08-05 재작성: gw 대역폭 대리지표 → **호스트 CPU·최고1코어·링크** 직접 측정(위 규칙 0 표). `precheck`(전제 검증) · `sample` · `budget`(용량 모델) · `watch`(트립 시 부하 중단). 이름은 역사적 — 호출부가 전부 이 이름을 쓴다. **테스트망에서만 실행**
 - `mf_sampler3.sh` (`test-results/2026-08-02-50mbps-soak/`) — 자원 샘플러 v3. v2 의 프로세스 CPU/RSS/FD/iface/netem 에 더해 **시스템 전체 per-CPU** 를 `<out>_cpu.csv` 사이드카로 남긴다(`/proc/stat` 델타, mpstat 과 동일 항목·수식). v2 는 프로세스 하나만 봐서 softirq·WG·부하생성기를 포함한 머신 총량을 알 수 없었다. **주의**: 프로세스 `cpu_pct` 는 논리 CPU 1개=100% 기준이고 사이드카는 코어별 100% 기준이라 스케일이 다르다. **테스트망에서만 실행**
 - `test_all_options.py` — 전체 CLI 옵션 90개 케이스

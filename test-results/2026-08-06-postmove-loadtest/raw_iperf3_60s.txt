@@ -1,0 +1,25 @@
+Connecting to host 10.9.10.1, port 5201
+[  5] local 10.9.10.2 port 36850 connected to 10.9.10.1 port 5201
+[  7] local 10.9.10.2 port 47046 connected to 10.9.10.1 port 5201
+[ ID][Role] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5][TX-C]   0.00-10.00  sec  4.77 MBytes  4.00 Mbits/sec            4007  
+[  7][RX-C]   0.00-10.00  sec  4.77 MBytes  4.00 Mbits/sec  0.722 ms  0/4007 (0%)  
+[  5][TX-C]  10.00-20.00  sec  4.77 MBytes  4.00 Mbits/sec            4006  
+[  7][RX-C]  10.00-20.00  sec  4.77 MBytes  4.00 Mbits/sec  0.878 ms  0/4007 (0%)  
+[  5][TX-C]  20.00-30.00  sec  4.77 MBytes  4.00 Mbits/sec            4006  
+[  7][RX-C]  20.00-30.00  sec  4.77 MBytes  4.00 Mbits/sec  0.384 ms  0/4006 (0%)  
+[  5][TX-C]  30.00-40.00  sec  4.77 MBytes  4.00 Mbits/sec            4007  
+[  7][RX-C]  30.00-40.00  sec  4.77 MBytes  4.00 Mbits/sec  0.405 ms  0/4007 (0%)  
+[  5][TX-C]  40.00-50.00  sec  4.77 MBytes  4.00 Mbits/sec            4006  
+[  7][RX-C]  40.00-50.00  sec  4.77 MBytes  4.00 Mbits/sec  1.013 ms  0/4006 (0%)  
+[  5][TX-C]  50.00-60.00  sec  4.77 MBytes  4.00 Mbits/sec            4007  
+[  7][RX-C]  50.00-60.00  sec  4.77 MBytes  4.00 Mbits/sec  0.240 ms  0/4007 (0%)  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID][Role] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5][TX-C]   0.00-60.00  sec  28.6 MBytes  4.00 Mbits/sec  0.000 ms  0/24039 (0%)  sender
+[  5][TX-C]   0.00-60.06  sec  28.6 MBytes  4.00 Mbits/sec  0.861 ms  0/24039 (0%)  receiver
+[  7][RX-C]   0.00-60.00  sec  28.6 MBytes  4.00 Mbits/sec  0.000 ms  0/24063 (0%)  sender
+[SUM][RX-C]  0.0-60.0 sec  887 datagrams received out-of-order
+[  7][RX-C]   0.00-60.06  sec  28.6 MBytes  4.00 Mbits/sec  0.240 ms  0/24040 (0%)  receiver
+
+iperf Done.
