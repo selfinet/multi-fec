@@ -67,6 +67,7 @@ static int         g_mtu              = default_mtu;
 static int         g_queue_len        = 200;
 static int         g_sock_buf         = 0;
 static address_t   g_upstream_addr;                       /* relay: --upstream */
+address_t          g_upstream_local;                      /* relay: --upstream-local (read by mf_relay.cpp) */
 
 /* ─── obfs hook wrappers ──────────────────────────────────────── */
 
@@ -171,6 +172,15 @@ static void print_help(const char *prog)
         "                          (e.g. 127.0.0.1:51820)\n"
         "  --upstream ip:port    [Relay]  Server address to forward packets to\n"
         "                          (e.g. 1.2.3.4:443)\n"
+        "  --upstream-local ip   [Relay]  Source IP for the upstream (relay->server)\n"
+        "                          socket. Bare IP, no port — the source port is always\n"
+        "                          ephemeral (one upstream socket per client session).\n"
+        "                          Default: unset, kernel picks the route-preferred source.\n"
+        "                          The -l listen address does NOT carry over: listen and\n"
+        "                          upstream are separate sockets. Set this when several\n"
+        "                          relay instances on one host must be distinguishable\n"
+        "                          by source IP upstream.\n"
+        "                          (e.g. --upstream-local 192.168.100.86)\n"
         "  --route \"key ip:port\" [Relay]  Key-based upstream routing. Repeatable.\n"
         "                          HMAC of each key tried in order; first match routes\n"
         "                          the session to that upstream. Mutually exclusive with\n"
@@ -305,6 +315,7 @@ enum {
     OPT_AUTH_INTERVAL,
     OPT_VERSION,
     OPT_ROUTE,
+    OPT_UPSTREAM_LOCAL,
 };
 
 static const struct option long_opts[] = {
@@ -336,6 +347,7 @@ static const struct option long_opts[] = {
     { "auth-interval",      required_argument, NULL, OPT_AUTH_INTERVAL       },
     { "version",            no_argument,       NULL, OPT_VERSION             },
     { "route",              required_argument, NULL, OPT_ROUTE               },
+    { "upstream-local",     required_argument, NULL, OPT_UPSTREAM_LOCAL      },
     { "help",               no_argument,       NULL, 'h'                     },
     { NULL,               0,                 NULL, 0                   },
 };
@@ -410,6 +422,24 @@ static void parse_args(int argc, char *argv[])
             }
             mylog(log_info, "relay upstream: %s\n", g_upstream_addr.get_str());
             break;
+
+        case OPT_UPSTREAM_LOCAL: {
+            /* Bare IP only — no port. The relay allocates one upstream socket PER
+             * client session, so a fixed source port would bind-collide on the
+             * second session. Reject it explicitly rather than fail at runtime. */
+            const char *colon = strchr(optarg, ':');
+            if (optarg[0] == '[' || (colon && strchr(optarg, '.'))) {
+                fprintf(stderr, "error: --upstream-local takes a bare IP, not ip:port: '%s'\n", optarg);
+                fprintf(stderr, "  the source port is always ephemeral (one socket per relay session)\n");
+                exit(1);
+            }
+            if (g_upstream_local.from_str_ip_only(optarg) != 0) {
+                fprintf(stderr, "error: --upstream-local address parse failed: '%s'\n", optarg);
+                exit(1);
+            }
+            mylog(log_info, "relay upstream source: %s\n", g_upstream_local.get_str());
+            break;
+        }
 
         case OPT_ROUTE: {
             /* --route "keystring ip:port" */
@@ -745,6 +775,14 @@ int main(int argc, char *argv[])
         struct timespec ts;
         clock_gettime(CLOCK_MONOTONIC, &ts);
         srand((unsigned)(ts.tv_sec ^ ts.tv_nsec));
+    }
+
+    /* --upstream-local only affects the relay's upstream socket. Silently ignoring it
+     * elsewhere would look like it took effect, so refuse instead. */
+    if (g_upstream_local.is_vaild() && program_mode != relay_mode) {
+        fprintf(stderr, "error: --upstream-local is valid only in relay mode (-r)\n");
+        fprintf(stderr, "  client: use --path <local_ip>:<remote_ip>:<port> to set the source IP\n");
+        return 1;
     }
 
     if (program_mode == relay_mode) {

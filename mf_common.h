@@ -52,3 +52,9 @@ extern address_t                  g_wg_addr;        /* server --wg WireGuard ups
 extern multipath_mode_t           g_multipath_mode; /* multipath operating mode */
 extern unsigned                   g_dup_factor;     /* aggregate-duplicate path duplication count */
 extern std::vector<route_entry_t> g_routes;         /* relay per-key upstream routing table */
+
+/* Relay --upstream-local: source IP to bind the upstream (relay->server) socket to.
+ * Invalid (the default) means no bind, so the kernel picks the route-preferred
+ * source address. Note the listen address does NOT carry over to the upstream
+ * socket: they are separate sockets, and only the listen one is bound. */
+extern address_t                  g_upstream_local;
