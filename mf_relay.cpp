@@ -279,6 +279,27 @@ static int new_upstream_fd(address_t &remote)
         mylog(log_warn, "[relay] socket(): %s\n", strerror(errno));
         return -1;
     }
+
+    /* --upstream-local: pin the source IP. Without this the kernel picks the
+     * route-preferred source, so every relay instance on a host leaves from the
+     * same address regardless of which IP its listen socket is bound to.
+     * Port stays 0 (ephemeral) — from_str_ip_only() zeroes it and the CLI
+     * rejects an explicit port, since there is one such socket per session. */
+    if (g_upstream_local.is_vaild()) {
+        if (g_upstream_local.get_type() != remote.get_type()) {
+            mylog(log_warn, "[relay] --upstream-local family differs from upstream %s — not bound\n",
+                  remote.get_str());
+        } else if (bind(fd, (struct sockaddr *)&g_upstream_local.inner,
+                        g_upstream_local.get_len()) < 0) {
+            /* Fatal for this session: the caller asked for a specific source
+             * address, and falling back to another one would silently defeat it. */
+            mylog(log_warn, "[relay] bind upstream source %s: %s\n",
+                  g_upstream_local.get_str(), strerror(errno));
+            close(fd);
+            return -1;
+        }
+    }
+
     if (connect(fd, (struct sockaddr *)&remote.inner, remote.get_len()) < 0) {
         mylog(log_warn, "[relay] connect upstream: %s\n", strerror(errno));
         close(fd);
@@ -531,6 +552,10 @@ void mf_relay_event_loop(address_t &listen_addr, address_t &upstream_addr,
         g_builtin_ctx = g_routes[0].obfs;
     else
         obfs_init(&g_builtin_ctx, "", OBFS_MODE_QUIC);
+
+    if (g_upstream_local.is_vaild())
+        mylog(log_info, "[relay] upstream source IP = %s (bound)\n",
+              g_upstream_local.get_str());
 
     if (!g_routes.empty()) {
         mylog(log_info, "[relay] listen=%s  mode=key-routing  routes=%zu\n",
