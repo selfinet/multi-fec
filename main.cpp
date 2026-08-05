@@ -25,6 +25,7 @@ extern "C" {
 #include <stdlib.h>
 #include <arpa/inet.h>
 #include <sys/socket.h>
+#include <ifaddrs.h>
 #include <fcntl.h>
 #include <unistd.h>
 
@@ -68,6 +69,7 @@ static int         g_queue_len        = 200;
 static int         g_sock_buf         = 0;
 static address_t   g_upstream_addr;                       /* relay: --upstream */
 address_t          g_upstream_local;                      /* relay: --upstream-local (read by mf_relay.cpp) */
+static std::vector<address_t> g_accept_local;             /* server: --accept-local (allowed local addrs) */
 
 /* ─── obfs hook wrappers ──────────────────────────────────────── */
 
@@ -170,6 +172,16 @@ static void print_help(const char *prog)
         "                          Range: 1–8. Clamped automatically if greater than path count.\n"
         "  --wg ip:port          [Server] WireGuard server upstream address\n"
         "                          (e.g. 127.0.0.1:51820)\n"
+        "  --accept-local ip     [Server] Serve only packets that arrived on this local\n"
+        "                          address. Repeatable, up to 16. Bare IP, no port.\n"
+        "                          Only meaningful with -l 0.0.0.0 (or [::]): a socket\n"
+        "                          bound to one address is already restricted by the\n"
+        "                          kernel, and non-matching entries are refused at start.\n"
+        "                          Default: unset, every local address is served.\n"
+        "                          Non-matching packets are dropped silently — answering\n"
+        "                          would advertise the service on an unserved address.\n"
+        "                          (e.g. -l 0.0.0.0:443 --accept-local 1.2.3.4\n"
+        "                                --accept-local 5.6.7.8)\n"
         "  --upstream ip:port    [Relay]  Server address to forward packets to\n"
         "                          (e.g. 1.2.3.4:443)\n"
         "  --upstream-local ip   [Relay]  Source IP for the upstream (relay->server)\n"
@@ -316,6 +328,7 @@ enum {
     OPT_VERSION,
     OPT_ROUTE,
     OPT_UPSTREAM_LOCAL,
+    OPT_ACCEPT_LOCAL,
 };
 
 static const struct option long_opts[] = {
@@ -348,6 +361,7 @@ static const struct option long_opts[] = {
     { "version",            no_argument,       NULL, OPT_VERSION             },
     { "route",              required_argument, NULL, OPT_ROUTE               },
     { "upstream-local",     required_argument, NULL, OPT_UPSTREAM_LOCAL      },
+    { "accept-local",       required_argument, NULL, OPT_ACCEPT_LOCAL        },
     { "help",               no_argument,       NULL, 'h'                     },
     { NULL,               0,                 NULL, 0                   },
 };
@@ -422,6 +436,30 @@ static void parse_args(int argc, char *argv[])
             }
             mylog(log_info, "relay upstream: %s\n", g_upstream_addr.get_str());
             break;
+
+        case OPT_ACCEPT_LOCAL: {
+            /* Bare IP only, like --upstream-local: the port comes from -l. */
+            const char *colon = strchr(optarg, ':');
+            if (optarg[0] == '[' || (colon && strchr(optarg, '.'))) {
+                fprintf(stderr, "error: --accept-local takes a bare IP, not ip:port: '%s'\n", optarg);
+                fprintf(stderr, "  the port is set by -l\n");
+                exit(1);
+            }
+            if (g_accept_local.size() >= MUD_ACCEPT_LOCAL_MAX) {
+                fprintf(stderr, "error: --accept-local accepts at most %d entries\n",
+                        MUD_ACCEPT_LOCAL_MAX);
+                fprintf(stderr, "  for more addresses, omit it (serve all) and filter in the firewall\n");
+                exit(1);
+            }
+            address_t a;
+            if (a.from_str_ip_only(optarg) != 0) {
+                fprintf(stderr, "error: --accept-local address parse failed: '%s'\n", optarg);
+                exit(1);
+            }
+            g_accept_local.push_back(a);
+            mylog(log_info, "accept-local: %s\n", g_accept_local.back().get_str());
+            break;
+        }
 
         case OPT_UPSTREAM_LOCAL: {
             /* Bare IP only — no port. The relay allocates one upstream socket PER
@@ -777,6 +815,69 @@ int main(int argc, char *argv[])
         srand((unsigned)(ts.tv_sec ^ ts.tv_nsec));
     }
 
+    /* --accept-local validation.
+     *
+     * The filter lives in mud_recv(), so it only exists where mud does. The client
+     * pins its local address per path via --path, and the relay's listen socket is
+     * outside mud (no IP_PKTINFO plumbed), so accepting the option there would do
+     * nothing. Refuse rather than appear to work. */
+    if (!g_accept_local.empty()) {
+        if (program_mode != server_mode) {
+            fprintf(stderr, "error: --accept-local is valid only in server mode (-s)\n");
+            fprintf(stderr, "  client: --path <local_ip>:<remote_ip>:<port> already pins the local IP\n");
+            return 1;
+        }
+        /* A non-wildcard -l is already restricted by the kernel, so entries that do
+         * not equal it can never match. That configuration drops every packet with
+         * no log line — the hardest failure to diagnose — so refuse it outright. */
+        int wildcard =
+            (local_addr.get_type() == AF_INET &&
+             local_addr.inner.ipv4.sin_addr.s_addr == htonl(INADDR_ANY)) ||
+            (local_addr.get_type() == AF_INET6 &&
+             IN6_IS_ADDR_UNSPECIFIED(&local_addr.inner.ipv6.sin6_addr));
+        if (!wildcard) {
+            for (address_t &a : g_accept_local) {
+                int same = (a.get_type() == local_addr.get_type()) &&
+                    (a.get_type() == AF_INET
+                     ? a.inner.ipv4.sin_addr.s_addr == local_addr.inner.ipv4.sin_addr.s_addr
+                     : !memcmp(&a.inner.ipv6.sin6_addr, &local_addr.inner.ipv6.sin6_addr,
+                               sizeof(a.inner.ipv6.sin6_addr)));
+                if (!same) {
+                    fprintf(stderr, "error: --accept-local %s can never match: "
+                            "-l is bound to a specific address\n", a.get_str());
+                    fprintf(stderr, "  -l %s already restricts arrivals to that address\n",
+                            local_addr.get_str());
+                    fprintf(stderr, "  use -l 0.0.0.0:<port> to serve several addresses, "
+                            "or drop --accept-local\n");
+                    return 1;
+                }
+            }
+            mylog(log_warn, "--accept-local is redundant: -l %s is not a wildcard\n",
+                  local_addr.get_str());
+        }
+        /* A typo here silently blackholes everything, so check the addresses exist.
+         * A warning, not an error: a floating VIP may legitimately appear later. */
+        struct ifaddrs *ifa = NULL;
+        if (getifaddrs(&ifa) == 0) {
+            for (address_t &a : g_accept_local) {
+                bool found = false;
+                for (struct ifaddrs *p = ifa; p && !found; p = p->ifa_next) {
+                    if (!p->ifa_addr || p->ifa_addr->sa_family != a.get_type()) continue;
+                    if (a.get_type() == AF_INET)
+                        found = ((struct sockaddr_in *)p->ifa_addr)->sin_addr.s_addr ==
+                                a.inner.ipv4.sin_addr.s_addr;
+                    else
+                        found = !memcmp(&((struct sockaddr_in6 *)p->ifa_addr)->sin6_addr,
+                                        &a.inner.ipv6.sin6_addr, sizeof(a.inner.ipv6.sin6_addr));
+                }
+                if (!found)
+                    mylog(log_warn, "--accept-local %s is not configured on any interface "
+                          "— nothing will match it until it is\n", a.get_str());
+            }
+            freeifaddrs(ifa);
+        }
+    }
+
     /* --upstream-local only affects the relay's upstream socket. Silently ignoring it
      * elsewhere would look like it took effect, so refuse instead. */
     if (g_upstream_local.is_vaild() && program_mode != relay_mode) {
@@ -905,6 +1006,21 @@ int main(int argc, char *argv[])
         return 1;
     }
     mylog(log_info, "mud fd=%d\n", mud_get_fd(mud));
+
+    /* --accept-local: hand the allow-list to mud. Validated in parse_args(). */
+    for (address_t &a : g_accept_local) {
+        union mud_sockaddr ml;
+        memset(&ml, 0, sizeof(ml));
+        if (a.get_type() == AF_INET) ml.sin  = a.inner.ipv4;
+        else                         ml.sin6 = a.inner.ipv6;
+        if (mud_add_accept_local(mud, &ml) != 0) {
+            mylog(log_fatal, "accept-local registration failed: %s\n", strerror(errno));
+            return 1;
+        }
+    }
+    if (!g_accept_local.empty())
+        mylog(log_info, "accept-local: serving %zu local address(es) only\n",
+              g_accept_local.size());
 
     /* socket buffer setup (--sock-buf) */
     if (g_sock_buf > 0) {
