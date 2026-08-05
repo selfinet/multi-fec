@@ -194,6 +194,10 @@ struct mud {
     uint64_t           base_time;
     union mud_sockaddr last_remote;  /* source of the last packet mud_recv() returned */
 
+    /* --accept-local: allowed local (destination) addresses. Empty = accept all. */
+    union mud_sockaddr accept_local[MUD_ACCEPT_LOCAL_MAX];
+    unsigned           accept_local_count;
+
     /* obfs hooks */
     mud_obfs_enc_t  obfs_enc;
     mud_obfs_dec_t  obfs_dec;
@@ -1453,6 +1457,23 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
     union mud_sockaddr local;
     if (mud_localaddr(&local, msg)) return 0;
 
+    /* --accept-local: with a wildcard bind the socket receives on every local
+     * address the host has. Serve only the listed ones and drop the rest
+     * silently — responding (even with the builtin QUIC Initial) would announce
+     * the service on an address deliberately left out. Empty list = accept all. */
+    if (mud->accept_local_count) {
+        unsigned i;
+        for (i = 0; i < mud->accept_local_count; i++) {
+            if (!mud_cmp_addr(&mud->accept_local[i], &local)) break;
+        }
+        if (i == mud->accept_local_count) {
+            mud->err.local.addr = local;
+            mud->err.local.time = now;
+            mud->err.local.count++;
+            return 0;
+        }
+    }
+
     struct mud_path *path = mud_get_path(mud, &local, remote, MUD_PASSIVE);
     if (!path || path->conf.state <= MUD_DOWN) return 0;
 
@@ -1586,6 +1607,25 @@ int
 mud_get_fd(struct mud *mud)
 {
     return mud ? mud->fd : -1;
+}
+
+int
+mud_add_accept_local(struct mud *mud, union mud_sockaddr *addr)
+{
+    if (!mud || !addr) {
+        errno = EINVAL;
+        return -1;
+    }
+    if (mud->accept_local_count >= MUD_ACCEPT_LOCAL_MAX) {
+        errno = ENOSPC;
+        return -1;
+    }
+    /* Duplicates are harmless but waste a slot and a comparison. */
+    for (unsigned i = 0; i < mud->accept_local_count; i++) {
+        if (!mud_cmp_addr(&mud->accept_local[i], addr)) return 0;
+    }
+    mud->accept_local[mud->accept_local_count++] = *addr;
+    return 0;
 }
 
 size_t

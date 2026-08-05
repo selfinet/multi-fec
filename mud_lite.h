@@ -120,9 +120,16 @@ struct mud_error {
     uint64_t time;
     uint64_t count;
 };
+/* Maximum number of --accept-local entries. 16 covers a /28 (14 usable hosts);
+ * a host serving more distinct local addresses than that on one socket is
+ * better off accepting all of them and filtering in the firewall. The lookup is
+ * a linear scan per received packet, so the constant is kept small on purpose. */
+#define MUD_ACCEPT_LOCAL_MAX 16
+
 struct mud_errors {
     struct mud_error clocksync;
     struct mud_error auth;      /* originally decrypt → changed to auth failure */
+    struct mud_error local;     /* packet arrived on a local address not in the accept list */
 };
 
 struct mud_paths {
@@ -183,6 +190,16 @@ int mud_set_path_peer (struct mud *, union mud_sockaddr *remote, uint64_t peer);
  * peeks the socket to learn the sender can observe a different packet than the
  * one it was handed. Servers must use this instead of a peeked address. */
 int mud_get_last_remote (struct mud *, union mud_sockaddr *out);
+
+/* Restrict which *local* address a received packet may have arrived on.
+ *
+ * Only meaningful with a wildcard bind (-l 0.0.0.0 / [::]): a socket bound to a
+ * specific address already gets this from the kernel. With one or more entries
+ * set, packets that arrived on any other local address are dropped silently —
+ * answering them would advertise the service on an address we do not serve.
+ * Empty list (the default) accepts every local address, matching prior behavior.
+ * The port is ignored; only the address is compared. */
+int mud_add_accept_local (struct mud *, union mud_sockaddr *);
 
 int mud_send_peer      (struct mud *, uint64_t peer, const void *, size_t);
 int mud_send_all_peer  (struct mud *, uint64_t peer, const void *, size_t);
