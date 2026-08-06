@@ -624,7 +624,7 @@ mud 의 rate 추정이 *받은 바이트*에서 나온다는 기전(`tx.rate = 7
 |---|---|
 | `raw_iperf3_60s.txt` | 60초 검증 런 iperf3 전체 출력 |
 | `raw_iperf3_12s.txt` | 12초 런 (인터페이스 격리 측정용) |
-| `raw_ladder_*M.txt` | 계단 각 단계 iperf3 출력 (4·6·8·10·12·14·16·**18 누락**·22·26·30·34) |
+| `raw_ladder_*M.txt` | 계단 각 단계 iperf3 출력 (4·6·8·10·12·14·16·18·22·26·30·34) |
 | `raw_knee_22M_4samples.txt` | 무릎점(각 22 Mbps) 전용 런 — 세 호스트 4회 샘플 |
 | `raw_guard_60s.log` · `raw_guard_12s.log` · `raw_guard_ladder.log` | 가드 로그 |
 | `raw_ifbytes_snapshots.txt` | 유휴/부하 60초 누적 바이트 스냅샷 4개 (A0·A1·B0·B1) |
@@ -638,8 +638,8 @@ mud 의 rate 추정이 *받은 바이트*에서 나온다는 기전(`tx.rate = 7
 | `test_path_slots_unit.c` · `test_concurrent_clients.py` | §14 검증 (리포 루트) |
 | `rps_ab.sh` | **RPS A/B 하네스.** 가드 생존을 argv[1] 로 판정하고 `wait <PID>` 를 쓴다 |
 
-> ⚠️ **`raw_ladder_18M.txt` 이 빠져 있다.** 커밋 시점에 `.git/objects/{1c,4c,65}` 가 root 소유
-> (2026-07-17 17:29 생성, 이 시험과 무관한 기존 조건)여서 해시가 `4c…` 인 이 blob 만 쓰기가
-> 거부됐다. 나머지는 전부 들어갔고 §9 표의 18 Mbps 수치는 그 로그에서 뽑은 것이다.
-> 해소: `sudo chown -R stevekim:stevekim <repo>/.git` 후 파일 추가.
-> 같은 조건에서 앞으로도 객체당 약 1.2% 확률로 재발한다.
+> **기록**: 최초 커밋 때 `raw_ladder_18M.txt` 하나가 빠졌다 — `.git/objects/{1c,4c,65}` 가
+> root 소유(2026-07-17 생성, 이 시험과 무관)여서 해시가 `4c…` 인 blob 만 쓰기가 거부됐다.
+> 2026-08-06 `chown` 으로 해소하고 추가했다. 같은 조건이 재발하면 객체당 약 1.2% 확률로
+> 임의 파일이 막히므로, git 이 `insufficient permission for adding an object` 를 내면
+> `.git/objects` 소유권부터 확인할 것.
