@@ -1,0 +1,26 @@
+Connecting to host 10.9.10.1, port 5201
+[  5] local 10.9.10.2 port 47480 connected to 10.9.10.1 port 5201
+[  7] local 10.9.10.2 port 47488 connected to 10.9.10.1 port 5201
+[ ID][Role] Interval           Transfer     Bitrate         Retr  Cwnd
+[  5][TX-C]   0.00-10.07  sec  70.7 KBytes  57.5 Kbits/sec    1   76.8 KBytes       
+[  7][RX-C]   0.00-10.07  sec  70.7 KBytes  57.5 Kbits/sec                  
+[  5][TX-C]  10.07-11.03  sec   778 KBytes  6.61 Mbits/sec    0   68.2 KBytes       
+[  7][RX-C]  10.07-11.03  sec   512 KBytes  4.35 Mbits/sec                  
+[  5][TX-C]  11.03-21.80  sec   853 KBytes   649 Kbits/sec    0   76.8 KBytes       
+[  7][RX-C]  11.03-21.80  sec   541 KBytes   412 Kbits/sec                  
+[  5][TX-C]  21.80-22.06  sec   324 KBytes  10.1 Mbits/sec    0   73.1 KBytes       
+[  7][RX-C]  21.80-22.06  sec   128 KBytes  3.97 Mbits/sec                  
+[  5][TX-C]  22.06-23.08  sec  1.14 MBytes  9.39 Mbits/sec    0   85.3 KBytes       
+[  7][RX-C]  22.06-23.08  sec   896 KBytes  7.20 Mbits/sec                  
+[  5][TX-C]  23.08-24.03  sec   977 KBytes  8.40 Mbits/sec    0   93.8 KBytes       
+[  7][RX-C]  23.08-24.03  sec   896 KBytes  7.70 Mbits/sec                  
+[  5][TX-C]  24.03-34.13  sec   199 KBytes   161 Kbits/sec    0   96.3 KBytes       
+[  7][RX-C]  24.03-34.13  sec   230 KBytes   186 Kbits/sec                  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID][Role] Interval           Transfer     Bitrate         Retr
+[  5][TX-C]   0.00-34.13  sec  4.27 MBytes  1.05 Mbits/sec    1             sender
+[  5][TX-C]   0.00-34.19  sec  4.27 MBytes  1.05 Mbits/sec                  receiver
+[  7][RX-C]   0.00-34.13  sec  3.51 MBytes   863 Kbits/sec    1             sender
+[  7][RX-C]   0.00-34.19  sec  3.20 MBytes   784 Kbits/sec                  receiver
+
+iperf Done.
