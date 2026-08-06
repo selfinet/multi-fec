@@ -296,6 +296,34 @@ static void session_cleanup_cb(struct ev_loop * /*loop*/, struct ev_timer * /*w*
     if (before != g_session_to_addr.size())
         mylog(log_debug, "[server] session sweep: %zu → %zu\n",
               before, g_session_to_addr.size());
+
+    /* mud path table exhaustion.
+     *
+     * The failure is otherwise invisible: mud_recv() drops the packet and
+     * returns 0, which mf_server only logs at trace level. Operators run at
+     * log-level 4, so the 33rd concurrent client just stops working with
+     * nothing in the journal — and the two session caps that *are* documented
+     * (relay 800, server session table 800) both say there is room.
+     *
+     * Reported here rather than at drop time so a flood cannot spam the log;
+     * this timer runs every 30 s and prints only when the count moved. */
+    static uint64_t last_path_full = 0;
+    struct mud_errors merr;
+    if (g_mud && mud_get_errors(g_mud, &merr) == 0 &&
+        merr.path_full.count > last_path_full) {
+        address_t peer;
+        peer.from_sockaddr((struct sockaddr *)&merr.path_full.addr,
+                           merr.path_full.addr.sa.sa_family == AF_INET
+                               ? sizeof(merr.path_full.addr.sin)
+                               : sizeof(merr.path_full.addr.sin6));
+        mylog(log_warn,
+              "[server] mud 경로 테이블 소진 (상한 %u) — 최근 주기에 %llu 건 폐기, "
+              "마지막 피어 %s. 동시 피어가 %u 를 넘으면 신규 클라이언트가 조용히 끊긴다\n",
+              (unsigned)MUD_PATH_MAX,
+              (unsigned long long)(merr.path_full.count - last_path_full),
+              peer.get_str(), (unsigned)MUD_PATH_MAX);
+        last_path_full = merr.path_full.count;
+    }
 }
 
 /* ────────────────────────────────────────────────────────────────

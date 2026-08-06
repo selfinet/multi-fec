@@ -784,7 +784,7 @@ duplicate 2경로, `5:1,20:4`/t10):
 | LOSSY → RUNNING 복구 | `tx.loss ≤ loss_limit` 확인 후 즉시 | 다음 `mud_update_path()` (100ms) |
 | `MUD_DEDUP_SIZE` | `128` entries | 중복 제거 링버퍼 크기 |
 | `MUD_DEDUP_TTL` | `500,000 µs` (500ms) | 중복 패킷 판정 유효시간 |
-| `MUD_PATH_MAX` | `8` | 최대 경로 수 |
+| `MUD_PATH_MAX` | **`32`** | 최대 경로 수. **동시 피어 상한이기도 하다** — 경로 식별자가 `(local, remote_ip, remote_port)` 라 클라이언트 1개가 슬롯 1개를 쓴다. 33번째부터 `mud_get_path()` NULL → `mud_recv()` 0 → 폐기(v1.3.0 부터 경고 로그). 슬롯은 5분 무수신 시 회수된다(`mud_path_update()`) — 누적 누수가 아니라 **동시** 상한이다. ⚠️ 릴레이 `RELAY_SESSION_MAX` 800 · 서버 `SESSION_MAX` 800 과 25배 어긋난다 |
 
 ### mf_client.cpp pending queue
 
@@ -2507,7 +2507,60 @@ routing 이 필수**다(소스별 `ip rule` + 테이블). 없으면 `IP_B` 소�
 
 ---
 
+### 28. 동시 피어 32 상한이 조용히 끊는다 — 진단 추가 (2026-08-06, v1.3.0)
+
+**파일**: `mud_lite.h`(`err.path_full`), `mud_lite.c`(`mud_recv()`), `mf_server.cpp`(`session_cleanup_cb()`)
+
+**증상**: 동시 클라이언트가 32를 넘으면 **33번째부터 전달이 0**이 되는데 로그·카운터가 전혀
+없다. 실측(sv1 루프백, 클라이언트를 1→36 으로 증설):
+
+```
+클라# 1~32   왕복 10/10   ok
+클라# 33     왕복  0/10   ✗
+클라# 34~36  왕복  0/10   ✗
+```
+
+**원인**: 서버 mud 의 경로 식별자가 `(local, remote_ip, remote_port)` 이고 클라이언트마다
+소스 포트가 다르므로 **클라이언트 1개 = 경로 슬롯 1개**다. `MUD_PATH_MAX` 를 넘으면
+`mud_get_path()` 가 NULL → `mud_recv()` 가 0 → 폐기. `mf_server` 는 이 경우를 `log_trace`
+(레벨 6)로만 찍는데 운영은 레벨 4다.
+
+**세 상한이 25배 어긋나 있다** — 이게 오해를 키운다:
+
+```
+릴레이 동시 세션   RELAY_SESSION_MAX = max_conn_num × 4 = 800
+서버 세션 테이블   SESSION_MAX       = max_conn_num × 4 = 800
+서버 mud 경로 슬롯 MUD_PATH_MAX      =                    32   ← 먼저 막힌다
+```
+
+릴레이 세션 1개 = upstream 소켓 1개 = 서버가 보는 소스포트 1개 = 슬롯 1개이므로
+릴레이 경유든 직결이든 같다.
+
+**이번 변경은 진단만이다** — `mud_errors` 에 `path_full`(주소·시각·횟수)을 추가하고,
+서버가 30초 세션 sweep 타이머에서 카운트가 늘었을 때만 `log_warn` 한다(폭주해도 로그가
+넘치지 않게 드롭 시점이 아니라 주기 보고).
+
+```
+[WARN][server] mud 경로 테이블 소진 (상한 32) — 최근 주기에 394 건 폐기,
+               마지막 피어 127.0.0.1:35282. 동시 피어가 32 를 넘으면 신규 클라이언트가 조용히 끊긴다
+```
+
+**상한 자체는 올리지 않았다.** `sizeof(struct mud_path) = 416 B` 라 1024개도 416 KB 로 메모리는
+사소하지만, `mud_get_path()` 와 송신 경로 선택이 **전 슬롯 선형 스캔**이라 패킷당 비용이 비례해
+오른다. 800 으로 올리면 스캔이 25배가 되므로 그 비용을 재기 전에는 올리지 않는다.
+
+**내가 틀렸던 것 (기록)**: 이 조사는 "슬롯 8개가 영구 소모된다" 는 가설로 시작했는데 **둘 다
+틀렸다.** ① `MUD_PATH_MAX` 는 8이 아니라 **32** 다 — 이 문서의 참조표가 8로 잘못 적혀 있었고
+그걸 믿었다(이번에 정정). ② 슬롯은 **회수된다** — `mud_path_update()` 가 5분 무수신 PASSIVE
+경로를 `memset(path, 0, ...)` 로 지운다. 상태를 리터럴 `MUD_EMPTY` 로 대입하지 않고 구조체를
+0으로 미는 코드라, 토큰 `MUD_EMPTY` 로만 grep 해서 못 봤다. **코드 사실은 문서가 아니라 코드로
+확인하고, "없다" 는 grep 한 번으로 결론짓지 말 것.**
+
+---
+
 **테스트 스크립트:**
+- `test_path_slots_unit.c` — mud 경로 슬롯 재사용 유닛 검증. `mud_lite.c` 를 통째로 include 해 `mud_get_path()` 를 직접 구동한다. 32개 확보 → 33번째 NULL → 5분 경과 시뮬 후 전량 회수 확인. §28 근거
+- `test_concurrent_clients.py` — 동시 클라이언트 상한 실측. 1→36 으로 늘리며 각자 왕복을 확인해 33번째 절벽을 재현한다. **sv1 루프백 전용**(테스트망 무관), 클라이언트 36개 ≈ RSS 1.3 GB
 - `test_path_loss_unit.c` — 경로 손실률 계산 유닛 테스트 10개 케이스 (`make test-path-loss`). §24 회귀 방지. **주의**: `mud_update_rl()`만 직접 구동하므로 `mud_recv()`의 dedup 경로(§25)는 커버하지 않는다.
 - `test_fec_decode_bounds.cpp` — FEC(RS) 디코더 경계 검사 7개 케이스 (`make test-fec-bounds`). §22-가 회귀 방지.
 - `test_relay_session_cap.py` — 릴레이 동시 세션 상한·LRU 축출 4개 케이스. §22-나 회귀 방지. `BIN=` 로 A/B 비교 가능.

@@ -130,6 +130,14 @@ struct mud_errors {
     struct mud_error clocksync;
     struct mud_error auth;      /* originally decrypt → changed to auth failure */
     struct mud_error local;     /* packet arrived on a local address not in the accept list */
+    /* Path table full — every one of MUD_PATH_MAX slots is taken, so a packet
+     * from a new peer cannot be assigned a path and is dropped.
+     *
+     * This used to be entirely silent: the 33rd concurrent peer simply stopped
+     * being delivered, with no log and no counter, while the relay's session cap
+     * (800) and the server's session table (800) both said there was room.
+     * Measured 2026-08-06: clients 1–32 deliver 10/10, client 33 delivers 0/10. */
+    struct mud_error path_full;
 };
 
 struct mud_paths {

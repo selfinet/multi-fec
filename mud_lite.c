@@ -1475,7 +1475,20 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
     }
 
     struct mud_path *path = mud_get_path(mud, &local, remote, MUD_PASSIVE);
-    if (!path || path->conf.state <= MUD_DOWN) return 0;
+    if (!path) {
+        /* Table full. For a PASSIVE lookup this is the *only* way NULL comes
+         * back (mud_get_path() returns the matching slot, else an empty one,
+         * else NULL), so the counter is unambiguous.
+         *
+         * Slots are reclaimed by mud_path_update() after 5 minutes without
+         * reception, so this is a *concurrency* limit, not a cumulative leak.
+         * The caller is expected to surface it — mud_lite does not log. */
+        mud->err.path_full.addr = *remote;
+        mud->err.path_full.time = now;
+        mud->err.path_full.count++;
+        return 0;
+    }
+    if (path->conf.state <= MUD_DOWN) return 0;
 
     if (!path->conf.beat)       path->conf.beat       = mud_random_beat(path);
     if (!path->conf.loss_limit) path->conf.loss_limit = 200;
