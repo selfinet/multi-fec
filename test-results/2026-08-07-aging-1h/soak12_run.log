@@ -1,0 +1,65 @@
+=== 0. 용량 모델 (정보 — 이 레이트에서는 무효, 게이트 아님) ===
+세션 1 × 양방향 24.00 Mbps  (ΣR = 24.00 Mbps)
+  ① 총량  비용 2.58 / 예산 2.00 논리CPU  → c 전체 busy 약 64%
+  ② 개별  R 24.00 / 15.9 Mbps
+  ③ NIC   ΣR 24.00 / 31.25 Mbps 양방향
+  ✗ ① 총량 초과 — 세션수나 레이트를 낮출 것
+  ✗ ② 단일 스레드 상한 초과 — 세션을 쪼갤 것
+  ↑ ②·③ 초과는 예상된 것이다. 계단 실측이 각 방향 22 까지 동작을 보였고
+    모델은 고배율에서 2.1배 과대다(REPORT 2026-08-06 §10). 실제 게이트는 아래 precheck 와 가드.
+
+=== 1. precheck (전제 검증, 트래픽 미발생) ===
+[precheck] 호스트 도달성
+  ✓ c.xdn.selfinet.com
+  ✓ r.xdn.selfinet.com
+  ✓ s.xdn.selfinet.com
+[precheck] 인터페이스
+  ✓ c.xdn.selfinet.com enp2s0
+  ✓ r.xdn.selfinet.com ens18
+  ✓ s.xdn.selfinet.com ens18
+[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)
+  ✓ c.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ r.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ s.xdn.selfinet.com  gw경유 0 · 터널경유 0
+[precheck] 통과
+
+=== 2. r 의 apt 타이머 정지 (오늘 아침 트립 원인) ===
+  apt-daily-upgrade.timer: inactive (복구 예약 4500s)
+
+=== 3. 유휴 기준선 60초 ===
+  완료
+
+=== 4. 샘플러 (운영 프로세스 RSS/FD/CPU) ===
+  c/r/s 기동
+
+=== 5. 가드 (부하보다 먼저 — 규칙 0) ===
+  가드 pid=1931478 살아있음
+
+=== 6. iperf3 서버 (s, 터널 IP 바인딩) ===
+  iperf3 -s: 1 개
+
+=== 7. CPU 타임라인 (60초 간격) ===
+
+=== 8. 부하 3600s · 앱 각 방향 12 Mbps — 17:29:24 시작 ===
+
+=== 9. 회수 ===
+  355 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/soak12/sample_c.csv
+  360 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/soak12/sample_r.csv
+  361 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/soak12/sample_s.csv
+  133 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/soak12/iperf.log
+ 1209 합계
+  가드: 초과 6 건 · 트립 0
+0 건
+[  5][TX-C]   0.00-3600.05 sec  5.03 GBytes  12.0 Mbits/sec  0.643 ms  0/4326923 (0%)  receiver
+[  7][RX-C]   0.00-3600.00 sec  5.03 GBytes  12.0 Mbits/sec  0.000 ms  0/4326986 (0%)  sender
+[SUM][RX-C]  0.0-3600.0 sec  198305 datagrams received out-of-order
+[  7][RX-C]   0.00-3600.05 sec  5.03 GBytes  12.0 Mbits/sec  0.574 ms  74/4326922 (0.0017%)  receiver
+
+iperf Done.
+
+[18:29:32] 정리
+  r apt-daily-upgrade.timer: active
+  운영 체인:
+    c client active
+    r relay active active 
+    s server active

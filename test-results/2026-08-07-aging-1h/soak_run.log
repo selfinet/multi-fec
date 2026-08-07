@@ -1,0 +1,60 @@
+=== 0. 용량 모델 (정보 — 이 레이트에서는 무효, 게이트 아님) ===
+세션 1 × 양방향 36.00 Mbps  (ΣR = 36.00 Mbps)
+  ① 총량  비용 3.86 / 예산 2.00 논리CPU  → c 전체 busy 약 96%
+  ② 개별  R 36.00 / 15.9 Mbps
+  ③ NIC   ΣR 36.00 / 31.25 Mbps 양방향
+  ✗ ① 총량 초과 — 세션수나 레이트를 낮출 것
+  ✗ ② 단일 스레드 상한 초과 — 세션을 쪼갤 것
+  ✗ ③ NIC 단일 큐 상한 초과 (수신 softirq cpu2 고정)
+  ↑ ②·③ 초과는 예상된 것이다. 계단 실측이 각 방향 22 까지 동작을 보였고
+    모델은 고배율에서 2.1배 과대다(REPORT 2026-08-06 §10). 실제 게이트는 아래 precheck 와 가드.
+
+=== 1. precheck (전제 검증, 트래픽 미발생) ===
+[precheck] 호스트 도달성
+  ✓ c.xdn.selfinet.com
+  ✓ r.xdn.selfinet.com
+  ✓ s.xdn.selfinet.com
+[precheck] 인터페이스
+  ✓ c.xdn.selfinet.com enp2s0
+  ✓ r.xdn.selfinet.com ens18
+  ✓ s.xdn.selfinet.com ens18
+[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)
+  ✓ c.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ r.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ s.xdn.selfinet.com  gw경유 0 · 터널경유 0
+[precheck] 통과
+
+=== 2. r 의 apt 타이머 정지 (오늘 아침 트립 원인) ===
+  apt-daily-upgrade.timer: inactive (복구 예약 4500s)
+
+=== 3. 유휴 기준선 60초 ===
+  완료
+
+=== 4. 샘플러 (운영 프로세스 RSS/FD/CPU) ===
+  c/r/s 기동
+
+=== 5. 가드 (부하보다 먼저 — 규칙 0) ===
+  가드 pid=1906658 살아있음
+
+=== 6. iperf3 서버 (s, 터널 IP 바인딩) ===
+  iperf3 -s: 1 개
+
+=== 7. CPU 타임라인 (60초 간격) ===
+
+=== 8. 부하 3600s · 앱 각 방향 18 Mbps — 16:07:43 시작 ===
+./mf_soak_18m.sh: 줄 114: 1906935 죽었음               ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=6 $C "iperf3 -c 10.9.10.1 -p $PORT -u -b ${RATE}M --bidir -t $SECS -i 60" > $OUT/iperf.log 2>&1
+
+=== 9. 회수 ===
+  127 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/soak/sample_c.csv
+  129 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/soak/sample_r.csv
+  129 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/soak/sample_s.csv
+    0 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/soak/iperf.log
+  385 합계
+  가드: 초과 37 건 · 트립 1 건
+
+[16:29:00] 정리
+  r apt-daily-upgrade.timer: active
+  운영 체인:
+    c client active
+    r relay active active 
+    s server active

@@ -1,0 +1,54 @@
+=== 0. 사전 판정 (세션 8 × 각 방향 0.25 Mbps) ===
+세션 8 × 양방향 0.50 Mbps  (ΣR = 4.00 Mbps)
+  ① 총량  비용 0.57 / 예산 2.00 논리CPU  → c 전체 busy 약 14%
+  ② 개별  R 0.50 / 15.9 Mbps
+  ③ NIC   ΣR 4.00 / 31.25 Mbps 양방향
+  ✓ 안전 (총량 여유 1.43 논리CPU)
+
+  ⚠️ 이 모델은 12 Mbps 한 점의 선형 외삽이고 미확정 요소가 전부 불리한 방향이다.
+     첫 30초는 저레이트로 올려 `sample` 실측과 대조한 뒤 목표로 갈 것.
+
+=== 1. 가드 precheck (전제 검증, 트래픽 미발생) ===
+[precheck] 호스트 도달성
+  ✓ c.xdn.selfinet.com
+  ✓ r.xdn.selfinet.com
+  ✓ s.xdn.selfinet.com
+[precheck] 인터페이스
+  ✓ c.xdn.selfinet.com enp2s0
+  ✓ r.xdn.selfinet.com ens18
+  ✓ s.xdn.selfinet.com ens18
+[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)
+  ✓ c.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ r.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ s.xdn.selfinet.com  gw경유 0 · 터널경유 0
+[precheck] 통과
+
+=== 2. 유휴 기준선 (부하 전 60초, 격납 대조용) ===
+  유휴 60초 스냅샷 완료
+
+=== 3. :4443 에 netem 적용 (기본 필터는 443 만 잡는다) ===
+  c   flowid 별 필터:       2 flowid 1:1       2 flowid 1:2 
+  r   flowid 별 필터:       2 flowid 1:1       2 flowid 1:2 
+
+=== 4. 병렬 체인 기동 ===
+  s echo=1  s server=1  r relay=4  (1/1/2 이어야 함)
+
+=== 5. 샘플러 + 가드 ===
+  가드 살아있음 pid=1835841
+  샘플러 c/r/s 기동
+
+=== 6. 부하 3600s (세션 8, 각 방향 0.25 Mbps) — 11:09:55 시작 ===
+
+=== 7. 샘플 회수 ===
+  274 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/raw/sample_c.csv
+  286 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/raw/sample_r.csv
+  288 /home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/raw/sample_s.csv
+  848 합계
+  가드 로그: 22 건 초과, 트립 1 건
+
+[11:57:54] 정리
+  운영 체인:
+    c multi-fec-client inactive
+    r relay active active 
+    s multi-fec-server active
+    netem delay 25ms loss 5% delay 30ms loss 2% 
