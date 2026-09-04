@@ -1,0 +1,78 @@
+=== 0. 증폭 계단 (세션 1 · 레이트 [0.5 1 2 3 4 5 6 8 12] · 구간 240s · 세션별 WG) ===
+  (증폭 계단이라 budget 판정은 생략 — 게이트는 precheck 와 가드)
+  ↑ 모델은 WG 암복호를 포함하지 않는다. 게이트는 precheck 와 가드다.
+
+=== 1. precheck ===
+[precheck] 호스트 도달성
+  ✓ c.xdn.selfinet.com
+  ✓ r.xdn.selfinet.com
+  ✓ s.xdn.selfinet.com
+[precheck] 인터페이스
+  ✓ c.xdn.selfinet.com enp2s0
+  ✓ r.xdn.selfinet.com ens18
+  ✓ s.xdn.selfinet.com ens18
+[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)
+  ✓ c.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ r.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ s.xdn.selfinet.com  gw경유 0 · 터널경유 0
+[precheck] 통과
+
+=== 2. 배포 ===
+  완료
+
+=== 3. 세션별 WG 키·설정 (1 쌍) ===
+  설정 파일 c/s 각 1 개
+
+=== 4. netem 필터 (:4443) ===
+  c       2 flowid 1:1       2 flowid 1:2 
+  r       2 flowid 1:1       2 flowid 1:2 
+
+=== 5. s: 서버 1 개 + echo 1 개, WG 기동 ===
+  s: server=1 echo=1 wg=3
+
+=== 6. r: 릴레이 2개 (--route 로 1 키 분기) ===
+  r: relay=2
+
+=== 7. c: 클라이언트 1 개 + WG 기동 ===
+  c: client=2 wg=2
+
+=== 8. WG 핸드셰이크 확인 (터널이 실제로 붙었나) ===
+  핸드셰이크 1/1 · 터널 ping 1/1
+
+=== 9. 샘플러 + 가드 ===
+  가드 살아있음 pid=3569439
+
+=== 10. 증폭 계단 — 레이트 0.5 1 2 3 4 5 6 8 12, 구간당 240s ===
+  [09:18:41] R=0.5 시작
+  [09:22:59] R=1 시작
+  [09:27:17] R=2 시작
+  [09:31:34] R=3 시작
+  [09:35:51] R=4 시작
+  [09:40:08] R=5 시작
+  [09:44:25] R=6 시작
+  [09:48:42] R=8 시작
+  [09:53:00] R=12 시작
+  구간별 전달:
+    R=0.5,TOTAL,12500,12500,100.0000,0,0
+    R=1,TOTAL,25000,25000,100.0000,0,0
+    R=2,TOTAL,50000,49999,99.9980,0,0
+    R=3,TOTAL,75000,75000,100.0000,0,0
+    R=4,TOTAL,100000,99998,99.9980,0,0
+    R=5,TOTAL,125001,125001,100.0000,0,0
+    R=6,TOTAL,150000,150000,100.0000,0,0
+    R=8,TOTAL,200000,200000,100.0000,0,0
+  하네스 건전성(마지막):
+pacing_resets=0 sendfail=0 target_pps_per_session=833.3 gap_ns=1200000
+
+=== 11. 회수 ===
+  193 /home/stevekim/multi-fec/test-results/2026-09-02-multisession/amp_raw/sample_blast.csv
+  271 /home/stevekim/multi-fec/test-results/2026-09-02-multisession/amp_raw/sample_c.csv
+  274 /home/stevekim/multi-fec/test-results/2026-09-02-multisession/amp_raw/sample_r.csv
+  209 /home/stevekim/multi-fec/test-results/2026-09-02-multisession/amp_raw/sample_s.csv
+  947 합계
+  가드: 5 초과 · 1 트립
+
+[09:53:26] 정리
+  남은 WG:   c=starlink-fec | s=starlink-xdn starlink-fec
+  운영 체인: c=active r=active active  s=active
+  netem delay 25ms loss 5% delay 30ms loss 2% 
