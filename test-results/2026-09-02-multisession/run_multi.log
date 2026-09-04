@@ -1,0 +1,66 @@
+=== 0. 사전 판정 (세션 4 × 각 방향 4 Mbps) ===
+세션 4 × 양방향 8.00 Mbps  (ΣR = 32.00 Mbps)
+  ① 총량  비용 3.49 / 예산 2.00 논리CPU  → c 전체 busy 약 87%
+  ② 개별  R 8.00 / 15.9 Mbps
+  ③ NIC   ΣR 32.00 / 31.25 Mbps 양방향
+  ✗ ① 총량 초과 — 세션수나 레이트를 낮출 것
+  ✗ ③ NIC 단일 큐 상한 초과 (수신 softirq cpu2 고정)
+  ↑ 초과 표시는 예상된 것이다 — 모델이 고배율에서 1.9~2.1배 과대하다.
+    실제 게이트는 아래 precheck 와 가드다.
+
+=== 1. 가드 precheck (전제 검증, 트래픽 미발생) ===
+[precheck] 호스트 도달성
+  ✓ c.xdn.selfinet.com
+  ✓ r.xdn.selfinet.com
+  ✓ s.xdn.selfinet.com
+[precheck] 인터페이스
+  ✓ c.xdn.selfinet.com enp2s0
+  ✓ r.xdn.selfinet.com ens18
+  ✓ s.xdn.selfinet.com ens18
+[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)
+  ✓ c.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ r.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ s.xdn.selfinet.com  gw경유 0 · 터널경유 0
+[precheck] 통과
+
+=== 1-1. 하네스 배포·검증 ===
+  mf_blast 기동 확인: TOTAL,0,0,0.0000,0,0
+
+=== 2. 유휴 기준선 (부하 전 60초, 격납 대조용) ===
+  유휴 60초 스냅샷 완료
+
+=== 3. :4443 에 netem 적용 (기본 필터는 443 만 잡는다) ===
+  c   flowid 별 필터:       2 flowid 1:1       2 flowid 1:2 
+  r   flowid 별 필터:       2 flowid 1:1       2 flowid 1:2 
+
+=== 4. 병렬 체인 기동 ===
+  s echo=1  s server=1  r relay=4  (1/1/2 이어야 함)
+
+=== 5. 샘플러 + 가드 ===
+  가드 살아있음 pid=3238243
+  샘플러 c/r/s 기동
+
+=== 6. 부하 3600s (세션 4, 각 방향 4 Mbps) — 14:33:51 시작 ===
+session,sent,own_back,own_pct,foreign,bad
+0,1500000,1499964,99.9976,0,0
+1,1500000,1499963,99.9975,0,0
+2,1500000,1499960,99.9973,0,0
+3,1500000,1499968,99.9979,0,0
+TOTAL,6000000,5999855,99.9976,0,0
+  하네스 건전성: pacing_resets=0 sendfail=0 target_pps_per_session=416.7 gap_ns=2400000 
+  ⚠️ pacing_resets 가 0 이 아니면 생성기가 레이트를 못 낸 것이므로 결과를 믿지 말 것
+
+=== 7. 샘플 회수 ===
+    1 /home/stevekim/multi-fec/test-results/2026-09-02-multisession/raw/sample_blast.csv
+  350 /home/stevekim/multi-fec/test-results/2026-09-02-multisession/raw/sample_c.csv
+  361 /home/stevekim/multi-fec/test-results/2026-09-02-multisession/raw/sample_r.csv
+  362 /home/stevekim/multi-fec/test-results/2026-09-02-multisession/raw/sample_s.csv
+ 1074 합계
+  가드 로그: 4 건 초과, 트립 1 건
+
+[15:34:14] 정리
+  운영 체인:
+    c multi-fec-client active
+    r relay active active 
+    s multi-fec-server active
+    netem delay 25ms loss 5% delay 30ms loss 2% 
