@@ -1,0 +1,33 @@
+Connecting to host 10.9.10.1, port 5201
+[  5] local 10.9.10.2 port 41246 connected to 10.9.10.1 port 5201
+[  7] local 10.9.10.2 port 34404 connected to 10.9.10.1 port 5201
+[ ID][Role] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5][TX-C]   0.00-60.00  sec  85.8 MBytes  12.0 Mbits/sec            72115  
+[  7][RX-C]   0.00-60.00  sec  85.8 MBytes  12.0 Mbits/sec  0.239 ms  0/72117 (0%)  
+[  5][TX-C]  60.00-120.00 sec  85.8 MBytes  12.0 Mbits/sec            72115  
+[  7][RX-C]  60.00-120.00 sec  85.8 MBytes  12.0 Mbits/sec  0.938 ms  0/72116 (0%)  
+[  5][TX-C] 120.00-180.00 sec  85.8 MBytes  12.0 Mbits/sec            72116  
+[  7][RX-C] 120.00-180.00 sec  85.8 MBytes  12.0 Mbits/sec  0.618 ms  0/72115 (0%)  
+[  5][TX-C] 180.00-240.00 sec  85.8 MBytes  12.0 Mbits/sec            72115  
+[  7][RX-C] 180.00-240.00 sec  85.8 MBytes  12.0 Mbits/sec  0.632 ms  0/72115 (0%)  
+[  5][TX-C] 240.00-300.00 sec  85.8 MBytes  12.0 Mbits/sec            72115  
+[  7][RX-C] 240.00-300.00 sec  85.8 MBytes  12.0 Mbits/sec  0.571 ms  0/72116 (0%)  
+[  5][TX-C] 300.00-360.00 sec  85.8 MBytes  12.0 Mbits/sec            72116  
+[  7][RX-C] 300.00-360.00 sec  85.8 MBytes  12.0 Mbits/sec  0.334 ms  0/72115 (0%)  
+[  5][TX-C] 360.00-420.00 sec  85.8 MBytes  12.0 Mbits/sec            72115  
+[  7][RX-C] 360.00-420.00 sec  85.8 MBytes  12.0 Mbits/sec  0.293 ms  1/72116 (0.0014%)  
+[  5][TX-C] 420.00-480.00 sec  85.8 MBytes  12.0 Mbits/sec            72116  
+[  7][RX-C] 420.00-480.00 sec  85.8 MBytes  12.0 Mbits/sec  0.737 ms  0/72115 (0%)  
+[  5][TX-C] 480.00-540.00 sec  85.8 MBytes  12.0 Mbits/sec            72115  
+[  7][RX-C] 480.00-540.00 sec  85.8 MBytes  12.0 Mbits/sec  0.266 ms  -1/72115 (-0.0014%)  
+[  5][TX-C] 540.00-600.00 sec  85.8 MBytes  12.0 Mbits/sec            72115  
+[  7][RX-C] 540.00-600.00 sec  85.8 MBytes  12.0 Mbits/sec  1.115 ms  1/72116 (0.0014%)  
+- - - - - - - - - - - - - - - - - - - - - - - - -
+[ ID][Role] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5][TX-C]   0.00-600.00 sec   858 MBytes  12.0 Mbits/sec  0.000 ms  0/721153 (0%)  sender
+[  5][TX-C]   0.00-600.05 sec   858 MBytes  12.0 Mbits/sec  0.368 ms  0/721153 (0%)  receiver
+[  7][RX-C]   0.00-600.00 sec   858 MBytes  12.0 Mbits/sec  0.000 ms  0/721218 (0%)  sender
+[SUM][RX-C]  0.0-600.0 sec  33190 datagrams received out-of-order
+[  7][RX-C]   0.00-600.05 sec   858 MBytes  12.0 Mbits/sec  1.115 ms  1/721156 (0.00014%)  receiver
+
+iperf Done.
