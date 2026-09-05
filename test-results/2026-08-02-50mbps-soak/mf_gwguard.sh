@@ -79,6 +79,18 @@ S=${GUARD_S:-s.xdn.selfinet.com}
 KILL_HOSTS=${GW_KILL_HOSTS:-"$C $R $S"}
 
 INTERVAL=${GW_INTERVAL:-1}
+
+# ── ssh 연결 재사용 (2026-09-05) ───────────────────────────────────
+# 왜: 샘플마다 ssh 를 새로 맺으면 **피측정 호스트에서 sshd + 키교환 비용**이 발생한다.
+# c(Atom N2600) 에서 실측 — 트래픽 0 인데 가드 가동만으로 전체 busy 0.7% → 10.5%,
+# 코어별로 +8~12p. 실제 1코어가 73~77% 인 구간(앱 각 22 Mbps)에서 이 오버헤드가
+# 얹혀 85% 임계를 넘겨 **손실 0 인데 트립**했다(2026-09-05 22 Mbps 소크, 21초).
+# ControlMaster 로 연결을 1회만 맺고 재사용하면 매 샘플의 접속 비용이 사라진다.
+# **임계값과 판정 로직은 건드리지 않는다** — 도구가 피측정계를 흔드는 것만 없앤다.
+GW_CM_DIR=${GW_CM_DIR:-/tmp/mf_gwguard_cm}
+mkdir -p "$GW_CM_DIR" 2>/dev/null
+SSH() { command ssh -o ConnectTimeout=5 \
+        -o ControlMaster=auto -o "ControlPath=$GW_CM_DIR/%r@%h:%p" -o ControlPersist=120 "$@"; }
 STREAK=${GW_STREAK:-3}          # 연속 초과 횟수에서 트립 (단발 버스트 면역)
 
 # 임계값 — 초과하면 트립
@@ -115,7 +127,7 @@ U
 # 워치독이 트립해 자식 multi-fec 을 고아로 남겼다. 그 고아들이 SO_REUSEPORT 로
 # 다음 런의 포트를 나눠 가져 세션 절반이 조용히 죽는 오염을 세 번 만들었다.
 probe() {  # $1=host $2=iface
-  ssh -o ConnectTimeout=5 "$1" "
+  SSH "$1" "
     A=\$(grep -E '^cpu[0-9]+ ' /proc/stat)
     NA=\$(awk -v i='$2:' '\$1==i{print \$2+\$10}' /proc/net/dev)
     T0=\$(date +%s.%N)
@@ -164,7 +176,7 @@ precheck() {
   local fail=0
   echo "[precheck] 호스트 도달성"
   for h in $C $R $S; do
-    if ssh -o ConnectTimeout=5 "$h" true 2>/dev/null; then
+    if SSH "$h" true 2>/dev/null; then
       echo "  ✓ $h"
     else
       echo "  ✗ $h 접속 실패"; fail=1
@@ -174,7 +186,7 @@ precheck() {
   echo "[precheck] 인터페이스"
   for k in c r s; do
     h=$(host_of $k); i=$(iface_of $k)
-    if ssh -o ConnectTimeout=5 "$h" "test -d /sys/class/net/$i" 2>/dev/null; then
+    if SSH "$h" "test -d /sys/class/net/$i" 2>/dev/null; then
       echo "  ✓ $h $i"
     else
       echo "  ✗ $h 에 $i 없음 — GW_IF_* 를 고칠 것"; fail=1
@@ -184,7 +196,7 @@ precheck() {
   # 데이터 경로가 온링크인가. gw 가 경로로 돌아오면 대역폭 지표가 다시 필요해진다.
   echo "[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)"
   for h in $C $R $S; do
-    out=$(ssh -o ConnectTimeout=5 "$h" 'v=0; n=0
+    out=$(SSH "$h" 'v=0; n=0
       for ip in 192.168.100.141 192.168.100.85 192.168.100.86 192.168.100.84; do
         o=$(ip route get $ip 2>/dev/null | head -1)
         echo "$o" | grep -q " via " && v=$((v+1))
@@ -321,7 +333,7 @@ case "${1:-}" in
         # pkill -9 -f 도 같은 이유로 자기를 죽일 수 있어 --older 대신 조상 제외 루프를
         # 이미 돌렸으므로 생략한다. 남은 것은 위 루프가 잡는다.
         for H in $KILL_HOSTS; do
-            ssh -o ConnectTimeout=5 "$H" "for p in \$(pgrep -f '$BPAT'); do
+            SSH "$H" "for p in \$(pgrep -f '$BPAT'); do
                     sudo pkill -9 -P \$p 2>/dev/null; sudo kill -9 \$p 2>/dev/null; done
                 sudo pkill -9 -f '$BPAT' 2>/dev/null; exit 0" 2>/dev/null
         done

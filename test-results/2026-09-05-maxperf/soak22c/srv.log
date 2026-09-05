@@ -1,0 +1,40 @@
+iperf3: the client has unexpectedly closed the connection
+-----------------------------------------------------------
+Server listening on 5201
+-----------------------------------------------------------
+Accepted connection from 10.9.10.2, port 54638
+[  5] local 10.9.10.1 port 5201 connected to 10.9.10.2 port 42955
+[  6] local 10.9.10.1 port 5201 connected to 10.9.10.2 port 37839
+[ ID][Role] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5][RX-S]   0.00-1.00   sec  2.48 MBytes  20.8 Mbits/sec  0.264 ms  0/2082 (0%)  
+[  6][TX-S]   0.00-1.00   sec  2.62 MBytes  22.0 Mbits/sec            2202  
+[  5][RX-S]   1.00-2.00   sec  2.63 MBytes  22.0 Mbits/sec  0.627 ms  0/2207 (0%)  
+[  6][TX-S]   1.00-2.00   sec  2.62 MBytes  22.0 Mbits/sec            2204  
+[  5][RX-S]   2.00-3.00   sec  2.62 MBytes  22.0 Mbits/sec  0.303 ms  2/2203 (0.091%)  
+[  6][TX-S]   2.00-3.00   sec  2.62 MBytes  22.0 Mbits/sec            2203  
+[  5][RX-S]   3.00-4.00   sec  2.63 MBytes  22.0 Mbits/sec  0.415 ms  -2/2204 (-0.091%)  
+[  6][TX-S]   3.00-4.00   sec  2.62 MBytes  22.0 Mbits/sec            2204  
+[  5][RX-S]   4.00-5.00   sec  2.62 MBytes  22.0 Mbits/sec  1.058 ms  0/2202 (0%)  
+[  6][TX-S]   4.00-5.00   sec  2.62 MBytes  22.0 Mbits/sec            2203  
+[  5][RX-S]   5.00-6.00   sec  2.62 MBytes  22.0 Mbits/sec  1.569 ms  0/2205 (0%)  
+[  6][TX-S]   5.00-6.00   sec  2.62 MBytes  22.0 Mbits/sec            2204  
+[  5][RX-S]   6.00-7.00   sec  2.62 MBytes  22.0 Mbits/sec  0.366 ms  1/2204 (0.045%)  
+[  6][TX-S]   6.00-7.00   sec  2.62 MBytes  22.0 Mbits/sec            2203  
+[  5][RX-S]   7.00-8.00   sec  2.62 MBytes  22.0 Mbits/sec  0.802 ms  -1/2203 (-0.045%)  
+[  6][TX-S]   7.00-8.00   sec  2.62 MBytes  22.0 Mbits/sec            2204  
+[  5][RX-S]   8.00-9.00   sec  2.61 MBytes  21.9 Mbits/sec  0.543 ms  0/2196 (0%)  
+[  6][TX-S]   8.00-9.00   sec  2.62 MBytes  22.0 Mbits/sec            2203  
+[  5][RX-S]   9.00-10.00  sec  2.63 MBytes  22.1 Mbits/sec  0.482 ms  1/2211 (0.045%)  
+[  6][TX-S]   9.00-10.00  sec  2.62 MBytes  22.0 Mbits/sec            2204  
+[  5][RX-S]  10.00-11.00  sec  2.62 MBytes  22.0 Mbits/sec  0.525 ms  -1/2204 (-0.045%)  
+[  6][TX-S]  10.00-11.00  sec  2.62 MBytes  22.0 Mbits/sec            2203  
+[  5][RX-S]  11.00-12.00  sec  2.62 MBytes  22.0 Mbits/sec  0.433 ms  0/2203 (0%)  
+[  6][TX-S]  11.00-12.00  sec  2.62 MBytes  22.0 Mbits/sec            2204  
+[  5][RX-S]  12.00-13.00  sec  2.62 MBytes  22.0 Mbits/sec  0.597 ms  2/2204 (0.091%)  
+[  6][TX-S]  12.00-13.00  sec  2.62 MBytes  22.0 Mbits/sec            2204  
+[  5][RX-S]  13.00-14.00  sec  2.62 MBytes  22.0 Mbits/sec  0.287 ms  -2/2203 (-0.091%)  
+[  6][TX-S]  13.00-14.00  sec  2.62 MBytes  22.0 Mbits/sec            2203  
+[  5][RX-S]  14.00-15.00  sec  2.62 MBytes  22.0 Mbits/sec  0.286 ms  0/2203 (0%)  
+[  6][TX-S]  14.00-15.00  sec  2.62 MBytes  22.0 Mbits/sec            2204  
+[  5][RX-S]  15.00-16.00  sec  2.56 MBytes  21.5 Mbits/sec  1.081 ms  0/2152 (0%)  
+[  6][TX-S]  15.00-16.00  sec  2.62 MBytes  22.0 Mbits/sec            2203  

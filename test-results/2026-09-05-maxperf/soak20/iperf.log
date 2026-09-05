@@ -1,0 +1,50 @@
+Connecting to host 10.9.10.1, port 5201
+[  5] local 10.9.10.2 port 58791 connected to 10.9.10.1 port 5201
+[  7] local 10.9.10.2 port 43816 connected to 10.9.10.1 port 5201
+[ ID][Role] Interval           Transfer     Bitrate         Jitter    Lost/Total Datagrams
+[  5][TX-C]   0.00-60.00  sec   143 MBytes  20.0 Mbits/sec            120191  
+[  7][RX-C]   0.00-60.00  sec   143 MBytes  20.0 Mbits/sec  0.283 ms  15/120195 (0.012%)  
+[  5][TX-C]  60.00-120.00 sec   143 MBytes  20.0 Mbits/sec            120193  
+[  7][RX-C]  60.00-120.00 sec   143 MBytes  20.0 Mbits/sec  0.897 ms  0/120191 (0%)  
+[  5][TX-C] 120.00-180.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 120.00-180.00 sec   143 MBytes  20.0 Mbits/sec  0.413 ms  2/120194 (0.0017%)  
+[  5][TX-C] 180.00-240.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 180.00-240.00 sec   143 MBytes  20.0 Mbits/sec  0.538 ms  -2/120180 (-0.0017%)  
+[  5][TX-C] 240.00-300.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 240.00-300.00 sec   143 MBytes  20.0 Mbits/sec  0.329 ms  0/120205 (0%)  
+[  5][TX-C] 300.00-360.00 sec   143 MBytes  20.0 Mbits/sec            120193  
+[  7][RX-C] 300.00-360.00 sec   143 MBytes  20.0 Mbits/sec  0.901 ms  0/120191 (0%)  
+[  5][TX-C] 360.00-420.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 360.00-420.00 sec   143 MBytes  20.0 Mbits/sec  0.784 ms  1/120192 (0.00083%)  
+[  5][TX-C] 420.00-480.00 sec   143 MBytes  20.0 Mbits/sec            120193  
+[  7][RX-C] 420.00-480.00 sec   143 MBytes  20.0 Mbits/sec  0.652 ms  1/120192 (0.00083%)  
+[  5][TX-C] 480.00-540.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 480.00-540.00 sec   143 MBytes  20.0 Mbits/sec  1.280 ms  -2/120192 (-0.0017%)  
+[  5][TX-C] 540.00-600.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 540.00-600.00 sec   143 MBytes  20.0 Mbits/sec  0.363 ms  0/120194 (0%)  
+[  5][TX-C] 600.00-660.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 600.00-660.00 sec   143 MBytes  20.0 Mbits/sec  0.444 ms  1/120192 (0.00083%)  
+[  5][TX-C] 660.00-720.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 660.00-720.00 sec   143 MBytes  20.0 Mbits/sec  0.626 ms  -1/120193 (-0.00083%)  
+[  5][TX-C] 720.00-780.00 sec   143 MBytes  20.0 Mbits/sec            120193  
+[  7][RX-C] 720.00-780.00 sec   143 MBytes  20.0 Mbits/sec  0.521 ms  0/120192 (0%)  
+[  5][TX-C] 780.00-840.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 780.00-840.00 sec   143 MBytes  20.0 Mbits/sec  0.475 ms  0/120192 (0%)  
+[  5][TX-C] 840.00-900.00 sec   143 MBytes  20.0 Mbits/sec            120193  
+[  7][RX-C] 840.00-900.00 sec   143 MBytes  20.0 Mbits/sec  0.299 ms  0/120193 (0%)  
+[  5][TX-C] 900.00-960.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 900.00-960.00 sec   143 MBytes  20.0 Mbits/sec  0.363 ms  0/120192 (0%)  
+[  5][TX-C] 960.00-1020.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 960.00-1020.00 sec   143 MBytes  20.0 Mbits/sec  0.713 ms  0/120192 (0%)  
+[  5][TX-C] 1020.00-1080.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 1020.00-1080.00 sec   143 MBytes  20.0 Mbits/sec  0.663 ms  0/120192 (0%)  
+[  5][TX-C] 1080.00-1140.00 sec   143 MBytes  20.0 Mbits/sec            120193  
+[  7][RX-C] 1080.00-1140.00 sec   143 MBytes  20.0 Mbits/sec  0.243 ms  0/120189 (0%)  
+[  5][TX-C] 1140.00-1200.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 1140.00-1200.00 sec   143 MBytes  20.0 Mbits/sec  0.701 ms  0/120193 (0%)  
+[  5][TX-C] 1200.00-1260.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 1200.00-1260.00 sec   143 MBytes  20.0 Mbits/sec  0.470 ms  0/120194 (0%)  
+[  5][TX-C] 1260.00-1320.00 sec   143 MBytes  20.0 Mbits/sec            120193  
+[  7][RX-C] 1260.00-1320.00 sec   143 MBytes  20.0 Mbits/sec  1.176 ms  2/120192 (0.0017%)  
+[  5][TX-C] 1320.00-1380.00 sec   143 MBytes  20.0 Mbits/sec            120192  
+[  7][RX-C] 1320.00-1380.00 sec   143 MBytes 
