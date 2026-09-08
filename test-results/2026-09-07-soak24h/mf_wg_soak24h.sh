@@ -41,6 +41,9 @@ NB=${NB:-20}                                          # 10.9.(NB+i).0/24
 RPORT=4443; SRVP=4500; CLIP=51900; WGSP=51900; ECHOP=44450
 KEY=wgmulti-$(date +%s)
 GUARD=/home/stevekim/multi-fec/test-results/2026-08-02-50mbps-soak/mf_gwguard.sh
+# 다중 세션 구조는 c 전체 CPU 가 단일 세션과 완전히 다르다(단일 20 Mbps max 53.9% vs
+# 10지사 상시 68~93%). 가드 프로파일을 multi 로 고정한다 — 근거는 가드 헤더의 검증 표.
+export GW_PROFILE=${GW_PROFILE:-multi}
 HERE=/home/stevekim/multi-fec/test-results/2026-09-02-multisession
 OUT=${OUT:-$HERE/wg_raw}
 mkdir -p "$OUT"

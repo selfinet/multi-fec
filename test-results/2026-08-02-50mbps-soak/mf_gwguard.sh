@@ -107,13 +107,52 @@ GW_CM_DIR=${GW_CM_DIR:-/tmp/mf_gwguard_cm}
 mkdir -p "$GW_CM_DIR" 2>/dev/null
 SSH() { command ssh -o ConnectTimeout=5 \
         -o ControlMaster=auto -o "ControlPath=$GW_CM_DIR/%r@%h:%p" -o ControlPersist=120 "$@"; }
-STREAK=${GW_STREAK:-3}          # 연속 초과 횟수에서 트립 (단발 버스트 면역)
 
 # 임계값 — 초과하면 트립
-CPU_C=${GW_CPU_C:-68}           # c 전체 busy % — 1차 판별자. 근거는 위 재보정 표
+# ── 부하 구조별 프로파일 (2026-09-09) ──────────────────────────────
+# 왜: 같은 임계로 두 구조를 덮을 수 없다. **`c` 전체 CPU 가 구조에 따라 완전히 다르다.**
+#   단일 세션 각 20 Mbps (2026-09-05)   max  53.9%
+#   10지사 × 각 1 Mbps  (2026-09-09)   상시 68~93%  ← 초과 2,329건, 전부 오탐
+# 10세션은 프로세스 10개 합 123% + WG 암복호 10개가 얹혀 머신 부하 자체가 다르다.
+#
+# multi 값의 근거 — 24시간 **정상** 런의 초과 샘플을 후보 임계에 재생해 얻은 최대 연속:
+#   c:전체   임계 68 → 3연속 · **75 이상 → 1연속** (p50 77.1 · p90 87.3 · max 93.4)
+#   c:1코어  임계 90~95 → 3연속 · 98 → 1연속        (p50 91.5 · max 100.0)
+#   r:1코어  임계 95 → 3연속                        (인프라 컨테이너 버스트)
+# → **수준이 아니라 지속성으로 가른다.** 78/95 에 streak 5 면 정상 런의 최대 연속(1·3)에
+#   2배 이상 여유가 있고, 진짜 과부하는 수십 초~분 단위라 그대로 잡힌다.
+#
+# 이 프로파일은 `s` 의 apt(95 이상 4초)와 `r` 의 인프라 버스트(3초)도 통과시킨다 —
+# **둘 다 우리 부하가 아니고 측정을 죽였을 뿐이므로 트립하지 않는 것이 맞다.**
+# 검증 — 기록된 런을 가드 자신의 streak 카운터로 재생 (트립 = 연속 N회 도달)
+#
+#   런                    성격            구 62/85/3   single 68/90/3   multi 78/95/5
+#   16M / 18M 정상        단일            통과         통과             통과
+#   20M 32분 정상         단일            **트립(4)**  통과(1)          통과(1)
+#   20M 1시간 정상 ×2     단일            통과(2)      통과(2)          통과(1~2)
+#   22M 여유없음          단일            트립(4)      **트립(4)**      통과(1)
+#   24M 붕괴              단일            트립(4)      **트립(4)**      통과(0)
+#   18M 실패(08-07)       단일            트립(3)      **통과(2)**      통과(1)
+#   다중 24시간 정상      10지사          트립(3)      **트립(3)**      **통과(2)**
+#   다중 17시간 (s apt)   10지사          트립(6)      트립(6)          **통과(4)**
+#
+# ⚠️ **`multi` 를 단일 세션에 쓰지 말 것** — 24M 붕괴를 아예 못 잡는다(연속 0).
+# ⚠️ **`single`(68/90) 은 08-07 18M 열화를 못 잡는다**(연속 2). 구 62/85 는 잡았다.
+#    2026-09-05 재보정이 20M 오탐을 없앤 대가다. 그 사건은 09-02 에 재현되지 않았고
+#    원인 미규명이며, 애초에 이 가드는 붕괴 탐지기가 아니다(손실은 수신측 계측으로 본다).
+#
+PROFILE=${GW_PROFILE:-single}
+case "$PROFILE" in
+  single) P_CPU_C=68; P_CORE=90; P_STREAK=3 ;;   # 2026-09-05 재보정. 붕괴/정상 분리 검증됨
+  multi)  P_CPU_C=78; P_CORE=95; P_STREAK=5 ;;   # 2026-09-09 24시간 정상 런에서 도출
+  *) echo "GW_PROFILE 은 single 또는 multi (받은 값: $PROFILE)" >&2; exit 2 ;;
+esac
+
+CPU_C=${GW_CPU_C:-$P_CPU_C}     # c 전체 busy % — 1차 판별자
 CPU_VM=${GW_CPU_VM:-75}         # r·s 전체 busy % (VM, 여유 있음)
-CORE=${GW_CORE:-90}             # 어느 호스트든 가장 바쁜 1코어 busy % — 보조. 위 재보정 표
+CORE=${GW_CORE:-$P_CORE}        # 어느 호스트든 가장 바쁜 1코어 busy % — 보조
 LINK=${GW_LINK:-400}            # iface RX+TX Mbps — 증폭 루프 백스톱
+STREAK=${GW_STREAK:-$P_STREAK}          # 연속 초과 횟수에서 트립 (단발 버스트 면역)
 
 # 호스트별 테스트망 인터페이스
 IF_C=${GW_IF_C:-enp2s0}
@@ -129,7 +168,7 @@ usage() { cat <<U
 
 임계값:  c 전체 ${CPU_C}%  ·  r·s 전체 ${CPU_VM}%  ·  최고 1코어 ${CORE}%  ·  링크 ${LINK} Mbps
          ${STREAK}회 연속 초과에서 트립, ${INTERVAL}초 간격
-환경변수: GW_CPU_C GW_CPU_VM GW_CORE GW_LINK GW_STREAK GW_INTERVAL GW_KILL_HOSTS
+환경변수: GW_PROFILE(single|multi) GW_CPU_C GW_CPU_VM GW_CORE GW_LINK GW_STREAK GW_INTERVAL GW_KILL_HOSTS
          GW_IF_C GW_IF_R GW_IF_S GUARD_C GUARD_R GUARD_S
 U
 }
@@ -308,7 +347,7 @@ case "${1:-}" in
       echo "[guard] precheck 실패 → 감시를 시작하지 않는다. 부하도 시작하지 말 것."
       exit 3
     fi
-    echo "[guard] 감시 시작 — c ${CPU_C}% · r·s ${CPU_VM}% · 1코어 ${CORE}% · 링크 ${LINK}Mbps"
+    echo "[guard] 감시 시작 (프로파일 $PROFILE) — c ${CPU_C}% · r·s ${CPU_VM}% · 1코어 ${CORE}% · 링크 ${LINK}Mbps"
     echo "[guard] ${STREAK}회 연속 초과에서 '$PAT' 중단"
     streak=0
     while true; do
