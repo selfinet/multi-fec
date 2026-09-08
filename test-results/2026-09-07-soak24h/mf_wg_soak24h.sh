@@ -205,10 +205,13 @@ GW=$!; echo $GW > $OUT/supervisor.pid
 
 T_END=$(( $(date +%s) + SECS )); k=0
 while [ "$(date +%s)" -lt "$T_END" ]; do
-  k=$((k+1)); left=$(( T_END - $(date +%s) )); this=$CHUNK
+  left=$(( T_END - $(date +%s) )); this=$CHUNK
   [ "$left" -lt "$CHUNK" ] && this=$left
+  # 남은 시간이 1분 미만이면 청크를 열지 않는다. k 는 **실제로 돈 청크만** 센다
+  # (전에는 break 전에 올려 "3 개 완료" 인데 2 개만 돈 표시 오류가 났다 — 스모크에서 발견)
   [ "$this" -lt 60 ] && break
-  kill -0 $WD 2>/dev/null || { echo "  ✗ 가드 없음 — 청크 $k 시작 안 함"; break; }
+  kill -0 $WD 2>/dev/null || { echo "  ✗ 가드 없음 — 다음 청크 시작 안 함"; break; }
+  k=$((k+1))
   echo "  [$(date +%H:%M:%S)] 청크 $k / ${this}s"
   ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=6 $C \
     "/tmp/mf_blast --no-clients --sessions $N --mbps $MBPS --secs $this \
@@ -220,7 +223,7 @@ done
 [ -f $OUT/supervisor.pid ] && kill $(cat $OUT/supervisor.pid) 2>/dev/null
 [ -f $OUT/guard.pid ] && kill $(cat $OUT/guard.pid) 2>/dev/null
 ifsnap load1 >> $OUT/ifsnap.txt
-echo "  청크 $k 개 완료 · 하네스 건전성: $(sort -u $OUT/blast.err 2>/dev/null | tr '\n' ' ')"
+echo "  실제 완주 청크 $k 개 · 하네스 건전성: $(sort -u $OUT/blast.err 2>/dev/null | tr '\n' ' ')"
 [ -s $OUT/guard_died.log ] && { echo "  ⚠️ 무감시 구간 발생:"; cat $OUT/guard_died.log; }
 
 echo; echo "=== 11. 회수 ==="

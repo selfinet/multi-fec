@@ -1,0 +1,98 @@
+=== 0. 사전 판정 (세션 10 × 각 방향 1 Mbps · 세션별 WG) ===
+세션 10 × 양방향 2.00 Mbps  (ΣR = 20.00 Mbps)
+  ① 총량  비용 2.31 / 예산 2.00 논리CPU  → c 전체 busy 약 58%
+  ② 개별  R 2.00 / 15.9 Mbps
+  ③ NIC   ΣR 20.00 / 31.25 Mbps 양방향
+  ✗ ① 총량 초과 — 세션수나 레이트를 낮출 것
+  ↑ 모델은 WG 암복호를 포함하지 않는다. 게이트는 precheck 와 가드다.
+
+=== 1. precheck ===
+[precheck] 호스트 도달성
+  ✓ c.xdn.selfinet.com
+  ✓ r.xdn.selfinet.com
+  ✓ s.xdn.selfinet.com
+[precheck] 인터페이스
+  ✓ c.xdn.selfinet.com enp2s0
+  ✓ r.xdn.selfinet.com ens18
+  ✓ s.xdn.selfinet.com ens18
+[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)
+  ✓ c.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ r.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ s.xdn.selfinet.com  gw경유 0 · 터널경유 0
+[precheck] 통과
+
+=== 2. 배포 ===
+  완료
+
+=== 3. 세션별 WG 키·설정 (10 쌍) ===
+  설정 파일 c/s 각 10 개
+
+=== 4. netem 필터 (:4443) ===
+  c       2 flowid 1:1       2 flowid 1:2 
+  r       2 flowid 1:1       2 flowid 1:2 
+
+=== 5. s: 서버 10 개 + echo 10 개, WG 기동 ===
+  s: server=10 echo=10 wg=12
+
+=== 6. r: 릴레이 2개 (--route 로 10 키 분기) ===
+  r: relay=2
+
+=== 7. c: 클라이언트 10 개 + WG 기동 ===
+  c: client=11 wg=11
+
+=== 8. WG 핸드셰이크 확인 (터널이 실제로 붙었나) ===
+  핸드셰이크 10/10 · 터널 ping 10/10
+
+=== 9. 샘플러 + 가드 ===
+  가드 살아있음 pid=258957
+
+=== 10. 부하 86400s = 3600s 청크 × 24 (세션 10 × 각 1 Mbps, WG 안) — 14:33:33 ===
+  [14:33:39] 청크 1 / 3600s
+     TOTAL,3750000,3749989,99.9997,0,0
+  [15:33:48] 청크 2 / 3600s
+     TOTAL,3750000,3749984,99.9996,0,0
+  [16:34:02] 청크 3 / 3600s
+     TOTAL,3750000,3749981,99.9995,0,0
+  [17:34:19] 청크 4 / 3600s
+     TOTAL,3750000,3749987,99.9997,0,0
+  [18:34:31] 청크 5 / 3600s
+     TOTAL,3750000,3749988,99.9997,0,0
+  [19:34:42] 청크 6 / 3600s
+     TOTAL,3750000,3749986,99.9996,0,0
+  [20:34:54] 청크 7 / 3600s
+     TOTAL,3750000,3749988,99.9997,0,0
+  [21:35:05] 청크 8 / 3600s
+     TOTAL,3750000,3749992,99.9998,0,0
+  [22:35:17] 청크 9 / 3600s
+     TOTAL,3750000,3749988,99.9997,0,0
+  [23:35:29] 청크 10 / 3600s
+     TOTAL,3750000,3749979,99.9994,0,0
+  [00:35:40] 청크 11 / 3600s
+     TOTAL,3750000,3749985,99.9996,0,0
+  [01:35:51] 청크 12 / 3600s
+     TOTAL,3750000,3749988,99.9997,0,0
+  [02:36:03] 청크 13 / 3600s
+     TOTAL,3750000,3749989,99.9997,0,0
+  [03:36:14] 청크 14 / 3600s
+     TOTAL,3750000,3749988,99.9997,0,0
+  [04:36:26] 청크 15 / 3600s
+     TOTAL,3750000,3749984,99.9996,0,0
+  [05:36:37] 청크 16 / 3600s
+     TOTAL,3750000,3749988,99.9997,0,0
+  [06:36:50] 청크 17 / 3600s
+./mf_wg_soak24h.sh: 줄 222: 1344322 죽었음               ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=6 $C "/tmp/mf_blast --no-clients --sessions $N --mbps $MBPS --secs $this      --src-fmt '10.9.%d.2' --dst-fmt '10.9.%d.1' --net-base $NB --dst-port $ECHOP" 2>> $OUT/blast.err > $OUT/chunk_$(printf %03d $k).csv
+  ✗ 가드 없음 — 다음 청크 시작 안 함
+  실제 완주 청크 17 개 · 하네스 건전성: pacing_resets=0 sendfail=0 target_pps_per_session=104.2 gap_ns=9600000 
+
+=== 11. 회수 ===
+  5632 /home/stevekim/multi-fec/test-results/2026-09-07-soak24h/run24h/sample_blast.csv
+  5369 /home/stevekim/multi-fec/test-results/2026-09-07-soak24h/run24h/sample_c.csv
+  5785 /home/stevekim/multi-fec/test-results/2026-09-07-soak24h/run24h/sample_r.csv
+  5652 /home/stevekim/multi-fec/test-results/2026-09-07-soak24h/run24h/sample_s.csv
+ 22438 합계
+  가드: 328 초과 · 1 트립
+
+[06:37:00] 정리
+  남은 WG:   c=starlink-fec | s=starlink-xdn starlink-fec
+  운영 체인: c=active r=active active  s=active
+  netem delay 25ms loss 5% delay 30ms loss 2% 
