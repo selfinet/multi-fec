@@ -39,6 +39,14 @@ PORT=4443; SINK=44444; KEY=aging1h-$(date +%s)
 N=${N:-4}; SECS=${SECS:-3600}; MBPS=${MBPS:-4}        # MBPS = 세션당 각 방향
 GUARD=/home/stevekim/multi-fec/test-results/2026-08-02-50mbps-soak/mf_gwguard.sh
 OUT=${OUT:-/home/stevekim/multi-fec/test-results/2026-09-02-multisession/raw}
+# ── 온호스트 샘플러 CSV 경로에 런 식별자 (2026-09-09) ──────────────────
+# 왜: 경로가 `/tmp/<pre>_c.csv` 로 **고정**이면 연속 장시간 런에서 충돌한다.
+# 2026-09-07 24시간 소크에서 실제로 겪었다 — 1차가 17시간에 트립으로 끝났어도
+# 샘플러 수명(SECS+600 = 24.2시간)이 남아 계속 돌았고, 2차 샘플러와 **같은 파일에
+# 동시 기록**해 중복 행이 생겼다. 게다가 잔존 샘플러 하나가 **가드 초과를 14배로**
+# 만들었다(임계 근처에서는 계측 도구 자신의 부하가 결과를 바꾼다).
+RUNID=${RUNID:-$(basename "${OUT:-run}")-$(date +%m%d%H%M%S)}
+
 mkdir -p "$OUT"
 
 # 전 호스트 전 인터페이스 누적 바이트 스냅샷 (원격 시계로 epoch 도 같이)
@@ -132,13 +140,13 @@ echo; echo "=== 5. 샘플러 + 가드 ==="
 # ⚠️ 샘플러 패턴에도 포트 범위를 준다. `127.0.0.1:518` 이면 **운영 클라(:51821)** 까지
 # 합산해 nproc·RSS·FD 가 오염된다 — cleanup 의 kill 패턴만 고쳐져 있고 샘플러는
 # 빠져 있었다(2026-09-02 발견). 누수 판정이 통째로 무의미해지는 종류의 결함이다.
-ssh $C "nohup /tmp/rt_sample.sh 'multi-fec-dist -c -l 127.0.0.1:518[6-9]' /tmp/ag_c.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
-ssh $S "nohup /tmp/rt_sample.sh 'multi-fec-dist -s -l $SRV:$PORT' /tmp/ag_s.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
+ssh $C "nohup /tmp/rt_sample.sh 'multi-fec-dist -c -l 127.0.0.1:518[6-9]' /tmp/ag_c_$RUNID.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
+ssh $S "nohup /tmp/rt_sample.sh 'multi-fec-dist -s -l $SRV:$PORT' /tmp/ag_s_$RUNID.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
 # 같은 이유 — `192.168.100.8` 은 **운영 릴레이(.85:443/.86:443)** 도 매치한다
-ssh $R "nohup /tmp/rt_sample.sh 'multi-fec-dist -r -l 192.168.100.8[56]:$PORT' /tmp/ag_r.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
+ssh $R "nohup /tmp/rt_sample.sh 'multi-fec-dist -r -l 192.168.100.8[56]:$PORT' /tmp/ag_r_$RUNID.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
 # 생성기 자체 CPU 를 따로 잰다 — c 전체 CPU 에서 이 몫을 빼야 제품 비용이 나온다.
 # 별도 A/B 런이 필요 없고 실제 런과 같은 조건에서 정확히 귀속된다.
-ssh $C "nohup /tmp/rt_sample.sh 'mf_blast --sessions' /tmp/ag_blast.csv $((SECS+180)) mf_blast >/dev/null 2>&1 &" 2>/dev/null
+ssh $C "nohup /tmp/rt_sample.sh 'mf_blast --sessions' /tmp/ag_blast_$RUNID.csv $((SECS+180)) mf_blast >/dev/null 2>&1 &" 2>/dev/null
 nohup $GUARD watch "mf_blast" > $OUT/watchdog.log 2>&1 &
 WD=$!
 sleep 12
@@ -166,9 +174,9 @@ ifsnap load1 >> $OUT/ifsnap.txt
 
 kill $WD 2>/dev/null
 echo; echo "=== 7. 샘플 회수 ==="
-ssh $C 'cat /tmp/ag_c.csv' > $OUT/sample_c.csv 2>/dev/null
-ssh $C 'cat /tmp/ag_blast.csv' > $OUT/sample_blast.csv 2>/dev/null
-ssh $R 'cat /tmp/ag_r.csv' > $OUT/sample_r.csv 2>/dev/null
-ssh $S 'cat /tmp/ag_s.csv' > $OUT/sample_s.csv 2>/dev/null
+ssh $C "cat /tmp/ag_c_$RUNID.csv" > $OUT/sample_c.csv 2>/dev/null
+ssh $C "cat /tmp/ag_blast_$RUNID.csv" > $OUT/sample_blast.csv 2>/dev/null
+ssh $R "cat /tmp/ag_r_$RUNID.csv" > $OUT/sample_r.csv 2>/dev/null
+ssh $S "cat /tmp/ag_s_$RUNID.csv" > $OUT/sample_s.csv 2>/dev/null
 wc -l $OUT/sample_*.csv
 echo "  가드 로그: $(grep -c 초과 $OUT/watchdog.log 2>/dev/null || echo 0) 건 초과, 트립 $(grep -c 트립 $OUT/watchdog.log 2>/dev/null || echo 0) 건"

@@ -40,6 +40,14 @@ KEY=wgmulti-$(date +%s)
 GUARD=/home/stevekim/multi-fec/test-results/2026-08-02-50mbps-soak/mf_gwguard.sh
 HERE=/home/stevekim/multi-fec/test-results/2026-09-02-multisession
 OUT=${OUT:-$HERE/amp_raw}
+# ── 온호스트 샘플러 CSV 경로에 런 식별자 (2026-09-09) ──────────────────
+# 왜: 경로가 `/tmp/<pre>_c.csv` 로 **고정**이면 연속 장시간 런에서 충돌한다.
+# 2026-09-07 24시간 소크에서 실제로 겪었다 — 1차가 17시간에 트립으로 끝났어도
+# 샘플러 수명(SECS+600 = 24.2시간)이 남아 계속 돌았고, 2차 샘플러와 **같은 파일에
+# 동시 기록**해 중복 행이 생겼다. 게다가 잔존 샘플러 하나가 **가드 초과를 14배로**
+# 만들었다(임계 근처에서는 계측 도구 자신의 부하가 결과를 바꾼다).
+RUNID=${RUNID:-$(basename "${OUT:-run}")-$(date +%m%d%H%M%S)}
+
 mkdir -p "$OUT"
 
 ifsnap() { for h in $C $R $S; do
@@ -180,13 +188,13 @@ echo "  핸드셰이크 $HS/$N · 터널 ping $PING/$N"
 [ "${PING:-0}" -eq "$N" ] || { echo "  ✗ 터널 $N 개가 다 붙지 않았다 — 중단"; exit 1; }
 
 echo; echo "=== 9. 샘플러 + 가드 ==="
-ssh $C "nohup /tmp/rt_sample.sh 'multi-fec-dist -c -l 127.0.0.1:519' /tmp/wg_c.csv $(( (STEP+20) * 8 + 300 )) >/dev/null 2>&1 &" 2>/dev/null
-ssh $R "nohup /tmp/rt_sample.sh 'multi-fec-dist -r -l 192.168.100.8[56]:$RPORT' /tmp/wg_r.csv $(( (STEP+20) * 8 + 300 )) >/dev/null 2>&1 &" 2>/dev/null
-ssh $S "nohup /tmp/rt_sample.sh 'multi-fec-dist -s -l $SRV:45' /tmp/wg_s.csv $(( (STEP+20) * 8 + 300 )) >/dev/null 2>&1 &" 2>/dev/null
+ssh $C "nohup /tmp/rt_sample.sh 'multi-fec-dist -c -l 127.0.0.1:519' /tmp/wg_c_$RUNID.csv $(( (STEP+20) * 8 + 300 )) >/dev/null 2>&1 &" 2>/dev/null
+ssh $R "nohup /tmp/rt_sample.sh 'multi-fec-dist -r -l 192.168.100.8[56]:$RPORT' /tmp/wg_r_$RUNID.csv $(( (STEP+20) * 8 + 300 )) >/dev/null 2>&1 &" 2>/dev/null
+ssh $S "nohup /tmp/rt_sample.sh 'multi-fec-dist -s -l $SRV:45' /tmp/wg_s_$RUNID.csv $(( (STEP+20) * 8 + 300 )) >/dev/null 2>&1 &" 2>/dev/null
 # ⚠️ 패턴은 실제 cmdline 과 맞아야 한다. `mf_blast --sessions` 는 사이에 `--no-clients`
 # 가 껴 있어 매치되지 않았다(스모크에서 발견 — CSV 가 헤더만 남는다). comm 필터가
 # 샘플러 자신을 걸러주므로 패턴은 이름만으로 충분하다.
-ssh $C "nohup /tmp/rt_sample.sh 'mf_blast' /tmp/wg_blast.csv $(( (STEP+20) * 8 + 300 )) mf_blast >/dev/null 2>&1 &" 2>/dev/null
+ssh $C "nohup /tmp/rt_sample.sh 'mf_blast' /tmp/wg_blast_$RUNID.csv $(( (STEP+20) * 8 + 300 )) mf_blast >/dev/null 2>&1 &" 2>/dev/null
 nohup $GUARD watch "mf_blast" > $OUT/watchdog.log 2>&1 &
 WD=$!
 sleep 12
@@ -215,9 +223,9 @@ echo "  하네스 건전성(마지막):"; tail -1 $OUT/blast.err
 [ -s $OUT/guard_died.log ] && { echo "  ⚠️ 무감시 구간 발생:"; cat $OUT/guard_died.log; }
 
 echo; echo "=== 11. 회수 ==="
-ssh $C 'cat /tmp/wg_c.csv'     > $OUT/sample_c.csv 2>/dev/null
-ssh $C 'cat /tmp/wg_blast.csv' > $OUT/sample_blast.csv 2>/dev/null
-ssh $R 'cat /tmp/wg_r.csv'     > $OUT/sample_r.csv 2>/dev/null
-ssh $S 'cat /tmp/wg_s.csv'     > $OUT/sample_s.csv 2>/dev/null
+ssh $C "cat /tmp/wg_c_$RUNID.csv"     > $OUT/sample_c.csv 2>/dev/null
+ssh $C "cat /tmp/wg_blast_$RUNID.csv" > $OUT/sample_blast.csv 2>/dev/null
+ssh $R "cat /tmp/wg_r_$RUNID.csv"     > $OUT/sample_r.csv 2>/dev/null
+ssh $S "cat /tmp/wg_s_$RUNID.csv"     > $OUT/sample_s.csv 2>/dev/null
 wc -l $OUT/sample_*.csv
 echo "  가드: $(grep -c 초과 $OUT/watchdog.log 2>/dev/null||echo 0) 초과 · $(grep -c 트립 $OUT/watchdog.log 2>/dev/null||echo 0) 트립"

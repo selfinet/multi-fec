@@ -25,6 +25,14 @@ PORT=4443; SINK=44444; KEY=aging1h-$(date +%s)
 N=${N:-8}; SECS=${SECS:-3600}; MBPS=${MBPS:-0.25}     # MBPS = 세션당 각 방향
 GUARD=/home/stevekim/multi-fec/test-results/2026-08-02-50mbps-soak/mf_gwguard.sh
 OUT=${OUT:-/home/stevekim/multi-fec/test-results/2026-08-07-aging-1h/raw}
+# ── 온호스트 샘플러 CSV 경로에 런 식별자 (2026-09-09) ──────────────────
+# 왜: 경로가 `/tmp/<pre>_c.csv` 로 **고정**이면 연속 장시간 런에서 충돌한다.
+# 2026-09-07 24시간 소크에서 실제로 겪었다 — 1차가 17시간에 트립으로 끝났어도
+# 샘플러 수명(SECS+600 = 24.2시간)이 남아 계속 돌았고, 2차 샘플러와 **같은 파일에
+# 동시 기록**해 중복 행이 생겼다. 게다가 잔존 샘플러 하나가 **가드 초과를 14배로**
+# 만들었다(임계 근처에서는 계측 도구 자신의 부하가 결과를 바꾼다).
+RUNID=${RUNID:-$(basename "${OUT:-run}")-$(date +%m%d%H%M%S)}
+
 mkdir -p "$OUT"
 
 # 전 호스트 전 인터페이스 누적 바이트 스냅샷 (원격 시계로 epoch 도 같이)
@@ -96,9 +104,9 @@ echo "  s echo=$ECHO_N  s server=$SRV_N  r relay=$REL_N  (1/1/2 이어야 함)"
 [ "$ECHO_N" -ge 1 ] && [ "$SRV_N" -ge 1 ] && [ "$REL_N" -ge 2 ] || { echo "  ✗ 기동 실패 — 중단"; exit 1; }
 
 echo; echo "=== 5. 샘플러 + 가드 ==="
-ssh $C "nohup /tmp/rt_sample.sh 'multi-fec-dist -c -l 127.0.0.1:518' /tmp/ag_c.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
-ssh $S "nohup /tmp/rt_sample.sh 'multi-fec-dist -s -l $SRV:$PORT' /tmp/ag_s.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
-ssh $R "nohup /tmp/rt_sample.sh 'multi-fec-dist -r -l 192.168.100.8' /tmp/ag_r.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
+ssh $C "nohup /tmp/rt_sample.sh 'multi-fec-dist -c -l 127.0.0.1:518' /tmp/ag_c_$RUNID.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
+ssh $S "nohup /tmp/rt_sample.sh 'multi-fec-dist -s -l $SRV:$PORT' /tmp/ag_s_$RUNID.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
+ssh $R "nohup /tmp/rt_sample.sh 'multi-fec-dist -r -l 192.168.100.8' /tmp/ag_r_$RUNID.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
 nohup $GUARD watch "rt_multi.py" > $OUT/watchdog.log 2>&1 &
 WD=$!
 sleep 12
@@ -113,8 +121,8 @@ ifsnap load1 >> $OUT/ifsnap.txt
 
 kill $WD 2>/dev/null
 echo; echo "=== 7. 샘플 회수 ==="
-ssh $C 'cat /tmp/ag_c.csv' > $OUT/sample_c.csv 2>/dev/null
-ssh $R 'cat /tmp/ag_r.csv' > $OUT/sample_r.csv 2>/dev/null
-ssh $S 'cat /tmp/ag_s.csv' > $OUT/sample_s.csv 2>/dev/null
+ssh $C "cat /tmp/ag_c_$RUNID.csv" > $OUT/sample_c.csv 2>/dev/null
+ssh $R "cat /tmp/ag_r_$RUNID.csv" > $OUT/sample_r.csv 2>/dev/null
+ssh $S "cat /tmp/ag_s_$RUNID.csv" > $OUT/sample_s.csv 2>/dev/null
 wc -l $OUT/sample_*.csv
 echo "  가드 로그: $(grep -c 초과 $OUT/watchdog.log 2>/dev/null || echo 0) 건 초과, 트립 $(grep -c 트립 $OUT/watchdog.log 2>/dev/null || echo 0) 건"
