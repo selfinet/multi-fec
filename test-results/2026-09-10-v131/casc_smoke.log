@@ -1,0 +1,77 @@
+=== 0. 사전 판정 (세션 10 × 각 방향 1 Mbps · 세션별 WG) ===
+세션 10 × 양방향 2.00 Mbps  (ΣR = 20.00 Mbps)
+  ① 총량  비용 2.31 / 예산 2.00 논리CPU  → c 전체 busy 약 58%
+  ② 개별  R 2.00 / 15.9 Mbps
+  ③ NIC   ΣR 20.00 / 31.25 Mbps 양방향
+  ✗ ① 총량 초과 — 세션수나 레이트를 낮출 것
+  ↑ 모델은 WG 암복호를 포함하지 않는다. 게이트는 precheck 와 가드다.
+
+=== 1. precheck ===
+[precheck] 호스트 도달성
+  ✓ c.xdn.selfinet.com
+  ✓ r.xdn.selfinet.com
+  ✓ s.xdn.selfinet.com
+[precheck] 인터페이스
+  ✓ c.xdn.selfinet.com enp2s0
+  ✓ r.xdn.selfinet.com ens18
+  ✓ s.xdn.selfinet.com ens18
+[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)
+  ✓ c.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ r.xdn.selfinet.com  gw경유 0 · 터널경유 0
+  ✓ s.xdn.selfinet.com  gw경유 0 · 터널경유 0
+[precheck] 통과
+
+=== 2. 배포 ===
+  완료
+
+=== 3. 세션별 WG 키·설정 (10 쌍) ===
+  설정 파일 c/s 각 10 개
+
+=== 4. netem 필터 (:4443) ===
+  c       2 flowid 1:1       2 flowid 1:2 
+  r       2 flowid 1:1       2 flowid 1:2 
+
+=== 5. s: 서버 10 개 + echo 10 개, WG 기동 ===
+  s: server=10 echo=10 wg=12
+
+=== 6. 릴레이 2단 (1단 r ×2 → 2단 s ×2 → 서버) ===
+  1단(r) 2/2 · 2단(s) 2/2
+
+=== 7. c: 클라이언트 10 개 + WG 기동 ===
+  c: client=10 wg=11
+
+=== 8. WG 핸드셰이크 확인 (터널이 실제로 붙었나) ===
+  핸드셰이크 10/10 · 터널 ping 10/10
+
+=== 9. 샘플러 + 가드 ===
+  가드 살아있음 pid=3151048
+
+=== 10. 부하 120s (세션 10 × 각 1 Mbps, WG 터널 안) — 23:49:53 ===
+session,sent,own_back,own_pct,foreign,bad
+0,12500,12500,100.0000,0,0
+1,12500,12500,100.0000,0,0
+2,12500,12500,100.0000,0,0
+3,12500,12500,100.0000,0,0
+4,12500,12500,100.0000,0,0
+5,12500,12500,100.0000,0,0
+6,12500,12500,100.0000,0,0
+7,12500,12500,100.0000,0,0
+8,12500,12500,100.0000,0,0
+9,12500,12500,100.0000,0,0
+TOTAL,125000,125000,100.0000,0,0
+  하네스 건전성: pacing_resets=0 sendfail=0 target_pps_per_session=104.2 gap_ns=9600000 
+
+=== 11. 회수 ===
+  12 /home/stevekim/multi-fec/test-results/2026-09-10-v131/casc_smoke/sample_blast.csv
+  14 /home/stevekim/multi-fec/test-results/2026-09-10-v131/casc_smoke/sample_c.csv
+  16 /home/stevekim/multi-fec/test-results/2026-09-10-v131/casc_smoke/sample_r.csv
+  15 /home/stevekim/multi-fec/test-results/2026-09-10-v131/casc_smoke/sample_s.csv
+  15 /home/stevekim/multi-fec/test-results/2026-09-10-v131/casc_smoke/sample_t2.csv
+  72 합계
+  가드: 1 초과 · 0
+0 트립
+
+[23:52:11] 정리
+  남은 WG:   c=starlink-fec | s=starlink-xdn starlink-fec
+  운영 체인: c=active r=active active  s=active
+  netem delay 25ms loss 5% delay 30ms loss 2% 

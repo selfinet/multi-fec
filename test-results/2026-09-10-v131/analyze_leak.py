@@ -25,8 +25,7 @@ def slope_per_h(pts):
 
 def report(tag, path):
     if not os.path.exists(path):
-        print(f"  {tag}: 파일 없음 {path}")
-        return
+        return   # 2단 CSV 는 캐스케이드 런에만 있다
     rows = [r for r in csv.DictReader(open(path)) if r.get("t")]
     if not rows:
         print(f"  {tag}: 행 없음")
@@ -62,7 +61,8 @@ def report(tag, path):
 
 
 print(f"=== 누수 판정 · {RAW} ===")
-for tag, f in (("c 클라이언트", "sample_c.csv"), ("r 릴레이", "sample_r.csv"),
+for tag, f in (("c 클라이언트", "sample_c.csv"), ("r 릴레이(1단)", "sample_r.csv"),
+               ("s 릴레이(2단)", "sample_t2.csv"),
                ("s 서버", "sample_s.csv"), ("부하생성기", "sample_blast.csv")):
     report(tag, os.path.join(RAW, f))
 
