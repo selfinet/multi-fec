@@ -124,21 +124,34 @@ static void enqueue_server_pending(const char *data, int len, uint64_t peer)
 
 static void flush_server_pending()
 {
+    int stale = 0;
+    my_time_t now = (my_time_t)get_current_time();
     while (s_srv_pending_count > 0) {
         server_pending_pkt_t &p = s_srv_pending_q[s_srv_pending_head];
-        int ret = mud_send_mp(g_mud, p.data, p.len, p.peer);
-        if (ret < 0) {
-            /* Window still short → retry on the next tick, unless the entry has
-             * aged out (peer gone), in which case skip it so the queue drains. */
-            if ((my_time_t)get_current_time() - p.ts
-                    <= (my_time_t)SERVER_PENDING_TTL_MS)
-                break;
-            mylog(log_debug, "[server] dropping stale queued pkt len=%d peer=%016llx\n",
-                  p.len, (unsigned long long)p.peer);
+        /* Age out before sending, not only when the send fails. The TTL used to
+         * be consulted on the failure path alone, which never fired for the case
+         * that matters: while the paths are down every send fails and the check
+         * keeps the entry, then the paths come back, sends succeed and the whole
+         * backlog goes out regardless of age. Measured 2026-09-09/10 — with both
+         * relay paths down the downstream replies were released in one burst and
+         * arrived up to 2.0 s late even after the client-side TTL was added.
+         * Delivering them is worse than dropping them: TCP inside the tunnel has
+         * long since retransmitted, so they land as duplicates that trigger
+         * dup-ACKs and reordering, and fresh packets queue up behind them. */
+        if (now - p.ts > (my_time_t)SERVER_PENDING_TTL_MS) {
+            s_srv_pending_head = (s_srv_pending_head + 1) % SERVER_PENDING_Q_CAP;
+            s_srv_pending_count--;
+            stale++;
+            continue;
         }
+        if (mud_send_mp(g_mud, p.data, p.len, p.peer) < 0)
+            break;   /* window still short → retry on the next tick */
         s_srv_pending_head = (s_srv_pending_head + 1) % SERVER_PENDING_Q_CAP;
         s_srv_pending_count--;
     }
+    if (stale > 0)
+        mylog(log_info, "[server] dropped %d stale pending packet(s) (>%d ms)\n",
+              stale, SERVER_PENDING_TTL_MS);
     mud_send_flush(g_mud);
 }
 

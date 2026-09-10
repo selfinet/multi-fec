@@ -1,0 +1,6 @@
+phase pid rss_kb fd cpu_ticks
+before 2328 11560 8 70
+cycle1 2328 12696 8 262
+cycle2 2328 13724 8 402
+cycle3 2328 13724 8 537
+after 2328 13724 8 540
