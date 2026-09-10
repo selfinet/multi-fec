@@ -55,9 +55,23 @@ static inline int mud_send_mp(struct mud *mud, const void *data, size_t size)
 
 #define PENDING_Q_CAP 512
 
+/* Age limit for a queued packet. Measured 2026-09-09: with both relay paths
+ * down for ~26 s the queue filled and, once a path came back, every entry was
+ * sent — the first reply came back with RTT 26,574 ms and the rest decreased by
+ * exactly one probe interval each, i.e. a FIFO drain of ~130 stale packets.
+ * Delivering them is worse than dropping them: inside the tunnel TCP has long
+ * since retransmitted, so they arrive as duplicates that trigger dup-ACKs and
+ * reordering, and fresh packets queue up behind them.
+ *
+ * Note the server's queue (SERVER_PENDING_TTL_MS) consults its TTL only when
+ * mud_send fails, so it still emits stale packets once the window recovers —
+ * the same weakness, not yet addressed there. */
+#define CLIENT_PENDING_TTL_MS 1000
+
 struct pending_pkt_t {
-    char data[SESSION_ID_LEN + buf_len];
-    int  len;
+    char      data[SESSION_ID_LEN + buf_len];
+    int       len;
+    my_time_t ts;   /* enqueue time, for the TTL above */
 };
 
 static pending_pkt_t s_pending_q[PENDING_Q_CAP];
@@ -81,15 +95,26 @@ static void enqueue_pending(const char *data, int len)
     }
     memcpy(s_pending_q[s_pending_tail].data, data, len);
     s_pending_q[s_pending_tail].len = len;
+    s_pending_q[s_pending_tail].ts  = (my_time_t)get_current_time();
     s_pending_tail = (s_pending_tail + 1) % PENDING_Q_CAP;
     s_pending_count++;
 }
 
 static void flush_pending_packets()
 {
-    int flushed = 0;
+    int flushed = 0, stale = 0;
+    my_time_t now = (my_time_t)get_current_time();
     while (s_pending_count > 0) {
         pending_pkt_t &pkt = s_pending_q[s_pending_head];
+        /* Drop before sending, not only when the send fails: after an outage
+         * the window is fine again, so an age check placed on the failure path
+         * would let the whole stale backlog through. */
+        if (now - pkt.ts > (my_time_t)CLIENT_PENDING_TTL_MS) {
+            s_pending_head = (s_pending_head + 1) % PENDING_Q_CAP;
+            s_pending_count--;
+            stale++;
+            continue;
+        }
         int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
         if (ret < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -99,6 +124,9 @@ static void flush_pending_packets()
         s_pending_count--;
         flushed++;
     }
+    if (stale > 0)
+        mylog(log_info, "[client] dropped %d stale pending packet(s) (>%d ms)\n",
+              stale, CLIENT_PENDING_TTL_MS);
     if (flushed > 0) {
         mylog(log_info, "[client] flushed %d pending packet(s)\n", flushed);
         mud_send_flush(g_mud);
