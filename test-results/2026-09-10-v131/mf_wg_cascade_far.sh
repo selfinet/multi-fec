@@ -1,0 +1,276 @@
+#!/bin/bash
+# mf_wg_cascade_far.sh — **릴레이 2단 캐스케이드 + 원거리 2단** 스모크 (테스트망 전용)
+#
+# 2026-09-11: mf_wg_cascade.sh 는 추가 홉이 온링크(편도 0.5ms)라 **2단이 멀리 있는 경우**를
+# 재현하지 못했다. 여기서는 `r` 의 prio qdisc 에 **pref 3 필터를 추가**해 `r→s`(1단→2단)
+# 트래픽을 기존 netem band 로 보낸다 — 홉마다 임피어먼트가 걸린다.
+#   path[0]: c→r 25ms/5%  +  r→s 25ms/5%   (편도 50ms, 손실 ≈9.75%)
+#   path[1]: c→r 30ms/2%  +  r→s 30ms/2%   (편도 60ms, 손실 ≈3.96%)
+# ⚠️ **단방향이다** — `s` 에는 netem qdisc 가 없어 `s→r` 은 무임피어먼트다. 즉 상향은
+#    두 홉 다 걸리고 하향은 c↔r 구간만 걸린다. `s` 에 root qdisc 를 새로 심는 것은 운영
+#    서버(:443)가 그 인터페이스에 있어 위험이 크므로 하지 않았다.
+# 기존 `pref 1`(운영 경로)은 건드리지 않는다. 정리에서 `mf-netem` 재시작으로 pref 2·3 이 소멸한다.
+#
+# (원본 헤더)
+# mf_wg_cascade.sh — **릴레이 2단 캐스케이드** 스모크 (테스트망 전용)
+#
+# 왜 (2026-09-10): 실서비스망은 `c ─ r 2단 × 2경로 ─ s` 인데, 테스트망은 지금까지
+# **릴레이 1단**만 돌렸다 — 캐스케이드는 어떤 버전으로도 측정된 적이 없다.
+# mf_wg_multi.sh 를 복사해 릴레이 단만 2단으로 바꿨다(나머지는 동일).
+#
+# 배치 — 호스트가 3대뿐이라 **두 홉을 모두 실제 회선**으로 만드는 조합을 골랐다.
+#   c ─┬─► r .85:4443 (1단a) ─► s .84:4460 (2단a) ─┬─► s .84:4500+i (서버 i)
+#      └─► r .86:4443 (1단b) ─► s .84:4461 (2단b) ─┘
+#   c→r 은 netem 구간(편도 25ms/5% · 30ms/2%), r→s 는 온링크, 2단→서버만 s 내부.
+#   ⚠️ 실서비스는 4대가 서로 다른 호스트다 — 여기서 재현되는 것은 **기능·세션 연쇄·
+#      자원·손실 누적**이고, 홉별 물리 이중화나 2단의 지역 지연은 재현되지 않는다.
+#
+# 각 홉이 HMAC 을 검증한다(1단은 전 키를 자기 2단으로, 2단은 키별로 서버 분기) —
+# 서비스 설정과 같은 구조다.
+#
+# (원본 헤더)
+# mf_wg_multi.sh — **세션별 WireGuard** 다중 세션 소크 (테스트망 전용)
+#
+# 왜 새로 짰나 (2026-09-02)
+# ------------------------
+# 앞선 다중 세션 시험(mf_multi_soak.sh)에는 **WireGuard 가 하나도 없었다.**
+# blaster → multi-fec client → relay → server → echo 였고, 하네스에 보이는
+# `--wg 127.0.0.1:44444` 는 multi-fec 의 옵션 이름일 뿐 실제 WG 가 아니다.
+# 그런데 실서비스는 **지사마다 독립 WG 터널**이라 세션 수만큼 암복호가 붙는다.
+# 그 비용이 빠진 측정은 낙관적으로 치우친다 → 이 하네스가 그 구조를 재현한다.
+#
+# 구조 (세션 i = 지사 i)
+#   [mf_blast] 10.9.(NB+i).2 ──wg mft{i}── 10.9.(NB+i).1 [rt_echo_ip]
+#        c: Endpoint=127.0.0.1:CLIP+i           s: ListenPort=WGSP+i
+#             │                                        ▲
+#        multi-fec client{i} ─┬─▶ r .85:4443 ─┐        │
+#                             └─▶ r .86:4443 ─┴─▶ multi-fec server{i} (.84:SRVP+i)
+#                                 (--route 로 키별 분기, 릴레이 2개)
+#
+# 운영 무침습: 이름·주소·포트를 운영과 완전히 분리한다
+#   WG 이름 mft0..9 (운영 starlink-fec) · 서브넷 10.9.20~29 (운영 10.9.9/10.9.10)
+#   클라 포트 51900~ (운영 51821) · 서버 포트 4500~ (운영 443) · 릴레이 4443 (운영 443)
+set -u
+C=c.xdn.selfinet.com; R=r.xdn.selfinet.com; S=s.xdn.selfinet.com
+SRC=192.168.100.141; RA=192.168.100.85; RB=192.168.100.86; SRV=192.168.100.84
+N=${N:-10}; SECS=${SECS:-3600}; MBPS=${MBPS:-1}      # MBPS = 세션당 각 방향
+NB=${NB:-20}                                          # 10.9.(NB+i).0/24
+RPORT=4443; SRVP=4500; CLIP=51900; WGSP=51900; ECHOP=44450
+T2A=4460; T2B=4461            # 2단 릴레이 (s 에 올린다)
+KEY=wgmulti-$(date +%s)
+GUARD=/home/stevekim/multi-fec/test-results/2026-08-02-50mbps-soak/mf_gwguard.sh
+# 다중 세션 구조는 c 전체 CPU 가 단일 세션과 완전히 다르다(단일 20 Mbps max 53.9% vs
+# 10지사 상시 68~93%). 가드 프로파일을 multi 로 고정한다 — 근거는 가드 헤더의 검증 표.
+export GW_PROFILE=${GW_PROFILE:-multi}
+HERE=/home/stevekim/multi-fec/test-results/2026-09-02-multisession
+OUT=${OUT:-/home/stevekim/multi-fec/test-results/2026-09-10-v131/casc_raw}
+# ── 온호스트 샘플러 CSV 경로에 런 식별자 (2026-09-09) ──────────────────
+# 왜: 경로가 `/tmp/<pre>_c.csv` 로 **고정**이면 연속 장시간 런에서 충돌한다.
+# 2026-09-07 24시간 소크에서 실제로 겪었다 — 1차가 17시간에 트립으로 끝났어도
+# 샘플러 수명(SECS+600 = 24.2시간)이 남아 계속 돌았고, 2차 샘플러와 **같은 파일에
+# 동시 기록**해 중복 행이 생겼다. 게다가 잔존 샘플러 하나가 **가드 초과를 14배로**
+# 만들었다(임계 근처에서는 계측 도구 자신의 부하가 결과를 바꾼다).
+RUNID=${RUNID:-$(basename "${OUT:-run}")-$(date +%m%d%H%M%S)}
+
+mkdir -p "$OUT"
+
+ifsnap() { for h in $C $R $S; do
+    ssh -o ConnectTimeout=5 "$h" "awk -v H=${h%%.*} -v L=$1 -v T=\$(date +%s) '
+      NR>2 { gsub(/:/,\"\",\$1); if (\$1!=\"lo\") print L, H, \$1, \$2, \$10, T }' /proc/net/dev" 2>/dev/null
+done; }
+
+cleanup() {
+  echo; echo "[$(date +%H:%M:%S)] 정리"
+  ssh $C 'pkill -f "[m]f_blast"' 2>/dev/null
+  # ⚠️ 포트 범위를 반드시 남길 것. `127.0.0.1:519` 로 줄여도 운영(:51821)은 안 맞지만
+  #    습관을 깨지 않는다 — 2026-08-07 에 범위를 줄여 운영 클라를 죽인 전례가 있다.
+  ssh $C "pkill -f '[m]ulti-fec-dist -c -l 127.0.0.1:519[0-9][0-9]'" 2>/dev/null
+  ssh $R "pkill -f '[m]ulti-fec-dist -r -l 192.168.100.8[56]:$RPORT'" 2>/dev/null
+  ssh $S "pkill -f '[m]ulti-fec-dist -s -l $SRV:45'; pkill -f '[r]t_echo_ip.py'" 2>/dev/null
+  # 2단 릴레이. 포트 범위를 반드시 남긴다 — `:44` 로 줄이면 echo(:44450) 까지 잡는다
+  ssh $S "pkill -f '[m]ulti-fec-dist -r -l $SRV:446[01]'" 2>/dev/null
+  for h in $C $S; do
+    ssh $h 'for i in $(seq 0 15); do wg-quick down mft$i >/dev/null 2>&1; rm -f /etc/wireguard/mft$i.conf; done' 2>/dev/null
+  done
+  for h in $C $R; do ssh $h 'sudo systemctl restart mf-netem' 2>/dev/null; done
+  echo "  남은 WG:   c=$(ssh $C 'wg show interfaces' 2>/dev/null) | s=$(ssh $S 'wg show interfaces' 2>/dev/null)"
+  echo "  운영 체인: c=$(ssh $C 'systemctl is-active multi-fec-client' 2>/dev/null)" \
+       "r=$(ssh $R 'systemctl is-active multi-fec-relay multi-fec-relay@b|tr "\n" " "' 2>/dev/null)" \
+       "s=$(ssh $S 'systemctl is-active multi-fec-server' 2>/dev/null)"
+  ssh $C 'tc qdisc show | grep -oE "delay [0-9]+ms loss [0-9]+%" | tr "\n" " "' 2>/dev/null | sed 's/^/  netem /'; echo
+}
+trap cleanup EXIT INT TERM
+
+echo "=== 0. 사전 판정 (세션 $N × 각 방향 ${MBPS} Mbps · 세션별 WG) ==="
+$GUARD budget "$(awk -v m=$MBPS 'BEGIN{print m*2}')" "$N" || true
+echo "  ↑ 모델은 WG 암복호를 포함하지 않는다. 게이트는 precheck 와 가드다."
+
+echo; echo "=== 1. precheck ==="
+$GUARD precheck || { echo "precheck 실패 — 중단"; exit 1; }
+
+echo; echo "=== 2. 배포 ==="
+scp -q $HERE/mf_blast      $C:/tmp/mf_blast      || { echo "  ✗ mf_blast"; exit 1; }
+scp -q $HERE/rt_echo_ip.py $S:/tmp/rt_echo_ip.py || { echo "  ✗ rt_echo_ip"; exit 1; }
+for h in $C $R $S; do scp -q $HERE/rt_sample.sh $h:/tmp/rt_sample.sh || { echo "  ✗ rt_sample ($h)"; exit 1; }
+  ssh $h 'chmod 755 /tmp/rt_sample.sh' 2>/dev/null; done
+ssh $C 'chmod 755 /tmp/mf_blast' 2>/dev/null; ssh $S 'chmod 755 /tmp/rt_echo_ip.py' 2>/dev/null
+echo "  완료"
+
+echo; echo "=== 3. 세션별 WG 키·설정 ($N 쌍) ==="
+KEYS=$(ssh $S "for i in \$(seq 0 $((N-1))); do
+  cp=\$(wg genkey); sp=\$(wg genkey)
+  echo \"\$i \$cp \$(echo \$cp|wg pubkey) \$sp \$(echo \$sp|wg pubkey)\"
+done" 2>/dev/null)
+[ -n "$KEYS" ] || { echo "  ✗ 키 생성 실패"; exit 1; }
+CCONF=""; SCONF=""
+while read -r i cpriv cpub spriv spub; do
+  [ -n "${i:-}" ] || continue
+  net=$((NB+i))
+  CCONF="$CCONF
+cat > /etc/wireguard/mft$i.conf <<EOF
+[Interface]
+PrivateKey = $cpriv
+Address = 10.9.$net.2/24
+MTU = 1300
+Table = off
+[Peer]
+PublicKey = $spub
+AllowedIPs = 10.9.$net.1/32
+Endpoint = 127.0.0.1:$((CLIP+i))
+PersistentKeepalive = 25
+EOF"
+  SCONF="$SCONF
+cat > /etc/wireguard/mft$i.conf <<EOF
+[Interface]
+PrivateKey = $spriv
+Address = 10.9.$net.1/24
+ListenPort = $((WGSP+i))
+MTU = 1300
+Table = off
+[Peer]
+PublicKey = $cpub
+AllowedIPs = 10.9.$net.2/32
+EOF"
+done <<< "$KEYS"
+ssh $C "$CCONF" 2>/dev/null; ssh $S "$SCONF" 2>/dev/null
+echo "  설정 파일 c/s 각 $N 개"
+
+echo; echo "=== 4. netem 필터 (:$RPORT) ==="
+ssh $C "IF=\$(ip -o -4 route show default | awk '{print \$5}' | head -1)
+  sudo tc filter add dev \$IF protocol ip parent 1: prio 2 u32 match ip protocol 17 0xff match ip dst $RA/32 match ip dport $RPORT 0xffff flowid 1:1
+  sudo tc filter add dev \$IF protocol ip parent 1: prio 2 u32 match ip protocol 17 0xff match ip dst $RB/32 match ip dport $RPORT 0xffff flowid 1:2" 2>/dev/null
+ssh $R "IF=\$(ip -o -4 route show default | awk '{print \$5}' | head -1)
+  sudo tc filter add dev \$IF protocol ip parent 1: prio 2 u32 match ip protocol 17 0xff match ip src $RA/32 match ip sport $RPORT 0xffff flowid 1:1
+  sudo tc filter add dev \$IF protocol ip parent 1: prio 2 u32 match ip protocol 17 0xff match ip src $RB/32 match ip sport $RPORT 0xffff flowid 1:2" 2>/dev/null
+# ── r→s (1단→2단) 에도 임피어먼트: pref 3 ─────────────────────────────
+ssh $R "IF=\$(ip -o -4 route show default | awk '{print \$5}' | head -1)
+  sudo tc filter add dev \$IF protocol ip parent 1: prio 3 u32 match ip protocol 17 0xff match ip dst $SRV/32 match ip dport $T2A 0xffff flowid 1:1
+  sudo tc filter add dev \$IF protocol ip parent 1: prio 3 u32 match ip protocol 17 0xff match ip dst $SRV/32 match ip dport $T2B 0xffff flowid 1:2" 2>/dev/null
+echo -n "  r→s pref3 "
+ssh $R 'tc filter show dev $(ip -o -4 route show default|awk "{print \$5}"|head -1) parent 1: 2>/dev/null | grep -c "pref 3"' 2>/dev/null
+for h in $C $R; do printf "  %s " "${h%%.*}"
+  ssh $h 'tc filter show dev $(ip -o -4 route show default|awk "{print \$5}"|head -1) parent 1: 2>/dev/null | grep -oE "flowid 1:[12]" | sort | uniq -c | tr "\n" " "' 2>/dev/null; echo; done
+
+echo; echo "=== 5. s: 서버 $N 개 + echo $N 개, WG 기동 ==="
+ssh $S "for i in \$(seq 0 $((N-1))); do
+  setsid nohup /usr/sbin/multi-fec-dist -s -l $SRV:\$(($SRVP+i)) --wg 127.0.0.1:\$(($WGSP+i)) \
+    -k ${KEY}-\$i --obfs-mode quic --auth-interval 60 --multipath-mode duplicate \
+    -f 5:1,20:4 --mode 1 --fec-timeout 10 --mtu 1350 --decode-buf 2000 --queue-len 500 \
+    --sock-buf 4096 --log-level 4 </dev/null >/tmp/wgsrv\$i.log 2>&1 &
+done; sleep 2
+for i in \$(seq 0 $((N-1))); do wg-quick up mft\$i >/dev/null 2>&1; done
+sleep 1
+for i in \$(seq 0 $((N-1))); do
+  setsid nohup /tmp/rt_echo_ip.py 10.9.\$(($NB+i)).1 $ECHOP </dev/null >/tmp/wgecho\$i.log 2>&1 &
+done; sleep 1; exit 0" 2>/dev/null
+echo "  s: server=$(ssh $S "pgrep -cf '[m]ulti-fec-dist -s -l $SRV:45'" 2>/dev/null|head -1)" \
+     "echo=$(ssh $S "pgrep -cf '[r]t_echo_ip.py'" 2>/dev/null|head -1)" \
+     "wg=$(ssh $S 'wg show interfaces' 2>/dev/null | wc -w)"
+
+echo; echo "=== 6. 릴레이 2단 (1단 r ×2 → 2단 s ×2 → 서버) ==="
+# 2단: 키별로 서버 인스턴스로 분기
+ROUTES2=""; for i in $(seq 0 $((N-1))); do ROUTES2="$ROUTES2 --route \"${KEY}-$i $SRV:$((SRVP+i))\""; done
+# 1단: 전 키를 자기 짝 2단으로 (라우팅 대상은 하나지만 키별 HMAC 검증은 그대로 일어난다)
+ROUTES1A=""; ROUTES1B=""
+for i in $(seq 0 $((N-1))); do
+  ROUTES1A="$ROUTES1A --route \"${KEY}-$i $SRV:$T2A\""
+  ROUTES1B="$ROUTES1B --route \"${KEY}-$i $SRV:$T2B\""
+done
+# 2단 먼저 (상위가 먼저 떠 있어야 1단의 첫 패킷이 버려지지 않는다)
+for P in $T2A $T2B; do
+  ssh $S "setsid nohup /usr/sbin/multi-fec-dist -r -l $SRV:$P $ROUTES2 \
+    --obfs-mode quic --auth-interval 60 --log-level 4 </dev/null >/tmp/wgt2_$P.log 2>&1 &
+    sleep 0.3; exit 0" 2>/dev/null
+done
+sleep 2
+ssh $R "setsid nohup /usr/sbin/multi-fec-dist -r -l $RA:$RPORT $ROUTES1A \
+  --obfs-mode quic --auth-interval 60 --log-level 4 </dev/null >/tmp/wgt1_85.log 2>&1 &
+  sleep 0.3; exit 0" 2>/dev/null
+ssh $R "setsid nohup /usr/sbin/multi-fec-dist -r -l $RB:$RPORT $ROUTES1B \
+  --obfs-mode quic --auth-interval 60 --log-level 4 </dev/null >/tmp/wgt1_86.log 2>&1 &
+  sleep 0.3; exit 0" 2>/dev/null
+sleep 2
+T1N=$(ssh $R "pgrep -cf '[m]ulti-fec-dist -r -l 192.168.100.8[56]:$RPORT'" 2>/dev/null|head -1)
+T2N=$(ssh $S "pgrep -cf '[m]ulti-fec-dist -r -l $SRV:446[01]'" 2>/dev/null|head -1)
+echo "  1단(r) $T1N/2 · 2단(s) $T2N/2"
+[ "${T1N:-0}" -eq 2 ] && [ "${T2N:-0}" -eq 2 ] || { echo "  ✗ 릴레이 4개가 다 뜨지 않았다 — 중단"; exit 1; }
+
+echo; echo "=== 7. c: 클라이언트 $N 개 + WG 기동 ==="
+ssh $C "for i in \$(seq 0 $((N-1))); do
+  setsid nohup /usr/sbin/multi-fec-dist -c -l 127.0.0.1:\$(($CLIP+i)) \
+    --path $SRC:$RA:$RPORT --path $SRC:$RB:$RPORT -k ${KEY}-\$i \
+    --obfs-mode quic --auth-interval 60 --multipath-mode duplicate \
+    -f 5:1,20:4 --mode 1 --fec-timeout 10 --mtu 1350 --decode-buf 2000 --queue-len 500 \
+    --sock-buf 4096 --log-level 4 </dev/null >/tmp/wgcli\$i.log 2>&1 &
+done; sleep 6
+for i in \$(seq 0 $((N-1))); do wg-quick up mft\$i >/dev/null 2>&1; done
+sleep 3; exit 0" 2>/dev/null
+echo "  c: client=$(ssh $C "pgrep -cf '[m]ulti-fec-dist -c -l 127.0.0.1:519'" 2>/dev/null|head -1)" \
+     "wg=$(ssh $C 'wg show interfaces' 2>/dev/null | wc -w)"
+
+echo; echo "=== 8. WG 핸드셰이크 확인 (터널이 실제로 붙었나) ==="
+sleep 8
+HS=$(ssh $C "ok=0; for i in \$(seq 0 $((N-1))); do
+  t=\$(wg show mft\$i latest-handshakes 2>/dev/null | awk '{print \$2}'); [ -n \"\$t\" ] && [ \"\$t\" != 0 ] && ok=\$((ok+1)); done; echo \$ok" 2>/dev/null)
+PING=$(ssh $C "ok=0; for i in \$(seq 0 $((N-1))); do
+  ping -c1 -W2 -I 10.9.\$(($NB+i)).2 10.9.\$(($NB+i)).1 >/dev/null 2>&1 && ok=\$((ok+1)); done; echo \$ok" 2>/dev/null)
+echo "  핸드셰이크 $HS/$N · 터널 ping $PING/$N"
+[ "${PING:-0}" -eq "$N" ] || { echo "  ✗ 터널 $N 개가 다 붙지 않았다 — 중단"; exit 1; }
+
+echo; echo "=== 9. 샘플러 + 가드 ==="
+ssh $C "nohup /tmp/rt_sample.sh 'multi-fec-dist -c -l 127.0.0.1:519' /tmp/wg_c_$RUNID.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
+ssh $R "nohup /tmp/rt_sample.sh 'multi-fec-dist -r -l 192.168.100.8[56]:$RPORT' /tmp/wg_r_$RUNID.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
+ssh $S "nohup /tmp/rt_sample.sh 'multi-fec-dist -s -l $SRV:45' /tmp/wg_s_$RUNID.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
+ssh $S "nohup /tmp/rt_sample.sh 'multi-fec-dist -r -l $SRV:446' /tmp/wg_t2_$RUNID.csv $((SECS+180)) >/dev/null 2>&1 &" 2>/dev/null
+# ⚠️ 패턴은 실제 cmdline 과 맞아야 한다. `mf_blast --sessions` 는 사이에 `--no-clients`
+# 가 껴 있어 매치되지 않았다(스모크에서 발견 — CSV 가 헤더만 남는다). comm 필터가
+# 샘플러 자신을 걸러주므로 패턴은 이름만으로 충분하다.
+ssh $C "nohup /tmp/rt_sample.sh 'mf_blast' /tmp/wg_blast_$RUNID.csv $((SECS+180)) mf_blast >/dev/null 2>&1 &" 2>/dev/null
+nohup $GUARD watch "mf_blast" > $OUT/watchdog.log 2>&1 &
+WD=$!
+sleep 12
+kill -0 $WD 2>/dev/null && echo "  가드 살아있음 pid=$WD" || { echo "  ✗ 가드 사망 — 중단"; exit 1; }
+
+echo; echo "=== 10. 부하 ${SECS}s (세션 $N × 각 ${MBPS} Mbps, WG 터널 안) — $(date +%H:%M:%S) ==="
+ifsnap load0 > $OUT/ifsnap.txt
+( while kill -0 $WD 2>/dev/null; do sleep 10; done
+  echo "[$(date +%H:%M:%S)] ✗ 가드 소멸 — 부하 중단" >> $OUT/guard_died.log
+  ssh $C "pkill -f '[m]f_blast'" 2>/dev/null ) &
+GW=$!
+ssh -o ServerAliveInterval=30 -o ServerAliveCountMax=6 $C \
+  "/tmp/mf_blast --no-clients --sessions $N --mbps $MBPS --secs $SECS \
+   --src-fmt '10.9.%d.2' --dst-fmt '10.9.%d.1' --net-base $NB --dst-port $ECHOP" \
+  2>$OUT/blast.err | tee $OUT/result.csv
+kill $GW 2>/dev/null; kill $WD 2>/dev/null
+ifsnap load1 >> $OUT/ifsnap.txt
+echo "  하네스 건전성: $(cat $OUT/blast.err 2>/dev/null | tr '\n' ' ')"
+[ -s $OUT/guard_died.log ] && { echo "  ⚠️ 무감시 구간 발생:"; cat $OUT/guard_died.log; }
+
+echo; echo "=== 11. 회수 ==="
+ssh $C "cat /tmp/wg_c_$RUNID.csv"     > $OUT/sample_c.csv 2>/dev/null
+ssh $C "cat /tmp/wg_blast_$RUNID.csv" > $OUT/sample_blast.csv 2>/dev/null
+ssh $R "cat /tmp/wg_r_$RUNID.csv"     > $OUT/sample_r.csv 2>/dev/null
+ssh $S "cat /tmp/wg_s_$RUNID.csv"     > $OUT/sample_s.csv 2>/dev/null
+ssh $S "cat /tmp/wg_t2_$RUNID.csv"    > $OUT/sample_t2.csv 2>/dev/null
+wc -l $OUT/sample_*.csv
+echo "  가드: $(grep -c 초과 $OUT/watchdog.log 2>/dev/null||echo 0) 초과 · $(grep -c 트립 $OUT/watchdog.log 2>/dev/null||echo 0) 트립"
