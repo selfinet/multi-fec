@@ -780,8 +780,27 @@ mud_recv_msg(struct mud *mud, struct mud_path *path, uint64_t now,
     path->msg.set++;
     path->msg.sent = 0;
 
-    /* send reply probe */
-    mud_send_msg(mud, path, now, tx_time, 0);
+    /* Answer the peer's probe -- but not every single time.
+     *
+     * mud_send_msg() discards its sent_time argument, so the answer we emit is
+     * indistinguishable from a fresh probe: the peer answers it, we answer that
+     * one, and the exchange free-runs at 1/RTT instead of once per beat. On a
+     * WAN path (RTT ~90 ms) that lands near the beat rate and stayed invisible
+     * for the whole life of the project; on an on-link path (RTT 1.6 ms) it
+     * measured ~1,075 pps per path and 8 Mbps of background traffic with no
+     * application data at all.
+     *
+     * Rate-limiting the answer rather than suppressing it keeps the peer's
+     * msg.sent counter resetting (five unanswered probes mark a path DEGRADED)
+     * and keeps rx.time fresh for the liveness timeout. beat/4 is 20-30 ms
+     * against the peer's own 80-120 ms beat, so every probe a healthy peer
+     * sends is still answered and the WAN behaviour is unchanged; only the
+     * pathological sub-millisecond case is capped. conf.beat is guaranteed
+     * non-zero here -- mud_recv() assigns it before dispatching to us. */
+    if (mud_timeout(now, path->msg.reply_time, path->conf.beat / 4)) {
+        path->msg.reply_time = now;
+        mud_send_msg(mud, path, now, tx_time, 0);
+    }
 }
 
 /* ─── Path state machine ─────────────────────────────────────── */

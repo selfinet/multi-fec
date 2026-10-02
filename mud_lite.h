@@ -106,6 +106,7 @@ struct mud_path {
         uint64_t time;
         uint64_t sent;
         uint64_t set;
+        uint64_t reply_time;   /* last time we answered a peer probe on this path */
     } msg;
     struct {
         size_t min, max, probe, last, ok;
