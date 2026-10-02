@@ -395,11 +395,18 @@ static void conn_timer_cb(struct ev_loop * /*loop*/, struct ev_timer *watcher, i
                 struct mud_path *p = &paths.path[i];
                 const char *st = (unsigned)p->status <= (unsigned)MUD_RUNNING
                                  ? s_status_names[p->status] : "?";
+                /* mud measures (now - peer's embedded send time), i.e. ONE-WAY
+                 * delay, not a round trip -- so it is reported as owd and it
+                 * depends on both clocks being in sync. The stat is kept in
+                 * microseconds; print it as fractional ms so sub-ms on-link
+                 * paths do not collapse to 0. (Through v1.3.2 this was labelled
+                 * "rtt=...us" while already divided by 1000, so it read wrong
+                 * twice over: half the real round trip, and 1000x off.) */
                 mylog(log_info,
-                      "[client] path[%u] %s rtt=%lluus jit=%lluus loss=%u%% rate=%.1fMbps tx=%llu rx=%llu\n",
+                      "[client] path[%u] %s owd=%.2fms jit=%.2fms loss=%u%% rate=%.1fMbps tx=%llu rx=%llu\n",
                       i, st,
-                      (unsigned long long)(p->rtt.val / 1000),
-                      (unsigned long long)(p->rtt.var / 1000),
+                      (double)p->rtt.val / 1000.0,
+                      (double)p->rtt.var / 1000.0,
                       (unsigned)((unsigned)p->tx.loss * 100U / 255U),
                       (double)p->tx.rate * 8.0 / 1.0e6,
                       (unsigned long long)p->tx.total,
