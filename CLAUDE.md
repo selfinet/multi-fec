@@ -391,6 +391,12 @@ PROBING → RUNNING → LOSSY
 - `RUNNING`: 데이터 전송 가능
 - `LOSSY`: tx.loss > loss_limit → 데이터 전송 차단 (probe만 유지)
 - `DEGRADED`: 생존 타임아웃(`rx.time` 기준 1초 무수신) 또는 probe 무응답. **RTT 기반 판정은 없다** — `mud_path_update()`에 RTT 분기가 존재하지 않고, `mud_send_next_peer()`의 aggregate 분배도 `tx.rate`만 본다
+
+> ⚠️ **클라이언트 로그의 지연 수치는 `owd`(편도 지연, ms)다 — 왕복이 아니다.**
+> mud 가 재는 값은 `now − (상대가 실은 송신시각)`(`mud_lite.c:758`)이라 **양쪽 시계 동기에
+> 의존**한다. v1.3.2 까지는 이것이 `rtt=...us` 로 찍혀 **왕복의 절반·1000배**로 오독됐고,
+> 정수 절단 탓에 1 ms 미만 경로는 `0` 으로 보였다(v1.3.3에서 `owd=%.2fms` 로 수정).
+> 이 값은 표시 전용이며 경로 선택에 쓰이지 않는다.
 - `WAITING`: PASSIVE 경로 beat 타임아웃
 
 **LOSSY 판정 공식**:
