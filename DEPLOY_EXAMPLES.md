@@ -11,6 +11,8 @@
 - 런타임 소켓: `/run/multi-fec/*.fifo`
 - WireGuard MTU: 단일 경로 또는 obfs 없는 구간은 1380, obfs 활성화 구간은 1300 (단편화 방지)
 - `TimeoutStopSec=3`: SIGTERM 핸들러 없어 기본 90초 대기가 발생하므로 모든 서비스에 적용
+- **릴레이의 `--sock-buf` 는 v1.3.5 부터 적용된다.** v1.3.4 이하 릴레이는 이 옵션을 오류 없이 받아들이고 **무시**한다 (세션별 upstream 소켓은 커널 `rmem_default`, 기본 208 KB). 아래 릴레이 예시의 `--sock-buf` 는 v1.3.5 이상에서만 효과가 있다 — 근거·실측은 `test-results/2026-10-05-vm-guard-calib/REPORT.md` §3·§8.
+- **`--fifo` 는 client/server 전용**이다. 릴레이에 주면 오류 없이 무시된다.
 
 ---
 

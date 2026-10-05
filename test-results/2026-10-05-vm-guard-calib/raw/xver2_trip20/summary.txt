@@ -1,0 +1,4 @@
+# 2026-10-06 01:07:58 STEPS=10 20 DUR=120
+Y0 c=131 r1=131 r2=131 s=131 rc=4 hop1=4 hop2=6 10:up0.00000%/dn0.00000% 20:up0.00000%/dn0.00000%  drop c+0 r+0 s+0 
+  warn/err c=2 r1=2 r2=2 s=2   path lines:  9 path[0] RUNNING; 9 path[1] RUNNING;
+Y0 GUARD STOP

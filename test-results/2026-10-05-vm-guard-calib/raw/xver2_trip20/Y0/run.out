@@ -1,0 +1,7 @@
+[run] 가드 PID 1603040 감시 중 (vm)
+[run]  10 Mbps  up 0.00000% ooo 5732  dn 0.00000% ooo 5751
+./run_load.sh: line 51: 1605821 Killed                  ssh "$C" "mfgen tx 10.9.20.1 5301 $r $DUR" > "$OUT/tx_up_$r.txt" 2>&1
+./run_load.sh: line 51: 1605822 Killed                  ssh "$S" "mfgen tx 10.9.20.2 5302 $r $DUR" > "$OUT/tx_dn_$r.txt" 2>&1
+[run]  20 Mbps  up 0.00000% ooo 927  dn 0.00000% ooo 997
+[run] 가드 트립
+[guard] 01:10:49 트립 → r:전체=89.4%>88%  → 'mfgen tx' 중단
