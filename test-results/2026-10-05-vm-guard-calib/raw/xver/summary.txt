@@ -1,0 +1,15 @@
+# 2026-10-05 23:55:08 STEPS=10 20 DUR=120
+X0 c=131 r=131 s=131 rc=0 10:up0.00000%/dndn 20:up0.02720%/dndn  drop c+68 r+0 s+0 
+  warn/err c=16 r=2 s=2   path lines:  9 path[0] RUNNING; 9 path[1] RUNNING;
+X1 c=135 r=131 s=131 rc=0 10:up0.00000%/dndn 20:up0.00000%/dndn  drop c+0 r+0 s+0 
+  warn/err c=2 r=2 s=2   path lines:  9 path[0] RUNNING; 9 path[1] RUNNING;
+X2 c=131 r=135 s=131 rc=0 10:up0.00000%/dndn 20:up0.00000%/dndn  drop c+0 r+0 s+110 
+  warn/err c=2 r=2 s=2   path lines:  9 path[0] RUNNING; 9 path[1] RUNNING;
+X3 c=131 r=131 s=135 rc=0 10:up0.00000%/dndn 20:up0.04160%/dndn  drop c+0 r+1118 s+320 
+  warn/err c=2 r=2 s=2   path lines:  9 path[0] RUNNING; 9 path[1] RUNNING;
+X4 c=135 r=135 s=131 rc=0 10:up0.00000%/dndn 20:up0.05400%/dndn  drop c+0 r+0 s+24 
+  warn/err c=68 r=2 s=2   path lines:  9 path[0] RUNNING; 9 path[1] RUNNING;
+X5 c=131 r=135 s=135 rc=0 10:up0.00000%/dndn 20:up0.00000%/dndn  drop c+0 r+0 s+0 
+  warn/err c=3 r=2 s=2   path lines:  9 path[0] RUNNING; 9 path[1] RUNNING;
+X6 c=135 r=135 s=135 rc=0 10:up0.00000%/dndn 20:up0.00000%/dndn  drop c+0 r+0 s+0 
+  warn/err c=2 r=2 s=2   path lines:  9 path[0] RUNNING; 9 path[1] RUNNING;
