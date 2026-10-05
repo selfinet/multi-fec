@@ -1,0 +1,11 @@
+[run] 가드 PID 1400198 감시 중 (vm)
+[run]   5 Mbps  up 0.00000% ooo 935  dn 0.00000% ooo 963
+[run]  10 Mbps  up 0.20053% ooo 2201  dn 0.35627% ooo 2182
+[run]  15 Mbps  up 0.01422% ooo 3395  dn 0.20480% ooo 3235
+[run]  20 Mbps  up 0.33920% ooo 4477  dn 0.37547% ooo 4602
+[run]  25 Mbps  up 1.43531% ooo 5566  dn 0.83200% ooo 5694
+./run_load.sh: line 51: 1406115 Killed                  ssh "$C" "mfgen tx 10.9.20.1 5301 $r $DUR" > "$OUT/tx_up_$r.txt" 2>&1
+./run_load.sh: line 51: 1406116 Killed                  ssh "$S" "mfgen tx 10.9.20.2 5302 $r $DUR" > "$OUT/tx_dn_$r.txt" 2>&1
+[run]  30 Mbps  up 2.16010% ooo 5992  dn 11.24027% ooo 10080
+[run] 가드 트립
+[guard] 17:12:11 트립 → r:링크=406.16Mbps>400  → 'mfgen tx' 중단

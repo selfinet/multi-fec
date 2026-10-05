@@ -1,0 +1,43 @@
+H .92
+UdpRcvbufErrors                 10879              0.0
+sock 53032 inode 29436 drops 9992 rmem 00000000:00000000
+sock 51821 inode 29437 drops 673 rmem 00000000:00000000
+ss 0.0.0.0:53032 multi-fec-dist
+ss 127.0.0.54:53 systemd-resolve
+ss 127.0.0.53%lo:53 systemd-resolve
+ss 192.168.100.92%ens18:68 systemd-network
+ss 127.0.0.1:323 chronyd
+ss 0.0.0.0:37389 0.0.0.0:*
+ss 127.0.0.1:51821 multi-fec-dist
+ss [::1]:323 chronyd
+ss [::]:37389 [::]:*
+H .88
+UdpRcvbufErrors                 27723              0.0
+sock 47219 inode 30966 drops 9265 rmem 00000000:00000000
+sock 41296 inode 30481 drops 11960 rmem 00000000:00000000
+sock 443 inode 30960 drops 3345 rmem 00000000:00000000
+sock 443 inode 30460 drops 3153 rmem 00000000:00000000
+ss 127.0.0.54:53 systemd-resolve
+ss 127.0.0.53%lo:53 systemd-resolve
+ss 192.168.100.117%ens19:68 systemd-network
+ss 192.168.100.88%ens18:68 systemd-network
+ss 192.168.100.117:47219 multi-fec-dist
+ss 127.0.0.1:323 chronyd
+ss 192.168.100.88:41296 multi-fec-dist
+ss 192.168.100.117:443 multi-fec-dist
+ss 192.168.100.88:443 multi-fec-dist
+ss [::1]:323 chronyd
+H .102
+UdpRcvbufErrors                 13417              0.0
+sock 60629 inode 47745 drops 2152 rmem 00000000:00000000
+sock 443 inode 27065 drops 11209 rmem 00000000:00000000
+ss 0.0.0.0:51820 0.0.0.0:*
+ss 127.0.0.1:60629 multi-fec-dist
+ss 127.0.0.54:53 systemd-resolve
+ss 127.0.0.53%lo:53 systemd-resolve
+ss 192.168.100.102%ens18:68 systemd-network
+ss 0.0.0.0:123 chronyd
+ss 127.0.0.1:323 chronyd
+ss 192.168.100.102:443 multi-fec-dist
+ss [::]:51820 [::]:*
+ss [::1]:323 chronyd

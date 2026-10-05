@@ -86,9 +86,27 @@
 
 set -u
 
-C=${GUARD_C:-c.xdn.selfinet.com}
-R=${GUARD_R:-r.xdn.selfinet.com}
-S=${GUARD_S:-s.xdn.selfinet.com}
+# ── 대상 망 (2026-10-05) ───────────────────────────────────────────
+# old = 구 테스트망 (c.xdn Atom 물리 · r/s VM)   new = 신규 테스트망 (.92/.88/.102 전부 VM)
+# 망마다 호스트·인터페이스·precheck 주소·기본 프로파일이 다르다. 개별 GUARD_*/GW_IF_* 가 우선한다.
+NET=${GW_NET:-old}
+case "$NET" in
+  old) D_C=c.xdn.selfinet.com; D_R=r.xdn.selfinet.com; D_S=s.xdn.selfinet.com
+       D_IF_C=enp2s0; D_IF_R=ens18; D_IF_S=ens18
+       D_IPS="192.168.100.141 192.168.100.85 192.168.100.86 192.168.100.84"
+       D_PROFILE=single ;;
+  # r 은 ens18(.88) + ens19(.117) 두 NIC 이다. arp_ignore=0 이라 .117 행 수신이 어느 쪽으로
+  # 들어올지 보장되지 않으므로 링크 지표는 **두 인터페이스 합**으로 본다(쉼표 = 합산).
+  new) D_C=root@192.168.100.92; D_R=root@192.168.100.88; D_S=root@192.168.100.102
+       D_IF_C=ens18; D_IF_R=ens18,ens19; D_IF_S=ens18
+       D_IPS="192.168.100.92 192.168.100.88 192.168.100.117 192.168.100.102"
+       D_PROFILE=vm ;;
+  *) echo "GW_NET 은 old 또는 new (받은 값: $NET)" >&2; exit 2 ;;
+esac
+C=${GUARD_C:-$D_C}
+R=${GUARD_R:-$D_R}
+S=${GUARD_S:-$D_S}
+GUARD_IPS=${GUARD_IPS:-$D_IPS}
 
 # 부하 생성기가 도는 호스트들. 워치독은 여기서도 죽여야 한다 —
 # 2026-08-03: sv1 로컬에서만 pkill 해서 원격 부하가 안 죽고 무방비로 계속 돌았다.
@@ -141,23 +159,31 @@ SSH() { command ssh -o ConnectTimeout=5 \
 #    2026-09-05 재보정이 20M 오탐을 없앤 대가다. 그 사건은 09-02 에 재현되지 않았고
 #    원인 미규명이며, 애초에 이 가드는 붕괴 탐지기가 아니다(손실은 수신측 계측으로 본다).
 #
-PROFILE=${GW_PROFILE:-single}
+PROFILE=${GW_PROFILE:-$D_PROFILE}
 case "$PROFILE" in
   single) P_CPU_C=68; P_CORE=90; P_STREAK=3 ;;   # 2026-09-05 재보정. 붕괴/정상 분리 검증됨
   multi)  P_CPU_C=78; P_CORE=95; P_STREAK=5 ;;   # 2026-09-09 24시간 정상 런에서 도출
+  # vm: 신규 테스트망 (.92/.88/.102, 전부 2 vCPU VM) — 2026-10-05 재보정.
+  #   근거: 소켓 버퍼 정상화(전 호스트 rmem_max 8MB) 후 각 20/25 Mbps 9분 지속 + 계단의 1초 로컬 샘플
+  #     정상 최대   c 전체 80.5 · r·s 전체 83.0 · 최고1코어 92.9   (손실 0.007~0.04%)
+  #     → c 85 (+4.5) · r·s 88 (+5) · 1코어 95 (+2.1) · 3연속.  정상 런 재생 시 최대 연속 0
+  #   ⚠️ 붕괴 쪽 검증이 없다 — 링크 400 Mbps 백스톱이 각 ~30 Mbps 에서 먼저 걸려(릴레이가 c 의
+  #     ~2배를 나른다) CPU 붕괴 구간까지 가 보지 못했다. 1코어 여유(+2.1p)가 좁다.
+  #   ⚠️ 측정 도구는 mfgen 이어야 한다 — iperf3 3.16 UDP 송신은 1코어를 100% 먹어 이 임계를 즉시 넘긴다.
+  vm)     P_CPU_C=85; P_CPU_VM=88; P_CORE=95; P_STREAK=3 ;;
   *) echo "GW_PROFILE 은 single 또는 multi (받은 값: $PROFILE)" >&2; exit 2 ;;
 esac
 
 CPU_C=${GW_CPU_C:-$P_CPU_C}     # c 전체 busy % — 1차 판별자
-CPU_VM=${GW_CPU_VM:-75}         # r·s 전체 busy % (VM, 여유 있음)
+CPU_VM=${GW_CPU_VM:-${P_CPU_VM:-75}}         # r·s 전체 busy % (VM, 여유 있음)
 CORE=${GW_CORE:-$P_CORE}        # 어느 호스트든 가장 바쁜 1코어 busy % — 보조
 LINK=${GW_LINK:-400}            # iface RX+TX Mbps — 증폭 루프 백스톱
 STREAK=${GW_STREAK:-$P_STREAK}          # 연속 초과 횟수에서 트립 (단발 버스트 면역)
 
 # 호스트별 테스트망 인터페이스
-IF_C=${GW_IF_C:-enp2s0}
-IF_R=${GW_IF_R:-ens18}
-IF_S=${GW_IF_S:-ens18}
+IF_C=${GW_IF_C:-$D_IF_C}
+IF_R=${GW_IF_R:-$D_IF_R}
+IF_S=${GW_IF_S:-$D_IF_S}
 
 usage() { cat <<U
 사용법:
@@ -184,13 +210,13 @@ U
 probe() {  # $1=host $2=iface
   SSH "$1" "
     A=\$(grep -E '^cpu[0-9]+ ' /proc/stat)
-    NA=\$(awk -v i='$2:' '\$1==i{print \$2+\$10}' /proc/net/dev)
+    NA=\$(awk -v l='$2' 'BEGIN{n=split(l,a,\",\");for(k=1;k<=n;k++)w[a[k]\":\"]=1} (\$1 in w){s+=\$2+\$10} END{print s+0}' /proc/net/dev)
     T0=\$(date +%s.%N)
     sleep $INTERVAL
     B=\$(grep -E '^cpu[0-9]+ ' /proc/stat)
-    NB=\$(awk -v i='$2:' '\$1==i{print \$2+\$10}' /proc/net/dev)
+    NB=\$(awk -v l='$2' 'BEGIN{n=split(l,a,\",\");for(k=1;k<=n;k++)w[a[k]\":\"]=1} (\$1 in w){s+=\$2+\$10} END{print s+0}' /proc/net/dev)
     T1=\$(date +%s.%N)
-    SP=\$(cat /sys/class/net/$2/speed 2>/dev/null || echo -1)
+    SP=\$(cat /sys/class/net/${2%%,*}/speed 2>/dev/null || echo -1)
     printf '%s\n---\n%s\n' \"\$A\" \"\$B\" | awk -v t0=\$T0 -v t1=\$T1 -v na=\$NA -v nb=\$NB -v sp=\$SP '
       /^---\$/ { second=1; next }
       /^cpu/ {
@@ -241,7 +267,7 @@ precheck() {
   echo "[precheck] 인터페이스"
   for k in c r s; do
     h=$(host_of $k); i=$(iface_of $k)
-    if SSH "$h" "test -d /sys/class/net/$i" 2>/dev/null; then
+    if SSH "$h" "for x in \$(echo $i | tr , ' '); do test -d /sys/class/net/\$x || exit 1; done" 2>/dev/null; then
       echo "  ✓ $h $i"
     else
       echo "  ✗ $h 에 $i 없음 — GW_IF_* 를 고칠 것"; fail=1
@@ -252,7 +278,7 @@ precheck() {
   echo "[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)"
   for h in $C $R $S; do
     out=$(SSH "$h" 'v=0; n=0
-      for ip in 192.168.100.141 192.168.100.85 192.168.100.86 192.168.100.84; do
+      for ip in '"$GUARD_IPS"'; do
         o=$(ip route get $ip 2>/dev/null | head -1)
         echo "$o" | grep -q " via " && v=$((v+1))
         echo "$o" | grep -qE "starlink|tun|wg" && n=$((n+1))
