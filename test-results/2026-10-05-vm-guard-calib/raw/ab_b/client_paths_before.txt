@@ -1,0 +1,5 @@
+Oct 05 13:14:36 multi-fec-client multi-fec-dist[73874]: [2026-10-05 13:14:36][INFO][client] path[1] RUNNING owd=30.96ms jit=0.09ms loss=5% rate=14.2Mbps tx=6964646 rx=6772399
+Oct 05 13:15:06 multi-fec-client multi-fec-dist[73874]: [2026-10-05 13:15:06][INFO][client] path[0] RUNNING owd=25.76ms jit=0.08ms loss=0% rate=8.8Mbps tx=6989369 rx=6592537
+Oct 05 13:15:06 multi-fec-client multi-fec-dist[73874]: [2026-10-05 13:15:06][INFO][client] path[1] RUNNING owd=30.91ms jit=0.12ms loss=0% rate=8.0Mbps tx=6965118 rx=6772867
+Oct 05 13:15:36 multi-fec-client multi-fec-dist[73874]: [2026-10-05 13:15:36][INFO][client] path[0] RUNNING owd=25.78ms jit=0.06ms loss=10% rate=40.4Mbps tx=6989884 rx=6593038
+Oct 05 13:15:36 multi-fec-client multi-fec-dist[73874]: [2026-10-05 13:15:36][INFO][client] path[1] RUNNING owd=30.92ms jit=0.12ms loss=5% rate=30.4Mbps tx=6965592 rx=6773338

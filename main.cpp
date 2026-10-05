@@ -66,10 +66,41 @@ static int         g_fec_timeout_ms   = 8;
 static int         g_fec_mode         = 0;
 static int         g_mtu              = default_mtu;
 static int         g_queue_len        = 200;
-static int         g_sock_buf         = 0;
+int                g_sock_buf         = 0;                /* --sock-buf kB (0=OS default; read by mf_relay.cpp) */
 static address_t   g_upstream_addr;                       /* relay: --upstream */
 address_t          g_upstream_local;                      /* relay: --upstream-local (read by mf_relay.cpp) */
 static std::vector<address_t> g_accept_local;             /* server: --accept-local (allowed local addrs) */
+
+/* ─── --sock-buf ──────────────────────────────────────────────────
+ * SO_RCVBUF/SO_SNDBUF are silently capped at net.core.rmem_max/wmem_max
+ * (212992 on a stock kernel), so a plain setsockopt turned `--sock-buf 4096`
+ * into 416 KB while the log claimed 4096 kB (2026-10-05, test-results/
+ * 2026-10-05-vm-guard-calib). Try the *FORCE variants first — they bypass the
+ * cap when we hold CAP_NET_ADMIN (the units run as root) — then fall back and
+ * read the result back so the caller can say what it actually got.
+ *
+ * Returns 0 = applied, 1 = applied but capped below the request, -1 = failed.
+ * rcv_kb/snd_kb receive the effective sizes (the kernel reports double the
+ * set value to account for overhead; we halve it back to the requested unit). */
+int mf_set_sock_buf(int fd, int kb, int *rcv_kb, int *snd_kb)
+{
+    int want = kb * 1024;
+    if (setsockopt(fd, SOL_SOCKET, SO_SNDBUFFORCE, &want, sizeof(want)) < 0 &&
+        setsockopt(fd, SOL_SOCKET, SO_SNDBUF,      &want, sizeof(want)) < 0)
+        return -1;
+    if (setsockopt(fd, SOL_SOCKET, SO_RCVBUFFORCE, &want, sizeof(want)) < 0 &&
+        setsockopt(fd, SOL_SOCKET, SO_RCVBUF,      &want, sizeof(want)) < 0)
+        return -1;
+
+    int rcv = 0, snd = 0;
+    socklen_t len = sizeof(rcv);
+    getsockopt(fd, SOL_SOCKET, SO_RCVBUF, &rcv, &len);
+    len = sizeof(snd);
+    getsockopt(fd, SOL_SOCKET, SO_SNDBUF, &snd, &len);
+    if (rcv_kb) *rcv_kb = rcv / 2 / 1024;
+    if (snd_kb) *snd_kb = snd / 2 / 1024;
+    return (rcv / 2 < want || snd / 2 < want) ? 1 : 0;
+}
 
 /* ─── obfs hook wrappers ──────────────────────────────────────── */
 
@@ -1024,14 +1055,16 @@ int main(int argc, char *argv[])
 
     /* socket buffer setup (--sock-buf) */
     if (g_sock_buf > 0) {
-        int bufsz = g_sock_buf * 1024;
-        int mfd   = mud_get_fd(mud);
-        if (setsockopt(mfd, SOL_SOCKET, SO_SNDBUF, &bufsz, sizeof(bufsz)) < 0 ||
-            setsockopt(mfd, SOL_SOCKET, SO_RCVBUF, &bufsz, sizeof(bufsz)) < 0) {
+        int rcv_kb = 0, snd_kb = 0;
+        int r = mf_set_sock_buf(mud_get_fd(mud), g_sock_buf, &rcv_kb, &snd_kb);
+        if (r < 0)
             mylog(log_warn, "sock-buf setsockopt failed: %s\n", strerror(errno));
-        } else {
-            mylog(log_info, "sock-buf=%d kB\n", g_sock_buf);
-        }
+        else if (r > 0)
+            mylog(log_warn, "sock-buf=%d kB requested but kernel capped it at rcv=%d snd=%d kB — "
+                  "raise net.core.rmem_max/wmem_max or run with CAP_NET_ADMIN\n",
+                  g_sock_buf, rcv_kb, snd_kb);
+        else
+            mylog(log_info, "sock-buf=%d kB (rcv=%d snd=%d kB)\n", g_sock_buf, rcv_kb, snd_kb);
     }
 
     /* FIFO runtime command channel */

@@ -300,6 +300,24 @@ static int new_upstream_fd(address_t &remote)
         }
     }
 
+    /* --sock-buf: before v1.3.5 relay mode ignored it, and these per-session
+     * sockets ran on rmem_default (208 KB) — the first place drops showed up
+     * under load (2026-10-05). Warn once on a cap; this runs per session. */
+    if (g_sock_buf > 0) {
+        static bool warned = false;
+        int rcv_kb = 0, snd_kb = 0;
+        int r = mf_set_sock_buf(fd, g_sock_buf, &rcv_kb, &snd_kb);
+        if (r != 0 && !warned) {
+            warned = true;
+            if (r < 0)
+                mylog(log_warn, "[relay] upstream sock-buf setsockopt failed: %s\n", strerror(errno));
+            else
+                mylog(log_warn, "[relay] upstream sock-buf=%d kB capped at rcv=%d snd=%d kB — "
+                      "raise net.core.rmem_max/wmem_max or run with CAP_NET_ADMIN\n",
+                      g_sock_buf, rcv_kb, snd_kb);
+        }
+    }
+
     if (connect(fd, (struct sockaddr *)&remote.inner, remote.get_len()) < 0) {
         mylog(log_warn, "[relay] connect upstream: %s\n", strerror(errno));
         close(fd);
@@ -582,6 +600,19 @@ void mf_relay_event_loop(address_t &listen_addr, address_t &upstream_addr,
     /* Listen socket */
     new_listen_socket2(g_listen_fd, listen_addr);
     mylog(log_info, "[relay] listen fd=%d\n", g_listen_fd);
+    if (g_sock_buf > 0) {
+        int rcv_kb = 0, snd_kb = 0;
+        int r = mf_set_sock_buf(g_listen_fd, g_sock_buf, &rcv_kb, &snd_kb);
+        if (r < 0)
+            mylog(log_warn, "[relay] sock-buf setsockopt failed: %s\n", strerror(errno));
+        else if (r > 0)
+            mylog(log_warn, "[relay] sock-buf=%d kB requested but kernel capped it at rcv=%d snd=%d kB — "
+                  "raise net.core.rmem_max/wmem_max or run with CAP_NET_ADMIN\n",
+                  g_sock_buf, rcv_kb, snd_kb);
+        else
+            mylog(log_info, "[relay] sock-buf=%d kB (listen + each upstream socket, rcv=%d snd=%d kB)\n",
+                  g_sock_buf, rcv_kb, snd_kb);
+    }
 
     struct ev_io listen_watcher;
     ev_io_init(&listen_watcher, listen_read_cb, g_listen_fd, EV_READ);

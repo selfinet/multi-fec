@@ -21,7 +21,7 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 ## [Unreleased]
 
-**제품 코드** 변경 없음 — 측정·문서·테스트 하네스만. 버전은 `1.3.4` 유지.
+**제품 코드** 변경 없음 — 측정·문서·테스트 하네스만. 버전은 `1.3.5` 유지.
 
 - 테스트 · 2026-10-05 — **VM 테스트망 가드 재보정: 정상 부하 손실 0.4~1% 의 원인은 소켓 버퍼**
   (`test-results/2026-10-05-vm-guard-calib/REPORT.md`). 신규 테스트망(2 vCPU VM 3대)에서 각 20/25 Mbps
@@ -549,6 +549,30 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
   기존 CSV 스키마 무변경. mpstat 바이너리 대신 동일 소스인 `/proc/stat` 델타를 쓴다 —
   r 에 sysstat 미설치, ko_KR 로케일에서 소수점이 `,` 로 찍혀 CSV 가 깨짐, `mpstat -P ALL 1 1`
   은 60초 중 1초만 표본. sv1 에서 `mpstat -P ALL` 과 교차검증(오차 ≤0.4%p).
+
+---
+
+## [1.3.5] — 2026-10-05
+
+- 수정 · 2026-10-05 — **relay 모드가 `--sock-buf` 를 무시했고, c·s 는 커널 상한에 잘린 값을
+  요청값으로 로그했다** (`main.cpp` `mf_set_sock_buf()`, `mf_relay.cpp`, `mf_common.h`). **와이어 무변경.**
+  `--sock-buf` 처리가 mud 소켓 전용이라 relay 는 그 앞에서 분기했다 — 옵션은 오류 없이 받아들여지고
+  세션별 upstream 소켓은 `rmem_default`(208 KB), 리슨은 하드코딩 1 MB 그대로였다. c·s 는 일반
+  `SO_RCVBUF` 라 `rmem_max`(212992)에 잘려 `--sock-buf 4096` 이 **실제 416 KB** 인데 로그는
+  `sock-buf=4096 kB` 라고 찍었다.
+  → `mf_set_sock_buf()` 로 통일: `SO_RCVBUFFORCE`/`SO_SNDBUFFORCE` 를 먼저 시도하고(root =
+  CAP_NET_ADMIN 이면 `rmem_max` 우회) 실패 시 일반 옵션, **적용값을 다시 읽어** 잘렸으면 경고한다.
+  relay 는 리슨 소켓과 **세션마다 upstream 소켓**에 적용한다(잘림 경고는 1회만).
+  ⚠️ **동작 변화**: root 로 도는 c·s 는 이제 `--sock-buf` 값을 **실제로** 받는다(4096 → 4 MB, 이전 416 KB).
+  `--sock-buf` 를 주지 않은 relay 는 이전과 동일하다 — **relay 효과를 보려면 유닛에 `--sock-buf` 를 추가해야 한다.**
+  **A/B 실측** (신규 VM 테스트망, 릴레이만 교체, 릴레이 `rmem_default` 기본값, 각 20/25 Mbps 양방향 9분):
+  하향 손실 **0.389 → 0.031%** · **1.135 → 0.100%**, 릴레이 `UdpRcvbufErrors` **108,118 → 0**.
+  sysctl 우회(전 호스트 `rmem_max` 8 MB + 릴레이 `rmem_default` 4 MB)와 같은 자릿수다.
+  ⚠️ B 에서 s 드롭 1,215 → 2,721 — 1회·고정 순서라 판단 보류.
+  근거: `test-results/2026-10-05-vm-guard-calib/REPORT.md` §8. 회귀 테스트 전부 통과
+  (`rnlc` 11/11 · `fec-bounds` 7/7 · `path-loss` 10/10 · `path_slots` · `all_options` 90/90 ·
+  `relay_routing` 9/9 · `relay_session_cap` 4/4 · `relay_session_expiry`).
+  **서비스망 미반영** — 운영 반영은 별도 결정 사항.
 
 ---
 
