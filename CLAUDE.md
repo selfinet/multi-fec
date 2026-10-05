@@ -420,7 +420,7 @@ multi-fec -r -l 0.0.0.0:443 \
 
 ### 6. FIFO 런타임 커맨드
 
-`--fifo PATH` 지정 시 ev_io watcher로 libev에 등록.
+`--fifo PATH` 지정 시 ev_io watcher로 libev에 등록. **client/server 에서만 동작한다** — relay 모드는 오류 없이 무시한다(위 CLI 표).
 지원 명령 (`misc.cpp:handle_command`):
 
 | 명령 | 범위 |
@@ -486,10 +486,10 @@ MTU = 1300
 | `-k keystring` | 문자열 최대 999자 | — (**필수**) | PSK. client/server는 필수(`--disable-obfs` 시 면제) — 미지정 시 기동 거부. 릴레이는 선택(없으면 투명 중계) |
 | `--obfs-mode M` | `quic` \| `tls` | `quic` | 패킷 위장 모드 |
 | `--disable-obfs` | — | 비활성 | obfs 완전 비활성화 (테스트용) |
-| `--fifo PATH` | 파일경로 | 없음 | 런타임 커맨드 FIFO |
+| `--fifo PATH` | 파일경로 | 없음 | 런타임 커맨드 FIFO. **client/server 전용 — relay 모드에서는 오류 없이 무시된다**(relay 분기가 FIFO 설정보다 앞에서 `return` 한다, `main.cpp`) |
 | `--report N` | `1`–∞ (초) | `0` (off) | 통계 리포트 주기 |
 | `--log-level N` | `0`–`6` | `4` | 0=fatal 1=error 2=warn 3=info 4=info+ 5=debug 6=trace |
-| `--sock-buf N` | `10`–`10240` (kB) | OS 기본값 | UDP SO_SNDBUF/SO_RCVBUF 크기 |
+| `--sock-buf N` | `10`–`10240` (kB) | OS 기본값 | UDP SO_SNDBUF/SO_RCVBUF 크기. client/server 는 mud 소켓, **relay 는 v1.3.5 부터** 리슨 + 세션별 upstream 소켓에 적용한다 — **v1.3.4 이하 relay 는 오류 없이 무시했다**(2026-10-05 발견, 문서 예시에는 처음부터 relay 에도 들어 있었다). v1.3.5 부터 `*FORCE` 를 먼저 시도해 root 면 `rmem_max` 를 넘어 적용되고, 잘리면 경고한다(v1.3.4 이하는 잘린 값을 요청값으로 로그) |
 | `--auth-interval N` | `30`–∞ (초) | `30` | HMAC 토큰 슬롯 길이. 클라이언트/서버 양쪽 동일 설정 필수. 길수록 슬롯 경계 탐지 어려움. 권장: `60` |
 
 ### 클라이언트 전용
@@ -972,7 +972,7 @@ MTU = 1300
 | `--mode 0` | 큐 기반 | 대용량 전송 시 FEC 그룹 효율 극대화. 높은 레이턴시라 큐잉 영향 적음 |
 | `--decode-buf 2000` | 기본 6000→2000 | **연결당** 할당이라 다중 클라이언트 서버에서 메모리가 먼저 상한이 된다. 크기 기준은 시간이 아니라 개수다 — 아래 산정식 참고 |
 | `--queue-len 500` | 200→500 | 고대역폭 경로에서 FEC 인코더 큐 여유 확보 |
-| `--sock-buf 4096` | OS기본→4MB | BDP 500KB 이상 구간에서 커널 버퍼 부족 시 처리량 저하 방지 |
+| `--sock-buf 4096` | OS기본→4MB | BDP 500KB 이상 구간에서 커널 버퍼 부족 시 처리량 저하 방지. ⚠️ 릴레이는 **v1.3.5 부터** 적용(이전엔 무시) |
 | `--auth-interval 60` | 30→60 | GFW 슬롯 경계 탐지 어렵게 |
 | `--multipath-mode aggregate` | — | 두 릴레이의 독립된 해저케이블 대역폭 합산 |
 
