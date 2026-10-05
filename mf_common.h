@@ -58,3 +58,8 @@ extern std::vector<route_entry_t> g_routes;         /* relay per-key upstream ro
  * source address. Note the listen address does NOT carry over to the upstream
  * socket: they are separate sockets, and only the listen one is bound. */
 extern address_t                  g_upstream_local;
+
+/* --sock-buf in kB (0 = leave the OS default). Applied to the mud socket in
+ * client/server and, since v1.3.5, to the relay's listen and upstream sockets. */
+extern int                        g_sock_buf;
+int mf_set_sock_buf(int fd, int kb, int *rcv_kb, int *snd_kb);   /* main.cpp */
