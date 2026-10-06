@@ -489,7 +489,7 @@ MTU = 1300
 | `--fifo PATH` | 파일경로 | 없음 | 런타임 커맨드 FIFO. **client/server 전용 — relay 모드에서는 오류 없이 무시된다**(relay 분기가 FIFO 설정보다 앞에서 `return` 한다, `main.cpp`) |
 | `--report N` | `1`–∞ (초) | `0` (off) | 통계 리포트 주기 |
 | `--log-level N` | `0`–`6` | `4` | 0=fatal 1=error 2=warn 3=info 4=info+ 5=debug 6=trace |
-| `--sock-buf N` | `10`–`10240` (kB) | OS 기본값 | UDP SO_SNDBUF/SO_RCVBUF 크기. client/server 는 mud 소켓, **relay 는 v1.3.5 부터** 리슨 + 세션별 upstream 소켓에 적용한다 — **v1.3.4 이하 relay 는 오류 없이 무시했다**(2026-10-05 발견, 문서 예시에는 처음부터 relay 에도 들어 있었다). v1.3.5 부터 `*FORCE` 를 먼저 시도해 root 면 `rmem_max` 를 넘어 적용되고, 잘리면 경고한다(v1.3.4 이하는 잘린 값을 요청값으로 로그) |
+| `--sock-buf N` | `10`–`10240` (kB) | OS 기본값 | UDP SO_SNDBUF/SO_RCVBUF 크기. client/server 는 mud 소켓, **relay 는 v1.3.5 부터** 리슨 + 세션별 upstream 소켓에 적용한다 — **v1.3.4 이하 relay 는 오류 없이 무시했다**(2026-10-05 발견, 문서 예시에는 처음부터 relay 에도 들어 있었다). v1.3.5 부터 `*FORCE` 를 먼저 시도해 root 면 `rmem_max` 를 넘어 적용되고, 잘리면 경고한다(v1.3.4 이하는 잘린 값을 요청값으로 로그). **v1.3.6 부터 c·s 의 WireGuard 쪽 소켓**(클라 로컬 리슨, 서버 세션별 `--wg` 소켓)에도 적용 — 그 전엔 하드코딩 1 MB 가 `rmem_max` 에 잘려 416 KB 였다 |
 | `--auth-interval N` | `30`–∞ (초) | `30` | HMAC 토큰 슬롯 길이. 클라이언트/서버 양쪽 동일 설정 필수. 길수록 슬롯 경계 탐지 어려움. 권장: `60` |
 
 ### 클라이언트 전용

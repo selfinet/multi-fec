@@ -924,6 +924,13 @@ int main(int argc, char *argv[])
             fprintf(stderr, "  key-based routing: --route \"key1 1.2.3.4:443\" --route \"key2 5.6.7.8:443\"\n");
             return 1;
         }
+        /* The FIFO is set up further down, past this branch, so relay mode never
+         * opens it. Say so instead of accepting the option silently -- a production
+         * relay unit carried --fifo for months believing it worked (2026-10-06). */
+        if (fifo_file[0] != '\0')
+            mylog(log_warn, "--fifo %s is ignored in relay mode (runtime commands are client/server only)\n",
+                  fifo_file);
+
         init_random_number_fd();
         signal(SIGPIPE, SIG_IGN);
 
