@@ -573,6 +573,23 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 ---
 
+## [1.3.6] — 2026-10-06
+
+- 수정 · 2026-10-06 — **c·s 의 WireGuard 쪽 소켓에도 `--sock-buf` 적용** (`mf_client.cpp` 로컬 리슨 소켓,
+  `mf_server.cpp` 세션별 `--wg` 연결 소켓). **와이어 무변경.** 두 소켓은 `new_listen_socket2()`/`new_connected_socket2()`
+  가 하드코딩 1 MB 를 일반 `SO_RCVBUF` 로 요청해 기본 커널에서 **416 KB** 로 잘렸고, v1.3.5 는 mud·relay 소켓에만
+  `--sock-buf` 를 적용해 이 소켓이 **sysctl 의존이 남은 유일한 곳**이었다. → 생성 직후 `mf_set_sock_buf()`(FORCE, 잘리면
+  경고 — 서버는 세션마다 생기므로 1회만). `--sock-buf` 를 주지 않으면 이전과 동일.
+- 변경 · 2026-10-06 — **relay 모드에서 `--fifo` 를 받으면 경고** (`main.cpp`). FIFO 설정은 relay 분기 뒤에 있어 relay 는
+  FIFO 를 열지 않는데 옵션을 조용히 받아들였다 — 서비스 relay 유닛이 이를 갖고 있었다. 동작은 그대로(무시), 로그만 추가.
+  **실측** (신규 VM 테스트망, sysctl 기본값, 9분 지속, REPORT §11): 1.3.5(P2) 10 Mbps 하향 0.147% → **1.3.6(P5) 0 / 0**,
+  WG 쪽 소켓 드롭 4,132 → **0**. sysctl 없이 1.3.1 + sysctl 조정(P3)과 같은 10 Mbps 에 도달. 15 Mbps 는 0.101% / 0.038%.
+  ⚠️ P5 계단(45초) 20·25 Mbps 는 P2 보다 손실이 컸다(4~8 MB 소켓 드롭 — VM 정지로 보이나 1회라 보류).
+  회귀 전부 통과(`rnlc` 11/11 · `fec-bounds` 7/7 · `path-loss` 10/10 · `path_slots` · `all_options` 90/90 ·
+  `relay_routing` 9/9 · `relay_session_cap` 4/4 · `relay_session_expiry`). **서비스망 미반영.**
+
+---
+
 ## [1.3.5] — 2026-10-05
 
 - 수정 · 2026-10-05 — **relay 모드가 `--sock-buf` 를 무시했고, c·s 는 커널 상한에 잘린 값을

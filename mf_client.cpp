@@ -468,6 +468,25 @@ void mf_client_event_loop(struct mud *mud, const struct obfs_ctx *obfs)
     mylog(log_info, "[client] local listen fd=%d addr=%s\n",
           local_listen_fd, local_addr.get_str());
 
+    /* --sock-buf on the WireGuard-side socket too. new_listen_socket2() asks for a
+     * hard-coded 1 MB with a plain SO_RCVBUF, which net.core.rmem_max cuts to 416 KB
+     * on a stock kernel. Through v1.3.5 only the mud socket got --sock-buf, and this
+     * socket became the next place to overflow: on the 2 vCPU testnet with default
+     * sysctl it carried most of the remaining drops (2026-10-06, REPORT §11). */
+    if (g_sock_buf > 0) {
+        int rcv_kb = 0, snd_kb = 0;
+        int r = mf_set_sock_buf(local_listen_fd, g_sock_buf, &rcv_kb, &snd_kb);
+        if (r < 0)
+            mylog(log_warn, "[client] wg-side sock-buf setsockopt failed: %s\n", strerror(errno));
+        else if (r > 0)
+            mylog(log_warn, "[client] wg-side sock-buf=%d kB requested but kernel capped it at rcv=%d snd=%d kB — "
+                  "raise net.core.rmem_max/wmem_max or run with CAP_NET_ADMIN\n",
+                  g_sock_buf, rcv_kb, snd_kb);
+        else
+            mylog(log_info, "[client] wg-side sock-buf=%d kB (rcv=%d snd=%d kB)\n",
+                  g_sock_buf, rcv_kb, snd_kb);
+    }
+
     /* FEC encode manager */
     conn_info.fec_encode_manager.set_data(&conn_info);
     conn_info.fec_encode_manager.set_loop_and_cb(loop, fec_encode_cb);

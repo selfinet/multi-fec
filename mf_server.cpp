@@ -732,6 +732,25 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
                 continue;
             }
 
+            /* --sock-buf on the per-conv WireGuard socket as well (see the client's
+             * wg-side socket for why). This one sits on the downlink path: WG hands
+             * the server everything bound for the branch through it. Created per conv,
+             * so report a cap or failure only once. */
+            if (g_sock_buf > 0) {
+                static bool warned = false;
+                int rcv_kb = 0, snd_kb = 0;
+                int r = mf_set_sock_buf(new_udp_fd, g_sock_buf, &rcv_kb, &snd_kb);
+                if (r != 0 && !warned) {
+                    warned = true;
+                    if (r < 0)
+                        mylog(log_warn, "[server] wg-side sock-buf setsockopt failed: %s\n", strerror(errno));
+                    else
+                        mylog(log_warn, "[server] wg-side sock-buf=%d kB capped at rcv=%d snd=%d kB — "
+                              "raise net.core.rmem_max/wmem_max or run with CAP_NET_ADMIN\n",
+                              g_sock_buf, rcv_kb, snd_kb);
+                }
+            }
+
             fd64_t fd64 = fd_manager.create(new_udp_fd);
 
             conn_info.conv_manager.s.insert_conv(conv, fd64);
