@@ -1,0 +1,16 @@
+[18:32:45] ##### D 계단
+[18:32:45] ===== D  c=136 r=136 s=136 sysctl=def
+[18:38:32] D rc=0  5:up0.00000%/dn0.00000% 10:up0.00000%/dn0.00000% 15:up0.00000%/dn0.00000% 20:up1.17653%/dn1.40693% 25:up0.23211%/dn0.29014%   drop c+1378 r+5458 s+1185  
+[18:38:32] 완료
+[18:38:32] ##### D 지속
+[18:38:32] ===== D  c=136 r=136 s=136 sysctl=def
+[19:07:13] D rc=0  10:up0.01742%/dn0.00000% 15:up0.22756%/dn0.34027% 20:up0.52444%/dn0.62578%   drop c+13689 r+3724 s+18382  
+[19:07:13] 완료
+[19:07:13] 측정 완료
+[19:07:13] ===== 원상 복구
+multi-fec-client 8388608 212992 ddb8d458 dropin=0 SOCK_BUF=4096 active inactive inactive inactive 
+multi-fec-relay 8388608 4194304 ddb8d458 dropin=0  inactive active active inactive 
+multi-fec-server 8388608 212992 ddb8d458 dropin=0 SOCK_BUF=4096 inactive inactive inactive active 
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 53.017/53.191/53.384/0.150 ms
+sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e

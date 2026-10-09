@@ -1,0 +1,10 @@
+== raw/lat/P2
+  idle     n=  600  p50   52.9  p90   54.3  p99    58.2  max    63.0 ms
+   10 Mbps n= 3511  p50   52.2  p90   55.5  p99   223.0  max   690.0 ms  loss  0.34%
+   15 Mbps n= 3495  p50   52.4  p90   55.7  p99    74.8  max   819.0 ms  loss  0.57%
+   20 Mbps n= 3471  p50   52.8  p90   56.7  p99   283.0  max  1001.0 ms  loss  1.17%
+== raw/lat/P5
+  idle     n=  600  p50   52.9  p90   57.7  p99    58.7  max    62.8 ms
+   10 Mbps n= 3514  p50   52.1  p90   55.7  p99   169.0  max   460.0 ms  loss  0.03%
+   15 Mbps n= 3517  p50   52.4  p90   56.5  p99   491.0  max  1074.0 ms  loss  0.00%
+   20 Mbps n= 3505  p50   52.7  p90   56.9  p99   293.0  max  1148.0 ms  loss  0.23%
