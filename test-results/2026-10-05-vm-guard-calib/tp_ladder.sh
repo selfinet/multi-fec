@@ -63,8 +63,21 @@ for combo in $COMBOS; do
     echo "[$(date +%T)] $X FAIL: 터널 ping 60초 무응답 — 부하 생략"; echo "$X FAIL tunnel" >> "$SUM"; continue
   fi
   sockets > "$D/sock_before.txt"; snap > "$D/nstat_before.txt"
+  # PING=1 (2026-10-06 지연 비교): 부하 동안 터널 ping 20 pps 를 epoch 타임스탬프(-D)와 함께 남긴다.
+  #   유휴 기준선 30초를 먼저 재고, 부하 중엔 -w 로 끝을 정해 두고 끝나면 comm 정확 매치(-x)로 정리한다
+  #   (pkill -f 는 호출 셸을 매치한다 — 하네스 함정 #1). 분석은 lat_analyze.py 가 steps.txt 시각으로 나눈다.
+  if [ "${PING:-0}" = 1 ]; then
+    ssh "$C" 'ping -D -i 0.05 -c 600 -W 1 10.9.20.1' > "$D/ping_idle.txt" 2>&1
+    nsteps=$(echo $STEPS | wc -w)
+    ssh "$C" "ping -D -i 0.05 -W 1 -w $(( nsteps * (DUR + 30) + 60 )) 10.9.20.1" > "$D/ping_load.txt" 2>&1 &
+    PP=$!
+  fi
   RUNID=${PFX}_$X STEPS="$STEPS" DUR=$DUR ./run_load.sh > "$D/run.out" 2>&1
   rc=$?
+  if [ "${PING:-0}" = 1 ]; then
+    ssh "$C" 'pkill -INT -x ping' ; wait $PP 2>/dev/null
+    cp "raw/${PFX}_$X/steps.txt" "$D/steps.txt" 2>/dev/null
+  fi
   sockets > "$D/sock_after.txt"; snap > "$D/nstat_after.txt"
   res=$(grep -E '^\[run\] +[0-9]+ Mbps' "$D/run.out" | awk '{printf "%s:up%s/dn%s ", $2, $5, $9}')
   drops=$(paste "$D/nstat_before.txt" "$D/nstat_after.txt" | awk '{printf "%s+%d ", $1, $4-$2}')
