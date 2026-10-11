@@ -1,0 +1,15 @@
+# 2026-10-10 03:16:05 STEPS=5 DUR=120
+Y0 c=131 r1=131 r2=131 s=131 rc=0 hop1=4 hop2=6 5:up0.23200%/dn0.38720%  drop c+198 r+691 s+184 
+  warn/err c=2 r1=4 r2=2 s=2   path lines:  5 path[0] RUNNING; 5 path[1] RUNNING;
+Y1 c=131 r1=131 r2=131 s=136 rc=0 hop1=4 hop2=6 5:up0.25600%/dn1.17280%  drop c+207 r+2933 s+0 
+  warn/err c=2 r1=2 r2=2 s=2   path lines:  5 path[0] RUNNING; 5 path[1] RUNNING;
+Y2 c=131 r1=131 r2=136 s=136 rc=0 hop1=4 hop2=6 5:up0.00000%/dn0.10880%  drop c+203 r+0 s+0 
+  warn/err c=2 r1=2 r2=2 s=2   path lines:  5 path[0] RUNNING; 5 path[1] RUNNING;
+Y3 c=131 r1=136 r2=136 s=136 rc=0 hop1=4 hop2=6 5:up0.00000%/dn0.20160%  drop c+452 r+0 s+0 
+  warn/err c=2 r1=2 r2=2 s=2   path lines:  5 path[0] RUNNING; 5 path[1] RUNNING;
+Y4 c=136 r1=136 r2=136 s=136 rc=0 hop1=4 hop2=6 5:up0.00000%/dn0.00000%  drop c+0 r+0 s+0 
+  warn/err c=7 r1=2 r2=2 s=2   path lines:  5 path[0] RUNNING; 5 path[1] RUNNING;
+Y5 c=131 r1=136 r2=131 s=131 rc=0 hop1=4 hop2=6 5:up0.13760%/dn0.19680%  drop c+22 r+0 s+255 
+  warn/err c=2 r1=2 r2=2 s=2   path lines:  5 path[0] RUNNING; 5 path[1] RUNNING;
+Y6 c=136 r1=131 r2=136 s=131 rc=0 hop1=4 hop2=6 5:up0.30720%/dn0.47360%  drop c+0 r+0 s+788 
+  warn/err c=2 r1=2 r2=2 s=2   path lines:  5 path[0] RUNNING; 5 path[1] RUNNING;

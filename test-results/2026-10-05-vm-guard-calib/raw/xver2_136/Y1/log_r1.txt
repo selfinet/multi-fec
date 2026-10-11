@@ -1,0 +1,50 @@
+Oct 09 18:18:54 multi-fec-relay systemd[1]: Stopping multi-fec-relay.service - multi-fec relay relay (testnet 2026-10)...
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[872192]: [2026-10-09 18:18:54][INFO]signal 15 received, exiting
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[872192]: [2026-10-09 18:18:54][WARN][relay] ev_run returned
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[872192]: 
+Oct 09 18:18:54 multi-fec-relay systemd[1]: multi-fec-relay.service: Deactivated successfully.
+Oct 09 18:18:54 multi-fec-relay systemd[1]: Stopped multi-fec-relay.service - multi-fec relay relay (testnet 2026-10).
+Oct 09 18:18:54 multi-fec-relay systemd[1]: multi-fec-relay.service: Consumed 15.271s CPU time.
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[872194]: [2026-10-09 18:18:54][INFO]signal 15 received, exiting
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[872194]: [2026-10-09 18:18:54][WARN][relay] ev_run returned
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[872194]: 
+Oct 09 18:18:54 multi-fec-relay systemd[1]: Stopping multi-fec-relay-b.service - multi-fec relay relay-b (testnet 2026-10)...
+Oct 09 18:18:54 multi-fec-relay systemd[1]: Started multi-fec-relay.service - multi-fec relay relay (testnet 2026-10).
+Oct 09 18:18:54 multi-fec-relay systemd[1]: multi-fec-relay-b.service: Deactivated successfully.
+Oct 09 18:18:54 multi-fec-relay systemd[1]: Stopped multi-fec-relay-b.service - multi-fec relay relay-b (testnet 2026-10).
+Oct 09 18:18:54 multi-fec-relay systemd[1]: multi-fec-relay-b.service: Consumed 15.064s CPU time.
+Oct 09 18:18:54 multi-fec-relay systemd[1]: Started multi-fec-relay-b.service - multi-fec relay relay-b (testnet 2026-10).
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO]parsing address: 192.168.100.117:443
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO]parsing address: 192.168.100.88:443
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO]its an ipv4 adress
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO]ip_address is {192.168.100.88}, port is {443}
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO]parsing address: 192.168.100.88:4443
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO]its an ipv4 adress
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO]ip_address is {192.168.100.88}, port is {4443}
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO]route added: key=kf:53d21bbd upstream=192.168.100.88:4443
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO]relay upstream source: 192.168.100.88:0
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO]multi-fec 1.3.1 (git v1.3.1) build 2026-09-11 06:23:07 KST
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO]relay mode started: 192.168.100.88:443  1 key-based routes
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO][relay] upstream source IP = 192.168.100.88:0 (bound)
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO][relay] listen=192.168.100.88:443  mode=key-routing  routes=1
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO][relay]   route[0] key=kf:53d21bbd upstream=192.168.100.88:4443
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO][relay] listen fd=5
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO][relay] ready, key-routing on 192.168.100.88:443
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO]its an ipv4 adress
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO]ip_address is {192.168.100.117}, port is {443}
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO]parsing address: 192.168.100.117:4443
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO]its an ipv4 adress
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO]ip_address is {192.168.100.117}, port is {4443}
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO]route added: key=kf:53d21bbd upstream=192.168.100.117:4443
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO]relay upstream source: 192.168.100.117:0
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO]multi-fec 1.3.1 (git v1.3.1) build 2026-09-11 06:23:07 KST
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO]relay mode started: 192.168.100.117:443  1 key-based routes
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO][relay] upstream source IP = 192.168.100.117:0 (bound)
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO][relay] listen=192.168.100.117:443  mode=key-routing  routes=1
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO][relay]   route[0] key=kf:53d21bbd upstream=192.168.100.117:4443
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO][relay] listen fd=5
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO][relay] ready, key-routing on 192.168.100.117:443
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:54][INFO][relay] new session: client=192.168.100.92:34720 upstream=192.168.100.88:4443 fd=6
+Oct 09 18:18:54 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:54][INFO][relay] new session: client=192.168.100.92:34720 upstream=192.168.100.117:4443 fd=6
+Oct 09 18:18:55 multi-fec-relay multi-fec-dist[875889]: [2026-10-09 18:18:55][INFO][relay] new session: client=192.168.100.92:38906 upstream=192.168.100.88:4443 fd=7
+Oct 09 18:18:55 multi-fec-relay multi-fec-dist[875891]: [2026-10-09 18:18:55][INFO][relay] new session: client=192.168.100.92:38906 upstream=192.168.100.117:4443 fd=7
