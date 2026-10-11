@@ -1,0 +1,84 @@
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[798047]: [2026-10-09 18:11:09][INFO]signal 15 received, exiting
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[798047]: [2026-10-09 18:11:09][WARN][client] ev_run returned
+Oct 09 18:11:09 multi-fec-client systemd[1]: Stopping multi-fec-client.service - multi-fec client (testnet 2026-10)...
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[798047]: [2026-10-09 18:11:09][INFO]exiting
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[798047]: 
+Oct 09 18:11:09 multi-fec-client systemd[1]: multi-fec-client.service: Deactivated successfully.
+Oct 09 18:11:09 multi-fec-client systemd[1]: Stopped multi-fec-client.service - multi-fec client (testnet 2026-10).
+Oct 09 18:11:09 multi-fec-client systemd[1]: multi-fec-client.service: Consumed 1min 54.642s CPU time.
+Oct 09 18:11:09 multi-fec-client systemd[1]: Starting multi-fec-client.service - multi-fec client (testnet 2026-10)...
+Oct 09 18:11:09 multi-fec-client systemd[1]: Started multi-fec-client.service - multi-fec client (testnet 2026-10).
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]parsing address: 127.0.0.1:51821
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]its an ipv4 adress
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]ip_address is {127.0.0.1}, port is {51821}
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]parsing address: 0.0.0.0:0
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]its an ipv4 adress
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]ip_address is {0.0.0.0}, port is {0}
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]parsing address: 192.168.100.88:443
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]its an ipv4 adress
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]ip_address is {192.168.100.88}, port is {443}
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]path added: local=0.0.0.0:0 remote=192.168.100.88:443
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]parsing address: 0.0.0.0:0
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]its an ipv4 adress
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]ip_address is {0.0.0.0}, port is {0}
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]parsing address: 192.168.100.117:443
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]its an ipv4 adress
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]ip_address is {192.168.100.117}, port is {443}
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]path added: local=0.0.0.0:0 remote=192.168.100.117:443
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]multi-fec 1.3.6 (git v1.3.5-6-g699c4aa-dirty) build 2026-10-06 10:09:34 KST
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]session_id: dcb4184c0c00423c
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]jitter_min=0 jitter_max=0 output_interval_min=0 output_interval_max=0 fec_timeout=10 fec_mtu=1350 fec_queue_len=500 fec_mode=1
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]fec_str=5:1,20:4
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]fec_inner_parameter=1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:2,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]obfs: mode=QUIC-ShortHeader + HMAC-auth (interval=60s) + size-norm
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]mud fd=5
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][WARN]warning fifo file /run/multi-fec/client.fifo exist
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]fifo=/run/multi-fec/client.fifo fd=6
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]static path registered [0] local=0.0.0.0:0 remote=192.168.100.88:443
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]static path registered [1] local=0.0.0.0:0 remote=192.168.100.117:443
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO]client mode started (multipath=duplicate)
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO][client] starting event loop
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO][client] local listen fd=7 addr=127.0.0.1:51821
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO][client] wg-side sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO][client] listening at 127.0.0.1:51821, 2 static path(s)
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO][client] sent QUIC Initial on 2 path(s)
+Oct 09 18:11:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:09][INFO][report]client-->server:(original:0 pkt;0 byte) (fec:0 pkt,0 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+Oct 09 18:11:11 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:11][INFO][client] new conv from 127.0.0.1:37389 conv_id=832d4a6a
+Oct 09 18:11:38 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:38][INFO][client] path[0] RUNNING owd=26.02ms jit=0.39ms loss=5% rate=16.3Mbps tx=6831 rx=6471
+Oct 09 18:11:38 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:11:38][INFO][client] path[1] RUNNING owd=30.90ms jit=0.16ms loss=1% rate=12.8Mbps tx=6780 rx=6560
+Oct 09 18:12:08 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:12:08][INFO][client] path[0] RUNNING owd=25.97ms jit=0.35ms loss=3% rate=18.1Mbps tx=46467 rx=44194
+Oct 09 18:12:08 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:12:08][INFO][client] path[1] RUNNING owd=31.11ms jit=0.39ms loss=1% rate=39.9Mbps tx=46370 rx=45399
+Oct 09 18:12:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:12:09][INFO][report]client-->server:(original:37121 pkt;47062440 byte) (fec:46472 pkt,59379588 byte)  server-->client:(original:37089 pkt;47024272 byte) (fec:46438 pkt;59339776 byte)
+Oct 09 18:12:10 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:12:10][WARN][client] mud_send EAGAIN #1
+Oct 09 18:12:10 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:12:10][WARN][client] mud_send EAGAIN #50
+Oct 09 18:12:10 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:12:10][WARN][client] mud_send EAGAIN #100
+Oct 09 18:12:10 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:12:10][INFO][client] flushed 143 pending packet(s)
+Oct 09 18:12:38 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:12:38][INFO][client] path[0] RUNNING owd=26.03ms jit=0.25ms loss=5% rate=19.7Mbps tx=86056 rx=81769
+Oct 09 18:12:38 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:12:38][INFO][client] path[1] RUNNING owd=31.09ms jit=0.22ms loss=1% rate=36.3Mbps tx=85924 rx=84136
+Oct 09 18:13:08 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:13:08][INFO][client] path[0] RUNNING owd=26.06ms jit=0.30ms loss=3% rate=15.0Mbps tx=125687 rx=119453
+Oct 09 18:13:08 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:13:08][INFO][client] path[1] RUNNING owd=31.03ms jit=0.21ms loss=1% rate=24.7Mbps tx=125509 rx=122972
+Oct 09 18:13:09 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:13:09][INFO][report]client-->server:(original:100038 pkt;126841196 byte) (fec:125173 pkt,159959466 byte)  server-->client:(original:100005 pkt;126801760 byte) (fec:125192 pkt;159987388 byte)
+Oct 09 18:13:38 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:13:38][INFO][client] path[0] RUNNING owd=26.11ms jit=0.06ms loss=10% rate=8.8Mbps tx=159024 rx=151188
+Oct 09 18:13:38 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:13:38][INFO][client] path[1] RUNNING owd=31.23ms jit=0.15ms loss=0% rate=12.9Mbps tx=158834 rx=155696
+Oct 09 18:14:08 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:14:08][INFO][client] path[0] RUNNING owd=27.42ms jit=0.83ms loss=4% rate=61.7Mbps tx=219381 rx=208459
+Oct 09 18:14:08 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:14:08][INFO][client] path[1] RUNNING owd=32.54ms jit=2.29ms loss=1% rate=39.5Mbps tx=219174 rx=214703
+Oct 09 18:14:10 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:14:10][INFO][report]client-->server:(original:178156 pkt;225891240 byte) (fec:220269 pkt,281486226 byte)  server-->client:(original:178046 pkt;225756576 byte) (fec:220243 pkt;281460222 byte)
+Oct 09 18:14:38 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:14:38][INFO][client] path[0] RUNNING owd=26.74ms jit=0.56ms loss=3% rate=82.4Mbps tx=294965 rx=280330
+Oct 09 18:14:38 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:14:38][INFO][client] path[1] RUNNING owd=31.50ms jit=0.53ms loss=1% rate=29.5Mbps tx=294732 rx=288772
+Oct 09 18:15:08 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:08][INFO][client] path[0] RUNNING owd=26.16ms jit=0.52ms loss=5% rate=107.6Mbps tx=370591 rx=352101
+Oct 09 18:15:08 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:08][INFO][client] path[1] RUNNING owd=31.16ms jit=0.33ms loss=1% rate=35.6Mbps tx=370294 rx=362847
+Oct 09 18:15:10 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:10][INFO][report]client-->server:(original:303988 pkt;385446216 byte) (fec:371443 pkt,474686598 byte)  server-->client:(original:303894 pkt;385331840 byte) (fec:371442 pkt;474692544 byte)
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][WARN][client] mud_send EAGAIN #150
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][WARN][client] mud_send EAGAIN #200
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][WARN][client] mud_send EAGAIN #250
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][WARN][client] mud_send EAGAIN #300
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][WARN][client] mud_send EAGAIN #350
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][WARN][client] mud_send EAGAIN #400
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][WARN][client] mud_send EAGAIN #450
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][INFO][client] flushed 344 pending packet(s)
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][WARN][client] mud_send EAGAIN #500
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][WARN][client] mud_send EAGAIN #550
+Oct 09 18:15:14 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:14][INFO][client] flushed 77 pending packet(s)
+Oct 09 18:15:38 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:38][INFO][client] path[0] RUNNING owd=27.17ms jit=1.07ms loss=4% rate=56.0Mbps tx=446160 rx=423815
+Oct 09 18:15:38 multi-fec-client multi-fec-dist[803367]: [2026-10-09 18:15:38][INFO][client] path[1] RUNNING owd=32.50ms jit=0.96ms loss=0% rate=40.0Mbps tx=445817 rx=436816
