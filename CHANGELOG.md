@@ -626,6 +626,11 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
   `--queue-len 500`(200) · `--sock-buf 4096`(OS) · `--multipath-mode duplicate`(failover) · `--auth-interval 60`(30) ·
   `--report 60`(off) · client `-l 127.0.0.1:51821`(필수) · server `--wg 127.0.0.1:51820`(필수). 생략 항목은 기동 로그에 표시.
   FEC 모드 0↔1 은 혼용 가능함을 확인(루프백·netem), 2 는 같아야 한다.
+- 수정 · 2026-10-19 — **`--path`·`--route` 값의 줄 끝 `# 주석` 을 무시**(경고 한 줄) (`mf_netcfg.cpp` `split_spec()`).
+  systemd `EnvironmentFile` 은 줄 끝 주석을 값에 남기는데, 1.3.x 는 포트 뒤를 무시해 서비스 설정(DJ08M `DEST_A=… # relay …`)이 이에 기대고
+  있었다 — 처음 태그한 1.4.0 은 `unknown word '#'` 로 기동을 거부했다(실측). **버전은 1.4.0 유지(사용자 결정), `v1.4.0` 태그를 이 수정
+  커밋으로 옮겼다** — 이전 태그 빌드(git `v1.4.0`, sha256 `8c6f1ede…`)는 쓰지 말 것.
+- 테스트 · 2026-10-19 — **60분 누수 없음**(c·r·s 프로세스별 RSS 마지막 30분 +0 kB, FD·스레드 고정, CPU 처음=끝) — REPORT 후반.
 - 추가 · 2026-10-18 — `systemd/multi-fec@.service`(템플릿 유닛 — `RuntimeDirectory` 없음, 정지 시 라우트 미삭제),
   `mf-pair.sh`(c·s 설정 + WG 설정 + relay route 줄 + 체크리스트, 키는 화면·argv 에 안 찍음).
 - 테스트 · 2026-10-18 — 회귀 전부 통과: `rnlc` 11/11 · `fec-bounds` 7/7 · `path-loss` 10/10 · `all_options` 90/90 ·

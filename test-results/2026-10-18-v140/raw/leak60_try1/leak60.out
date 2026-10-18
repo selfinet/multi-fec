@@ -1,0 +1,34 @@
+[22:08:28] sv1 운영(시작 전): MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
+[22:08:36] 샘플러 시작 — 30초 유휴 기준선
+[23:09:33] 부하 종료: [run]  10 Mbps  up 0.09138% ooo 34316  dn 0.00079% ooo 34480 [run] 가드 트립 [guard] 22:21:29 트립 → r:전체=90.8%>88%  → 'mfgen tx' 중단 
+== c pid 1164647 listen 127.0.0.1:51821
+   RSS MB (부하 시작 기준)   0m  12.60 10m  16.05 20m  16.05 30m  16.05 40m  16.05 50m  16.05 60m  16.05   | 유휴 12.08 · 최대 16.05
+   계단(≥64 kB) 4회: 0m +212kB, 1m +84kB, 1m +412kB, 2m +1600kB
+   마지막 30분: 변화 +0 kB · 기울기 +0 kB/h · 범위 16436~16436 kB
+   FD 8~8 · 스레드 1~1 · CPU 처음 10분 37.8% → 마지막 10분 0.6%
+== r pid 1266440 listen 192.168.100.88:443
+   RSS MB (부하 시작 기준)   0m   2.22 10m   2.22 20m   2.22 30m   2.22 40m   2.22 50m   2.22 60m   2.22   | 유휴 2.22 · 최대 2.22
+   계단(≥64 kB) 0회
+   마지막 30분: 변화 +0 kB · 기울기 +0 kB/h · 범위 2272~2272 kB
+   FD 7~8 · 스레드 1~1 · CPU 처음 10분 28.9% → 마지막 10분 0.5%
+== r pid 1266442 listen 192.168.100.117:443
+   RSS MB (부하 시작 기준)   0m   2.22 10m   2.22 20m   2.22 30m   2.22 40m   2.22 50m   2.22 60m   2.22   | 유휴 2.22 · 최대 2.22
+   계단(≥64 kB) 0회
+   마지막 30분: 변화 +0 kB · 기울기 +0 kB/h · 범위 2272~2272 kB
+   FD 7~8 · 스레드 1~1 · CPU 처음 10분 28.3% → 마지막 10분 0.5%
+== s pid 1156171 listen 192.168.100.102:443
+   RSS MB (부하 시작 기준)   0m  12.33 10m  16.57 20m  23.09 30m  23.09 40m  23.09 50m  23.09 60m  23.10   | 유휴 11.76 · 최대 23.10
+   계단(≥64 kB) 6회: 0m +116kB, 1m +108kB, 5m +344kB, 6m +2484kB, 12m +6476kB, 12m +204kB
+   마지막 30분: 변화 +4 kB · 기울기 +11 kB/h · 범위 23648~23652 kB
+   FD 8~8 · 스레드 1~1 · CPU 처음 10분 36.8% → 마지막 10분 1.2%
+[23:10:10] 측정 완료
+[23:10:10] ===== 원상 복구
+cat: /tmp/leak60_sampler.pid: No such file or directory
+cat: /tmp/leak60_sampler.pid: No such file or directory
+cat: /tmp/leak60_sampler.pid: No such file or directory
+multi-fec-client ddb8d458 sampler=0 active inactive inactive inactive 
+multi-fec-relay ddb8d458 sampler=0 inactive active active inactive 
+multi-fec-server ddb8d458 sampler=0 inactive inactive inactive active 
+10 packets transmitted, 10 received, 0% packet loss, time 1806ms
+rtt min/avg/max/mdev = 52.550/56.071/81.960/8.638 ms
+sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
