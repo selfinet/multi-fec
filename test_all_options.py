@@ -90,7 +90,7 @@ def derive_psk(k):
     kb=k.encode();h0=siphash24(kb,DERIV_KEY);h1=siphash24(kb+b'\x01',DERIV_KEY)
     return struct.pack('<QQ',h0,h1)
 def make_obfs_quic(key,payload=b'test'):
-    psk=derive_psk(key);slot=int(time.time())//30
+    psk=derive_psk(key);slot=int(time.time())//60  # v1.4.0 기본 auth-interval (1.3.x 는 30)
     h=siphash24(struct.pack('<Q',slot),psk);token=struct.pack('<Q',h)
     raw=10+len(payload);buckets=[300,500,700,900,1100,1300,1400,1500]
     bucket=next((b for b in buckets if b>=raw),raw)
@@ -131,7 +131,8 @@ rc,out = quick_run(['-c','-l','127.0.0.1:9000','--disable-fec','--disable-obfs']
 check('클라이언트 --path 없음 → 오류', rc not in (0, None))
 
 rc,out = quick_run(['-s','-l','127.0.0.1:9000','--disable-fec','--disable-obfs'])
-check('서버 --wg 없음 → 오류', rc not in (0, None))
+# v1.4.0: --wg 기본값 127.0.0.1:51820 — 생략해도 기동한다 (1.3.x 는 오류)
+check('서버 --wg 생략 → 기본값으로 기동', rc in (0, None))
 
 rc,out = quick_run(['-r','-l','127.0.0.1:9000'])
 check('릴레이 --upstream/--route 없음 → 오류', rc not in (0, None))

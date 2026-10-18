@@ -1,0 +1,21 @@
+[19:43:32] sv1 운영(시작 전): MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
+[19:43:34] ##### 1.4.0 (1)
+[19:43:34] ===== V140_a  c=140 r=140 s=140 sysctl=def
+[19:51:04] V140_a rc=0  10:up0.00000%/dn0.00000% 20:up0.00000%/dn0.02267%   drop c+0 r+0 s+1  
+[19:51:04] 완료
+[19:51:04] ##### FEC 혼용 client 0 / server 1
+[19:51:04] ===== V140_mix  c=140 r=140 s=140 sysctl=def
+[19:58:33] V140_mix rc=0  10:up0.00000%/dn0.00000% 20:up1.07735%/dn3.60053%   drop c+3301 r+0 s+15373  
+[19:58:34] 완료
+[19:58:34] ##### 1.4.0 (2)
+[19:58:34] ===== V140_b  c=140 r=140 s=140 sysctl=def
+[20:06:04] V140_b rc=0  10:up0.00000%/dn0.00000% 20:up0.00000%/dn0.00000%   drop c+0 r+0 s+0  
+[20:06:04] 완료
+[20:06:04] 측정 완료
+[20:06:04] ===== 원상 복구
+multi-fec-client 8388608 212992 ddb8d458 dropin=0 tmpl=0 confs=client.conf netem.conf FEC_MODE=1 active inactive inactive inactive 
+multi-fec-relay 8388608 4194304 ddb8d458 dropin=0 tmpl=0 confs=netem.conf relay-b.conf relay.conf  inactive active active inactive 
+multi-fec-server 8388608 212992 ddb8d458 dropin=0 tmpl=0 confs=server.conf  inactive inactive inactive active 
+3 packets transmitted, 3 received, 0% packet loss, time 2003ms
+rtt min/avg/max/mdev = 53.012/61.356/77.787/11.618 ms
+sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e

@@ -1,0 +1,8 @@
+--- s3 --check (conflicts with s140 on :443)
+  [ERR]  0.0.0.0:443 is already bound by pid 1083306: /usr/sbin/multi-fec-dist --config /etc/multi-fec/s140.conf  — a second process would bind silently (SO_REUSEPORT) and split the traffic
+  [ERR]  listen 0.0.0.0:443 is also used by /etc/multi-fec/s140.conf
+result: 2 error(s), 0 warning(s)
+--- running: active active  fifos: s140.fifo s2-140.fifo server.fifo 
+--- after stopping s2-140: fifos: s140.fifo s2-140.fifo server.fifo   s140=active
+[INFO]fec_str=5:1,20:4
+[INFO]fec_inner_parameter=1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:2,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4

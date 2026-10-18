@@ -1,0 +1,8 @@
+[INFO]static path registered [0] local=192.168.100.88:0 remote=192.168.100.102:443
+[INFO]static path registered [1] local=192.168.100.117:0 remote=192.168.100.102:443
+[INFO][client] path[0] RUNNING owd=0.43ms jit=0.08ms loss=9% rate=44.5Mbps tx=296 rx=589 dev=ens18
+[INFO][client] path[1] RUNNING owd=0.46ms jit=0.12ms loss=0% rate=12.9Mbps tx=247 rx=491 dev=ens19
+[INFO][client] path[0] RUNNING owd=0.46ms jit=0.06ms loss=9% rate=11.7Mbps tx=596 rx=1189 dev=ens18
+[INFO][client] path[1] RUNNING owd=0.49ms jit=0.11ms loss=0% rate=8.8Mbps tx=497 rx=991 dev=ens19
+[INFO][client] path[0] RUNNING owd=0.49ms jit=0.06ms loss=0% rate=22.8Mbps tx=895 rx=1787 dev=ens18
+[INFO][client] path[1] RUNNING owd=0.46ms jit=0.11ms loss=0% rate=33.4Mbps tx=747 rx=1491 dev=ens19

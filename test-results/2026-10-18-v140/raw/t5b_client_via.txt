@@ -1,0 +1,15 @@
+[0m[32m[2026-10-18 10:37:05][INFO]path added: local=0.0.0.0:0 remote=192.168.100.102:443 via ens18
+[0m[32m[2026-10-18 10:37:05][INFO]path added: local=0.0.0.0:0 remote=192.168.100.102:443 via ens19
+  path             192.168.100.102:443 from 0.0.0.0:0 via ens18 config
+  path             192.168.100.102:443 from 0.0.0.0:0 via ens19 config
+  multipath-mode   duplicate                          default
+  [OK]   path[0] 192.168.100.102:443: leaves dev ens18
+  [OK]   path[1] 192.168.100.102:443: leaves dev ens19
+result: 0 error(s), 0 warning(s)
+rc-140 pid=1177304 mud port=
+  ens18: 0 pkts  src=
+  ens19: 0 pkts  src=
+[INFO]path[0] 192.168.100.102:443 leaves dev ens18
+[INFO]path[1] 192.168.100.102:443 leaves dev ens19
+[INFO][client] path[0] RUNNING owd=23103915469.74ms jit=45421572900.06ms loss=0% rate=17.1Mbps tx=590 rx=295 dev=ens18
+[INFO][client] path[1] RUNNING owd=60611986.90ms jit=121217008.05ms loss=0% rate=25.1Mbps tx=297 rx=590 dev=ens19

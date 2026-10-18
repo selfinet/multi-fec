@@ -1,0 +1,33 @@
+checks:
+  [OK]   /etc/multi-fec/r2-140.conf permissions
+  [ERR]  192.168.100.117:443 is already bound by pid 1176961: /usr/sbin/multi-fec-dist -r -l 192.168.100.117:443 --upstream 192.168.100.102:44 — a second process would bind silently (SO_REUSEPORT) and split the traffic
+
+result: 1 error(s), 0 warning(s)
+settings (value / source):
+  listen           127.0.0.1:51821                    default
+  path             192.168.100.88:443 from 0.0.0.0:0  config
+  path             192.168.100.117:443 from 0.0.0.0:0 config
+  key              kf:53d21bbd                        config
+  auth-interval    60                                 default
+  obfs-mode        quic                               default
+  multipath-mode   duplicate                          default
+  fec              5:1,20:4                           default
+  fec-mode         1                                  default
+  fec-timeout      10                                 default
+  mtu              1350                               default
+  decode-buf       2000                               default
+  queue-len        500                                default
+  report           60                                 default
+  fifo             /run/multi-fec/c140.fifo           default
+  sock-buf         4096                               default
+  log-level        4                                  default
+
+checks:
+  [OK]   /etc/multi-fec/c140.conf permissions
+  [OK]   key kf:53d21bbd from config
+  [OK]   path[0] 192.168.100.88:443: leaves dev ens18
+  [OK]   path[1] 192.168.100.117:443: leaves dev ens18
+  [NOTE] all paths leave via ens18 (one uplink — redundancy is per relay, not per line)
+  [ERR]  127.0.0.1:51821 is already bound by pid 1090214: /usr/sbin/multi-fec-dist -c -l 127.0.0.1:51821 --path 0.0.0.0:192.168.100.88:443 — a second process would bind silently (SO_REUSEPORT) and split the traffic
+
+result: 1 error(s), 0 warning(s)

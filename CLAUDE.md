@@ -478,26 +478,38 @@ MTU = 1300
 | `-s` | 서버 모드 |
 | `-r` | 릴레이(POP) 모드 |
 
+### 설정 파일·점검 (v1.4.0)
+
+> **v1.4.0 에서 기본값이 실사용값으로 바뀌었다** — 아래 표의 기본값은 1.4.0 기준이고 괄호가 1.3.x 값이다.
+> 옵션을 생략한 1.3.x 상대와 **같아야 하는 값은 `--auth-interval` 하나**(1.3.x 기본 30). 설계·근거 `DESIGN-1.4.0.md`, §30.
+
+| 옵션 | 설명 |
+|------|------|
+| `--config FILE` | `name = value` 줄, name = 긴 옵션에서 `--` 를 뺀 것. 추가로 `mode = client\|server\|relay`, **FEC 모드는 `fec-mode`**(`mode = 1` 은 안내 후 거부). 모르는 이름·오타·같은 스칼라 두 번 → 기동 거부. 우선순위 명령행 > 파일 > 기본값(반복 옵션은 명령행이 통째로 대체). client 의 `wg` = `-l`. 인스턴스 이름 = 파일 basename |
+| `--check` | 적용값과 출처(default/config/cli), 키 지문, 파일 권한, path 별 송신 NIC·소스 IP 존재·터널 루프, `--apply-routes` 계획, **같은 포트를 이미 잡은 프로세스와 같은 디렉터리 설정 간 포트 충돌**(mud·relay 리슨이 `SO_REUSEPORT` 라 두 번째가 오류 없이 떠 트래픽을 나눈다) → 오류 시 exit 1 |
+| `--apply-routes` / `--remove-routes` | `via`(+`gw`) 가 있는 path·route 의 `/32` 를 netlink `replace` 로 설치(멱등) · 제거. 기록 `/run/multi-fec/<인스턴스>.routes`. multi-fec 이 걸지 않은 다른 `/32` 는 덮어쓰지 않고 거부, 다른 인스턴스가 기록한 라우트는 제거하지 않는다. `--config` 필수 |
+
 ### 공통 옵션
 
 | 옵션 | 값 범위 | 기본값 | 설명 |
 |------|---------|--------|------|
-| `-l ip:port` | — | 필수 | 로컬 리슨 주소. 클라이언트=WG 프록시포트, 서버=리슨포트 |
-| `-k keystring` | 문자열 최대 999자 | — (**필수**) | PSK. client/server는 필수(`--disable-obfs` 시 면제) — 미지정 시 기동 거부. 릴레이는 선택(없으면 투명 중계) |
+| `-l ip:port` | — | client `127.0.0.1:51821` (필수) · server/relay 필수 | 로컬 리슨 주소. 클라이언트=WG 프록시포트, 서버=리슨포트 |
+| `-k` / `--key keystring` | 문자열 최대 999자 | — (**필수**) | PSK. client/server는 필수(`--disable-obfs` 시 면제) — 미지정 시 기동 거부. 릴레이는 선택(없으면 투명 중계). **v1.4.0: 우선순위 `-k`/`--key`/`key =` > `--key-file` > 환경변수 `MF_KEY`, 빈 키는 전 모드 기동 거부, 읽은 뒤 argv 를 `*` 로 덮어 `ps` 에서 가린다**(기동 직후 짧은 순간·키 길이는 남음) |
+| `--key-file FILE` | 파일 | 없음 | 첫 줄을 키로(앞뒤 공백 제거). group/other 읽기 가능하면 경고 |
 | `--obfs-mode M` | `quic` \| `tls` | `quic` | 패킷 위장 모드 |
 | `--disable-obfs` | — | 비활성 | obfs 완전 비활성화 (테스트용) |
-| `--fifo PATH` | 파일경로 | 없음 | 런타임 커맨드 FIFO. **client/server 전용 — relay 모드에서는 오류 없이 무시된다**(relay 분기가 FIFO 설정보다 앞에서 `return` 한다, `main.cpp`) |
-| `--report N` | `1`–∞ (초) | `0` (off) | 통계 리포트 주기 |
+| `--fifo PATH` | 파일경로 | 없음 (`--config` 시 `/run/multi-fec/<인스턴스>.fifo`, 디렉터리 없으면 경고 후 생략) | 런타임 커맨드 FIFO. **client/server 전용 — relay 모드에서는 오류 없이 무시된다**(relay 분기가 FIFO 설정보다 앞에서 `return` 한다, `main.cpp`) |
+| `--report N` | `1`–∞ (초) | `60` (`0` off) | 통계 리포트 주기 |
 | `--log-level N` | `0`–`6` | `4` | 0=fatal 1=error 2=warn 3=info 4=info+ 5=debug 6=trace |
-| `--sock-buf N` | `10`–`10240` (kB) | OS 기본값 | UDP SO_SNDBUF/SO_RCVBUF 크기. client/server 는 mud 소켓, **relay 는 v1.3.5 부터** 리슨 + 세션별 upstream 소켓에 적용한다 — **v1.3.4 이하 relay 는 오류 없이 무시했다**(2026-10-05 발견, 문서 예시에는 처음부터 relay 에도 들어 있었다). v1.3.5 부터 `*FORCE` 를 먼저 시도해 root 면 `rmem_max` 를 넘어 적용되고, 잘리면 경고한다(v1.3.4 이하는 잘린 값을 요청값으로 로그). **v1.3.6 부터 c·s 의 WireGuard 쪽 소켓**(클라 로컬 리슨, 서버 세션별 `--wg` 소켓)에도 적용 — 그 전엔 하드코딩 1 MB 가 `rmem_max` 에 잘려 416 KB 였다 |
-| `--auth-interval N` | `30`–∞ (초) | `30` | HMAC 토큰 슬롯 길이. 클라이언트/서버 양쪽 동일 설정 필수. 길수록 슬롯 경계 탐지 어려움. 권장: `60` |
+| `--sock-buf N` | `10`–`10240` (kB) | `4096` (OS 기본값) | UDP SO_SNDBUF/SO_RCVBUF 크기. client/server 는 mud 소켓, **relay 는 v1.3.5 부터** 리슨 + 세션별 upstream 소켓에 적용한다 — **v1.3.4 이하 relay 는 오류 없이 무시했다**(2026-10-05 발견, 문서 예시에는 처음부터 relay 에도 들어 있었다). v1.3.5 부터 `*FORCE` 를 먼저 시도해 root 면 `rmem_max` 를 넘어 적용되고, 잘리면 경고한다(v1.3.4 이하는 잘린 값을 요청값으로 로그). **v1.3.6 부터 c·s 의 WireGuard 쪽 소켓**(클라 로컬 리슨, 서버 세션별 `--wg` 소켓)에도 적용 — 그 전엔 하드코딩 1 MB 가 `rmem_max` 에 잘려 416 KB 였다 |
+| `--auth-interval N` | `30`–∞ (초) | `60` (`30`; `0` = 30) | HMAC 토큰 슬롯 길이. 클라이언트·relay·서버 동일 설정 필수 — **옵션을 생략한 1.3.x 상대와는 어긋난다**(전 패킷 무음 폐기). 길수록 슬롯 경계 탐지 어려움 |
 
 ### 클라이언트 전용
 
 | 옵션 | 값 범위 | 기본값 | 설명 |
 |------|---------|--------|------|
-| `--path L:R:P` | IP:IP:포트 | 필수 | 멀티패스 경로. 반복 가능. L=소스IP(0.0.0.0=자동), R=서버IP, P=포트(1–65535) |
-| `--multipath-mode M` | 아래 참조 | `failover` | 멀티패스 동작 모드 선택 |
+| `--path L:R:P` | IP:IP:포트 | 필수 | 멀티패스 경로. 반복 가능. L=소스IP(0.0.0.0=자동), R=서버IP, P=포트(1–65535). **v1.4.0: `R:P` 만 써도 된다(소스 자동), 뒤에 `via <if>` `gw <ip>`**. ⚠️ 소스 IP 는 회선을 정하지 않는다(리눅스는 목적지로 라우팅, 2026-10-18 r 실측) — 회선 분리는 `via`(송신 `ipi_ifindex`) 또는 정책 라우팅. 같은 목적지에 `via` 둘이면 소스는 인터페이스 IPv4 로 자동 지정(mud 경로 키 충돌 방지). 기동 시 path 별 송신 NIC 를 로그하고, **터널(`wg*`/`tun*`)로 라우팅되면 기동 거부**(규칙 2 루프). 30초 경로 보고에 `dev=` |
+| `--multipath-mode M` | 아래 참조 | `duplicate` (`failover`) | 멀티패스 동작 모드 선택 |
 | `--dup-factor N` | `1`–`8` | `2` | aggregate-duplicate에서 패킷당 전송 경로 수. 경로 수 초과 시 자동 클램프. |
 | `--port-hop-interval N` | `0`, `30`–∞ (초) | `0` (비활성) | TOTP 포트 호핑 슬롯 길이. 0=비활성. 최소 30초 |
 
@@ -535,7 +547,7 @@ best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
 
 | 옵션 | 값 범위 | 기본값 | 설명 |
 |------|---------|--------|------|
-| `--wg ip:port` | — | 필수 | WireGuard upstream 주소 (예: 127.0.0.1:51820) |
+| `--wg ip:port` | — | `127.0.0.1:51820` (필수) | WireGuard upstream 주소 |
 | `--decoy ip:port` | — | 없음 | GFW 액티브 프로빙 대응. 지정 시 HMAC 실패 패킷을 로컬 nginx/caddy QUIC 서버로 포워딩. **미지정 시 내장 QUIC Server Initial 1200B로 자동 응답** (nginx 불필요). |
 | `--accept-local ip` | IP (포트 불가), 최대 **16개** | 없음 (전부 수락) | **도착한 로컬 주소**가 목록에 있는 패킷만 서비스. 반복 지정. **`-l 0.0.0.0` 일 때만 의미 있다** — 고정 IP 바인딩은 커널이 이미 제한하므로 불일치 항목은 기동 거부. 미일치 패킷은 **조용히 폐기**(응답하면 서비스 안 하는 주소를 광고하게 된다). §27 |
 
@@ -545,7 +557,8 @@ best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
 |------|---------|--------|------|
 | `--upstream ip:port` | — | — | 단일 upstream 서버 주소 (단일 모드 필수) |
 | `--upstream-local ip` | IP (포트 불가) | 없음 | upstream(릴레이→서버) 소켓의 **소스 IP** 고정. 미지정 시 커널이 라우팅 preferred source 를 고른다. **`-l` 리슨 주소는 여기 상속되지 않는다** — 별개 소켓이다(§26). 한 호스트의 릴레이 인스턴스들을 upstream 에서 소스 IP 로 구분해야 할 때 쓴다 |
-| `--route "key ip:port"` | — | — | 키별 upstream 라우팅. 반복 가능. `--upstream` 대신 사용. |
+| `--route "key ip:port"` | — | — | 키별 upstream 라우팅. 반복 가능. `--upstream` 대신 사용. **v1.4.0: 뒤에 `via <if>` `gw <ip>` `local <ip>`** — 그 키 세션의 upstream 소켓에 `SO_BINDTODEVICE`·`bind` (`local` 이 `--upstream-local` 보다 우선). 같은 키 두 줄은 경고(첫 줄만 쓰임) |
+| `--route-file FILE` | 파일 | 없음 | `--route` 와 같은 문법을 한 줄에 하나, `#` 주석. 지사 추가 = 한 줄 + 재시작(유닛 수정 불필요). 키가 들어 있으므로 600 |
 | `--decoy ip:port` | — | 없음 | GFW 액티브 프로빙 대응. 서버와 동일 동작. HMAC 실패 패킷을 decoy로 포워딩. |
 
 `--upstream`과 `--route`는 둘 중 하나 이상 필수. 혼용 불가.
@@ -558,11 +571,11 @@ best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
 
 | 옵션 | 값 범위 | 기본값 | 설명 |
 |------|---------|--------|------|
-| `-f x:y` | `x`≥1, `y`≥0 | `20:10` | FEC 비율. x=데이터, y=복구 패킷 수. 예: `10:3` |
-| `--fec-timeout N` | `0`–∞ (ms) | `8` | FEC 그룹 flush 대기. 내부: N×1000 µs |
-| `--mode 0\|1\|2` | `0` \| `1` \| `2` | `0` | FEC 모드. 0=bandwidth-saving(큐 기반), 1=low-latency(RS), 2=RNLC(Random Linear Network Coding). 클라이언트/서버 동일 설정 필수 |
-| `--mtu N` | `100`–`1500` (bytes) | `1250` | FEC 패킷 MTU. WG MTU 1300 기준 1250 권장 |
-| `-q N` / `--queue-len N` | `1`–`10000` | `200` | FEC 인코드 큐 길이 (mode 0에만 적용) |
+| `-f x:y` | `x`≥1, `y`≥0 | `5:1,20:4` (`20:10`) | FEC 비율. x=데이터, y=복구 패킷 수. 예: `10:3` |
+| `--fec-timeout N` | `0`–∞ (ms) | `10` (`8`) | FEC 그룹 flush 대기. 내부: N×1000 µs |
+| `--mode 0\|1\|2` (`--fec-mode`) | `0` \| `1` \| `2` | `1` (`0`) | FEC 모드. 0=bandwidth-saving(큐 기반), 1=low-latency(RS), 2=RNLC(Random Linear Network Coding). **0 과 1 은 혼용 가능**(수신측이 패킷 type 바이트로 판별 — 2026-10-18 루프백·테스트망 netem 확인), **2 는 양쪽 같아야 한다** |
+| `--mtu N` | `100`–`1500` (bytes) | `1350` (`1250`) | FEC 패킷 MTU. WG MTU 1300 전제 |
+| `-q N` / `--queue-len N` | `1`–`10000` | `500` (`200`) | FEC 인코드 큐 길이 (mode 0에만 적용) |
 | `--decode-buf N` | `300`–`20000` | `2000` | FEC 디코더 링버퍼 (패킷 수). **연결당** 할당 — 엔트리 3,828 B → 연결당 `2.2 MB + N×3.8 KB` (2000이면 9.4 MB/연결). v1.0.9에서 6000→2000 |
 | `--disable-fec` | — | 비활성 | FEC 완전 비활성화 (passthrough) |
 
@@ -755,6 +768,13 @@ scp multi-fec-dist user@서버:/usr/local/bin/multi-fec
 ---
 
 ## systemd 서비스
+
+**v1.4.0: 템플릿 유닛 하나**(`systemd/multi-fec@.service`) — `systemctl enable --now multi-fec@<인스턴스>` 가
+`/etc/multi-fec/<인스턴스>.conf`(`--config` 형식, 600 root)를 읽는다. `ps` 에는 `--config <경로>` 만 보인다.
+`RuntimeDirectory=` 를 쓰지 않는다(정지 시 공유 `/run/multi-fec` 가 지워져 다른 인스턴스 FIFO 가 사라진다),
+라우트는 정지 시 지우지 않는다(공유 가능). 기존 유닛에서 옮길 때는 **기존 유닛을 먼저 `disable --now`**
+— 같은 포트에 둘이 뜨면 `SO_REUSEPORT` 로 트래픽이 나뉜다(`--check` 가 잡는다). 고객 키트는 `mf-pair.sh`.
+아래는 1.3.x 방식(환경변수 파일 + 인자 펼침)이며 1.4.0 에서도 그대로 동작한다.
 
 환경변수 파일(`/etc/multi-fec/*.conf`)과 서비스 파일을 분리해 관리한다.
 
@@ -2508,6 +2528,43 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 **측정 근거**: `test-results/2026-09-10-v131/REPORT.md` §3. 같은 배포본으로 목표 구조
 30분 소크도 함께 돌려 누수 없음을 확인했다(왕복 99.9996%, 오배송 0, FD 고정, v1.3.0 궤적과
 동일 고원) — 다만 **30분은 검출 창으로 짧다**(v1.3.0 은 24시간).
+
+---
+
+### 30. 설정 파일 · 키 노출 · 회선 지정 (2026-10-18, v1.4.0)
+
+**파일**: `mf_config.{h,cpp}`(신규), `mf_netcfg.{h,cpp}`(신규), `main.cpp`, `mf_relay.cpp`, `mud_lite.{h,c}`,
+`mf_client.cpp`, `port_hopper.cpp`, `systemd/multi-fec@.service`, `mf-pair.sh`. 설계 `DESIGN-1.4.0.md`.
+**와이어 포맷 무변경** — 1.3.1 과 c·r·s 어느 조합으로 섞어도 동작(테스트망 4조합).
+
+배경 세 가지:
+1. **설정이 길고 키가 보였다** — 설정 파일을 읽는 기능이 없어 systemd 가 conf 를 인자로 펼쳤고, 그래서
+   `ps` / `/proc/<pid>/cmdline` 으로 일반 사용자가 PSK 를 읽을 수 있었다(테스트망 c·r 에 일반 계정 존재).
+2. **코드 기본값이 실사용값과 달라** 운영 유닛마다 11개 옵션을 명시해야 했다.
+3. **소스 IP 는 회선을 정하지 않는다.** mud 는 `ipi_spec_dst` 만 채우고 `ipi_ifindex` 는 0 이라 커널이
+   목적지로 라우팅한다. 2026-10-18 r 실측: `--upstream-local .117`(ens19 주소) upstream 이 ens18 346 · ens19 0.
+   라우트 없이 소스 자동이면 두 경로가 RUNNING 인 채 한 회선에 실려 **이중화 0** 이고 로그로는 구분이 안 된다.
+
+변경 요약(상세는 위 CLI 표):
+- `--config`/`--check`/`--apply-routes`/`--remove-routes`, `--key`/`--key-file`/`MF_KEY`, `--route-file`, `--fec-mode` 별칭.
+- 기본값: `-f 5:1,20:4` `--fec-timeout 10` `--mode 1` `--mtu 1350` `--queue-len 500` `--sock-buf 4096`
+  `--multipath-mode duplicate` `--auth-interval 60` `--report 60`, client `-l 127.0.0.1:51821`, server `--wg 127.0.0.1:51820`.
+  기동 로그 `v1.4.0 defaults in effect (not set in config/CLI): …` 로 생략된 항목을 드러낸다.
+- 빈 키는 전 모드 기동 거부. `-k` 와 `--route` 의 키는 argv 에서 `*` 로 덮는다.
+- client `--path … via <if>` → `mud_path_conf.ifindex` → 송신 `ipi_ifindex`. relay route 줄 `via`/`local` →
+  세션 upstream 소켓 `SO_BINDTODEVICE`/`bind`. path 가 터널로 라우팅되면 기동 거부.
+
+**실측(2026-10-18 테스트망)**: 바이너리만 교체 시 동작 동일 · `ps` 에 `-k ****`. 템플릿 인스턴스 4개로
+터널 정상 · `ps` 에 `--config` 만. relay route `via ens19` → ens19 144 · ens18 0. client `via ens18`/`via ens19`
+같은 목적지 → `dev=` 분리 · 두 경로 RUNNING. `--apply-routes` 설치·멱등·공유·정리·남의 라우트 보호.
+상세 `test-results/2026-10-18-v140/REPORT.md`.
+
+> **구현 중 잡은 결함**: 같은 `/32` 를 두 번째 인스턴스가 "이미 있음" 으로만 처리하고 기록하지 않아,
+> 첫 인스턴스 `--remove-routes` 가 공유 라우트를 지웠다(T6 4·5단계). 다른 인스턴스 기록이 있으면 함께 기록하게 고쳤다.
+>
+> **테스트 변경**: `test_all_options.py`·`test_relay_routing.py`·`test_perf_stability.py` 의 Python HMAC 생성기가
+> 30초 슬롯을 박아 두어 relay 키 검증이 실패했다(기본값 60) — 상수를 60 으로. "서버 `--wg` 없음 → 오류" 는
+> "기본값으로 기동" 으로. 이 실패가 곧 **1.3.x 상대와 섞일 때 생기는 `auth-interval` 불일치**의 재현이다.
 
 ---
 

@@ -1,0 +1,16 @@
+10 packets transmitted, 10 received, 0% packet loss, time 1807ms
+rtt min/avg/max/mdev = 52.764/53.146/53.491/0.221 ms
+== multi-fec-client  active 
+ps(stevekim): /usr/sbin/multi-fec-dist --config /etc/multi-fec/c140.conf|bash -c echo "== $(hostname)  $(systemctl is-active "multi-fec@*" | tr "\n" " ")"; echo "ps(stevekim): $(su -s /bin/sh stevekim -c "ps -eo args" | grep "[m]ulti-fec-dist" | tr "\n" "|")"; echo "/run/multi-fec: $(ls /run/multi-fec | tr "\n" " ")"; ss -lunp | grep -c multi-fec-dist | sed "s/^/listen sockets: /"|bash -c echo "== $(hostname)  $(systemctl is-active "multi-fec@*" | tr "\n" " ")"; echo "ps(stevekim): $(su -s /bin/sh stevekim -c "ps -eo args" | grep "[m]ulti-fec-dist" | tr "\n" "|")"; echo "/run/multi-fec: $(ls /run/multi-fec | tr "\n" " ")"; ss -lunp | grep -c multi-fec-dist | sed "s/^/listen sockets: /"|
+/run/multi-fec: c140.fifo client.fifo 
+listen sockets: 2
+== multi-fec-relay  active active 
+ps(stevekim): /usr/sbin/multi-fec-dist --config /etc/multi-fec/r1-140.conf|/usr/sbin/multi-fec-dist --config /etc/multi-fec/r2-140.conf|bash -c echo "== $(hostname)  $(systemctl is-active "multi-fec@*" | tr "\n" " ")"; echo "ps(stevekim): $(su -s /bin/sh stevekim -c "ps -eo args" | grep "[m]ulti-fec-dist" | tr "\n" "|")"; echo "/run/multi-fec: $(ls /run/multi-fec | tr "\n" " ")"; ss -lunp | grep -c multi-fec-dist | sed "s/^/listen sockets: /"|bash -c echo "== $(hostname)  $(systemctl is-active "multi-fec@*" | tr "\n" " ")"; echo "ps(stevekim): $(su -s /bin/sh stevekim -c "ps -eo args" | grep "[m]ulti-fec-dist" | tr "\n" "|")"; echo "/run/multi-fec: $(ls /run/multi-fec | tr "\n" " ")"; ss -lunp | grep -c multi-fec-dist | sed "s/^/listen sockets: /"|
+/run/multi-fec: 
+listen sockets: 2
+== multi-fec-server  active 
+ps(stevekim): /usr/sbin/multi-fec-dist --config /etc/multi-fec/s140.conf|bash -c echo "== $(hostname)  $(systemctl is-active "multi-fec@*" | tr "\n" " ")"; echo "ps(stevekim): $(su -s /bin/sh stevekim -c "ps -eo args" | grep "[m]ulti-fec-dist" | tr "\n" "|")"; echo "/run/multi-fec: $(ls /run/multi-fec | tr "\n" " ")"; ss -lunp | grep -c multi-fec-dist | sed "s/^/listen sockets: /"|bash -c echo "== $(hostname)  $(systemctl is-active "multi-fec@*" | tr "\n" " ")"; echo "ps(stevekim): $(su -s /bin/sh stevekim -c "ps -eo args" | grep "[m]ulti-fec-dist" | tr "\n" "|")"; echo "/run/multi-fec: $(ls /run/multi-fec | tr "\n" " ")"; ss -lunp | grep -c multi-fec-dist | sed "s/^/listen sockets: /"|
+/run/multi-fec: s140.fifo server.fifo 
+listen sockets: 1
+[INFO][client] path[0] RUNNING owd=25.77ms jit=0.10ms loss=0% rate=9.7Mbps tx=507 rx=496 dev=ens18
+[INFO][client] path[1] RUNNING owd=30.90ms jit=0.04ms loss=0% rate=12.9Mbps tx=463 rx=456 dev=ens18

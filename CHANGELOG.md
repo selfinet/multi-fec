@@ -21,7 +21,15 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 ## [Unreleased]
 
-**제품 코드** 변경 없음 — 측정·문서·테스트 하네스만. 버전은 `1.3.6` 유지.
+측정·문서·테스트 하네스만(제품 코드 변경은 아래 버전 섹션).
+
+- 테스트 · 2026-10-17~18 — **`--sock-buf` 1 / 2 / 4 MB — 낮 2 MB 반복 · 교차 · TCP** (`test-results/2026-10-05-vm-guard-calib/REPORT.md` §16,
+  하네스 `buf2m_1017.sh`·`bufx_1017.sh`·`tcpx_1017.sh`+`run_tcp.sh`, 분석 `tcpx_analyze.py`). 1.3.6 · sysctl 기본.
+  2 MB 는 1 MB·4 MB 어느 쪽보다도 낫지 않았다(같은 2 MB 안 회차 편차가 버퍼 간 차이보다 큼). 교차 3라운드: 20 Mbps 데이터 손실
+  1 MB 0.81/0.52% · 2 MB 0.29/0.38% · 4 MB 0.003/0.001%, 소켓 드롭 35,334 / 17,307 / 31. **TCP(iperf3 `--fq-rate`)**: 20 Mbps
+  재전송 1 MB 1,188/988 vs 4 MB 27/28, 지연 꼬리는 비슷 → TCP 위주면 4 MB. 꼬리 지연 사건은 버퍼·레이트·버전과 무관하게
+  분당 1.2~2.6회(VM 정지) — 버퍼는 그것을 손실로 남길지 지연으로 남길지만 정한다. ⚠️ iperf3 3.16 `-b` 는 TCP 에서도 1코어
+  100% → 가드 트립(첫 시도) — `--fq-rate` 로 대체. `tp_ladder.sh` 에 `RUNNER=`(부하 스크립트 교체)·버전 표기 `140`→`1.4.0`.
 
 - 테스트 · 2026-10-10 — **1.3.1 ↔ 1.3.6 혼용 14조합 정상** (`test-results/2026-10-05-vm-guard-calib/REPORT.md` §15,
   하네스 `xver136_1010.sh`·`xver136.sh`·`xver2_136.sh`). 1단 `--upstream` 7조합(10·20 Mbps) + 서비스망 구조 2단 `--route` 7조합
@@ -590,6 +598,37 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
   기존 CSV 스키마 무변경. mpstat 바이너리 대신 동일 소스인 `/proc/stat` 델타를 쓴다 —
   r 에 sysstat 미설치, ko_KR 로케일에서 소수점이 `,` 로 찍혀 CSV 가 깨짐, `mpstat -P ALL 1 1`
   은 60초 중 1초만 표본. sv1 에서 `mpstat -P ALL` 과 교차검증(오차 ≤0.4%p).
+
+---
+
+## [1.4.0] — 2026-10-18
+
+설계 `DESIGN-1.4.0.md`, 배경·실측 CLAUDE.md §30, 테스트망 `test-results/2026-10-18-v140/REPORT.md`. **와이어 포맷 무변경** —
+1.3.1 과 c·r·s 어느 조합으로 섞어도 동작(4조합). ⚠️ **기본값 변경**: 옵션을 생략한 1.3.x 상대와는 `--auth-interval` 만 어긋난다.
+
+- 추가 · 2026-10-18 — **`--config FILE`** (`mf_config.cpp`). `name = value`(긴 옵션 이름), `mode = client|server|relay`,
+  FEC 모드는 `fec-mode`. 오타·모르는 이름·중복은 줄 번호와 함께 기동 거부. 명령행 > 파일 > 기본값. 파일을 CLI 토큰으로 바꿔
+  기존 getopt 파서·검증을 그대로 쓴다. `--config` 이면 FIFO 기본 `/run/multi-fec/<인스턴스>.fifo`.
+- 추가 · 2026-10-18 — **`--check`**: 적용값과 출처, 키 지문, 권한, path 별 송신 NIC·터널 루프·소스 IP 존재, 라우트 계획,
+  **같은 포트를 잡은 프로세스와 설정 간 충돌**(`SO_REUSEPORT` 무음 분할 방지). 오류 시 exit 1.
+- 추가 · 2026-10-18 — **키 입력** `--key`, `--key-file`, 환경변수 `MF_KEY`(우선순위 `-k`/`key=` > 파일 > 환경). 빈 키는 전 모드
+  기동 거부. `-k`·`--route` 의 키는 읽은 뒤 argv 를 `*` 로 덮어 `ps` 에서 가린다. 기동 로그에 `key kf:… from …`.
+- 추가 · 2026-10-18 — **회선 지정** client `--path "ip:port via <if> [gw <ip>]"`(송신 `ipi_ifindex`, `mud_lite`),
+  relay `--route "key ip:port [via if] [gw ip] [local ip]"` · **`--route-file`**(세션 소켓 `SO_BINDTODEVICE`/`bind`).
+  **`--apply-routes`/`--remove-routes`** — 필요한 `/32` 만 netlink `replace`, 기록 `/run/multi-fec/<인스턴스>.routes`,
+  남이 건 라우트 보호, 공유 라우트 유지. path 가 `wg*`/`tun*` 로 라우팅되면 기동 거부. 경로 보고에 `dev=`.
+- 변경 · 2026-10-18 — **기본값 = 실사용값**: `-f 5:1,20:4`(20:10) · `--fec-timeout 10`(8) · `--mode 1`(0) · `--mtu 1350`(1250) ·
+  `--queue-len 500`(200) · `--sock-buf 4096`(OS) · `--multipath-mode duplicate`(failover) · `--auth-interval 60`(30) ·
+  `--report 60`(off) · client `-l 127.0.0.1:51821`(필수) · server `--wg 127.0.0.1:51820`(필수). 생략 항목은 기동 로그에 표시.
+  FEC 모드 0↔1 은 혼용 가능함을 확인(루프백·netem), 2 는 같아야 한다.
+- 추가 · 2026-10-18 — `systemd/multi-fec@.service`(템플릿 유닛 — `RuntimeDirectory` 없음, 정지 시 라우트 미삭제),
+  `mf-pair.sh`(c·s 설정 + WG 설정 + relay route 줄 + 체크리스트, 키는 화면·argv 에 안 찍음).
+- 테스트 · 2026-10-18 — 회귀 전부 통과: `rnlc` 11/11 · `fec-bounds` 7/7 · `path-loss` 10/10 · `all_options` 90/90 ·
+  `relay_routing` 9/9 · `perf_stability` 26/26 · `rnlc` e2e 9/9 · `downstream_multi` 24/24(첫 실행 23/24, 재실행 통과) ·
+  `relay_session_expiry` · `relay_session_cap` 4/4 · `scale_sessions` 6/6 · ASAN+UBSAN 0건. 테스트 3개의 Python HMAC 상수
+  30→60 · "서버 `--wg` 없음" 기대 변경. **테스트망**(`test-results/2026-10-18-v140/REPORT.md`): 바이너리만 교체 · 1.3.1 혼용 4조합 ·
+  템플릿 유닛 전환 · 다중 인스턴스 · relay `via ens19`(ens19 144 / ens18 0) · client `via` 2회선 · 라우트 9단계 · 루프 차단 ·
+  부하 회귀(1.3.6 · 4 MB 와 같은 수준, FEC 모드 0↔1 혼용 netem 하 정상). **서비스망 미반영.**
 
 ---
 

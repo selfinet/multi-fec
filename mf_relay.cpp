@@ -272,7 +272,7 @@ static bool session_reserve_slot(my_time_t now)
  * Helper: create a non-blocking UDP socket connected to upstream
  * ──────────────────────────────────────────────────────────────── */
 
-static int new_upstream_fd(address_t &remote)
+static int new_upstream_fd(address_t &remote, const route_entry_t *route)
 {
     int fd = socket(remote.get_type(), SOCK_DGRAM, 0);
     if (fd < 0) {
@@ -285,19 +285,34 @@ static int new_upstream_fd(address_t &remote)
      * same address regardless of which IP its listen socket is bound to.
      * Port stays 0 (ephemeral) — from_str_ip_only() zeroes it and the CLI
      * rejects an explicit port, since there is one such socket per session. */
-    if (g_upstream_local.is_vaild()) {
-        if (g_upstream_local.get_type() != remote.get_type()) {
-            mylog(log_warn, "[relay] --upstream-local family differs from upstream %s — not bound\n",
-                  remote.get_str());
-        } else if (bind(fd, (struct sockaddr *)&g_upstream_local.inner,
-                        g_upstream_local.get_len()) < 0) {
+    /* v1.4.0: a route line's own "local" wins over --upstream-local */
+    address_t src = g_upstream_local;
+    if (route) {
+        address_t rl = route->local;   /* address_t methods are not const-qualified */
+        if (rl.is_vaild()) src = rl;
+    }
+    if (src.is_vaild()) {
+        if (src.get_type() != remote.get_type()) {
+            mylog(log_warn, "[relay] upstream source %s family differs from upstream %s — not bound\n",
+                  src.get_str(), remote.get_str());
+        } else if (bind(fd, (struct sockaddr *)&src.inner, src.get_len()) < 0) {
             /* Fatal for this session: the caller asked for a specific source
              * address, and falling back to another one would silently defeat it. */
             mylog(log_warn, "[relay] bind upstream source %s: %s\n",
-                  g_upstream_local.get_str(), strerror(errno));
+                  src.get_str(), strerror(errno));
             close(fd);
             return -1;
         }
+    }
+
+    /* v1.4.0 route "via <if>": pin the egress interface. The source address alone
+     * does not choose it — Linux routes by destination (DESIGN-1.4.0 §6-1). One
+     * socket per session makes this a plain per-socket option, unlike mud. */
+    if (route && route->ifname[0] &&
+        setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, route->ifname, strlen(route->ifname)) < 0) {
+        mylog(log_warn, "[relay] SO_BINDTODEVICE %s: %s\n", route->ifname, strerror(errno));
+        close(fd);
+        return -1;
     }
 
     /* --sock-buf: before v1.3.5 relay mode ignored it, and these per-session
@@ -399,8 +414,10 @@ static void probe_respond_builtin(address_t &src)
  *   All fail → upstream = NULL (close_notify response)
  */
 static const struct obfs_ctx *find_route(const char *buf, int n,
-                                         address_t &upstream_out)
+                                         address_t &upstream_out,
+                                         const route_entry_t **route_out)
 {
+    *route_out = NULL;
     static char decoded[buf_len];
 
     if (g_routes.empty()) {
@@ -421,6 +438,7 @@ static const struct obfs_ctx *find_route(const char *buf, int n,
                                decoded, (int)sizeof(decoded), NULL);
         if (plen > 0 || plen == OBFS_DECODE_INITIAL) {
             upstream_out = route.upstream_addr;
+            *route_out   = &route;
             return &route.obfs;
         }
     }
@@ -472,7 +490,8 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
         } else {
             /* ── new session: determine upstream via route lookup ── */
             address_t upstream;
-            const struct obfs_ctx *matched_obfs = find_route(buf, n, upstream);
+            const route_entry_t *matched_route = NULL;
+            const struct obfs_ctx *matched_obfs = find_route(buf, n, upstream, &matched_route);
 
             if (matched_obfs == NULL && !g_routes.empty()) {
                 /* no match in key-routing mode */
@@ -503,7 +522,7 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
                 continue;
             }
 
-            int ufd = new_upstream_fd(upstream);
+            int ufd = new_upstream_fd(upstream, matched_route);
             if (ufd < 0) continue;
 
             sess               = new relay_session_t;
@@ -583,8 +602,11 @@ void mf_relay_event_loop(address_t &listen_addr, address_t &upstream_addr,
              * line, so printing the key handed the PSK to every log reader. */
             char kfp[OBFS_KEY_FP_LEN];
             obfs_key_fingerprint(g_routes[i].key_str, kfp, sizeof(kfp));
-            mylog(log_info, "[relay]   route[%zu] key=%s upstream=%s\n",
-                  i, kfp, g_routes[i].upstream_addr.get_str());
+            mylog(log_info, "[relay]   route[%zu] key=%s upstream=%s%s%s%s%s\n",
+                  i, kfp, g_routes[i].upstream_addr.get_str(),
+                  g_routes[i].ifname[0] ? " via " : "", g_routes[i].ifname,
+                  g_routes[i].local.is_vaild() ? " local " : "",
+                  g_routes[i].local.is_vaild() ? g_routes[i].local.get_str() : "");
         }
     } else {
         mylog(log_info, "[relay] listen=%s  upstream=%s  hmac=%s\n",

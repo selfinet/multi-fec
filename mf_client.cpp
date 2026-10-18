@@ -10,6 +10,7 @@
  *   network → [obfs] → mud_recv() → FEC decode → strip conv → WireGuard local UDP
  */
 
+#include "mf_netcfg.h"
 #include "tunnel.h"
 #include "mf_common.h"
 
@@ -402,15 +403,26 @@ static void conn_timer_cb(struct ev_loop * /*loop*/, struct ev_timer *watcher, i
                  * paths do not collapse to 0. (Through v1.3.2 this was labelled
                  * "rtt=...us" while already divided by 1000, so it read wrong
                  * twice over: half the real round trip, and 1000x off.) */
+                /* v1.4.0: the interface the kernel sends this path out of. Two paths
+                 * on one device while the host has two uplinks = no line redundancy,
+                 * and nothing else in the log shows it (DESIGN-1.4.0 §6-1). */
+                char dev[24] = "?";
+                if (p->conf.remote.sa.sa_family == AF_INET) {
+                    mf_route_info ri;
+                    struct in_addr src = p->conf.local.sin.sin_addr;
+                    if (mf_route_get(p->conf.remote.sin.sin_addr, src.s_addr ? &src : NULL,
+                                     p->conf.ifindex, ri) == 0 && ri.found)
+                        snprintf(dev, sizeof(dev), "%s", ri.dev);
+                }
                 mylog(log_info,
-                      "[client] path[%u] %s owd=%.2fms jit=%.2fms loss=%u%% rate=%.1fMbps tx=%llu rx=%llu\n",
+                      "[client] path[%u] %s owd=%.2fms jit=%.2fms loss=%u%% rate=%.1fMbps tx=%llu rx=%llu dev=%s\n",
                       i, st,
                       (double)p->rtt.val / 1000.0,
                       (double)p->rtt.var / 1000.0,
                       (unsigned)((unsigned)p->tx.loss * 100U / 255U),
                       (double)p->tx.rate * 8.0 / 1.0e6,
                       (unsigned long long)p->tx.total,
-                      (unsigned long long)p->rx.total);
+                      (unsigned long long)p->rx.total, dev);
             }
         }
     }
