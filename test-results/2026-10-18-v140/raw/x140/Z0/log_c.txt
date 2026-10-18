@@ -1,0 +1,60 @@
+[2026-10-18 11:47:31][INFO]signal 15 received, exiting
+[2026-10-18 11:47:31][WARN][client] ev_run returned
+Stopping multi-fec-client.service - multi-fec client (testnet 2026-10)...
+[2026-10-18 11:47:31][INFO]exiting
+
+multi-fec-client.service: Deactivated successfully.
+Stopped multi-fec-client.service - multi-fec client (testnet 2026-10).
+multi-fec-client.service: Consumed 9.631s CPU time.
+Starting multi-fec-client.service - multi-fec client (testnet 2026-10)...
+Started multi-fec-client.service - multi-fec client (testnet 2026-10).
+[2026-10-18 11:47:31][INFO]parsing address: 127.0.0.1:51821
+[2026-10-18 11:47:31][INFO]its an ipv4 adress
+[2026-10-18 11:47:31][INFO]ip_address is {127.0.0.1}, port is {51821}
+[2026-10-18 11:47:31][INFO]parsing address: 0.0.0.0:0
+[2026-10-18 11:47:31][INFO]its an ipv4 adress
+[2026-10-18 11:47:31][INFO]ip_address is {0.0.0.0}, port is {0}
+[2026-10-18 11:47:31][INFO]parsing address: 192.168.100.88:443
+[2026-10-18 11:47:31][INFO]its an ipv4 adress
+[2026-10-18 11:47:31][INFO]ip_address is {192.168.100.88}, port is {443}
+[2026-10-18 11:47:31][INFO]path added: local=0.0.0.0:0 remote=192.168.100.88:443
+[2026-10-18 11:47:31][INFO]parsing address: 0.0.0.0:0
+[2026-10-18 11:47:31][INFO]its an ipv4 adress
+[2026-10-18 11:47:31][INFO]ip_address is {0.0.0.0}, port is {0}
+[2026-10-18 11:47:31][INFO]parsing address: 192.168.100.117:443
+[2026-10-18 11:47:31][INFO]its an ipv4 adress
+[2026-10-18 11:47:31][INFO]ip_address is {192.168.100.117}, port is {443}
+[2026-10-18 11:47:31][INFO]path added: local=0.0.0.0:0 remote=192.168.100.117:443
+[2026-10-18 11:47:31][INFO]multi-fec 1.3.1 (git v1.3.1) build 2026-09-11 06:23:07 KST
+[2026-10-18 11:47:31][INFO]session_id: 301cf85463d49358
+[2026-10-18 11:47:31][INFO]jitter_min=0 jitter_max=0 output_interval_min=0 output_interval_max=0 fec_timeout=10 fec_mtu=1350 fec_queue_len=500 fec_mode=1
+[2026-10-18 11:47:31][INFO]fec_str=5:1,20:4
+[2026-10-18 11:47:31][INFO]fec_inner_parameter=1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:2,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4
+[2026-10-18 11:47:31][INFO]obfs: mode=QUIC-ShortHeader + HMAC-auth (interval=60s) + size-norm
+[2026-10-18 11:47:31][INFO]mud fd=5
+[2026-10-18 11:47:31][INFO]sock-buf=4096 kB
+[2026-10-18 11:47:31][WARN]warning fifo file /run/multi-fec/client.fifo exist
+[2026-10-18 11:47:31][INFO]fifo=/run/multi-fec/client.fifo fd=6
+[2026-10-18 11:47:31][INFO]static path registered [0] local=0.0.0.0:0 remote=192.168.100.88:443
+[2026-10-18 11:47:31][INFO]static path registered [1] local=0.0.0.0:0 remote=192.168.100.117:443
+[2026-10-18 11:47:31][INFO]client mode started (multipath=duplicate)
+[2026-10-18 11:47:31][INFO][client] starting event loop
+[2026-10-18 11:47:31][INFO][client] local listen fd=7 addr=127.0.0.1:51821
+[2026-10-18 11:47:31][INFO][client] listening at 127.0.0.1:51821, 2 static path(s)
+[2026-10-18 11:47:31][INFO][client] sent QUIC Initial on 2 path(s)
+[2026-10-18 11:47:31][INFO][report]client-->server:(original:0 pkt;0 byte) (fec:0 pkt,0 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+[2026-10-18 11:47:32][INFO][client] new conv from 127.0.0.1:37389 conv_id=2347a1ad
+[2026-10-18 11:47:32][WARN][client] mud_send EAGAIN #1
+[2026-10-18 11:47:33][INFO][client] flushed 2 pending packet(s)
+[2026-10-18 11:48:01][INFO][client] path[0] RUNNING rtt=26us jit=0us loss=5% rate=20.7Mbps tx=4715 rx=4487
+[2026-10-18 11:48:01][INFO][client] path[1] RUNNING rtt=31us jit=0us loss=1% rate=17.1Mbps tx=4650 rx=4546
+[2026-10-18 11:48:31][INFO][client] path[0] RUNNING rtt=26us jit=0us loss=6% rate=15.6Mbps tx=25618 rx=24069
+[2026-10-18 11:48:31][INFO][client] path[1] RUNNING rtt=31us jit=0us loss=1% rate=78.8Mbps tx=25485 rx=24567
+[2026-10-18 11:48:32][INFO][report]client-->server:(original:19255 pkt;24410700 byte) (fec:25052 pkt,32007176 byte)  server-->client:(original:18931 pkt;24001100 byte) (fec:24770 pkt;31649244 byte)
+[2026-10-18 11:49:01][INFO][client] path[0] RUNNING rtt=25us jit=0us loss=7% rate=18.9Mbps tx=46577 rx=44109
+[2026-10-18 11:49:01][INFO][client] path[1] RUNNING rtt=31us jit=0us loss=1% rate=18.9Mbps tx=46388 rx=45223
+[2026-10-18 11:49:31][INFO][client] path[0] RUNNING rtt=26us jit=0us loss=4% rate=14.2Mbps tx=67523 rx=64157
+[2026-10-18 11:49:31][INFO][client] path[1] RUNNING rtt=31us jit=0us loss=1% rate=12.9Mbps tx=67270 rx=65841
+[2026-10-18 11:49:32][INFO][report]client-->server:(original:50652 pkt;64219748 byte) (fec:65924 pkt,84239244 byte)  server-->client:(original:50421 pkt;63929248 byte) (fec:66013 pkt;84356626 byte)
+[2026-10-18 11:50:01][INFO][client] path[0] RUNNING rtt=26us jit=0us loss=0% rate=8.0Mbps tx=84178 rx=80112
+[2026-10-18 11:50:01][INFO][client] path[1] RUNNING rtt=31us jit=0us loss=0% rate=9.7Mbps tx=83951 rx=82316
