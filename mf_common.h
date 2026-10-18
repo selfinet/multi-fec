@@ -17,6 +17,11 @@ extern uint8_t g_session_id[SESSION_ID_LEN];
 struct PathSpec {
     address_t local;   /* local interface IP (port=0 -> OS auto-select) */
     address_t remote;  /* remote IP:port */
+    /* v1.4.0 "via <if> [gw <ip>]": egress interface and, for --apply-routes, the
+     * gateway of the /32 that sends this destination out of that interface. */
+    char      ifname[16];   /* "" = not pinned */
+    unsigned  ifindex;      /* resolved at startup, 0 = not pinned */
+    address_t gw;           /* invalid = interface default gateway */
 };
 
 /*
@@ -44,6 +49,11 @@ struct route_entry_t {
     char            key_str[1000];
     address_t       upstream_addr;
     struct obfs_ctx obfs;          /* HMAC context initialized from key_str */
+    /* v1.4.0 per-route egress (route-file / --route "key ip:port [via if] [gw ip] [local ip]").
+     * The relay opens one upstream socket per session, so each can be bound on its own. */
+    address_t       local;         /* invalid = --upstream-local (or kernel) */
+    char            ifname[16];    /* "" = not pinned (SO_BINDTODEVICE) */
+    address_t       gw;            /* for --apply-routes; invalid = interface default */
 };
 
 /* Defined in main.cpp, referenced from other modules via extern */

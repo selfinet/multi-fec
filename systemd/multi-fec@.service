@@ -1,0 +1,29 @@
+# multi-fec 1.4.0 template unit — one file for every role and instance.
+#
+#   systemctl enable --now multi-fec@client         -> /etc/multi-fec/client.conf
+#   systemctl enable --now multi-fec@server-dj08    -> /etc/multi-fec/server-dj08.conf
+#   systemctl enable --now multi-fec@relay          -> /etc/multi-fec/relay.conf
+#
+# Per-instance tweaks go in a drop-in (systemctl edit multi-fec@<name>), not here.
+# Background: DESIGN-1.4.0.md §9.
+[Unit]
+Description=multi-fec %i
+After=network-online.target time-sync.target
+Wants=network-online.target time-sync.target
+
+[Service]
+Type=simple
+# Not RuntimeDirectory=: systemd removes it when the unit stops, and every
+# instance shares /run/multi-fec — stopping one would delete the others' FIFOs.
+ExecStartPre=/bin/mkdir -p /run/multi-fec
+# Installs the /32 routes that "via"/"gw" need; a no-op without them. Routes are
+# deliberately NOT removed on stop (another instance may share them, and a
+# restart would leak packets out of the default line in between).
+ExecStartPre=/usr/sbin/multi-fec-dist --config /etc/multi-fec/%i.conf --apply-routes
+ExecStart=/usr/sbin/multi-fec-dist --config /etc/multi-fec/%i.conf
+Restart=on-failure
+RestartSec=5
+TimeoutStopSec=3
+
+[Install]
+WantedBy=multi-user.target

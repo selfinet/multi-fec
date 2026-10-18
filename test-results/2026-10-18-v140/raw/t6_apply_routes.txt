@@ -1,0 +1,28 @@
+### 1) via ens19, no gw, ens19 has no default route
+$ apply-routes rt1
+error: no gateway known for ens19 to reach 198.51.100.7 — add "gw <ip>" or give ens19 a default route
+  rc=1  table:   state: 
+### 2) with gw
+$ apply-routes rt1
+[INFO]route 198.51.100.7/32 via 192.168.100.1 dev ens19: installed
+  rc=0  table:   state: 198.51.100.7 192.168.100.1 3 ens19;
+### 3) again (idempotent)
+$ apply-routes rt1
+[INFO]route 198.51.100.7/32 via 192.168.100.1 dev ens19: already present
+  rc=0  table:   state: 198.51.100.7 192.168.100.1 3 ens19;
+### 4) second instance wants the same route
+$ apply-routes rt2
+[INFO]route 198.51.100.7/32 via 192.168.100.1 dev ens19: already present
+  rc=0  table:   state: 198.51.100.7 192.168.100.1 3 ens19;
+### 5) remove rt1 (rt2 still uses it)
+$ remove-routes rt1
+[INFO]route 198.51.100.7/32 dev ens19: removed
+  rc=0  table:   state: 
+### 6) remove rt2
+$ remove-routes rt2
+  rc=0  table:   state: 
+### 7) foreign /32 exists (operator-made, different dev)
+$ apply-routes rt3
+[ERROR]route 198.51.100.8/32 already exists (via 192.168.100.1 dev ens18) and was not installed by multi-fec — not overwriting; remove it or fix the OS network config to match
+  rc=1  table:   state: 
+### cleanup: 0 test routes, state files: 0

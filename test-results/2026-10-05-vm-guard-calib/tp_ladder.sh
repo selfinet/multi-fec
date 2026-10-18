@@ -23,7 +23,7 @@ STEPS=${STEPS:-"5 10 15 20 25"}; DUR=${DUR:-45}
 OUT=${OUT:-raw/tp}; PFX=${PFX:-tp}; mkdir -p "$OUT"
 SUM=$OUT/summary.txt
 
-ver() { echo "1.3.${1:2}"; }
+ver() { echo "${1:0:1}.${1:1:1}.${1:2}"; }   # 131 → 1.3.1, 140 → 1.4.0
 setsys() {  # def | tuned
   if [ "$1" = def ]; then
     for h in $C $R $S; do ssh "$h" 'sysctl -qw net.core.rmem_max=212992 net.core.wmem_max=212992 net.core.rmem_default=212992 net.core.wmem_default=212992'; done
@@ -72,7 +72,7 @@ for combo in $COMBOS; do
     ssh "$C" "ping -D -i 0.05 -W 1 -w $(( nsteps * (DUR + 30) + 60 )) 10.9.20.1" > "$D/ping_load.txt" 2>&1 &
     PP=$!
   fi
-  RUNID=${PFX}_$X STEPS="$STEPS" DUR=$DUR ./run_load.sh > "$D/run.out" 2>&1
+  RUNID=${PFX}_$X STEPS="$STEPS" DUR=$DUR ${RUNNER:-./run_load.sh} > "$D/run.out" 2>&1
   rc=$?
   if [ "${PING:-0}" = 1 ]; then
     ssh "$C" 'pkill -INT -x ping' ; wait $PP 2>/dev/null

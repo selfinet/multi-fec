@@ -1,0 +1,10 @@
+[INFO]route-file /etc/multi-fec/routes-r2: 1 route(s)
+[INFO]route-file /etc/multi-fec/routes-r2: 1 route(s)
+[INFO][relay]   route[0] key=kf:53d21bbd upstream=192.168.100.102:443 via ens19 local 192.168.100.117:0
+--- upstream .117 -> s:443, 10 s capture (route-file via ens19)
+  ens18: 0 pkts  mac=
+  ens19: 144 pkts  mac=bc:24:11:48:58:2f
+--- ss: 
+rtt min/avg/max/mdev = 52.871/53.785/56.107/1.183 ms
+path[0] RUNNING owd=25.59ms
+path[1] RUNNING owd=30.69ms

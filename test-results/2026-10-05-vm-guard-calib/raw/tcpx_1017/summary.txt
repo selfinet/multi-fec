@@ -1,0 +1,12 @@
+# 2026-10-17 23:28:22 STEPS=10 20 DUR=180
+T1024_r1 c=136 r=136 s=136 sysctl=def rc=0 10:up9.93Mbps/dn9.83Mbps 20:up19.62Mbps/dn19.65Mbps  drop c+490 r+2424 s+326  
+# 2026-10-17 23:35:53 STEPS=10 20 DUR=180
+T4096_r1 c=136 r=136 s=136 sysctl=def rc=0 10:up9.96Mbps/dn9.96Mbps 20:up19.86Mbps/dn19.85Mbps  drop c+0 r+0 s+0  
+# 2026-10-17 23:43:23 STEPS=10 20 DUR=180
+T4096_r2 c=136 r=136 s=136 sysctl=def rc=0 10:up9.94Mbps/dn9.94Mbps 20:up19.61Mbps/dn19.65Mbps  drop c+0 r+0 s+0  
+# 2026-10-17 23:50:54 STEPS=10 20 DUR=180
+T1024_r2 c=136 r=136 s=136 sysctl=def rc=0 10:up9.91Mbps/dn9.89Mbps 20:up19.68Mbps/dn19.77Mbps  drop c+1149 r+379 s+1019  
+# 2026-10-17 23:58:25 STEPS=10 20 DUR=180
+T1024_r3 c=136 r=136 s=136 sysctl=def rc=0 10:up9.89Mbps/dn9.85Mbps 20:up19.37Mbps/dn19.41Mbps  drop c+504 r+2273 s+799  
+# 2026-10-18 00:05:56 STEPS=10 20 DUR=180
+T4096_r3 c=136 r=136 s=136 sysctl=def rc=0 10:up9.92Mbps/dn9.92Mbps 20:up19.69Mbps/dn19.72Mbps  drop c+0 r+0 s+0  

@@ -1,0 +1,5 @@
+[run] 가드 PID 3953150 감시 중 (vm)
+./run_tcp.sh: line 42: 3953487 Killed                  ssh "$C" "timeout $((DUR+40)) iperf3 -c 10.9.20.1 -B 10.9.20.2 -p 5201 --bidir -b ${r}M -t $DUR -i 1 -J" > "$OUT/tcp_$r.json" 2> "$OUT/tcp_$r.err"
+[run]  10 Mbps  json.decoder.JSONDecodeError: Expecting value: line 1 column 1 (char 0)
+[run] 가드 트립
+[guard] 23:26:43 트립 → c:1코어=100.0%>95%  → 'iperf3 -c' 중단

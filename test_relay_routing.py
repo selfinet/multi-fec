@@ -87,7 +87,7 @@ def derive_psk(key_str: str) -> bytes:
 
 # ─── obfs QUIC 패킷 생성 ─────────────────────────────────────────────────────
 
-AUTH_INTERVAL = 30  # 초
+AUTH_INTERVAL = 60  # 초 — v1.4.0 기본값 (1.3.x 는 30)
 
 def make_obfs_quic_packet(key_str: str, payload: bytes) -> bytes:
     psk  = derive_psk(key_str)

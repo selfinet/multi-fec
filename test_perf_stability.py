@@ -60,7 +60,7 @@ def derive_psk(k):
     kb=k.encode();h0=siphash24(kb,DERIV_KEY);h1=siphash24(kb+b'\x01',DERIV_KEY)
     return struct.pack('<QQ',h0,h1)
 def make_obfs_quic(key, payload=b'x'*100):
-    psk=derive_psk(key);slot=int(time.time())//30
+    psk=derive_psk(key);slot=int(time.time())//60  # v1.4.0 기본 auth-interval
     h=siphash24(struct.pack('<Q',slot),psk);token=struct.pack('<Q',h)
     raw=10+len(payload);buckets=[300,500,700,900,1100,1300,1400,1500]
     bucket=next((b for b in buckets if b>=raw),raw)
@@ -391,7 +391,7 @@ print('='*60)
 
 def make_slot_pkt(key, slot_offset=0, payload=b'test'):
     psk=derive_psk(key)
-    slot=int(time.time())//30 + slot_offset
+    slot=int(time.time())//60 + slot_offset  # v1.4.0 기본 auth-interval
     h=siphash24(struct.pack('<Q',slot),psk);token=struct.pack('<Q',h)
     raw=10+len(payload);buckets=[300,500,700,900,1100,1300,1400,1500]
     bucket=next((b for b in buckets if b>=raw),raw)

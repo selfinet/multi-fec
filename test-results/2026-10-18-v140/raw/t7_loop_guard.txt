@@ -1,0 +1,4 @@
+  [ERR]  path[0] 10.9.20.1:443: routed into tunnel wg-fec — routing loop (CLAUDE.md rule 2); add a /32 to the real gateway
+result: 1 error(s), 0 warning(s)
+[FATAL]path[0] 10.9.20.1:443 is routed into wg-fec — refusing to start (routing loop). Route the relay/server IPs to the real gateway (a /32)
+start rc=1

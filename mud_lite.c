@@ -507,6 +507,11 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
         cmsg->cmsg_len   = CMSG_LEN(MUD_PKTINFO_SIZE);
         memcpy(MUD_PKTINFO_DST(CMSG_DATA(cmsg)),
                &path->conf.local.sin.sin_addr, sizeof(struct in_addr));
+#if defined IP_PKTINFO
+        /* --path ... via <if>: pin the egress interface. With ipi_ifindex 0 the
+         * kernel routes by destination and the source address does not steer it. */
+        ((struct in_pktinfo *)CMSG_DATA(cmsg))->ipi_ifindex = (int)path->conf.ifindex;
+#endif
     } else if (path->conf.remote.sa.sa_family == AF_INET6) {
         slot->remote.sin6   = path->conf.remote.sin6;
         msg->msg_name       = &slot->remote.sin6;
@@ -518,6 +523,7 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
         cmsg->cmsg_len   = CMSG_LEN(sizeof(struct in6_pktinfo));
         memcpy(&((struct in6_pktinfo *)CMSG_DATA(cmsg))->ipi6_addr,
                &path->conf.local.sin6.sin6_addr, sizeof(struct in6_addr));
+        ((struct in6_pktinfo *)CMSG_DATA(cmsg))->ipi6_ifindex = path->conf.ifindex;
     } else {
         errno = EAFNOSUPPORT;
         return -1;

@@ -1,0 +1,9 @@
+[23:25:24] sv1 운영(시작 전): MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
+[23:25:26] ##### 라운드 1 · sock-buf 1024
+[23:25:31] ===== T1024_r1  c=136 r=136 s=136 sysctl=def
+[23:26:52] T1024_r1 rc=4  10:upExpecting/dncolumn   drop c+0 r+0 s+0   TRIP: [run] 가드 트립
+[23:26:52] 완료
+[23:26:52] ##### 라운드 1 · sock-buf 4096
+[23:26:56] ===== T4096_r1  c=136 r=136 s=136 sysctl=def
+[23:27:01] ===== 원상 복구
+Terminated

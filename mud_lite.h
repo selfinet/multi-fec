@@ -76,6 +76,10 @@ struct mud_path_conf {
     unsigned char pref;
     unsigned char fixed_rate;
     unsigned char loss_limit;
+    /* Egress interface (if_nametoindex), 0 = let the kernel route by destination.
+     * The local address alone does NOT pick the interface: Linux routes by
+     * destination unless a policy rule matches the source (v1.4.0, DESIGN-1.4.0 §6). */
+    unsigned int  ifindex;
 };
 
 struct mud_path {

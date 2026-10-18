@@ -106,6 +106,8 @@ void PortHopper::make_path_conf(struct mud_path_conf *pc,
             pc->local.sin6.sin6_port    = 0;
         }
 
+        pc->ifindex = ps->ifindex;   /* via <if> */
+
         if (ps->remote.get_type() == AF_INET) {
             pc->remote.sin          = ps->remote.inner.ipv4;
             pc->remote.sin.sin_port = htons(port);

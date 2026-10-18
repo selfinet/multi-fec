@@ -1,0 +1,29 @@
+== multi-fec-client
+[INFO]multi-fec 1.4.0 (git v1.3.6-6-g24eef46-dirty) build 2026-10-18 19:29:00 KST
+[INFO]key kf:53d21bbd from command line
+[INFO]path[0] 192.168.100.88:443 leaves dev ens18
+[INFO]path[1] 192.168.100.117:443 leaves dev ens18
+[INFO]obfs: mode=QUIC-ShortHeader + HMAC-auth (interval=60s) + size-norm
+[INFO]sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+[INFO][client] wg-side sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+-- ps (stevekim):
+/usr/sbin/multi-fec-dist -c -l 127.0.0.1:51821 --path 0.0.0.0:192.168.100.88:443 --path 0.0.0.0:192.168.100.117:443 -k ***************************************************
+== multi-fec-relay
+[INFO]multi-fec 1.4.0 (git v1.3.6-6-g24eef46-dirty) build 2026-10-18 19:29:00 KST
+[INFO]key kf:53d21bbd from command line
+[INFO]v1.4.0 defaults in effect (not set in config/CLI): sock-buf=4096
+[INFO][relay] sock-buf=4096 kB (listen + each upstream socket, rcv=4096 snd=4096 kB)
+[INFO]multi-fec 1.4.0 (git v1.3.6-6-g24eef46-dirty) build 2026-10-18 19:29:00 KST
+[INFO]key kf:53d21bbd from command line
+[INFO]v1.4.0 defaults in effect (not set in config/CLI): sock-buf=4096
+[INFO][relay] sock-buf=4096 kB (listen + each upstream socket, rcv=4096 snd=4096 kB)
+-- ps (stevekim):
+/usr/sbin/multi-fec-dist -r -l 192.168.100.88:443 --upstream 192.168.100.102:443 --upstream-local 192.168.100.88 -k ******************************************************
+/usr/sbin/multi-fec-dist -r -l 192.168.100.117:443 --upstream 192.168.100.102:443 --upstream-local 192.168.100.117 -k ****************************************************
+== multi-fec-server
+[INFO]multi-fec 1.4.0 (git v1.3.6-6-g24eef46-dirty) build 2026-10-18 19:29:00 KST
+[INFO]key kf:53d21bbd from command line
+[INFO]obfs: mode=QUIC-ShortHeader + HMAC-auth (interval=60s) + size-norm
+[INFO]sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+-- ps (stevekim):
+/usr/sbin/multi-fec-dist -s -l 192.168.100.102:443 --wg 127.0.0.1:51820 -k **************************************************************** --obfs-mode quic --auth-interv
