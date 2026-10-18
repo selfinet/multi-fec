@@ -770,7 +770,9 @@ scp multi-fec-dist user@서버:/usr/local/bin/multi-fec
 ## systemd 서비스
 
 **v1.4.0: 템플릿 유닛 하나**(`systemd/multi-fec@.service`) — `systemctl enable --now multi-fec@<인스턴스>` 가
-`/etc/multi-fec/<인스턴스>.conf`(`--config` 형식, 600 root)를 읽는다. `ps` 에는 `--config <경로>` 만 보인다.
+`/etc/multi-fec/instances/<인스턴스>.conf`(`--config` 형식, 600 root)를 읽는다 — `instances/` 아래인 것은 1.3.x 유닛의
+EnvironmentFile 이 이미 `/etc/multi-fec/<이름>.conf` 를 쓰고 있어서다(서비스망 `server-dj08.conf` 등, 덮으면 롤백 불가).
+1.3.x 유닛 → 새 형식 변환은 **`mf-migrate.py <유닛>`**(systemd 와 같은 규칙으로 해석, routes 파일 생성, 키 지문을 실행 중 로그와 대조, 키 미출력). `ps` 에는 `--config <경로>` 만 보인다.
 `RuntimeDirectory=` 를 쓰지 않는다(정지 시 공유 `/run/multi-fec` 가 지워져 다른 인스턴스 FIFO 가 사라진다),
 라우트는 정지 시 지우지 않는다(공유 가능). 기존 유닛에서 옮길 때는 **기존 유닛을 먼저 `disable --now`**
 — 같은 포트에 둘이 뜨면 `SO_REUSEPORT` 로 트래픽이 나뉜다(`--check` 가 잡는다). 고객 키트는 `mf-pair.sh`.

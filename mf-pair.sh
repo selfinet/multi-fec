@@ -116,15 +116,15 @@ cat > "$OUT/CHECKLIST.txt" <<EOF
 multi-fec 키트: $NAME   키 지문 $FP   ($(date +%F))
 
 [server]
-  install -m 600 server.conf  /etc/multi-fec/server.conf
+  install -D -m 600 server.conf  /etc/multi-fec/instances/server.conf
   install -m 600 wg-fec.conf  /etc/wireguard/wg-fec.conf
   systemctl enable --now multi-fec@server wg-quick@wg-fec
-  multi-fec-dist --config /etc/multi-fec/server.conf --check     # 0 error(s)
+  multi-fec-dist --config /etc/multi-fec/instances/server.conf --check     # 0 error(s)
 
 [client]
-  install -m 600 client.conf  /etc/multi-fec/client.conf
+  install -D -m 600 client.conf  /etc/multi-fec/instances/client.conf
   install -m 600 wg-fec.conf  /etc/wireguard/wg-fec.conf
-  multi-fec-dist --config /etc/multi-fec/client.conf --check     # 0 error(s)
+  multi-fec-dist --config /etc/multi-fec/instances/client.conf --check     # 0 error(s)
   systemctl enable --now multi-fec@client wg-quick@wg-fec
 
 [공통 전제]

@@ -240,3 +240,15 @@ WARN/ERROR 는 재시작 문구(`ev_run returned`, `fifo … exist`)뿐. 1.3.6 �
 정상 기동하지만, 처음 태그한 1.4.0 은 `unknown word '#'` 로 **기동 거부**였다(실측). → 1.4.0 에 반영(버전 유지, 사용자 결정):
 path·route 값의 공백 뒤 `#` 이후를 주석으로 버리고 경고 한 줄(키는 찍지 않음). 실제 오타(`thru eth0`)는 계속 거부.
 회귀 `all_options` 90/90 · `relay_routing` 9/9 · `perf_stability` 26/26 · `downstream_multi` 24/24.
+
+# 2단계(설정 전환) 리허설 — `mf-migrate.py` (2026-10-19 00:58 KST) — `raw/migrate_rehearsal.txt`
+
+1단계(바이너리만 1.4.0) 후 테스트망 실제 유닛 4개(`multi-fec-relay`·`-relay-b`·`-server`·`-client`)를 변환해 `/etc/multi-fec/instances/` 에 쓰고
+relay → relay-b → server → client 순으로 `disable --now <기존>` / `enable --now multi-fec@<인스턴스>` 전환, 이어서 역순 롤백.
+
+- 변환 4건 모두 **키 지문 일치**(실행 중 1.4.0 로그 `kf:53d21bbd`), `--check` 오류는 각자 "기존 유닛의 포트 점유" 1건뿐(전환 전 정상 상태).
+- client 의 중괄호 없는 `$PATHS`(공백 분리) 가 path 2개로 정확히 풀렸다.
+- 전환마다 터널 ping 10개 손실 0, `ps` = `--config /etc/multi-fec/instances/<인스턴스>.conf` 만, client 두 경로 RUNNING.
+- 롤백 후 ping 손실 0, 기존 유닛 enabled 상태 원래대로. 끝에 3대 1.3.1 · 템플릿·`instances/` 제거 · sv1 무접촉(PID 754, md5 `3db3617e`).
+- 발견: `--check` 는 포트를 쥔 프로세스 명령줄을 80자까지 보여 주므로 **그 프로세스가 1.3.x 면 키 앞부분이 출력된다** — 1.4.0 은 argv 를 가려
+  해당 없음(1단계 후 2단계 순서면 발생하지 않는다). `mf-migrate.py` 출력에서는 다시 가린다.

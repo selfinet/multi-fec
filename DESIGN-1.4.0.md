@@ -188,7 +188,7 @@ mud 는 송신 시 `ipi_spec_dst`(소스)만 채우고 `ipi_ifindex` 는 0 이�
 multi-fec 데몬은 라우팅 테이블을 건드리지 않는다. 같은 설정 파일을 읽는 **보조 명령**이 기동 전에 라우트를 건다.
 
 ```ini
-ExecStartPre=/usr/sbin/multi-fec-dist --config /etc/multi-fec/%i.conf --apply-routes
+ExecStartPre=/usr/sbin/multi-fec-dist --config /etc/multi-fec/instances/%i.conf --apply-routes
 ```
 
 - `via`(+`gw`) 가 있는 path(client)·route 줄(relay)마다 `ip route replace <목적지>/32 via <gw> dev <if>` 와 같은 일을 netlink 로 한다(멱등). 없으면 아무것도 하지 않는다.
@@ -252,8 +252,8 @@ Wants=network-online.target time-sync.target
 [Service]
 Type=simple
 ExecStartPre=/bin/mkdir -p /run/multi-fec
-ExecStartPre=/usr/sbin/multi-fec-dist --config /etc/multi-fec/%i.conf --apply-routes
-ExecStart=/usr/sbin/multi-fec-dist --config /etc/multi-fec/%i.conf
+ExecStartPre=/usr/sbin/multi-fec-dist --config /etc/multi-fec/instances/%i.conf --apply-routes
+ExecStart=/usr/sbin/multi-fec-dist --config /etc/multi-fec/instances/%i.conf
 Restart=on-failure
 RestartSec=5
 TimeoutStopSec=3
@@ -465,3 +465,6 @@ sock-buf       = 4096
 - `mf-pair.sh` 는 지문을 `--check` 로 계산한다(키를 명령행에 올리지 않기 위해).
 - **줄 끝 주석(태그 후 수정, 2026-10-19)**: `--path`·`--route` 값에서 공백 뒤 `#` 이후는 주석으로 버리고 경고한다. systemd `EnvironmentFile` 이
   줄 끝 주석을 값에 남기고, 1.3.x 가 포트 뒤를 무시했기 때문에 서비스 설정이 이 형태를 쓰고 있었다("모르는 단어 거부" 원칙의 예외).
+- **템플릿 설정 경로 `/etc/multi-fec/instances/%i.conf` (2026-10-19)**: 서비스망 1.3.x 유닛의 EnvironmentFile 이 이미 `/etc/multi-fec/<이름>.conf`
+  (예: `server-dj08.conf`, `relay.conf`, `client-djhq.conf`)를 쓰고 있어, 같은 인스턴스 이름이면 롤백용 파일을 덮는다. 바이너리 변경 없음(유닛·문서).
+  변환 도구 `mf-migrate.py` — 테스트망 실제 유닛 4개 변환 → 전환(relay→server→client) → 롤백 리허설 통과(`raw/migrate_rehearsal.txt`).
