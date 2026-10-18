@@ -1,0 +1,45 @@
+[20:44:43] sv1 운영(시작 전): MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
+[20:44:45] ##### 라운드 1 · sock-buf 1024
+[20:44:49] ===== K1024_r1  c=136 r=136 s=136 sysctl=def
+[20:52:19] K1024_r1 rc=0  10:up0.42827%/dn0.67787% 20:up0.19600%/dn0.20293%   drop c+2123 r+6035 s+809  
+[20:52:19] 완료
+[20:52:19] ##### 라운드 1 · sock-buf 2048
+[20:52:23] ===== K2048_r1  c=136 r=136 s=136 sysctl=def
+[20:59:52] K2048_r1 rc=0  10:up0.00000%/dn0.00000% 20:up0.21120%/dn0.41253%   drop c+3636 r+0 s+0  
+[20:59:52] 완료
+[20:59:52] ##### 라운드 1 · sock-buf 4096
+[20:59:56] ===== K4096_r1  c=136 r=136 s=136 sysctl=def
+[21:07:27] K4096_r1 rc=0  10:up0.00000%/dn0.00000% 20:up0.00000%/dn0.00000%   drop c+0 r+0 s+0  
+[21:07:27] 완료
+[21:07:27] ##### 라운드 2 · sock-buf 2048
+[21:07:30] ===== K2048_r2  c=136 r=136 s=136 sysctl=def
+[21:15:00] K2048_r2 rc=0  10:up0.23680%/dn0.12000% 20:up0.47653%/dn0.70907%   drop c+23 r+10832 s+0  
+[21:15:00] 완료
+[21:15:00] ##### 라운드 2 · sock-buf 4096
+[21:15:04] ===== K4096_r2  c=136 r=136 s=136 sysctl=def
+[21:22:33] K4096_r2 rc=0  10:up0.00000%/dn0.00000% 20:up0.00000%/dn0.00373%   drop c+0 r+0 s+0  
+[21:22:33] 완료
+[21:22:33] ##### 라운드 2 · sock-buf 1024
+[21:22:37] ===== K1024_r2  c=136 r=136 s=136 sysctl=def
+[21:30:06] K1024_r2 rc=0  10:up0.01013%/dn0.01120% 20:up1.31200%/dn0.25467%   drop c+1165 r+8541 s+723  
+[21:30:06] 완료
+[21:30:06] ##### 라운드 3 · sock-buf 4096
+[21:30:10] ===== K4096_r3  c=136 r=136 s=136 sysctl=def
+[21:37:39] K4096_r3 rc=0  10:up0.34080%/dn0.28107% 20:up0.00827%/dn0.00000%   drop c+0 r+0 s+31  
+[21:37:39] 완료
+[21:37:39] ##### 라운드 3 · sock-buf 1024
+[21:37:43] ===== K1024_r3  c=136 r=136 s=136 sysctl=def
+[21:45:13] K1024_r3 rc=0  10:up0.00000%/dn0.18880% 20:up0.93253%/dn1.11280%   drop c+8542 r+6678 s+718  
+[21:45:13] 완료
+[21:45:13] ##### 라운드 3 · sock-buf 2048
+[21:45:17] ===== K2048_r3  c=136 r=136 s=136 sysctl=def
+[21:52:45] K2048_r3 rc=0  10:up0.00000%/dn0.19147% 20:up0.18827%/dn0.01200%   drop c+443 r+843 s+1530  
+[21:52:45] 완료
+[21:52:45] 측정 완료
+[21:52:45] ===== 원상 복구
+multi-fec-client 8388608 212992 ddb8d458 dropin=0 SOCK_BUF=4096 active inactive inactive inactive 
+multi-fec-relay 8388608 4194304 ddb8d458 dropin=0  inactive active active inactive 
+multi-fec-server 8388608 212992 ddb8d458 dropin=0 SOCK_BUF=4096 inactive inactive inactive active 
+3 packets transmitted, 3 received, 0% packet loss, time 2004ms
+rtt min/avg/max/mdev = 53.172/53.392/53.620/0.182 ms
+sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e

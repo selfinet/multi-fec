@@ -1,0 +1,3 @@
+# 2026-10-17 23:25:31 STEPS=10 20 DUR=180
+T1024_r1 c=136 r=136 s=136 sysctl=def rc=4 10:upExpecting/dncolumn  drop c+0 r+0 s+0  TRIP
+# 2026-10-17 23:26:56 STEPS=10 20 DUR=180

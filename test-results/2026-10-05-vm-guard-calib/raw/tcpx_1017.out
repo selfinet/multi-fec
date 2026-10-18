@@ -1,0 +1,33 @@
+[23:28:16] sv1 운영(시작 전): MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
+[23:28:18] ##### 라운드 1 · sock-buf 1024
+[23:28:22] ===== T1024_r1  c=136 r=136 s=136 sysctl=def
+[23:35:49] T1024_r1 rc=0  10:up9.93Mbps/dn9.83Mbps 20:up19.62Mbps/dn19.65Mbps   drop c+490 r+2424 s+326  
+[23:35:49] 완료
+[23:35:49] ##### 라운드 1 · sock-buf 4096
+[23:35:53] ===== T4096_r1  c=136 r=136 s=136 sysctl=def
+[23:43:20] T4096_r1 rc=0  10:up9.96Mbps/dn9.96Mbps 20:up19.86Mbps/dn19.85Mbps   drop c+0 r+0 s+0  
+[23:43:20] 완료
+[23:43:20] ##### 라운드 2 · sock-buf 4096
+[23:43:23] ===== T4096_r2  c=136 r=136 s=136 sysctl=def
+[23:50:51] T4096_r2 rc=0  10:up9.94Mbps/dn9.94Mbps 20:up19.61Mbps/dn19.65Mbps   drop c+0 r+0 s+0  
+[23:50:51] 완료
+[23:50:51] ##### 라운드 2 · sock-buf 1024
+[23:50:54] ===== T1024_r2  c=136 r=136 s=136 sysctl=def
+[23:58:22] T1024_r2 rc=0  10:up9.91Mbps/dn9.89Mbps 20:up19.68Mbps/dn19.77Mbps   drop c+1149 r+379 s+1019  
+[23:58:22] 완료
+[23:58:22] ##### 라운드 3 · sock-buf 1024
+[23:58:25] ===== T1024_r3  c=136 r=136 s=136 sysctl=def
+[00:05:52] T1024_r3 rc=0  10:up9.89Mbps/dn9.85Mbps 20:up19.37Mbps/dn19.41Mbps   drop c+504 r+2273 s+799  
+[00:05:52] 완료
+[00:05:52] ##### 라운드 3 · sock-buf 4096
+[00:05:56] ===== T4096_r3  c=136 r=136 s=136 sysctl=def
+[00:13:23] T4096_r3 rc=0  10:up9.92Mbps/dn9.92Mbps 20:up19.69Mbps/dn19.72Mbps   drop c+0 r+0 s+0  
+[00:13:23] 완료
+[00:13:23] 측정 완료
+[00:13:23] ===== 원상 복구
+multi-fec-client 8388608 212992 ddb8d458 dropin=0 SOCK_BUF=4096 active inactive inactive inactive 
+multi-fec-relay 8388608 4194304 ddb8d458 dropin=0  inactive active active inactive 
+multi-fec-server 8388608 212992 ddb8d458 dropin=0 SOCK_BUF=4096 inactive inactive inactive active 
+3 packets transmitted, 3 received, 0% packet loss, time 2001ms
+rtt min/avg/max/mdev = 53.020/59.350/71.698/8.732 ms
+sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
