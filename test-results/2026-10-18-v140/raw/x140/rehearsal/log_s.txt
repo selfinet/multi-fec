@@ -1,0 +1,235 @@
+[2026-10-18 12:06:35][INFO]signal 15 received, exiting
+[2026-10-18 12:06:35][WARN][server] ev_run returned
+[2026-10-18 12:06:35][INFO]exiting
+Stopping multi-fec-server.service - multi-fec server (testnet 2026-10)...
+
+multi-fec-server.service: Deactivated successfully.
+Stopped multi-fec-server.service - multi-fec server (testnet 2026-10).
+multi-fec-server.service: Consumed 27.552s CPU time.
+Starting multi-fec-server.service - multi-fec server (testnet 2026-10)...
+Started multi-fec-server.service - multi-fec server (testnet 2026-10).
+[2026-10-18 12:06:35][INFO]parsing address: 192.168.100.102:443
+[2026-10-18 12:06:35][INFO]its an ipv4 adress
+[2026-10-18 12:06:35][INFO]ip_address is {192.168.100.102}, port is {443}
+[2026-10-18 12:06:35][INFO]parsing address: 127.0.0.1:51820
+[2026-10-18 12:06:35][INFO]its an ipv4 adress
+[2026-10-18 12:06:35][INFO]ip_address is {127.0.0.1}, port is {51820}
+[2026-10-18 12:06:35][INFO]WireGuard upstream: 127.0.0.1:51820
+[2026-10-18 12:06:35][INFO]multi-fec 1.3.1 (git v1.3.1) build 2026-09-11 06:23:07 KST
+[2026-10-18 12:06:35][INFO]jitter_min=0 jitter_max=0 output_interval_min=0 output_interval_max=0 fec_timeout=10 fec_mtu=1350 fec_queue_len=500 fec_mode=1
+[2026-10-18 12:06:35][INFO]fec_str=5:1,20:4
+[2026-10-18 12:06:35][INFO]fec_inner_parameter=1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:2,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4
+[2026-10-18 12:06:35][INFO]obfs: mode=QUIC-ShortHeader + HMAC-auth (interval=60s) + size-norm
+[2026-10-18 12:06:35][INFO]mud fd=5
+[2026-10-18 12:06:35][INFO]sock-buf=4096 kB
+[2026-10-18 12:06:35][WARN]warning fifo file /run/multi-fec/server.fifo exist
+[2026-10-18 12:06:35][INFO]fifo=/run/multi-fec/server.fifo fd=6
+[2026-10-18 12:06:35][INFO]server mode started (multipath=duplicate)
+[2026-10-18 12:06:35][INFO][server] starting event loop
+[2026-10-18 12:06:35][INFO][server] listening, forwarding to WireGuard at 127.0.0.1:51820
+[2026-10-18 12:06:38][INFO][server] new session 720dc620cea519b5 from 192.168.100.88:41591
+[2026-10-18 12:06:38][INFO][server] new client 192.168.100.88:41591
+[2026-10-18 12:06:38][INFO][server][192.168.100.88:41591] new conv b168fc22 fd=7 fd64=4294967395
+[2026-10-18 12:06:38][INFO][report][192.168.100.88:41591]client-->server:(original:1 pkt;132 byte) (fec:2 pkt;284 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+[2026-10-18 12:07:38][INFO][report][192.168.100.88:41591]client-->server:(original:7183 pkt;8241104 byte) (fec:9261 pkt;10565262 byte)  server-->client:(original:7188 pkt;8249852 byte) (fec:9258 pkt;10565048 byte)
+[2026-10-18 12:07:40][INFO]signal 15 received, exiting
+[2026-10-18 12:07:40][WARN][server] ev_run returned
+[2026-10-18 12:07:40][INFO]exiting
+Stopping multi-fec-server.service - multi-fec server (testnet 2026-10)...
+
+multi-fec-server.service: Deactivated successfully.
+Stopped multi-fec-server.service - multi-fec server (testnet 2026-10).
+multi-fec-server.service: Consumed 4.289s CPU time.
+Starting multi-fec-server.service - multi-fec server (testnet 2026-10)...
+Started multi-fec-server.service - multi-fec server (testnet 2026-10).
+[2026-10-18 12:07:40][INFO]parsing address: 192.168.100.102:443
+[2026-10-18 12:07:40][INFO]its an ipv4 adress
+[2026-10-18 12:07:40][INFO]ip_address is {192.168.100.102}, port is {443}
+[2026-10-18 12:07:40][INFO]parsing address: 127.0.0.1:51820
+[2026-10-18 12:07:40][INFO]its an ipv4 adress
+[2026-10-18 12:07:40][INFO]ip_address is {127.0.0.1}, port is {51820}
+[2026-10-18 12:07:40][INFO]WireGuard upstream: 127.0.0.1:51820
+[2026-10-18 12:07:40][INFO]multi-fec 1.4.0 (git v1.3.6-6-g24eef46-dirty) build 2026-10-18 19:42:11 KST
+[2026-10-18 12:07:40][INFO]key kf:53d21bbd from command line
+[2026-10-18 12:07:40][INFO]jitter_min=0 jitter_max=0 output_interval_min=0 output_interval_max=0 fec_timeout=10 fec_mtu=1350 fec_queue_len=500 fec_mode=1
+[2026-10-18 12:07:40][INFO]fec_str=5:1,20:4
+[2026-10-18 12:07:40][INFO]fec_inner_parameter=1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:2,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4
+[2026-10-18 12:07:40][INFO]obfs: mode=QUIC-ShortHeader + HMAC-auth (interval=60s) + size-norm
+[2026-10-18 12:07:40][INFO]mud fd=5
+[2026-10-18 12:07:40][INFO]sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+[2026-10-18 12:07:40][WARN]warning fifo file /run/multi-fec/server.fifo exist
+[2026-10-18 12:07:40][INFO]fifo=/run/multi-fec/server.fifo fd=6
+[2026-10-18 12:07:40][INFO]server mode started (multipath=duplicate)
+[2026-10-18 12:07:40][INFO][server] starting event loop
+[2026-10-18 12:07:40][INFO][server] listening, forwarding to WireGuard at 127.0.0.1:51820
+[2026-10-18 12:07:40][INFO][server] new session 720dc620cea519b5 from 192.168.100.88:41591
+[2026-10-18 12:07:40][INFO][server] new client 192.168.100.88:41591
+[2026-10-18 12:07:40][INFO][server][192.168.100.88:41591] new conv b168fc22 fd=7 fd64=4294967395
+[2026-10-18 12:07:40][INFO][report][192.168.100.88:41591]client-->server:(original:10 pkt;11544 byte) (fec:13 pkt;15478 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+[2026-10-18 12:07:41][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:07:41][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:07:41][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:07:41][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:07:41][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:08:41][INFO][report][192.168.100.88:41591]client-->server:(original:20063 pkt;24091452 byte) (fec:25102 pkt;30736468 byte)  server-->client:(original:20055 pkt;24081308 byte) (fec:25086 pkt;30711476 byte)
+[2026-10-18 12:09:41][INFO][report][192.168.100.88:41591]client-->server:(original:40019 pkt;48050560 byte) (fec:50085 pkt;61320758 byte)  server-->client:(original:40010 pkt;48040324 byte) (fec:50040 pkt;61258764 byte)
+[2026-10-18 12:10:41][INFO][report][192.168.100.88:41591]client-->server:(original:59949 pkt;71982456 byte) (fec:75039 pkt;91872626 byte)  server-->client:(original:59939 pkt;71970952 byte) (fec:74982 pkt;91795296 byte)
+[2026-10-18 12:11:30][INFO][server] dropped 1 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:30][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:30][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:30][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:30][INFO][server] new session ae8384ea038b5049 from 192.168.100.88:55396
+[2026-10-18 12:11:30][INFO][server] new client 192.168.100.88:55396
+[2026-10-18 12:11:30][INFO][server][192.168.100.88:55396] new conv 5301725a fd=8 fd64=4294967396
+[2026-10-18 12:11:30][INFO][report][192.168.100.88:55396]client-->server:(original:135 pkt;162092 byte) (fec:168 pkt;205616 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+[2026-10-18 12:11:30][INFO][server] dropped 24 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:30][INFO][server] dropped 2 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 14 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 2 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 15 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 1 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 6 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:31][INFO][server] dropped 1 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:32][INFO][server] dropped 17 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:11:41][INFO][report][192.168.100.88:41591]client-->server:(original:76011 pkt;91266388 byte) (fec:95130 pkt;116467376 byte)  server-->client:(original:76457 pkt;91834268 byte) (fec:95645 pkt;117121102 byte)
+[2026-10-18 12:12:16][INFO][server] new session b2ddff2331160bb1 from 192.168.100.88:35149
+[2026-10-18 12:12:16][INFO][server] new client 192.168.100.88:35149
+[2026-10-18 12:12:16][INFO][server][192.168.100.88:35149] new conv 8dd5d13e fd=9 fd64=4294967397
+[2026-10-18 12:12:16][INFO][report][192.168.100.88:35149]client-->server:(original:63 pkt;76476 byte) (fec:74 pkt;91164 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+[2026-10-18 12:12:16][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:16][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:16][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:16][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:16][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:16][INFO][server] dropped 14 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:16][INFO][server] dropped 2 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:16][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:16][INFO][server] dropped 6 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:16][INFO][server] dropped 10 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:16][INFO][server] dropped 6 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 8 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 7 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 4 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:17][INFO][server] dropped 10 stale pending packet(s) (>1000 ms)
+[2026-10-18 12:12:31][INFO][report][192.168.100.88:55396]client-->server:(original:15094 pkt;18121336 byte) (fec:18923 pkt;23164602 byte)  server-->client:(original:15181 pkt;18231652 byte) (fec:19007 pkt;23273090 byte)
+[2026-10-18 12:12:41][INFO][report][192.168.100.88:41591]client-->server:(original:76011 pkt;91266388 byte) (fec:95130 pkt;116467376 byte)  server-->client:(original:76457 pkt;91834268 byte) (fec:95645 pkt;117121102 byte)
+[2026-10-18 12:13:17][INFO][report][192.168.100.88:35149]client-->server:(original:20400 pkt;24490292 byte) (fec:25522 pkt;31241344 byte)  server-->client:(original:20079 pkt;24084440 byte) (fec:25126 pkt;30735296 byte)
+[2026-10-18 12:13:31][INFO][report][192.168.100.88:55396]client-->server:(original:15094 pkt;18121336 byte) (fec:18923 pkt;23164602 byte)  server-->client:(original:15181 pkt;18231652 byte) (fec:19007 pkt;23273090 byte)
+[2026-10-18 12:13:41][INFO][report][192.168.100.88:41591]client-->server:(original:76011 pkt;91266388 byte) (fec:95130 pkt;116467376 byte)  server-->client:(original:76457 pkt;91834268 byte) (fec:95645 pkt;117121102 byte)
+[2026-10-18 12:14:17][INFO][report][192.168.100.88:35149]client-->server:(original:40466 pkt;48581004 byte) (fec:50609 pkt;61949554 byte)  server-->client:(original:40145 pkt;48175152 byte) (fec:50228 pkt;61462676 byte)
+[2026-10-18 12:14:31][INFO]conv b168fc22 cleared
+[2026-10-18 12:14:32][INFO][report][192.168.100.88:55396]client-->server:(original:15094 pkt;18121336 byte) (fec:18923 pkt;23164602 byte)  server-->client:(original:15181 pkt;18231652 byte) (fec:19007 pkt;23273090 byte)
+[2026-10-18 12:14:42][INFO][report][192.168.100.88:41591]client-->server:(original:76011 pkt;91266388 byte) (fec:95130 pkt;116467376 byte)  server-->client:(original:76457 pkt;91834268 byte) (fec:95645 pkt;117121102 byte)
+[2026-10-18 12:14:53][INFO]{192.168.100.88:41591} inactive conn cleared
+[2026-10-18 12:15:17][INFO]conv 5301725a cleared
+[2026-10-18 12:15:17][INFO][report][192.168.100.88:35149]client-->server:(original:60534 pkt;72671904 byte) (fec:75735 pkt;92706394 byte)  server-->client:(original:60212 pkt;72265960 byte) (fec:75346 pkt;92209332 byte)
+[2026-10-18 12:15:32][INFO][report][192.168.100.88:55396]client-->server:(original:15094 pkt;18121336 byte) (fec:18923 pkt;23164602 byte)  server-->client:(original:15181 pkt;18231652 byte) (fec:19007 pkt;23273090 byte)
+[2026-10-18 12:15:37][INFO]{192.168.100.88:55396} inactive conn cleared
+[2026-10-18 12:16:04][INFO]signal 15 received, exiting
+[2026-10-18 12:16:04][WARN][server] ev_run returned
+[2026-10-18 12:16:04][INFO]exiting
+Stopping multi-fec-server.service - multi-fec server (testnet 2026-10)...
+
+multi-fec-server.service: Deactivated successfully.
+Stopped multi-fec-server.service - multi-fec server (testnet 2026-10).
+multi-fec-server.service: Consumed 1min 14.555s CPU time.
+Starting multi-fec-server.service - multi-fec server (testnet 2026-10)...
+Started multi-fec-server.service - multi-fec server (testnet 2026-10).
+[2026-10-18 12:16:04][INFO]parsing address: 192.168.100.102:443
+[2026-10-18 12:16:04][INFO]its an ipv4 adress
+[2026-10-18 12:16:04][INFO]ip_address is {192.168.100.102}, port is {443}
+[2026-10-18 12:16:04][INFO]parsing address: 127.0.0.1:51820
+[2026-10-18 12:16:04][INFO]its an ipv4 adress
+[2026-10-18 12:16:04][INFO]ip_address is {127.0.0.1}, port is {51820}
+[2026-10-18 12:16:04][INFO]WireGuard upstream: 127.0.0.1:51820
+[2026-10-18 12:16:04][INFO]multi-fec 1.3.1 (git v1.3.1) build 2026-09-11 06:23:07 KST
+[2026-10-18 12:16:04][INFO]jitter_min=0 jitter_max=0 output_interval_min=0 output_interval_max=0 fec_timeout=10 fec_mtu=1350 fec_queue_len=500 fec_mode=1
+[2026-10-18 12:16:04][INFO]fec_str=5:1,20:4
+[2026-10-18 12:16:04][INFO]fec_inner_parameter=1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:2,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4
+[2026-10-18 12:16:04][INFO]obfs: mode=QUIC-ShortHeader + HMAC-auth (interval=60s) + size-norm
+[2026-10-18 12:16:04][INFO]mud fd=5
+[2026-10-18 12:16:04][INFO]sock-buf=4096 kB
+[2026-10-18 12:16:04][WARN]warning fifo file /run/multi-fec/server.fifo exist
+[2026-10-18 12:16:04][INFO]fifo=/run/multi-fec/server.fifo fd=6
+[2026-10-18 12:16:04][INFO]server mode started (multipath=duplicate)
+[2026-10-18 12:16:04][INFO][server] starting event loop
+[2026-10-18 12:16:04][INFO][server] listening, forwarding to WireGuard at 127.0.0.1:51820
+[2026-10-18 12:16:04][INFO][server] new session b2ddff2331160bb1 from 192.168.100.88:45293
+[2026-10-18 12:16:04][INFO][server] new client 192.168.100.88:45293
+[2026-10-18 12:16:04][INFO][server][192.168.100.88:45293] new conv 8dd5d13e fd=7 fd64=4294967395
+[2026-10-18 12:16:04][INFO][report][192.168.100.88:45293]client-->server:(original:6 pkt;6472 byte) (fec:8 pkt;9088 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+[2026-10-18 12:17:04][INFO][report][192.168.100.88:45293]client-->server:(original:20057 pkt;24079224 byte) (fec:25083 pkt;30701886 byte)  server-->client:(original:20061 pkt;24085472 byte) (fec:25108 pkt;30736148 byte)
+[2026-10-18 12:18:05][INFO][report][192.168.100.88:45293]client-->server:(original:38011 pkt;45491920 byte) (fec:47642 pkt;58029360 byte)  server-->client:(original:38009 pkt;45490560 byte) (fec:47703 pkt;58107358 byte)

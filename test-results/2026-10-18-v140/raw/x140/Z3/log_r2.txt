@@ -1,0 +1,84 @@
+[2026-10-18 11:55:40][INFO]signal 15 received, exiting
+[2026-10-18 11:55:40][WARN][relay] ev_run returned
+
+Stopping mfx-r2a.service - x140 임시 2단 릴레이 a (2026-10-18, 끝나면 제거)...
+mfx-r2a.service: Deactivated successfully.
+Stopped mfx-r2a.service - x140 임시 2단 릴레이 a (2026-10-18, 끝나면 제거).
+mfx-r2a.service: Consumed 20.898s CPU time.
+Started mfx-r2a.service - x140 임시 2단 릴레이 a (2026-10-18, 끝나면 제거).
+Stopping mfx-r2b.service - x140 임시 2단 릴레이 b (2026-10-18, 끝나면 제거)...
+[2026-10-18 11:55:40][INFO]signal 15 received, exiting
+[2026-10-18 11:55:40][WARN][relay] ev_run returned
+
+mfx-r2b.service: Deactivated successfully.
+Stopped mfx-r2b.service - x140 임시 2단 릴레이 b (2026-10-18, 끝나면 제거).
+mfx-r2b.service: Consumed 19.919s CPU time.
+Started mfx-r2b.service - x140 임시 2단 릴레이 b (2026-10-18, 끝나면 제거).
+[2026-10-18 11:55:40][INFO]parsing address: 192.168.100.88:4443
+[2026-10-18 11:55:40][INFO]its an ipv4 adress
+[2026-10-18 11:55:40][INFO]ip_address is {192.168.100.88}, port is {4443}
+[2026-10-18 11:55:40][INFO]parsing address: 192.168.100.102:4991
+[2026-10-18 11:55:40][INFO]its an ipv4 adress
+[2026-10-18 11:55:40][INFO]ip_address is {192.168.100.102}, port is {4991}
+[2026-10-18 11:55:40][INFO]route added: key=kf:8ea15e74 upstream=192.168.100.102:4991
+[2026-10-18 11:55:40][INFO]parsing address: 192.168.100.102:4992
+[2026-10-18 11:55:40][INFO]its an ipv4 adress
+[2026-10-18 11:55:40][INFO]ip_address is {192.168.100.102}, port is {4992}
+[2026-10-18 11:55:40][INFO]route added: key=kf:a074c35b upstream=192.168.100.102:4992
+[2026-10-18 11:55:40][INFO]parsing address: 192.168.100.102:4993
+[2026-10-18 11:55:40][INFO]its an ipv4 adress
+[2026-10-18 11:55:40][INFO]ip_address is {192.168.100.102}, port is {4993}
+[2026-10-18 11:55:40][INFO]route added: key=kf:dc108f36 upstream=192.168.100.102:4993
+[2026-10-18 11:55:40][INFO]parsing address: 192.168.100.102:443
+[2026-10-18 11:55:40][INFO]its an ipv4 adress
+[2026-10-18 11:55:40][INFO]ip_address is {192.168.100.102}, port is {443}
+[2026-10-18 11:55:40][INFO]route added: key=kf:53d21bbd upstream=192.168.100.102:443
+[2026-10-18 11:55:40][INFO]relay upstream source: 192.168.100.88:0
+[2026-10-18 11:55:40][INFO]multi-fec 1.4.0 (git v1.3.6-6-g24eef46-dirty) build 2026-10-18 19:42:11 KST
+[2026-10-18 11:55:40][INFO]relay mode started: 192.168.100.88:4443  4 key-based routes
+[2026-10-18 11:55:40][INFO][relay] upstream source IP = 192.168.100.88:0 (bound)
+[2026-10-18 11:55:40][INFO][relay] listen=192.168.100.88:4443  mode=key-routing  routes=4
+[2026-10-18 11:55:40][INFO][relay]   route[0] key=kf:8ea15e74 upstream=192.168.100.102:4991
+[2026-10-18 11:55:40][INFO][relay]   route[1] key=kf:a074c35b upstream=192.168.100.102:4992
+[2026-10-18 11:55:40][INFO][relay]   route[2] key=kf:dc108f36 upstream=192.168.100.102:4993
+[2026-10-18 11:55:40][INFO][relay]   route[3] key=kf:53d21bbd upstream=192.168.100.102:443
+[2026-10-18 11:55:40][INFO][relay] listen fd=5
+[2026-10-18 11:55:40][INFO][relay] sock-buf=4096 kB (listen + each upstream socket, rcv=4096 snd=4096 kB)
+[2026-10-18 11:55:40][INFO][relay] ready, key-routing on 192.168.100.88:4443
+[2026-10-18 11:55:40][INFO]parsing address: 192.168.100.117:4443
+[2026-10-18 11:55:40][INFO]its an ipv4 adress
+[2026-10-18 11:55:40][INFO]ip_address is {192.168.100.117}, port is {4443}
+[2026-10-18 11:55:40][INFO]parsing address: 192.168.100.102:4991
+[2026-10-18 11:55:40][INFO]its an ipv4 adress
+[2026-10-18 11:55:40][INFO]ip_address is {192.168.100.102}, port is {4991}
+[2026-10-18 11:55:40][INFO]route added: key=kf:8ea15e74 upstream=192.168.100.102:4991
+[2026-10-18 11:55:40][INFO]parsing address: 192.168.100.102:4992
+[2026-10-18 11:55:40][INFO]its an ipv4 adress
+[2026-10-18 11:55:40][INFO]ip_address is {192.168.100.102}, port is {4992}
+[2026-10-18 11:55:40][INFO]route added: key=kf:a074c35b upstream=192.168.100.102:4992
+[2026-10-18 11:55:40][INFO]parsing address: 192.168.100.102:4993
+[2026-10-18 11:55:40][INFO]its an ipv4 adress
+[2026-10-18 11:55:40][INFO]ip_address is {192.168.100.102}, port is {4993}
+[2026-10-18 11:55:40][INFO]route added: key=kf:dc108f36 upstream=192.168.100.102:4993
+[2026-10-18 11:55:40][INFO]parsing address: 192.168.100.102:443
+[2026-10-18 11:55:40][INFO]its an ipv4 adress
+[2026-10-18 11:55:40][INFO]ip_address is {192.168.100.102}, port is {443}
+[2026-10-18 11:55:40][INFO]route added: key=kf:53d21bbd upstream=192.168.100.102:443
+[2026-10-18 11:55:40][INFO]relay upstream source: 192.168.100.117:0
+[2026-10-18 11:55:40][INFO]multi-fec 1.4.0 (git v1.3.6-6-g24eef46-dirty) build 2026-10-18 19:42:11 KST
+[2026-10-18 11:55:40][INFO]relay mode started: 192.168.100.117:4443  4 key-based routes
+[2026-10-18 11:55:40][INFO][relay] upstream source IP = 192.168.100.117:0 (bound)
+[2026-10-18 11:55:40][INFO][relay] listen=192.168.100.117:4443  mode=key-routing  routes=4
+[2026-10-18 11:55:40][INFO][relay]   route[0] key=kf:8ea15e74 upstream=192.168.100.102:4991
+[2026-10-18 11:55:40][INFO][relay]   route[1] key=kf:a074c35b upstream=192.168.100.102:4992
+[2026-10-18 11:55:40][INFO][relay]   route[2] key=kf:dc108f36 upstream=192.168.100.102:4993
+[2026-10-18 11:55:40][INFO][relay]   route[3] key=kf:53d21bbd upstream=192.168.100.102:443
+[2026-10-18 11:55:40][INFO][relay] listen fd=5
+[2026-10-18 11:55:40][INFO][relay] sock-buf=4096 kB (listen + each upstream socket, rcv=4096 snd=4096 kB)
+[2026-10-18 11:55:40][INFO][relay] ready, key-routing on 192.168.100.117:4443
+[2026-10-18 11:55:41][INFO][relay] new session: client=192.168.100.88:46532 upstream=192.168.100.102:443 fd=6
+[2026-10-18 11:55:41][INFO][relay] new session: client=192.168.100.117:47234 upstream=192.168.100.102:443 fd=6
+[2026-10-18 11:55:41][INFO][relay] new session: client=192.168.100.88:59613 upstream=192.168.100.102:443 fd=7
+[2026-10-18 11:55:41][INFO][relay] new session: client=192.168.100.117:43372 upstream=192.168.100.102:443 fd=7
+[2026-10-18 11:55:42][INFO][relay] new session: client=192.168.100.88:40384 upstream=192.168.100.102:443 fd=8
+[2026-10-18 11:55:42][INFO][relay] new session: client=192.168.100.117:51408 upstream=192.168.100.102:443 fd=8

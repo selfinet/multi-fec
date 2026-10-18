@@ -1,0 +1,82 @@
+[2026-10-18 11:55:41][INFO]signal 15 received, exiting
+[2026-10-18 11:55:41][WARN][relay] ev_run returned
+Stopping multi-fec-relay.service - multi-fec relay relay (testnet 2026-10)...
+
+multi-fec-relay.service: Deactivated successfully.
+Stopped multi-fec-relay.service - multi-fec relay relay (testnet 2026-10).
+multi-fec-relay.service: Consumed 17.271s CPU time.
+[2026-10-18 11:55:41][INFO]signal 15 received, exiting
+[2026-10-18 11:55:41][WARN][relay] ev_run returned
+Stopping multi-fec-relay-b.service - multi-fec relay relay-b (testnet 2026-10)...
+
+Started multi-fec-relay.service - multi-fec relay relay (testnet 2026-10).
+multi-fec-relay-b.service: Deactivated successfully.
+Stopped multi-fec-relay-b.service - multi-fec relay relay-b (testnet 2026-10).
+multi-fec-relay-b.service: Consumed 16.773s CPU time.
+Started multi-fec-relay-b.service - multi-fec relay relay-b (testnet 2026-10).
+[2026-10-18 11:55:41][INFO]parsing address: 192.168.100.88:443
+[2026-10-18 11:55:41][INFO]its an ipv4 adress
+[2026-10-18 11:55:41][INFO]ip_address is {192.168.100.88}, port is {443}
+[2026-10-18 11:55:41][INFO]parsing address: 192.168.100.102:4991
+[2026-10-18 11:55:41][INFO]its an ipv4 adress
+[2026-10-18 11:55:41][INFO]ip_address is {192.168.100.102}, port is {4991}
+[2026-10-18 11:55:41][INFO]route added: key=kf:8ea15e74 upstream=192.168.100.102:4991
+[2026-10-18 11:55:41][INFO]parsing address: 192.168.100.102:4992
+[2026-10-18 11:55:41][INFO]its an ipv4 adress
+[2026-10-18 11:55:41][INFO]ip_address is {192.168.100.102}, port is {4992}
+[2026-10-18 11:55:41][INFO]route added: key=kf:a074c35b upstream=192.168.100.102:4992
+[2026-10-18 11:55:41][INFO]parsing address: 192.168.100.102:4993
+[2026-10-18 11:55:41][INFO]its an ipv4 adress
+[2026-10-18 11:55:41][INFO]ip_address is {192.168.100.102}, port is {4993}
+[2026-10-18 11:55:41][INFO]route added: key=kf:dc108f36 upstream=192.168.100.102:4993
+[2026-10-18 11:55:41][INFO]parsing address: 192.168.100.88:4443
+[2026-10-18 11:55:41][INFO]its an ipv4 adress
+[2026-10-18 11:55:41][INFO]ip_address is {192.168.100.88}, port is {4443}
+[2026-10-18 11:55:41][INFO]route added: key=kf:53d21bbd upstream=192.168.100.88:4443
+[2026-10-18 11:55:41][INFO]relay upstream source: 192.168.100.88:0
+[2026-10-18 11:55:41][INFO]multi-fec 1.4.0 (git v1.3.6-6-g24eef46-dirty) build 2026-10-18 19:42:11 KST
+[2026-10-18 11:55:41][INFO]relay mode started: 192.168.100.88:443  4 key-based routes
+[2026-10-18 11:55:41][INFO][relay] upstream source IP = 192.168.100.88:0 (bound)
+[2026-10-18 11:55:41][INFO][relay] listen=192.168.100.88:443  mode=key-routing  routes=4
+[2026-10-18 11:55:41][INFO][relay]   route[0] key=kf:8ea15e74 upstream=192.168.100.102:4991
+[2026-10-18 11:55:41][INFO][relay]   route[1] key=kf:a074c35b upstream=192.168.100.102:4992
+[2026-10-18 11:55:41][INFO][relay]   route[2] key=kf:dc108f36 upstream=192.168.100.102:4993
+[2026-10-18 11:55:41][INFO][relay]   route[3] key=kf:53d21bbd upstream=192.168.100.88:4443
+[2026-10-18 11:55:41][INFO][relay] listen fd=5
+[2026-10-18 11:55:41][INFO][relay] sock-buf=4096 kB (listen + each upstream socket, rcv=4096 snd=4096 kB)
+[2026-10-18 11:55:41][INFO][relay] ready, key-routing on 192.168.100.88:443
+[2026-10-18 11:55:41][INFO]parsing address: 192.168.100.117:443
+[2026-10-18 11:55:41][INFO]its an ipv4 adress
+[2026-10-18 11:55:41][INFO]ip_address is {192.168.100.117}, port is {443}
+[2026-10-18 11:55:41][INFO]parsing address: 192.168.100.102:4991
+[2026-10-18 11:55:41][INFO]its an ipv4 adress
+[2026-10-18 11:55:41][INFO]ip_address is {192.168.100.102}, port is {4991}
+[2026-10-18 11:55:41][INFO]route added: key=kf:8ea15e74 upstream=192.168.100.102:4991
+[2026-10-18 11:55:41][INFO]parsing address: 192.168.100.102:4992
+[2026-10-18 11:55:41][INFO]its an ipv4 adress
+[2026-10-18 11:55:41][INFO]ip_address is {192.168.100.102}, port is {4992}
+[2026-10-18 11:55:41][INFO]route added: key=kf:a074c35b upstream=192.168.100.102:4992
+[2026-10-18 11:55:41][INFO]parsing address: 192.168.100.102:4993
+[2026-10-18 11:55:41][INFO]its an ipv4 adress
+[2026-10-18 11:55:41][INFO]ip_address is {192.168.100.102}, port is {4993}
+[2026-10-18 11:55:41][INFO]route added: key=kf:dc108f36 upstream=192.168.100.102:4993
+[2026-10-18 11:55:41][INFO]parsing address: 192.168.100.117:4443
+[2026-10-18 11:55:41][INFO]its an ipv4 adress
+[2026-10-18 11:55:41][INFO]ip_address is {192.168.100.117}, port is {4443}
+[2026-10-18 11:55:41][INFO]route added: key=kf:53d21bbd upstream=192.168.100.117:4443
+[2026-10-18 11:55:41][INFO]relay upstream source: 192.168.100.117:0
+[2026-10-18 11:55:41][INFO]multi-fec 1.4.0 (git v1.3.6-6-g24eef46-dirty) build 2026-10-18 19:42:11 KST
+[2026-10-18 11:55:41][INFO]relay mode started: 192.168.100.117:443  4 key-based routes
+[2026-10-18 11:55:41][INFO][relay] upstream source IP = 192.168.100.117:0 (bound)
+[2026-10-18 11:55:41][INFO][relay] listen=192.168.100.117:443  mode=key-routing  routes=4
+[2026-10-18 11:55:41][INFO][relay]   route[0] key=kf:8ea15e74 upstream=192.168.100.102:4991
+[2026-10-18 11:55:41][INFO][relay]   route[1] key=kf:a074c35b upstream=192.168.100.102:4992
+[2026-10-18 11:55:41][INFO][relay]   route[2] key=kf:dc108f36 upstream=192.168.100.102:4993
+[2026-10-18 11:55:41][INFO][relay]   route[3] key=kf:53d21bbd upstream=192.168.100.117:4443
+[2026-10-18 11:55:41][INFO][relay] listen fd=5
+[2026-10-18 11:55:41][INFO][relay] sock-buf=4096 kB (listen + each upstream socket, rcv=4096 snd=4096 kB)
+[2026-10-18 11:55:41][INFO][relay] ready, key-routing on 192.168.100.117:443
+[2026-10-18 11:55:41][INFO][relay] new session: client=192.168.100.92:50154 upstream=192.168.100.88:4443 fd=6
+[2026-10-18 11:55:41][INFO][relay] new session: client=192.168.100.92:50154 upstream=192.168.100.117:4443 fd=6
+[2026-10-18 11:55:42][INFO][relay] new session: client=192.168.100.92:40234 upstream=192.168.100.88:4443 fd=7
+[2026-10-18 11:55:42][INFO][relay] new session: client=192.168.100.92:40234 upstream=192.168.100.117:4443 fd=7

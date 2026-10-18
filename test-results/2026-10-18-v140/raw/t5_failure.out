@@ -1,0 +1,83 @@
+[21:18:51] sv1 운영(시작 전): MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
+[21:19:28] v131 cycle1 정지
+[21:20:31] v131 cycle2 정지
+[21:21:35] v131 cycle3 정지
+=== v131 · 응답 645개 · 사이클 3개 ===
+  cycle1: 단절 공백  28.6s · 복구 후 첫 RTT   1862.0 ms · max(60개)   1862.0 ms · **1000ms 초과 응답 5개**
+        묵은 응답 RTT: [1862, 1654, 1446, 1238, 1030] …
+  cycle2: 단절 공백  29.6s · 복구 후 첫 RTT   2023.0 ms · max(60개)   2023.0 ms · **1000ms 초과 응답 5개**
+        묵은 응답 RTT: [2023, 1815, 1607, 1399, 1198] …
+  cycle3: 단절 공백  29.6s · 복구 후 첫 RTT   1886.0 ms · max(60개)   1886.0 ms · **1000ms 초과 응답 5개**
+        묵은 응답 RTT: [1886, 1471, 1267, 1063, 1679] …
+
+  클라 로그: stale 폐기 408회 (합 742개) · flush 3회 (합 36개)
+
+  클라이언트 자원 (PID 기준):
+    phase pid rss_kb fd
+    before 1163750 11460 8
+    cycle1 1163750 12896 8
+    cycle2 1163750 13884 8
+    cycle3 1163750 13924 8
+    after 1163750 13928 8
+  stale-drop 로그: 408줄 · RSS/FD:
+    phase   pid      rss_kb  fd
+    before  1163750  11460   8
+    cycle1  1163750  12896   8
+    cycle2  1163750  13884   8
+    cycle3  1163750  13924   8
+    after   1163750  13928   8
+[21:23:21] v140 cycle1 정지
+[21:24:25] v140 cycle2 정지
+[21:25:29] v140 cycle3 정지
+=== v140 · 응답 649개 · 사이클 3개 ===
+  cycle1: 단절 공백  29.6s · 복구 후 첫 RTT   2033.0 ms · max(60개)   2033.0 ms · **1000ms 초과 응답 6개**
+        묵은 응답 RTT: [2033, 1825, 1617, 1410, 1204, 1002] …
+  cycle2: 단절 공백  29.8s · 복구 후 첫 RTT   1815.0 ms · max(60개)   1815.0 ms · **1000ms 초과 응답 4개**
+        묵은 응답 RTT: [1815, 1607, 1400, 1199] …
+  cycle3: 단절 공백  29.5s · 복구 후 첫 RTT   1950.0 ms · max(60개)   1950.0 ms · **1000ms 초과 응답 5개**
+        묵은 응답 RTT: [1950, 1742, 1534, 1326, 1125] …
+
+  클라 로그: stale 폐기 407회 (합 749개) · flush 3회 (합 33개)
+
+  클라이언트 자원 (PID 기준):
+    phase pid rss_kb fd
+    before 1164052 12364 8
+    cycle1 1164052 13768 8
+    cycle2 1164052 14764 8
+    cycle3 1164052 14804 8
+    after 1164052 14808 8
+  stale-drop 로그: 407줄 · RSS/FD:
+    phase   pid      rss_kb  fd
+    before  1164052  12364   8
+    cycle1  1164052  13768   8
+    cycle2  1164052  14764   8
+    cycle3  1164052  14804   8
+    after   1164052  14808   8
+[21:26:43] ##### test_path_failure.py BIN=mf140
+  ✓ duplicate  B손실0   skew0   절단-   → 유실 0.00% (상한 1.0%)
+  ✓ aggregate  B손실0   skew0   절단-   → 유실 0.00% (상한 1.0%)
+  ✓ duplicate  B손실60  skew0   절단-   → 유실 0.00% (상한 2.0%)
+  ✗ aggregate  B손실60  skew0   절단-   → 유실 8.35% (상한 2.0%)
+  ✓ duplicate  B손실0   skew30  절단-   → 유실 0.00% (상한 1.0%)
+  ✓ aggregate  B손실0   skew30  절단-   → 유실 0.00% (상한 1.0%)
+  ✓ duplicate  B손실0   skew0   절단10  → 유실 0.00% (상한 1.0%)
+  ✓ aggregate  B손실0   skew0   절단10  → 유실 1.13% (상한 5.0%)
+결과: 7 통과 / 1 실패
+[21:30:51] ##### test_path_failure.py BIN=mf131
+  ✓ duplicate  B손실0   skew0   절단-   → 유실 0.00% (상한 1.0%)
+  ✓ aggregate  B손실0   skew0   절단-   → 유실 0.00% (상한 1.0%)
+  ✓ duplicate  B손실60  skew0   절단-   → 유실 0.00% (상한 2.0%)
+  ✓ aggregate  B손실60  skew0   절단-   → 유실 0.01% (상한 2.0%)
+  ✓ duplicate  B손실0   skew30  절단-   → 유실 0.00% (상한 1.0%)
+  ✓ aggregate  B손실0   skew30  절단-   → 유실 0.00% (상한 1.0%)
+  ✓ duplicate  B손실0   skew0   절단10  → 유실 0.00% (상한 1.0%)
+  ✓ aggregate  B손실0   skew0   절단10  → 유실 1.37% (상한 5.0%)
+결과: 8 통과 / 0 실패
+[21:34:57] 측정 완료
+[21:34:57] ===== 원상 복구
+multi-fec-client ddb8d458 netns=0 veth=0 active inactive inactive inactive 
+multi-fec-relay ddb8d458 netns=0 veth=0 inactive active active inactive 
+multi-fec-server ddb8d458 netns=0 veth=0 inactive inactive inactive active 
+10 packets transmitted, 10 received, 0% packet loss, time 1807ms
+rtt min/avg/max/mdev = 53.141/56.969/72.939/5.837 ms
+sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
