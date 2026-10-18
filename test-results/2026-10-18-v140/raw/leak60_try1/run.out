@@ -1,0 +1,6 @@
+[run] 가드 PID 15574 감시 중 (vm)
+./run_load.sh: line 51: 15970 Killed                  ssh "$C" "mfgen tx 10.9.20.1 5301 $r $DUR" > "$OUT/tx_up_$r.txt" 2>&1
+./run_load.sh: line 51: 15971 Killed                  ssh "$S" "mfgen tx 10.9.20.2 5302 $r $DUR" > "$OUT/tx_dn_$r.txt" 2>&1
+[run]  10 Mbps  up 0.09138% ooo 34316  dn 0.00079% ooo 34480
+[run] 가드 트립
+[guard] 22:21:29 트립 → r:전체=90.8%>88%  → 'mfgen tx' 중단

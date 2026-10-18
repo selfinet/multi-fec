@@ -1,0 +1,416 @@
+[2026-10-18 13:09:31][INFO][client] path[0] RUNNING owd=25.34ms jit=0.12ms loss=5% rate=13.5Mbps tx=9901 rx=9451 dev=ens18
+[2026-10-18 13:09:31][INFO][client] path[1] RUNNING owd=30.58ms jit=0.29ms loss=1% rate=43.9Mbps tx=9824 rx=9555 dev=ens18
+[2026-10-18 13:09:32][INFO][report]client-->server:(original:7932 pkt;10051904 byte) (fec:9913 pkt,12657070 byte)  server-->client:(original:7951 pkt;10078460 byte) (fec:9939 pkt;12696362 byte)
+[2026-10-18 13:10:01][INFO][client] path[0] RUNNING owd=26.52ms jit=2.37ms loss=6% rate=50.4Mbps tx=49453 rx=47096 dev=ens18
+[2026-10-18 13:10:01][INFO][client] path[1] RUNNING owd=30.67ms jit=0.45ms loss=1% rate=24.7Mbps tx=49334 rx=48298 dev=ens18
+[2026-10-18 13:10:26][WARN][client] mud_send EAGAIN #50
+[2026-10-18 13:10:26][INFO][client] flushed 94 pending packet(s)
+[2026-10-18 13:10:31][INFO][client] path[0] RUNNING owd=25.52ms jit=0.47ms loss=4% rate=32.1Mbps tx=89009 rx=84780 dev=ens18
+[2026-10-18 13:10:31][INFO][client] path[1] RUNNING owd=30.54ms jit=0.39ms loss=2% rate=16.8Mbps tx=88892 rx=87176 dev=ens18
+[2026-10-18 13:10:32][INFO][report]client-->server:(original:70434 pkt;89302092 byte) (fec:87992 pkt,112439684 byte)  server-->client:(original:70454 pkt;89331092 byte) (fec:88126 pkt;112618176 byte)
+[2026-10-18 13:11:01][INFO][client] path[0] RUNNING owd=25.61ms jit=0.10ms loss=4% rate=47.2Mbps tx=128623 rx=122376 dev=ens18
+[2026-10-18 13:11:01][INFO][client] path[1] RUNNING owd=31.10ms jit=0.71ms loss=1% rate=44.0Mbps tx=128478 rx=125993 dev=ens18
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #100
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #150
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #200
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #250
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #300
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #350
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #400
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #450
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #500
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #550
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #600
+[2026-10-18 13:11:28][INFO][client] flushed 460 pending packet(s)
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #650
+[2026-10-18 13:11:28][WARN][client] mud_send EAGAIN #700
+[2026-10-18 13:11:28][INFO][client] flushed 178 pending packet(s)
+[2026-10-18 13:11:31][INFO][client] path[0] RUNNING owd=25.96ms jit=0.45ms loss=5% rate=13.4Mbps tx=168145 rx=160034 dev=ens18
+[2026-10-18 13:11:31][INFO][client] path[1] RUNNING owd=31.00ms jit=0.65ms loss=1% rate=39.8Mbps tx=167966 rx=164795 dev=ens18
+[2026-10-18 13:11:32][INFO][report]client-->server:(original:133350 pkt;169079580 byte) (fec:166633 pkt,212942882 byte)  server-->client:(original:133369 pkt;169107312 byte) (fec:166857 pkt;213236394 byte)
+[2026-10-18 13:12:01][INFO][client] path[0] RUNNING owd=25.71ms jit=0.24ms loss=5% rate=11.2Mbps tx=207732 rx=197622 dev=ens18
+[2026-10-18 13:12:01][INFO][client] path[1] RUNNING owd=31.03ms jit=0.35ms loss=1% rate=29.9Mbps tx=207504 rx=203576 dev=ens18
+[2026-10-18 13:12:31][INFO][client] path[0] RUNNING owd=25.66ms jit=0.27ms loss=4% rate=13.6Mbps tx=247288 rx=235331 dev=ens18
+[2026-10-18 13:12:31][INFO][client] path[1] RUNNING owd=30.77ms jit=0.29ms loss=2% rate=20.4Mbps tx=247057 rx=242428 dev=ens18
+[2026-10-18 13:12:33][INFO][report]client-->server:(original:196269 pkt;248858524 byte) (fec:245274 pkt,313443732 byte)  server-->client:(original:196286 pkt;248884896 byte) (fec:245609 pkt;313880278 byte)
+[2026-10-18 13:13:01][INFO][client] path[0] RUNNING owd=25.68ms jit=0.29ms loss=5% rate=42.1Mbps tx=286880 rx=273035 dev=ens18
+[2026-10-18 13:13:01][INFO][client] path[1] RUNNING owd=30.71ms jit=0.11ms loss=2% rate=16.8Mbps tx=286602 rx=281311 dev=ens18
+[2026-10-18 13:13:31][WARN][client] mud_send EAGAIN #750
+[2026-10-18 13:13:31][INFO][client] flushed 45 pending packet(s)
+[2026-10-18 13:13:31][INFO][client] path[0] RUNNING owd=166.25ms jit=161.43ms loss=17% rate=25.1Mbps tx=326392 rx=310622 dev=ens18
+[2026-10-18 13:13:31][INFO][client] path[1] RUNNING owd=184.81ms jit=157.23ms loss=0% rate=46.3Mbps tx=326096 rx=320163 dev=ens18
+[2026-10-18 13:13:33][INFO][report]client-->server:(original:259186 pkt;328637280 byte) (fec:323876 pkt,413897088 byte)  server-->client:(original:259203 pkt;328663652 byte) (fec:324400 pkt;414575176 byte)
+[2026-10-18 13:14:01][INFO][client] path[0] RUNNING owd=25.69ms jit=0.31ms loss=5% rate=16.3Mbps tx=365961 rx=348325 dev=ens18
+[2026-10-18 13:14:01][INFO][client] path[1] RUNNING owd=30.92ms jit=0.32ms loss=1% rate=32.9Mbps tx=365643 rx=358999 dev=ens18
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #800
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #850
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #900
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #950
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1000
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1050
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1100
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1150
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1200
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1250
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1300
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1350
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1400
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1450
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1500
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1550
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1600
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1650
+[2026-10-18 13:14:09][WARN][client] mud_send EAGAIN #1700
+[2026-10-18 13:14:10][WARN][client] mud_send EAGAIN #1750
+[2026-10-18 13:14:10][WARN][client] mud_send EAGAIN #1800
+[2026-10-18 13:14:10][WARN][client] mud_send EAGAIN #1850
+[2026-10-18 13:14:10][WARN][client] mud_send EAGAIN #1900
+[2026-10-18 13:14:10][INFO][client] flushed 405 pending packet(s)
+[2026-10-18 13:14:10][WARN][client] mud_send EAGAIN #1950
+[2026-10-18 13:14:10][WARN][client] mud_send EAGAIN #2000
+[2026-10-18 13:14:10][WARN][client] mud_send EAGAIN #2050
+[2026-10-18 13:14:10][INFO][client] flushed 211 pending packet(s)
+[2026-10-18 13:14:10][WARN][client] mud_send EAGAIN #2100
+[2026-10-18 13:14:10][WARN][client] mud_send EAGAIN #2150
+[2026-10-18 13:14:10][WARN][client] mud_send EAGAIN #2200
+[2026-10-18 13:14:10][INFO][client] flushed 182 pending packet(s)
+[2026-10-18 13:14:31][INFO][client] path[0] RUNNING owd=25.68ms jit=0.22ms loss=4% rate=56.9Mbps tx=404869 rx=384648 dev=ens18
+[2026-10-18 13:14:31][INFO][client] path[1] RUNNING owd=30.70ms jit=0.14ms loss=1% rate=12.8Mbps tx=402699 rx=396805 dev=ens18
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2250
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2300
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2350
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2400
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2450
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2500
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2550
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2600
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2650
+[2026-10-18 13:14:33][INFO][client] flushed 412 pending packet(s)
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2700
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2750
+[2026-10-18 13:14:33][WARN][client] mud_send EAGAIN #2800
+[2026-10-18 13:14:33][INFO][client] flushed 184 pending packet(s)
+[2026-10-18 13:14:34][INFO][report]client-->server:(original:322104 pkt;408414956 byte) (fec:402448 pkt,514309756 byte)  server-->client:(original:322118 pkt;408438700 byte) (fec:403554 pkt;515732816 byte)
+[2026-10-18 13:15:01][INFO][client] path[0] RUNNING owd=25.77ms jit=0.20ms loss=5% rate=31.7Mbps tx=444392 rx=422350 dev=ens18
+[2026-10-18 13:15:01][INFO][client] path[1] RUNNING owd=30.84ms jit=0.27ms loss=1% rate=44.0Mbps tx=442194 rx=435617 dev=ens18
+[2026-10-18 13:15:31][INFO][client] path[0] RUNNING owd=25.90ms jit=0.73ms loss=4% rate=21.8Mbps tx=483938 rx=460017 dev=ens18
+[2026-10-18 13:15:31][INFO][client] path[1] RUNNING owd=30.73ms jit=0.23ms loss=1% rate=12.7Mbps tx=481730 rx=474361 dev=ens18
+[2026-10-18 13:15:34][INFO][report]client-->server:(original:384045 pkt;486956144 byte) (fec:479861 pkt,613243570 byte)  server-->client:(original:384059 pkt;486979888 byte) (fec:481052 pkt;614775260 byte)
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #2850
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #2900
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #2950
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3000
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3050
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3100
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3150
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3200
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3250
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3300
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3350
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3400
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3450
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3500
+[2026-10-18 13:15:34][INFO][client] flushed 512 pending packet(s)
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3550
+[2026-10-18 13:15:34][WARN][client] mud_send EAGAIN #3600
+[2026-10-18 13:15:34][INFO][client] flushed 82 pending packet(s)
+[2026-10-18 13:16:01][INFO][client] path[0] RUNNING owd=25.55ms jit=0.19ms loss=5% rate=38.6Mbps tx=523189 rx=496438 dev=ens18
+[2026-10-18 13:16:01][INFO][client] path[1] RUNNING owd=30.48ms jit=0.23ms loss=1% rate=16.9Mbps tx=520966 rx=513242 dev=ens18
+[2026-10-18 13:16:31][INFO][client] path[0] RUNNING owd=25.44ms jit=0.08ms loss=4% rate=24.1Mbps tx=562742 rx=534043 dev=ens18
+[2026-10-18 13:16:31][INFO][client] path[1] RUNNING owd=30.54ms jit=0.16ms loss=0% rate=18.7Mbps tx=560495 rx=552023 dev=ens18
+[2026-10-18 13:16:34][INFO][report]client-->server:(original:447523 pkt;567443900 byte) (fec:559117 pkt,714530390 byte)  server-->client:(original:447536 pkt;567467552 byte) (fec:560504 pkt;716313744 byte)
+[2026-10-18 13:17:01][INFO][client] path[0] RUNNING owd=25.64ms jit=0.15ms loss=5% rate=16.3Mbps tx=602289 rx=571813 dev=ens18
+[2026-10-18 13:17:01][INFO][client] path[1] RUNNING owd=30.61ms jit=0.18ms loss=1% rate=17.0Mbps tx=600018 rx=590932 dev=ens18
+[2026-10-18 13:17:31][INFO][client] path[0] RUNNING owd=25.80ms jit=0.14ms loss=4% rate=19.9Mbps tx=641853 rx=609492 dev=ens18
+[2026-10-18 13:17:31][INFO][client] path[1] RUNNING owd=30.72ms jit=0.16ms loss=2% rate=13.9Mbps tx=639560 rx=629817 dev=ens18
+[2026-10-18 13:17:34][INFO][report]client-->server:(original:510440 pkt;647222656 byte) (fec:637756 pkt,815031032 byte)  server-->client:(original:510450 pkt;647242504 byte) (fec:639365 pkt;817098102 byte)
+[2026-10-18 13:18:01][INFO][client] path[0] RUNNING owd=25.65ms jit=0.09ms loss=5% rate=18.1Mbps tx=681388 rx=647150 dev=ens18
+[2026-10-18 13:18:01][INFO][client] path[1] RUNNING owd=30.69ms jit=0.13ms loss=1% rate=14.0Mbps tx=679109 rx=668670 dev=ens18
+[2026-10-18 13:18:31][INFO][client] path[0] RUNNING owd=25.79ms jit=0.16ms loss=3% rate=13.7Mbps tx=720990 rx=684952 dev=ens18
+[2026-10-18 13:18:31][INFO][client] path[1] RUNNING owd=30.82ms jit=0.19ms loss=1% rate=48.1Mbps tx=718686 rx=707521 dev=ens18
+[2026-10-18 13:18:35][INFO][report]client-->server:(original:573358 pkt;727000332 byte) (fec:716411 pkt,915549774 byte)  server-->client:(original:573370 pkt;727023892 byte) (fec:718190 pkt;917835280 byte)
+[2026-10-18 13:18:38][INFO][client] flushed 25 pending packet(s)
+[2026-10-18 13:18:38][WARN][client] mud_send EAGAIN #3650
+[2026-10-18 13:18:38][WARN][client] mud_send EAGAIN #3700
+[2026-10-18 13:18:38][WARN][client] mud_send EAGAIN #3750
+[2026-10-18 13:18:38][WARN][client] mud_send EAGAIN #3800
+[2026-10-18 13:18:38][WARN][client] mud_send EAGAIN #3850
+[2026-10-18 13:18:38][WARN][client] mud_send EAGAIN #3900
+[2026-10-18 13:18:38][INFO][client] flushed 295 pending packet(s)
+[2026-10-18 13:19:01][INFO][client] path[0] RUNNING owd=25.69ms jit=0.23ms loss=4% rate=12.4Mbps tx=760549 rx=722691 dev=ens18
+[2026-10-18 13:19:01][INFO][client] path[1] RUNNING owd=30.77ms jit=0.15ms loss=1% rate=22.7Mbps tx=758208 rx=746369 dev=ens18
+[2026-10-18 13:19:31][INFO][client] path[0] RUNNING owd=25.82ms jit=0.30ms loss=4% rate=12.3Mbps tx=800110 rx=760295 dev=ens18
+[2026-10-18 13:19:31][INFO][client] path[1] RUNNING owd=30.80ms jit=0.23ms loss=1% rate=20.4Mbps tx=797753 rx=785175 dev=ens18
+[2026-10-18 13:19:35][INFO][report]client-->server:(original:636275 pkt;806779088 byte) (fec:795032 pkt,1016027412 byte)  server-->client:(original:636286 pkt;806801380 byte) (fec:796975 pkt;1018522510 byte)
+[2026-10-18 13:20:01][INFO][client] path[0] RUNNING owd=25.74ms jit=0.09ms loss=4% rate=12.4Mbps tx=839711 rx=798008 dev=ens18
+[2026-10-18 13:20:01][INFO][client] path[1] RUNNING owd=30.89ms jit=0.30ms loss=1% rate=12.7Mbps tx=837332 rx=824056 dev=ens18
+[2026-10-18 13:20:31][INFO][client] path[0] RUNNING owd=25.79ms jit=0.18ms loss=5% rate=46.4Mbps tx=879310 rx=835775 dev=ens18
+[2026-10-18 13:20:31][INFO][client] path[1] RUNNING owd=30.92ms jit=0.20ms loss=1% rate=27.3Mbps tx=876884 rx=862896 dev=ens18
+[2026-10-18 13:20:36][INFO][report]client-->server:(original:699194 pkt;886558032 byte) (fec:873724 pkt,1116593440 byte)  server-->client:(original:699204 pkt;886580232 byte) (fec:875847 pkt;1119319754 byte)
+[2026-10-18 13:20:41][WARN][client] mud_send EAGAIN #3950
+[2026-10-18 13:20:41][WARN][client] mud_send EAGAIN #4000
+[2026-10-18 13:20:41][WARN][client] mud_send EAGAIN #4050
+[2026-10-18 13:20:41][WARN][client] mud_send EAGAIN #4100
+[2026-10-18 13:20:41][WARN][client] mud_send EAGAIN #4150
+[2026-10-18 13:20:41][WARN][client] mud_send EAGAIN #4200
+[2026-10-18 13:20:41][WARN][client] mud_send EAGAIN #4250
+[2026-10-18 13:20:41][WARN][client] mud_send EAGAIN #4300
+[2026-10-18 13:20:41][WARN][client] mud_send EAGAIN #4350
+[2026-10-18 13:20:41][WARN][client] mud_send EAGAIN #4400
+[2026-10-18 13:20:41][INFO][client] flushed 189 pending packet(s)
+[2026-10-18 13:20:42][WARN][client] mud_send EAGAIN #4450
+[2026-10-18 13:20:42][WARN][client] mud_send EAGAIN #4500
+[2026-10-18 13:20:42][INFO][client] flushed 400 pending packet(s)
+[2026-10-18 13:20:42][WARN][client] mud_send EAGAIN #4550
+[2026-10-18 13:20:42][INFO][client] flushed 46 pending packet(s)
+[2026-10-18 13:21:01][INFO][client] path[0] RUNNING owd=25.68ms jit=0.15ms loss=5% rate=16.2Mbps tx=918817 rx=873493 dev=ens18
+[2026-10-18 13:21:01][INFO][client] path[1] RUNNING owd=30.72ms jit=0.19ms loss=1% rate=18.6Mbps tx=916388 rx=901768 dev=ens18
+[2026-10-18 13:21:26][WARN][client] mud_send EAGAIN #4600
+[2026-10-18 13:21:26][WARN][client] mud_send EAGAIN #4650
+[2026-10-18 13:21:26][WARN][client] mud_send EAGAIN #4700
+[2026-10-18 13:21:26][INFO][client] flushed 130 pending packet(s)
+[2026-10-18 13:21:31][INFO][client] path[0] RUNNING owd=26.79ms jit=1.63ms loss=0% rate=17.1Mbps tx=955257 rx=908495 dev=ens18
+[2026-10-18 13:21:31][INFO][client] path[1] RUNNING owd=31.47ms jit=0.95ms loss=0% rate=15.6Mbps tx=952439 rx=937865 dev=ens18
+[2026-10-18 13:21:36][INFO][report]client-->server:(original:755076 pkt;957416408 byte) (fec:943499 pkt,1205765890 byte)  server-->client:(original:755638 pkt;958138544 byte) (fec:947116 pkt;1210401536 byte)
+[2026-10-18 13:22:01][INFO][client] path[0] RUNNING owd=26.02ms jit=0.11ms loss=5% rate=20.7Mbps tx=955779 rx=908995 dev=ens18
+[2026-10-18 13:22:01][INFO][client] path[1] RUNNING owd=31.06ms jit=0.06ms loss=0% rate=11.7Mbps tx=952947 rx=938364 dev=ens18
+[2026-10-18 13:22:31][INFO][client] path[0] RUNNING owd=25.96ms jit=0.05ms loss=0% rate=11.7Mbps tx=956290 rx=909468 dev=ens18
+[2026-10-18 13:22:31][INFO][client] path[1] RUNNING owd=31.32ms jit=0.57ms loss=5% rate=8.8Mbps tx=953449 rx=938854 dev=ens18
+[2026-10-18 13:22:36][INFO][report]client-->server:(original:755081 pkt;957416704 byte) (fec:943508 pkt,1205766536 byte)  server-->client:(original:755639 pkt;958138640 byte) (fec:947118 pkt;1210401748 byte)
+[2026-10-18 13:23:01][INFO][client] path[0] RUNNING owd=26.07ms jit=0.06ms loss=0% rate=11.7Mbps tx=956808 rx=909967 dev=ens18
+[2026-10-18 13:23:01][INFO][client] path[1] RUNNING owd=31.07ms jit=0.07ms loss=0% rate=20.7Mbps tx=953929 rx=939324 dev=ens18
+[2026-10-18 13:23:31][INFO][client] path[0] RUNNING owd=26.06ms jit=0.14ms loss=0% rate=12.9Mbps tx=957329 rx=910469 dev=ens18
+[2026-10-18 13:23:31][INFO][client] path[1] RUNNING owd=31.08ms jit=0.06ms loss=0% rate=17.1Mbps tx=954437 rx=939821 dev=ens18
+[2026-10-18 13:23:36][INFO][report]client-->server:(original:755083 pkt;957416776 byte) (fec:943512 pkt,1205766720 byte)  server-->client:(original:755639 pkt;958138640 byte) (fec:947118 pkt;1210401748 byte)
+[2026-10-18 13:24:01][INFO][client] path[0] RUNNING owd=26.12ms jit=0.06ms loss=6% rate=10.6Mbps tx=957844 rx=910958 dev=ens18
+[2026-10-18 13:24:01][INFO][client] path[1] RUNNING owd=31.05ms jit=0.06ms loss=0% rate=12.9Mbps tx=954945 rx=940318 dev=ens18
+[2026-10-18 13:24:31][INFO][client] path[0] RUNNING owd=26.11ms jit=0.10ms loss=9% rate=10.6Mbps tx=958359 rx=911444 dev=ens18
+[2026-10-18 13:24:31][INFO][client] path[1] RUNNING owd=31.10ms jit=0.11ms loss=0% rate=33.4Mbps tx=955427 rx=940791 dev=ens18
+[2026-10-18 13:24:36][INFO][report]client-->server:(original:755088 pkt;957417072 byte) (fec:943521 pkt,1205767366 byte)  server-->client:(original:755640 pkt;958138736 byte) (fec:947120 pkt;1210401960 byte)
+[2026-10-18 13:25:01][INFO][client] path[0] RUNNING owd=25.98ms jit=0.17ms loss=4% rate=8.8Mbps tx=958871 rx=911932 dev=ens18
+[2026-10-18 13:25:01][INFO][client] path[1] RUNNING owd=31.07ms jit=0.15ms loss=0% rate=12.9Mbps tx=955969 rx=941322 dev=ens18
+[2026-10-18 13:25:31][INFO][client] path[0] RUNNING owd=26.00ms jit=0.18ms loss=0% rate=10.6Mbps tx=959378 rx=912415 dev=ens18
+[2026-10-18 13:25:31][INFO][client] path[1] RUNNING owd=31.10ms jit=0.05ms loss=0% rate=8.8Mbps tx=956449 rx=941793 dev=ens18
+[2026-10-18 13:25:37][INFO][report]client-->server:(original:755090 pkt;957417144 byte) (fec:943525 pkt,1205767550 byte)  server-->client:(original:755640 pkt;958138736 byte) (fec:947120 pkt;1210401960 byte)
+[2026-10-18 13:26:01][INFO][client] path[0] RUNNING owd=26.20ms jit=0.07ms loss=5% rate=8.8Mbps tx=959890 rx=912900 dev=ens18
+[2026-10-18 13:26:01][INFO][client] path[1] RUNNING owd=31.15ms jit=0.07ms loss=0% rate=25.1Mbps tx=956923 rx=942257 dev=ens18
+[2026-10-18 13:26:31][INFO][client] path[0] RUNNING owd=25.92ms jit=0.08ms loss=13% rate=25.1Mbps tx=960418 rx=913400 dev=ens18
+[2026-10-18 13:26:31][INFO][client] path[1] RUNNING owd=31.02ms jit=0.07ms loss=0% rate=14.2Mbps tx=957412 rx=942734 dev=ens18
+[2026-10-18 13:26:37][INFO][report]client-->server:(original:755094 pkt;957417404 byte) (fec:943532 pkt,1205768104 byte)  server-->client:(original:755641 pkt;958138832 byte) (fec:947122 pkt;1210402172 byte)
+[2026-10-18 13:27:01][INFO][client] path[0] RUNNING owd=25.89ms jit=0.05ms loss=10% rate=10.6Mbps tx=960931 rx=913887 dev=ens18
+[2026-10-18 13:27:01][INFO][client] path[1] RUNNING owd=30.94ms jit=0.06ms loss=0% rate=8.0Mbps tx=957936 rx=943247 dev=ens18
+[2026-10-18 13:27:31][INFO][client] path[0] RUNNING owd=25.92ms jit=0.09ms loss=15% rate=11.7Mbps tx=961447 rx=914376 dev=ens18
+[2026-10-18 13:27:31][INFO][client] path[1] RUNNING owd=31.08ms jit=0.15ms loss=0% rate=14.2Mbps tx=958422 rx=943725 dev=ens18
+[2026-10-18 13:27:38][INFO][report]client-->server:(original:755097 pkt;957417512 byte) (fec:943538 pkt,1205768380 byte)  server-->client:(original:755641 pkt;958138832 byte) (fec:947122 pkt;1210402172 byte)
+[2026-10-18 13:28:01][INFO][client] path[0] RUNNING owd=25.94ms jit=0.12ms loss=7% rate=27.6Mbps tx=961949 rx=914850 dev=ens18
+[2026-10-18 13:28:01][INFO][client] path[1] RUNNING owd=31.05ms jit=0.09ms loss=0% rate=27.6Mbps tx=958917 rx=944206 dev=ens18
+[2026-10-18 13:28:31][INFO][client] path[0] RUNNING owd=25.88ms jit=0.11ms loss=0% rate=8.8Mbps tx=962455 rx=915320 dev=ens18
+[2026-10-18 13:28:31][INFO][client] path[1] RUNNING owd=30.93ms jit=0.22ms loss=0% rate=10.6Mbps tx=959475 rx=944753 dev=ens18
+[2026-10-18 13:28:38][INFO][report]client-->server:(original:755101 pkt;957417772 byte) (fec:943545 pkt,1205768934 byte)  server-->client:(original:755642 pkt;958138928 byte) (fec:947124 pkt;1210402384 byte)
+[2026-10-18 13:29:01][INFO][client] path[0] RUNNING owd=25.91ms jit=0.10ms loss=5% rate=44.5Mbps tx=962974 rx=915818 dev=ens18
+[2026-10-18 13:29:01][INFO][client] path[1] RUNNING owd=30.97ms jit=0.04ms loss=0% rate=22.8Mbps tx=959966 rx=945233 dev=ens18
+[2026-10-18 13:29:31][INFO][client] path[0] RUNNING owd=25.94ms jit=0.12ms loss=0% rate=25.1Mbps tx=963497 rx=916318 dev=ens18
+[2026-10-18 13:29:31][INFO][client] path[1] RUNNING owd=31.08ms jit=0.14ms loss=0% rate=15.6Mbps tx=960464 rx=945721 dev=ens18
+[2026-10-18 13:29:38][INFO][report]client-->server:(original:755104 pkt;957417880 byte) (fec:943551 pkt,1205769210 byte)  server-->client:(original:755642 pkt;958138928 byte) (fec:947124 pkt;1210402384 byte)
+[2026-10-18 13:30:01][INFO][client] path[0] RUNNING owd=25.96ms jit=0.09ms loss=0% rate=8.8Mbps tx=964012 rx=916808 dev=ens18
+[2026-10-18 13:30:01][INFO][client] path[1] RUNNING owd=31.09ms jit=0.14ms loss=4% rate=10.6Mbps tx=961002 rx=946250 dev=ens18
+[2026-10-18 13:30:31][INFO][client] path[0] RUNNING owd=25.87ms jit=0.10ms loss=5% rate=22.8Mbps tx=964542 rx=917317 dev=ens18
+[2026-10-18 13:30:31][INFO][client] path[1] RUNNING owd=31.10ms jit=0.21ms loss=0% rate=22.8Mbps tx=961503 rx=946740 dev=ens18
+[2026-10-18 13:30:38][INFO][report]client-->server:(original:755108 pkt;957418140 byte) (fec:943558 pkt,1205769764 byte)  server-->client:(original:755643 pkt;958139024 byte) (fec:947126 pkt;1210402596 byte)
+[2026-10-18 13:31:01][INFO][client] path[0] RUNNING owd=25.98ms jit=0.11ms loss=0% rate=27.6Mbps tx=965059 rx=917806 dev=ens18
+[2026-10-18 13:31:01][INFO][client] path[1] RUNNING owd=30.98ms jit=0.09ms loss=0% rate=18.9Mbps tx=962029 rx=947251 dev=ens18
+[2026-10-18 13:31:31][INFO][client] path[0] RUNNING owd=26.08ms jit=0.06ms loss=0% rate=27.6Mbps tx=965576 rx=918299 dev=ens18
+[2026-10-18 13:31:31][INFO][client] path[1] RUNNING owd=31.13ms jit=0.07ms loss=0% rate=8.0Mbps tx=962547 rx=947756 dev=ens18
+[2026-10-18 13:31:39][INFO][report]client-->server:(original:755110 pkt;957418212 byte) (fec:943562 pkt,1205769948 byte)  server-->client:(original:755643 pkt;958139024 byte) (fec:947126 pkt;1210402596 byte)
+[2026-10-18 13:32:01][INFO][client] path[0] RUNNING owd=25.93ms jit=0.06ms loss=0% rate=18.9Mbps tx=966091 rx=918784 dev=ens18
+[2026-10-18 13:32:01][INFO][client] path[1] RUNNING owd=31.06ms jit=0.12ms loss=6% rate=25.1Mbps tx=963036 rx=948233 dev=ens18
+[2026-10-18 13:32:31][INFO][client] path[0] RUNNING owd=25.93ms jit=0.07ms loss=0% rate=12.9Mbps tx=966599 rx=919264 dev=ens18
+[2026-10-18 13:32:31][INFO][client] path[1] RUNNING owd=31.06ms jit=0.10ms loss=0% rate=22.8Mbps tx=963539 rx=948725 dev=ens18
+[2026-10-18 13:32:39][INFO][report]client-->server:(original:755115 pkt;957418508 byte) (fec:943571 pkt,1205770594 byte)  server-->client:(original:755644 pkt;958139120 byte) (fec:947128 pkt;1210402808 byte)
+[2026-10-18 13:33:01][INFO][client] path[0] RUNNING owd=26.12ms jit=0.13ms loss=18% rate=22.8Mbps tx=967111 rx=919741 dev=ens18
+[2026-10-18 13:33:01][INFO][client] path[1] RUNNING owd=31.14ms jit=0.11ms loss=0% rate=10.6Mbps tx=964020 rx=949196 dev=ens18
+[2026-10-18 13:33:31][INFO][client] path[0] RUNNING owd=25.90ms jit=0.06ms loss=0% rate=17.1Mbps tx=967639 rx=920244 dev=ens18
+[2026-10-18 13:33:31][INFO][client] path[1] RUNNING owd=31.14ms jit=0.10ms loss=0% rate=25.1Mbps tx=964504 rx=949674 dev=ens18
+[2026-10-18 13:33:40][INFO][report]client-->server:(original:755117 pkt;957418580 byte) (fec:943575 pkt,1205770778 byte)  server-->client:(original:755644 pkt;958139120 byte) (fec:947128 pkt;1210402808 byte)
+[2026-10-18 13:34:01][INFO][client] path[0] RUNNING owd=26.07ms jit=0.16ms loss=4% rate=9.7Mbps tx=968157 rx=920738 dev=ens18
+[2026-10-18 13:34:01][INFO][client] path[1] RUNNING owd=31.11ms jit=0.08ms loss=0% rate=9.7Mbps tx=964992 rx=950151 dev=ens18
+[2026-10-18 13:34:31][INFO][client] path[0] RUNNING owd=26.06ms jit=0.12ms loss=5% rate=11.7Mbps tx=968672 rx=921229 dev=ens18
+[2026-10-18 13:34:31][INFO][client] path[1] RUNNING owd=31.08ms jit=0.11ms loss=5% rate=25.1Mbps tx=965470 rx=950621 dev=ens18
+[2026-10-18 13:34:40][INFO][report]client-->server:(original:755122 pkt;957418876 byte) (fec:943584 pkt,1205771424 byte)  server-->client:(original:755645 pkt;958139216 byte) (fec:947130 pkt;1210403020 byte)
+[2026-10-18 13:35:01][INFO][client] path[0] RUNNING owd=25.96ms jit=0.06ms loss=10% rate=11.7Mbps tx=969200 rx=921731 dev=ens18
+[2026-10-18 13:35:01][INFO][client] path[1] RUNNING owd=30.99ms jit=0.06ms loss=5% rate=14.2Mbps tx=965993 rx=951134 dev=ens18
+[2026-10-18 13:35:31][INFO][client] path[0] RUNNING owd=25.97ms jit=0.06ms loss=5% rate=36.8Mbps tx=969719 rx=922228 dev=ens18
+[2026-10-18 13:35:31][INFO][client] path[1] RUNNING owd=31.02ms jit=0.09ms loss=5% rate=8.8Mbps tx=966521 rx=951650 dev=ens18
+[2026-10-18 13:35:40][INFO][report]client-->server:(original:755124 pkt;957418948 byte) (fec:943588 pkt,1205771608 byte)  server-->client:(original:755645 pkt;958139216 byte) (fec:947130 pkt;1210403020 byte)
+[2026-10-18 13:36:01][INFO][client] path[0] RUNNING owd=25.95ms jit=0.06ms loss=10% rate=17.1Mbps tx=970222 rx=922697 dev=ens18
+[2026-10-18 13:36:01][INFO][client] path[1] RUNNING owd=31.03ms jit=0.10ms loss=0% rate=20.7Mbps tx=967009 rx=952128 dev=ens18
+[2026-10-18 13:36:31][INFO][client] path[0] RUNNING owd=26.00ms jit=0.06ms loss=5% rate=17.1Mbps tx=970736 rx=923186 dev=ens18
+[2026-10-18 13:36:31][INFO][client] path[1] RUNNING owd=31.20ms jit=0.30ms loss=5% rate=12.9Mbps tx=967571 rx=952680 dev=ens18
+[2026-10-18 13:36:41][INFO][report]client-->server:(original:755126 pkt;957419020 byte) (fec:943592 pkt,1205771792 byte)  server-->client:(original:755645 pkt;958139216 byte) (fec:947130 pkt;1210403020 byte)
+[2026-10-18 13:37:01][INFO][client] path[0] RUNNING owd=25.95ms jit=0.10ms loss=5% rate=8.0Mbps tx=971268 rx=923697 dev=ens18
+[2026-10-18 13:37:01][INFO][client] path[1] RUNNING owd=30.99ms jit=0.09ms loss=5% rate=10.6Mbps tx=968103 rx=953201 dev=ens18
+[2026-10-18 13:37:31][INFO][client] path[0] RUNNING owd=26.00ms jit=0.12ms loss=5% rate=27.6Mbps tx=971782 rx=924187 dev=ens18
+[2026-10-18 13:37:31][INFO][client] path[1] RUNNING owd=31.08ms jit=0.05ms loss=0% rate=33.4Mbps tx=968573 rx=953661 dev=ens18
+[2026-10-18 13:37:41][INFO][report]client-->server:(original:755131 pkt;957419316 byte) (fec:943601 pkt,1205772438 byte)  server-->client:(original:755646 pkt;958139312 byte) (fec:947132 pkt;1210403232 byte)
+[2026-10-18 13:38:01][INFO][client] path[0] RUNNING owd=26.00ms jit=0.07ms loss=4% rate=15.6Mbps tx=972290 rx=924659 dev=ens18
+[2026-10-18 13:38:01][INFO][client] path[1] RUNNING owd=30.95ms jit=0.07ms loss=5% rate=20.7Mbps tx=969057 rx=954132 dev=ens18
+[2026-10-18 13:38:31][INFO][client] path[0] RUNNING owd=25.85ms jit=0.04ms loss=12% rate=10.6Mbps tx=972811 rx=925157 dev=ens18
+[2026-10-18 13:38:31][INFO][client] path[1] RUNNING owd=30.97ms jit=0.04ms loss=0% rate=10.6Mbps tx=969550 rx=954617 dev=ens18
+[2026-10-18 13:38:42][INFO][report]client-->server:(original:755133 pkt;957419388 byte) (fec:943605 pkt,1205772622 byte)  server-->client:(original:755646 pkt;958139312 byte) (fec:947132 pkt;1210403232 byte)
+[2026-10-18 13:39:01][INFO][client] path[0] RUNNING owd=25.91ms jit=0.04ms loss=5% rate=8.8Mbps tx=973331 rx=925649 dev=ens18
+[2026-10-18 13:39:01][INFO][client] path[1] RUNNING owd=31.02ms jit=0.07ms loss=5% rate=27.6Mbps tx=970068 rx=955125 dev=ens18
+[2026-10-18 13:39:31][INFO][client] path[0] RUNNING owd=25.84ms jit=0.07ms loss=0% rate=9.7Mbps tx=973855 rx=926153 dev=ens18
+[2026-10-18 13:39:31][INFO][client] path[1] RUNNING owd=30.87ms jit=0.08ms loss=5% rate=18.9Mbps tx=970553 rx=955601 dev=ens18
+[2026-10-18 13:39:42][INFO][report]client-->server:(original:755138 pkt;957419684 byte) (fec:943614 pkt,1205773268 byte)  server-->client:(original:755647 pkt;958139408 byte) (fec:947134 pkt;1210403444 byte)
+[2026-10-18 13:40:01][INFO][client] path[0] RUNNING owd=25.85ms jit=0.18ms loss=5% rate=9.7Mbps tx=974380 rx=926659 dev=ens18
+[2026-10-18 13:40:01][INFO][client] path[1] RUNNING owd=30.90ms jit=0.09ms loss=0% rate=8.8Mbps tx=971035 rx=956075 dev=ens18
+[2026-10-18 13:40:31][INFO][client] path[0] RUNNING owd=25.91ms jit=0.10ms loss=0% rate=10.6Mbps tx=974900 rx=927149 dev=ens18
+[2026-10-18 13:40:31][INFO][client] path[1] RUNNING owd=30.96ms jit=0.10ms loss=5% rate=15.6Mbps tx=971520 rx=956550 dev=ens18
+[2026-10-18 13:40:42][INFO][report]client-->server:(original:755140 pkt;957419756 byte) (fec:943618 pkt,1205773452 byte)  server-->client:(original:755647 pkt;958139408 byte) (fec:947134 pkt;1210403444 byte)
+[2026-10-18 13:41:01][INFO][client] path[0] RUNNING owd=26.02ms jit=0.29ms loss=0% rate=14.2Mbps tx=975425 rx=927648 dev=ens18
+[2026-10-18 13:41:01][INFO][client] path[1] RUNNING owd=30.99ms jit=0.11ms loss=0% rate=11.7Mbps tx=972060 rx=957081 dev=ens18
+[2026-10-18 13:41:31][INFO][client] path[0] RUNNING owd=25.82ms jit=0.12ms loss=0% rate=15.6Mbps tx=975934 rx=928131 dev=ens18
+[2026-10-18 13:41:31][INFO][client] path[1] RUNNING owd=30.97ms jit=0.13ms loss=0% rate=27.6Mbps tx=972561 rx=957575 dev=ens18
+[2026-10-18 13:41:42][INFO][report]client-->server:(original:755144 pkt;957420016 byte) (fec:943625 pkt,1205774006 byte)  server-->client:(original:755648 pkt;958139504 byte) (fec:947136 pkt;1210403656 byte)
+[2026-10-18 13:42:01][INFO][client] path[0] RUNNING owd=25.88ms jit=0.08ms loss=0% rate=12.9Mbps tx=976459 rx=928631 dev=ens18
+[2026-10-18 13:42:01][INFO][client] path[1] RUNNING owd=30.96ms jit=0.06ms loss=0% rate=14.2Mbps tx=973029 rx=958033 dev=ens18
+[2026-10-18 13:42:31][INFO][client] path[0] RUNNING owd=25.90ms jit=0.04ms loss=0% rate=9.7Mbps tx=976977 rx=929119 dev=ens18
+[2026-10-18 13:42:31][INFO][client] path[1] RUNNING owd=31.04ms jit=0.12ms loss=3% rate=9.7Mbps tx=973531 rx=958523 dev=ens18
+[2026-10-18 13:42:43][INFO][report]client-->server:(original:755147 pkt;957420124 byte) (fec:943631 pkt,1205774282 byte)  server-->client:(original:755648 pkt;958139504 byte) (fec:947136 pkt;1210403656 byte)
+[2026-10-18 13:43:01][INFO][client] path[0] RUNNING owd=25.75ms jit=0.07ms loss=0% rate=12.9Mbps tx=977502 rx=929615 dev=ens18
+[2026-10-18 13:43:01][INFO][client] path[1] RUNNING owd=30.86ms jit=0.05ms loss=0% rate=59.2Mbps tx=974066 rx=959045 dev=ens18
+[2026-10-18 13:43:31][INFO][client] path[0] RUNNING owd=25.79ms jit=0.19ms loss=13% rate=20.7Mbps tx=978020 rx=930109 dev=ens18
+[2026-10-18 13:43:31][INFO][client] path[1] RUNNING owd=30.92ms jit=0.16ms loss=0% rate=11.7Mbps tx=974567 rx=959532 dev=ens18
+[2026-10-18 13:43:43][INFO][report]client-->server:(original:755151 pkt;957420384 byte) (fec:943638 pkt,1205774836 byte)  server-->client:(original:755649 pkt;958139600 byte) (fec:947138 pkt;1210403868 byte)
+[2026-10-18 13:44:01][INFO][client] path[0] RUNNING owd=26.44ms jit=1.27ms loss=12% rate=18.9Mbps tx=978553 rx=930622 dev=ens18
+[2026-10-18 13:44:01][INFO][client] path[1] RUNNING owd=30.96ms jit=0.13ms loss=5% rate=33.4Mbps tx=975046 rx=960002 dev=ens18
+[2026-10-18 13:44:31][INFO][client] path[0] RUNNING owd=25.88ms jit=0.07ms loss=0% rate=18.9Mbps tx=979072 rx=931114 dev=ens18
+[2026-10-18 13:44:31][INFO][client] path[1] RUNNING owd=31.01ms jit=0.17ms loss=0% rate=22.8Mbps tx=975520 rx=960464 dev=ens18
+[2026-10-18 13:44:44][INFO][report]client-->server:(original:755154 pkt;957420492 byte) (fec:943644 pkt,1205775112 byte)  server-->client:(original:755649 pkt;958139600 byte) (fec:947138 pkt;1210403868 byte)
+[2026-10-18 13:45:01][INFO][client] path[0] RUNNING owd=25.92ms jit=0.20ms loss=12% rate=12.9Mbps tx=979580 rx=931593 dev=ens18
+[2026-10-18 13:45:01][INFO][client] path[1] RUNNING owd=30.93ms jit=0.08ms loss=0% rate=10.6Mbps tx=975996 rx=960935 dev=ens18
+[2026-10-18 13:45:31][INFO][client] path[0] RUNNING owd=25.70ms jit=0.28ms loss=0% rate=17.1Mbps tx=980107 rx=932087 dev=ens18
+[2026-10-18 13:45:31][INFO][client] path[1] RUNNING owd=30.73ms jit=0.14ms loss=0% rate=36.8Mbps tx=976486 rx=961413 dev=ens18
+[2026-10-18 13:45:44][INFO][report]client-->server:(original:755158 pkt;957420752 byte) (fec:943651 pkt,1205775666 byte)  server-->client:(original:755650 pkt;958139696 byte) (fec:947140 pkt;1210404080 byte)
+[2026-10-18 13:46:01][INFO][client] path[0] RUNNING owd=25.86ms jit=0.19ms loss=0% rate=20.7Mbps tx=980627 rx=932581 dev=ens18
+[2026-10-18 13:46:01][INFO][client] path[1] RUNNING owd=30.88ms jit=0.07ms loss=0% rate=20.7Mbps tx=976961 rx=961875 dev=ens18
+[2026-10-18 13:46:31][INFO][client] path[0] RUNNING owd=25.88ms jit=0.08ms loss=0% rate=17.1Mbps tx=981138 rx=933068 dev=ens18
+[2026-10-18 13:46:31][INFO][client] path[1] RUNNING owd=30.98ms jit=0.11ms loss=5% rate=9.7Mbps tx=977443 rx=962348 dev=ens18
+[2026-10-18 13:46:44][INFO][report]client-->server:(original:755160 pkt;957420824 byte) (fec:943655 pkt,1205775850 byte)  server-->client:(original:755650 pkt;958139696 byte) (fec:947140 pkt;1210404080 byte)
+[2026-10-18 13:47:01][INFO][client] path[0] RUNNING owd=25.79ms jit=0.06ms loss=0% rate=18.9Mbps tx=981652 rx=933558 dev=ens18
+[2026-10-18 13:47:01][INFO][client] path[1] RUNNING owd=30.92ms jit=0.10ms loss=0% rate=30.4Mbps tx=977968 rx=962865 dev=ens18
+[2026-10-18 13:47:31][INFO][client] path[0] RUNNING owd=25.89ms jit=0.09ms loss=0% rate=12.9Mbps tx=982179 rx=934065 dev=ens18
+[2026-10-18 13:47:31][INFO][client] path[1] RUNNING owd=30.93ms jit=0.13ms loss=0% rate=14.2Mbps tx=978466 rx=963353 dev=ens18
+[2026-10-18 13:47:45][INFO][report]client-->server:(original:755165 pkt;957421120 byte) (fec:943664 pkt,1205776496 byte)  server-->client:(original:755651 pkt;958139792 byte) (fec:947142 pkt;1210404292 byte)
+[2026-10-18 13:48:01][INFO][client] path[0] RUNNING owd=25.81ms jit=0.07ms loss=0% rate=8.0Mbps tx=982691 rx=934554 dev=ens18
+[2026-10-18 13:48:01][INFO][client] path[1] RUNNING owd=30.91ms jit=0.08ms loss=5% rate=8.0Mbps tx=978985 rx=963859 dev=ens18
+[2026-10-18 13:48:31][INFO][client] path[0] RUNNING owd=25.83ms jit=0.09ms loss=6% rate=12.9Mbps tx=983212 rx=935055 dev=ens18
+[2026-10-18 13:48:31][INFO][client] path[1] RUNNING owd=30.87ms jit=0.04ms loss=0% rate=30.4Mbps tx=979517 rx=964383 dev=ens18
+[2026-10-18 13:48:45][INFO][report]client-->server:(original:755167 pkt;957421192 byte) (fec:943668 pkt,1205776680 byte)  server-->client:(original:755651 pkt;958139792 byte) (fec:947142 pkt;1210404292 byte)
+[2026-10-18 13:49:01][INFO][client] path[0] RUNNING owd=25.91ms jit=0.09ms loss=5% rate=8.8Mbps tx=983730 rx=935550 dev=ens18
+[2026-10-18 13:49:01][INFO][client] path[1] RUNNING owd=30.98ms jit=0.06ms loss=0% rate=8.0Mbps tx=979981 rx=964832 dev=ens18
+[2026-10-18 13:49:31][INFO][client] path[0] RUNNING owd=25.84ms jit=0.10ms loss=11% rate=8.8Mbps tx=984227 rx=936013 dev=ens18
+[2026-10-18 13:49:31][INFO][client] path[1] RUNNING owd=30.94ms jit=0.08ms loss=2% rate=22.8Mbps tx=980490 rx=965330 dev=ens18
+[2026-10-18 13:49:46][INFO][report]client-->server:(original:755172 pkt;957421488 byte) (fec:943677 pkt,1205777326 byte)  server-->client:(original:755652 pkt;958139888 byte) (fec:947144 pkt;1210404504 byte)
+[2026-10-18 13:50:01][INFO][client] path[0] RUNNING owd=25.79ms jit=0.08ms loss=5% rate=40.4Mbps tx=984720 rx=936474 dev=ens18
+[2026-10-18 13:50:01][INFO][client] path[1] RUNNING owd=30.89ms jit=0.09ms loss=12% rate=36.8Mbps tx=981009 rx=965841 dev=ens18
+[2026-10-18 13:50:31][INFO][client] path[0] RUNNING owd=25.81ms jit=0.06ms loss=11% rate=18.9Mbps tx=985242 rx=936966 dev=ens18
+[2026-10-18 13:50:31][INFO][client] path[1] RUNNING owd=30.96ms jit=0.06ms loss=0% rate=18.9Mbps tx=981500 rx=966319 dev=ens18
+[2026-10-18 13:50:46][INFO][report]client-->server:(original:755174 pkt;957421560 byte) (fec:943681 pkt,1205777510 byte)  server-->client:(original:755652 pkt;958139888 byte) (fec:947144 pkt;1210404504 byte)
+[2026-10-18 13:51:01][INFO][client] path[0] RUNNING owd=25.81ms jit=0.09ms loss=0% rate=11.7Mbps tx=985767 rx=937466 dev=ens18
+[2026-10-18 13:51:01][INFO][client] path[1] RUNNING owd=30.98ms jit=0.10ms loss=0% rate=10.6Mbps tx=982025 rx=966833 dev=ens18
+[2026-10-18 13:51:31][INFO][client] path[0] RUNNING owd=25.92ms jit=0.07ms loss=0% rate=8.8Mbps tx=986294 rx=937970 dev=ens18
+[2026-10-18 13:51:31][INFO][client] path[1] RUNNING owd=30.94ms jit=0.06ms loss=0% rate=30.4Mbps tx=982500 rx=967300 dev=ens18
+[2026-10-18 13:51:46][INFO][report]client-->server:(original:755178 pkt;957421820 byte) (fec:943688 pkt,1205778064 byte)  server-->client:(original:755653 pkt;958139984 byte) (fec:947146 pkt;1210404716 byte)
+[2026-10-18 13:52:01][INFO][client] path[0] RUNNING owd=25.89ms jit=0.17ms loss=0% rate=20.7Mbps tx=986811 rx=938468 dev=ens18
+[2026-10-18 13:52:01][INFO][client] path[1] RUNNING owd=30.89ms jit=0.09ms loss=5% rate=18.9Mbps tx=982974 rx=967768 dev=ens18
+[2026-10-18 13:52:31][INFO][client] path[0] RUNNING owd=25.92ms jit=0.13ms loss=0% rate=18.9Mbps tx=987325 rx=938952 dev=ens18
+[2026-10-18 13:52:31][INFO][client] path[1] RUNNING owd=30.96ms jit=0.12ms loss=0% rate=12.9Mbps tx=983559 rx=968346 dev=ens18
+[2026-10-18 13:52:46][INFO][report]client-->server:(original:755181 pkt;957421928 byte) (fec:943694 pkt,1205778340 byte)  server-->client:(original:755653 pkt;958139984 byte) (fec:947146 pkt;1210404716 byte)
+[2026-10-18 13:53:01][INFO][client] path[0] RUNNING owd=25.95ms jit=0.09ms loss=5% rate=33.4Mbps tx=987842 rx=939448 dev=ens18
+[2026-10-18 13:53:01][INFO][client] path[1] RUNNING owd=30.98ms jit=0.07ms loss=5% rate=8.0Mbps tx=984040 rx=968817 dev=ens18
+[2026-10-18 13:53:31][INFO][client] path[0] RUNNING owd=25.91ms jit=0.06ms loss=11% rate=30.4Mbps tx=988352 rx=939924 dev=ens18
+[2026-10-18 13:53:31][INFO][client] path[1] RUNNING owd=30.97ms jit=0.19ms loss=5% rate=18.9Mbps tx=984607 rx=969369 dev=ens18
+[2026-10-18 13:53:46][INFO][report]client-->server:(original:755185 pkt;957422188 byte) (fec:943701 pkt,1205778894 byte)  server-->client:(original:755654 pkt;958140080 byte) (fec:947148 pkt;1210404928 byte)
+[2026-10-18 13:54:01][INFO][client] path[0] RUNNING owd=25.95ms jit=0.14ms loss=13% rate=33.4Mbps tx=988861 rx=940409 dev=ens18
+[2026-10-18 13:54:01][INFO][client] path[1] RUNNING owd=30.98ms jit=0.05ms loss=0% rate=9.7Mbps tx=985173 rx=969923 dev=ens18
+[2026-10-18 13:54:31][INFO][client] path[0] RUNNING owd=25.93ms jit=0.06ms loss=11% rate=33.4Mbps tx=989375 rx=940900 dev=ens18
+[2026-10-18 13:54:31][INFO][client] path[1] RUNNING owd=31.01ms jit=0.09ms loss=0% rate=36.8Mbps tx=985703 rx=970442 dev=ens18
+[2026-10-18 13:54:47][INFO][report]client-->server:(original:755188 pkt;957422296 byte) (fec:943707 pkt,1205779170 byte)  server-->client:(original:755654 pkt;958140080 byte) (fec:947148 pkt;1210404928 byte)
+[2026-10-18 13:55:01][INFO][client] path[0] RUNNING owd=25.83ms jit=0.06ms loss=0% rate=27.6Mbps tx=989900 rx=941405 dev=ens18
+[2026-10-18 13:55:01][INFO][client] path[1] RUNNING owd=30.93ms jit=0.07ms loss=5% rate=15.6Mbps tx=986203 rx=970934 dev=ens18
+[2026-10-18 13:55:31][INFO][client] path[0] RUNNING owd=25.88ms jit=0.04ms loss=5% rate=18.9Mbps tx=990424 rx=941913 dev=ens18
+[2026-10-18 13:55:31][INFO][client] path[1] RUNNING owd=30.93ms jit=0.12ms loss=0% rate=9.7Mbps tx=986718 rx=971440 dev=ens18
+[2026-10-18 13:55:47][INFO][report]client-->server:(original:755192 pkt;957422556 byte) (fec:943714 pkt,1205779724 byte)  server-->client:(original:755655 pkt;958140176 byte) (fec:947150 pkt;1210405140 byte)
+[2026-10-18 13:56:01][INFO][client] path[0] RUNNING owd=25.89ms jit=0.07ms loss=10% rate=17.1Mbps tx=990931 rx=942405 dev=ens18
+[2026-10-18 13:56:01][INFO][client] path[1] RUNNING owd=31.05ms jit=0.07ms loss=5% rate=30.4Mbps tx=987240 rx=971949 dev=ens18
+[2026-10-18 13:56:31][INFO][client] path[0] RUNNING owd=25.90ms jit=0.03ms loss=5% rate=11.7Mbps tx=991431 rx=942889 dev=ens18
+[2026-10-18 13:56:31][INFO][client] path[1] RUNNING owd=30.98ms jit=0.15ms loss=2% rate=44.5Mbps tx=987754 rx=972453 dev=ens18
+[2026-10-18 13:56:48][INFO][report]client-->server:(original:755195 pkt;957422664 byte) (fec:943720 pkt,1205780000 byte)  server-->client:(original:755655 pkt;958140176 byte) (fec:947150 pkt;1210405140 byte)
+[2026-10-18 13:57:01][INFO][client] path[0] RUNNING owd=25.88ms jit=0.10ms loss=5% rate=10.6Mbps tx=991930 rx=943372 dev=ens18
+[2026-10-18 13:57:01][INFO][client] path[1] RUNNING owd=30.93ms jit=0.05ms loss=5% rate=30.4Mbps tx=988250 rx=972936 dev=ens18
+[2026-10-18 13:57:31][INFO][client] path[0] RUNNING owd=25.81ms jit=0.04ms loss=5% rate=44.5Mbps tx=992447 rx=943870 dev=ens18
+[2026-10-18 13:57:31][INFO][client] path[1] RUNNING owd=30.93ms jit=0.07ms loss=0% rate=33.4Mbps tx=988828 rx=973504 dev=ens18
+[2026-10-18 13:57:48][INFO][report]client-->server:(original:755199 pkt;957422924 byte) (fec:943727 pkt,1205780554 byte)  server-->client:(original:755656 pkt;958140272 byte) (fec:947152 pkt;1210405352 byte)
+[2026-10-18 13:58:01][INFO][client] path[0] RUNNING owd=25.86ms jit=0.07ms loss=10% rate=9.7Mbps tx=992957 rx=944366 dev=ens18
+[2026-10-18 13:58:01][INFO][client] path[1] RUNNING owd=30.93ms jit=0.07ms loss=0% rate=18.9Mbps tx=989315 rx=973979 dev=ens18
+[2026-10-18 13:58:31][INFO][client] path[0] RUNNING owd=25.78ms jit=0.12ms loss=6% rate=10.6Mbps tx=993433 rx=944819 dev=ens18
+[2026-10-18 13:58:31][INFO][client] path[1] RUNNING owd=30.95ms jit=0.07ms loss=0% rate=11.7Mbps tx=989805 rx=974455 dev=ens18
+[2026-10-18 13:58:48][INFO][report]client-->server:(original:755201 pkt;957422996 byte) (fec:943731 pkt,1205780738 byte)  server-->client:(original:755656 pkt;958140272 byte) (fec:947152 pkt;1210405352 byte)
+[2026-10-18 13:59:01][INFO][client] path[0] RUNNING owd=25.87ms jit=0.10ms loss=11% rate=30.4Mbps tx=993935 rx=945302 dev=ens18
+[2026-10-18 13:59:01][INFO][client] path[1] RUNNING owd=30.84ms jit=0.07ms loss=0% rate=30.4Mbps tx=990286 rx=974930 dev=ens18
+[2026-10-18 13:59:31][INFO][client] path[0] RUNNING owd=25.86ms jit=0.10ms loss=0% rate=8.8Mbps tx=994439 rx=945788 dev=ens18
+[2026-10-18 13:59:31][INFO][client] path[1] RUNNING owd=30.95ms jit=0.14ms loss=0% rate=18.9Mbps tx=990768 rx=975400 dev=ens18
+[2026-10-18 13:59:49][INFO][report]client-->server:(original:755206 pkt;957423292 byte) (fec:943740 pkt,1205781384 byte)  server-->client:(original:755657 pkt;958140368 byte) (fec:947154 pkt;1210405564 byte)
+[2026-10-18 14:00:01][INFO][client] path[0] RUNNING owd=25.87ms jit=0.09ms loss=0% rate=33.4Mbps tx=994964 rx=946296 dev=ens18
+[2026-10-18 14:00:01][INFO][client] path[1] RUNNING owd=30.98ms jit=0.07ms loss=0% rate=10.6Mbps tx=991279 rx=975900 dev=ens18
+[2026-10-18 14:00:31][INFO][client] path[0] RUNNING owd=25.76ms jit=0.13ms loss=0% rate=20.7Mbps tx=995460 rx=946778 dev=ens18
+[2026-10-18 14:00:31][INFO][client] path[1] RUNNING owd=30.83ms jit=0.15ms loss=5% rate=30.4Mbps tx=991759 rx=976370 dev=ens18
+[2026-10-18 14:00:49][INFO][report]client-->server:(original:755208 pkt;957423364 byte) (fec:943744 pkt,1205781568 byte)  server-->client:(original:755657 pkt;958140368 byte) (fec:947154 pkt;1210405564 byte)
+[2026-10-18 14:01:01][INFO][client] path[0] RUNNING owd=25.91ms jit=0.10ms loss=26% rate=15.6Mbps tx=995941 rx=947236 dev=ens18
+[2026-10-18 14:01:01][INFO][client] path[1] RUNNING owd=30.97ms jit=0.05ms loss=0% rate=22.8Mbps tx=992250 rx=976849 dev=ens18
+[2026-10-18 14:01:31][INFO][client] path[0] RUNNING owd=25.98ms jit=0.07ms loss=0% rate=17.1Mbps tx=996428 rx=947708 dev=ens18
+[2026-10-18 14:01:31][INFO][client] path[1] RUNNING owd=31.01ms jit=0.06ms loss=0% rate=22.8Mbps tx=992738 rx=977328 dev=ens18
+[2026-10-18 14:01:50][INFO][report]client-->server:(original:755213 pkt;957423660 byte) (fec:943753 pkt,1205782214 byte)  server-->client:(original:755658 pkt;958140464 byte) (fec:947156 pkt;1210405776 byte)
+[2026-10-18 14:02:01][INFO][client] path[0] RUNNING owd=25.95ms jit=0.21ms loss=0% rate=18.9Mbps tx=996945 rx=948207 dev=ens18
+[2026-10-18 14:02:01][INFO][client] path[1] RUNNING owd=31.10ms jit=0.18ms loss=0% rate=8.0Mbps tx=993255 rx=977830 dev=ens18
+[2026-10-18 14:02:31][INFO][client] path[0] RUNNING owd=25.98ms jit=0.10ms loss=0% rate=20.7Mbps tx=997444 rx=948692 dev=ens18
+[2026-10-18 14:02:31][INFO][client] path[1] RUNNING owd=31.01ms jit=0.12ms loss=0% rate=20.7Mbps tx=993728 rx=978297 dev=ens18
+[2026-10-18 14:02:50][INFO][report]client-->server:(original:755215 pkt;957423732 byte) (fec:943757 pkt,1205782398 byte)  server-->client:(original:755658 pkt;958140464 byte) (fec:947156 pkt;1210405776 byte)
+[2026-10-18 14:03:01][INFO][client] path[0] RUNNING owd=26.00ms jit=0.08ms loss=0% rate=30.4Mbps tx=997951 rx=949183 dev=ens18
+[2026-10-18 14:03:01][INFO][client] path[1] RUNNING owd=31.16ms jit=0.09ms loss=13% rate=12.9Mbps tx=994201 rx=978761 dev=ens18
+[2026-10-18 14:03:31][INFO][client] path[0] RUNNING owd=26.04ms jit=0.08ms loss=0% rate=27.6Mbps tx=998481 rx=949695 dev=ens18
+[2026-10-18 14:03:31][INFO][client] path[1] RUNNING owd=31.14ms jit=0.13ms loss=0% rate=10.6Mbps tx=994691 rx=979241 dev=ens18
+[2026-10-18 14:03:50][INFO][report]client-->server:(original:755217 pkt;957423804 byte) (fec:943761 pkt,1205782582 byte)  server-->client:(original:755658 pkt;958140464 byte) (fec:947156 pkt;1210405776 byte)
+[2026-10-18 14:04:01][INFO][client] path[0] RUNNING owd=25.96ms jit=0.05ms loss=0% rate=22.8Mbps tx=999001 rx=950200 dev=ens18
+[2026-10-18 14:04:01][INFO][client] path[1] RUNNING owd=31.06ms jit=0.07ms loss=5% rate=27.6Mbps tx=995176 rx=979717 dev=ens18
+[2026-10-18 14:04:31][INFO][client] path[0] RUNNING owd=26.03ms jit=0.09ms loss=0% rate=18.9Mbps tx=999519 rx=950705 dev=ens18
+[2026-10-18 14:04:31][INFO][client] path[1] RUNNING owd=31.00ms jit=0.06ms loss=0% rate=18.9Mbps tx=995670 rx=980201 dev=ens18
+[2026-10-18 14:04:51][INFO][report]client-->server:(original:755222 pkt;957424100 byte) (fec:943770 pkt,1205783228 byte)  server-->client:(original:755659 pkt;958140560 byte) (fec:947158 pkt;1210405988 byte)
+[2026-10-18 14:05:01][INFO][client] path[0] RUNNING owd=26.13ms jit=0.14ms loss=7% rate=11.7Mbps tx=1000027 rx=951201 dev=ens18
+[2026-10-18 14:05:01][INFO][client] path[1] RUNNING owd=31.13ms jit=0.06ms loss=0% rate=8.8Mbps tx=996176 rx=980694 dev=ens18
+[2026-10-18 14:05:31][INFO][client] path[0] RUNNING owd=26.09ms jit=0.26ms loss=0% rate=12.9Mbps tx=1000529 rx=951688 dev=ens18
+[2026-10-18 14:05:31][INFO][client] path[1] RUNNING owd=31.06ms jit=0.08ms loss=0% rate=33.4Mbps tx=996666 rx=981175 dev=ens18
+[2026-10-18 14:05:51][INFO][report]client-->server:(original:755224 pkt;957424172 byte) (fec:943774 pkt,1205783412 byte)  server-->client:(original:755659 pkt;958140560 byte) (fec:947158 pkt;1210405988 byte)
+[2026-10-18 14:06:01][INFO][client] path[0] RUNNING owd=26.04ms jit=0.10ms loss=5% rate=14.2Mbps tx=1001036 rx=952174 dev=ens18
+[2026-10-18 14:06:01][INFO][client] path[1] RUNNING owd=31.13ms jit=0.07ms loss=0% rate=15.6Mbps tx=997142 rx=981643 dev=ens18
+[2026-10-18 14:06:31][INFO][client] path[0] RUNNING owd=26.01ms jit=0.11ms loss=0% rate=8.8Mbps tx=1001536 rx=952654 dev=ens18
+[2026-10-18 14:06:31][INFO][client] path[1] RUNNING owd=31.08ms jit=0.13ms loss=0% rate=8.8Mbps tx=997706 rx=982199 dev=ens18
+[2026-10-18 14:06:52][INFO][report]client-->server:(original:755229 pkt;957424468 byte) (fec:943783 pkt,1205784058 byte)  server-->client:(original:755660 pkt;958140656 byte) (fec:947160 pkt;1210406200 byte)
+[2026-10-18 14:07:01][INFO][client] path[0] RUNNING owd=25.92ms jit=0.10ms loss=0% rate=18.9Mbps tx=1002024 rx=953124 dev=ens18
+[2026-10-18 14:07:01][INFO][client] path[1] RUNNING owd=31.01ms jit=0.08ms loss=0% rate=20.7Mbps tx=998183 rx=982671 dev=ens18
+[2026-10-18 14:07:31][INFO][client] path[0] RUNNING owd=25.97ms jit=0.05ms loss=0% rate=33.4Mbps tx=1002519 rx=953602 dev=ens18
+[2026-10-18 14:07:31][INFO][client] path[1] RUNNING owd=31.03ms jit=0.10ms loss=0% rate=10.6Mbps tx=998655 rx=983133 dev=ens18
+[2026-10-18 14:07:52][INFO][report]client-->server:(original:755231 pkt;957424540 byte) (fec:943787 pkt,1205784242 byte)  server-->client:(original:755660 pkt;958140656 byte) (fec:947160 pkt;1210406200 byte)
+[2026-10-18 14:08:01][INFO][client] path[0] RUNNING owd=26.01ms jit=0.10ms loss=12% rate=8.8Mbps tx=1003008 rx=954077 dev=ens18
+[2026-10-18 14:08:01][INFO][client] path[1] RUNNING owd=31.07ms jit=0.13ms loss=0% rate=33.4Mbps tx=999132 rx=983603 dev=ens18
+[2026-10-18 14:08:31][INFO][client] path[0] RUNNING owd=25.86ms jit=0.05ms loss=5% rate=12.9Mbps tx=1003515 rx=954567 dev=ens18
+[2026-10-18 14:08:31][INFO][client] path[1] RUNNING owd=31.01ms jit=0.13ms loss=0% rate=18.9Mbps tx=999622 rx=984085 dev=ens18
+[2026-10-18 14:08:52][INFO][report]client-->server:(original:755235 pkt;957424800 byte) (fec:943794 pkt,1205784796 byte)  server-->client:(original:755661 pkt;958140752 byte) (fec:947162 pkt;1210406412 byte)
+[2026-10-18 14:09:01][INFO][client] path[0] RUNNING owd=25.90ms jit=0.08ms loss=0% rate=11.7Mbps tx=1004018 rx=955050 dev=ens18
+[2026-10-18 14:09:01][INFO][client] path[1] RUNNING owd=31.05ms jit=0.06ms loss=5% rate=12.9Mbps tx=1000093 rx=984549 dev=ens18
+[2026-10-18 14:09:31][INFO][client] path[0] RUNNING owd=25.63ms jit=0.14ms loss=0% rate=12.9Mbps tx=1004524 rx=955539 dev=ens18
+[2026-10-18 14:09:31][INFO][client] path[1] RUNNING owd=30.75ms jit=0.12ms loss=0% rate=33.4Mbps tx=1000565 rx=985014 dev=ens18
+[2026-10-18 14:09:53][INFO][report]client-->server:(original:755238 pkt;957424908 byte) (fec:943800 pkt,1205785072 byte)  server-->client:(original:755661 pkt;958140752 byte) (fec:947162 pkt;1210406412 byte)
+[2026-10-18 14:10:01][INFO][client] path[0] RUNNING owd=26.08ms jit=0.10ms loss=0% rate=10.6Mbps tx=1005038 rx=956033 dev=ens18
+[2026-10-18 14:10:01][INFO][client] path[1] RUNNING owd=31.12ms jit=0.08ms loss=6% rate=18.9Mbps tx=1001060 rx=985495 dev=ens18

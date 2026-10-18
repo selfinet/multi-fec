@@ -1,0 +1,45 @@
+[23:11:36] sv1 운영(시작 전): MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
+[23:11:44] 샘플러 시작 — 30초 유휴 기준선
+[23:17:45] 구간 1 완료 (up 0.00000% dn 0.03328%)  누적 300s
+[23:23:17] 구간 2 완료 (up 0.00000% dn 0.00160%)  누적 600s
+[23:28:49] 구간 3 완료 (up 0.07136% dn 0.07776%)  누적 900s
+[23:34:21] 구간 4 완료 (up 0.03616% dn 0.00000%)  누적 1200s
+[23:39:53] 구간 5 완료 (up 0.06240% dn 0.03488%)  누적 1500s
+[23:45:24] 구간 6 완료 (up 0.01248% dn 0.00000%)  누적 1800s
+[23:50:55] 구간 7 완료 (up 0.00096% dn 0.00192%)  누적 2100s
+[23:56:27] 구간 8 완료 (up 0.00000% dn 0.00000%)  누적 2400s
+[00:01:59] 구간 9 완료 (up 0.05664% dn 0.02880%)  누적 2700s
+[00:07:30] 구간 10 완료 (up 0.00000% dn 0.00096%)  누적 3000s
+[00:13:02] 구간 11 완료 (up 0.00000% dn 0.00000%)  누적 3300s
+[00:18:33] 구간 12 완료 (up 0.00000% dn 0.00000%)  누적 3600s
+== c pid 1209253 listen 127.0.0.1:51821
+   RSS MB (부하 시작 기준)   0m  12.09 10m  15.53 20m  16.05 30m  16.05 40m  16.05 50m  16.05 60m  16.05   | 유휴 12.09 · 최대 16.05
+   계단(≥64 kB) 7회: 0m +508kB, 0m +120kB, 1m +196kB, 3m +536kB, 10m +880kB, 13m +124kB, 15m +408kB
+   마지막 30분: 변화 +0 kB · 기울기 +0 kB/h · 범위 16436~16436 kB
+   FD 8~8 · 스레드 1~1 · CPU 처음 10분 32.0% → 마지막 10분 33.5%
+== r pid 1320409 listen 192.168.100.88:443
+   RSS MB (부하 시작 기준)   0m   2.22 10m   2.22 20m   2.22 30m   2.22 40m   2.22 50m   2.22 60m   2.22   | 유휴 2.22 · 최대 2.22
+   계단(≥64 kB) 0회
+   마지막 30분: 변화 +0 kB · 기울기 +0 kB/h · 범위 2272~2272 kB
+   FD 7~8 · 스레드 1~1 · CPU 처음 10분 24.7% → 마지막 10분 26.8%
+== r pid 1320411 listen 192.168.100.117:443
+   RSS MB (부하 시작 기준)   0m   2.22 10m   2.22 20m   2.22 30m   2.22 40m   2.22 50m   2.22 60m   2.22   | 유휴 2.22 · 최대 2.22
+   계단(≥64 kB) 0회
+   마지막 30분: 변화 +0 kB · 기울기 +0 kB/h · 범위 2276~2276 kB
+   FD 7~8 · 스레드 1~1 · CPU 처음 10분 24.6% → 마지막 10분 26.2%
+== s pid 1200866 listen 192.168.100.102:443
+   RSS MB (부하 시작 기준)   0m  11.78 10m  26.96 20m  28.40 30m  28.78 40m  28.78 50m  28.78 60m  28.78   | 유휴 11.75 · 최대 28.78
+   계단(≥64 kB) 10회: 0m +540kB, 1m +212kB, 3m +1924kB, 3m +1496kB, 4m +132kB, 5m +144kB, 7m +392kB, 10m +9512kB, 18m +1476kB, 25m +392kB
+   마지막 30분: 변화 +0 kB · 기울기 +0 kB/h · 범위 29472~29472 kB
+   FD 8~8 · 스레드 1~1 · CPU 처음 10분 31.9% → 마지막 10분 34.4%
+[00:19:11] 측정 완료
+[00:19:11] ===== 원상 복구
+cat: /tmp/leak60_sampler.pid: No such file or directory
+cat: /tmp/leak60_sampler.pid: No such file or directory
+cat: /tmp/leak60_sampler.pid: No such file or directory
+multi-fec-client ddb8d458 sampler=0 active inactive inactive inactive 
+multi-fec-relay ddb8d458 sampler=0 inactive active active inactive 
+multi-fec-server ddb8d458 sampler=0 inactive inactive inactive active 
+10 packets transmitted, 10 received, 0% packet loss, time 1804ms
+rtt min/avg/max/mdev = 52.777/53.430/54.861/0.526 ms
+sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e

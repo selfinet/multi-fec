@@ -69,6 +69,24 @@ static int safe_addr(const std::string &s, address_t &a, bool with_port)
     return with_port ? a.from_str((char *)copy.c_str()) : a.from_str_ip_only((char *)copy.c_str());
 }
 
+/* A trailing "# ..." is a comment. systemd's EnvironmentFile does not strip inline
+ * comments, so `DEST_A=1.2.3.4:443   # relay ch1` reaches us as part of the value;
+ * 1.3.x ignored everything after the port, and service configs rely on that
+ * (DJ08M, 2026-10-19). Drop it with a warning instead of refusing to start. */
+static std::vector<std::string> split_spec(const char *spec, const char *what)
+{
+    std::vector<std::string> t = split_ws(spec);
+    for (size_t i = 0; i < t.size(); i++) {
+        if (t[i][0] != '#') continue;
+        /* never echo the value: a route spec starts with the key */
+        mylog(log_warn, "%s: trailing \"# ...\" comment ignored — systemd EnvironmentFile keeps inline "
+              "comments in the value; put comments on their own line\n", what);
+        t.resize(i);
+        break;
+    }
+    return t;
+}
+
 bool mf_file_too_open(const char *path)
 {
     struct stat st;
@@ -81,7 +99,7 @@ bool mf_file_too_open(const char *path)
 int mf_parse_path_spec(const char *spec, PathSpec &ps, std::string &err)
 {
     memset(&ps, 0, sizeof(ps));
-    std::vector<std::string> t = split_ws(spec);
+    std::vector<std::string> t = split_spec(spec, "--path");
     if (t.empty()) { err = "empty path"; return -1; }
 
     /* first token: "ip:port" (source auto) or the original "local:remote:port" */
@@ -139,7 +157,7 @@ int mf_parse_path_spec(const char *spec, PathSpec &ps, std::string &err)
 int mf_parse_route_spec(const char *spec, route_entry_t &re, std::string &err)
 {
     memset(&re, 0, sizeof(re));
-    std::vector<std::string> t = split_ws(spec);
+    std::vector<std::string> t = split_spec(spec, "--route");
     if (t.size() < 2) { err = "route is \"<key> <ip:port> [via if] [gw ip] [local ip]\""; return -1; }
     if (t[0].size() > sizeof(re.key_str) - 1) { err = "route key longer than 999 characters"; return -1; }
     strcpy(re.key_str, t[0].c_str());
