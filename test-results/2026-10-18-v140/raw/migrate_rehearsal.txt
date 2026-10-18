@@ -1,0 +1,37 @@
+[00:58:23] 1단계 후 ping: 0% packet loss
+== multi-fec-relay.service → 인스턴스 relay  (mode relay)
+ result: 1 error(s), 0 warning(s)
+--- 지문 대조 (key): 실행 중 kf:53d21bbd  /  새 설정 kf:53d21bbd  →  일치
+== multi-fec-relay-b.service → 인스턴스 relay-b  (mode relay)
+ result: 1 error(s), 0 warning(s)
+--- 지문 대조 (key): 실행 중 kf:53d21bbd  /  새 설정 kf:53d21bbd  →  일치
+== multi-fec-server.service → 인스턴스 server  (mode server)
+ result: 1 error(s), 0 warning(s)
+--- 지문 대조 (key): 실행 중 kf:53d21bbd  /  새 설정 kf:53d21bbd  →  일치
+== multi-fec-client.service → 인스턴스 client  (mode client)
+ result: 1 error(s), 0 warning(s)
+--- 지문 대조 (key): 실행 중 kf:53d21bbd  /  새 설정 kf:53d21bbd  →  일치
+[00:58:30] 전환 multi-fec-relay → multi-fec@relay
+  active · 포트 프로세스 2 · ps: /usr/sbin/multi-fec-dist --config /etc/multi-fec/instances/relay.conf|
+  ping: 0% packet loss
+[00:58:39] 전환 multi-fec-relay-b → multi-fec@relay-b
+  active · 포트 프로세스 2 · ps: /usr/sbin/multi-fec-dist --config /etc/multi-fec/instances/relay.conf|/usr/sbin/multi-fec-dist --config /etc/multi-fec/instances/relay-b.con|
+  ping: 0% packet loss
+[00:58:47] 전환 multi-fec-server → multi-fec@server
+  active · 포트 프로세스 1 · ps: /usr/sbin/multi-fec-dist --config /etc/multi-fec/instances/server.conf|
+  ping: 0% packet loss
+[00:58:57] 전환 multi-fec-client → multi-fec@client
+  active · 포트 프로세스 2 · ps: /usr/sbin/multi-fec-dist --config /etc/multi-fec/instances/client.conf|
+  ping: 0% packet loss
+client 경로: path[0] RUNNING dev=ens18 path[1] RUNNING dev=ens18 
+FIFO: client.fifo / server.fifo
+[00:59:33] 롤백 multi-fec@client → multi-fec-client
+[00:59:35] 롤백 multi-fec@server → multi-fec-server
+[00:59:37] 롤백 multi-fec@relay-b → multi-fec-relay-b
+[00:59:40] 롤백 multi-fec@relay → multi-fec-relay
+롤백 후 ping: 0% packet loss
+multi-fec-client ddb8d458 instances=0 tmpl=0 confs=client.conf netem.conf active inactive inactive inactive 
+multi-fec-relay ddb8d458 instances=0 tmpl=0 confs=netem.conf relay-b.conf relay.conf inactive active active inactive 
+multi-fec-server ddb8d458 instances=0 tmpl=0 confs=server.conf inactive inactive inactive active 
+rtt min/avg/max/mdev = 53.003/54.452/64.075/3.229 ms
+sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
