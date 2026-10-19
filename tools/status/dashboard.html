@@ -57,7 +57,11 @@ select,button{font:inherit;background:var(--chip);color:var(--fg);border:1px sol
 </header>
 <main>
   <section id="alertsec"><h2>경보</h2><div id="alerts" class="note">없음</div></section>
-  <section><h2>경로 — 지사(client) × path</h2><div class="scroll" id="matrix"></div>
+  <section><h2>relay 기준 — 지사 × relay</h2><div class="scroll" id="rmatrix"></div>
+    <div class="note">relay 로그·소켓만으로 만든 표다. 지사 = 키 지문(서비스망은 PSK 가 지사). 칸 = 그 relay 를 지나는 세션(지사 주소·지속 시간).
+    relay 는 60초 무통신 세션을 지우므로 "없음" 은 최소 1분 이상 끊겼다는 뜻이다. 세션별 트래픽 양은 OS 가 주지 않아 표시하지 않는다.</div></section>
+  <section><h2>relay 세션</h2><div class="scroll" id="rsessions"></div></section>
+  <section id="pathsec"><h2>경로 — 지사(client) × path</h2><div class="scroll" id="matrix"></div>
     <div class="note">owd 는 편도 지연이며 양쪽 시계에 의존한다. 1.3.2 이하 클라이언트는 owd 대신 옛 rtt 표기라 비워 둔다.</div></section>
   <section id="chart"><h2 id="ctitle">추이</h2>
     <div class="ctl"><select id="hours"><option value="1">1시간</option><option value="6" selected>6시간</option><option value="24">24시간</option><option value="168">7일</option></select>
@@ -87,7 +91,8 @@ function renderAlerts(alerts,now){
 function renderMatrix(hosts){
   const rows=[];
   for(const h of hosts)for(const u of h.units||[])if(u.role==='client'&&u.paths)rows.push([h,u]);
-  if(!rows.length){$('#matrix').innerHTML='<span class="note">client 경로 보고 없음</span>';return}
+  $('#pathsec').style.display=rows.length?'':'none';
+  if(!rows.length){$('#matrix').innerHTML='';return}
   const maxp=Math.max(...rows.map(([,u])=>u.paths.length));
   let s='<table><tr><th>호스트 / 유닛</th><th>버전</th>';
   for(let i=0;i<maxp;i++)s+=`<th>path[${i}]</th>`;
@@ -98,6 +103,25 @@ function renderMatrix(hosts){
       s+=p?`<td><span class="st ${esc(p.status)}">${esc(p.status)}</span> ${p.owd!=null?`<a class="lnk" data-h="${esc(h.host)}" data-u="${esc(u.name)}" data-s="owd" data-p="${i}">${p.owd.toFixed(1)}ms</a>`:''} <a class="lnk" data-h="${esc(h.host)}" data-u="${esc(u.name)}" data-s="loss" data-p="${i}">loss ${p.loss}%</a>${p.dev?` <span class="mut">${esc(p.dev)}</span>`:''}</td>`:'<td class="mut">—</td>'}
     s+='</tr>'}
   $('#matrix').innerHTML=s+'</table>';
+}
+function renderRelay(st){
+  const L=st.labels||{},bn=b=>L[b]?`${esc(L[b])} <span class="mut">${esc(b)}</span>`:esc(b);
+  const relays=[],sess=[];
+  for(const h of st.hosts)for(const u of h.units||[])if(u.role==='relay'){relays.push({id:`${h.host}/${u.name}`,h,u});for(const x of u.session_list||[])sess.push({r:`${h.host}/${u.name}`,host:h.host,unit:u.name,...x})}
+  if(!relays.length){$('#rmatrix').innerHTML='<span class="note">relay 보고 없음</span>';$('#rsessions').innerHTML='';return}
+  const bid=x=>x.kf||x.client.replace(/:\d+$/,'');
+  const branches=new Set(sess.map(bid));(st.branch_seen||[]).forEach(x=>branches.add(x.branch));
+  const seen={};(st.branch_seen||[]).forEach(x=>seen[x.relay+'|'+x.branch]=x.last);
+  let t='<table><tr><th>지사</th>'+relays.map(r=>`<th>${esc(r.h.host)}<br><span class="mut">${esc(r.u.name)} · ${esc(r.u.version||'?')}</span></th>`).join('')+'</tr>';
+  for(const b of [...branches].sort()){
+    t+=`<tr><td>${bn(b)}</td>`;
+    for(const r of relays){const xs=sess.filter(x=>x.r===r.id&&bid(x)===b);
+      if(xs.length)t+=`<td>${xs.map(x=>`<span class="st RUNNING">세션</span> ${esc(x.client)} <span class="mut">${x.since_ts?dur(st.now-x.since_ts):''}</span>`).join('<br>')}</td>`;
+      else{const l=seen[r.id+'|'+b];t+=l?`<td><span class="st DEGRADED">없음</span> <span class="mut">${dur(st.now-l)} 전 마지막</span></td>`:'<td class="mut">—</td>'}}
+    t+='</tr>'}
+  t+='<tr><td class="mut">relay 합계</td>'+relays.map(r=>`<td class="mut">세션 ${r.u.sessions??'?'} · 프로브 ${r.u.probes??0}${r.u.table_full?` · <b style="color:var(--crit)">포화 ${r.u.table_full}</b>`:''}</td>`).join('')+'</tr>';
+  $('#rmatrix').innerHTML=t+'</table>';
+  $('#rsessions').innerHTML=sess.length?'<table><tr><th>relay</th><th>지사</th><th>지사 주소</th><th>upstream</th><th>relay 소스</th><th class="n">지속</th><th class="n">수신큐</th></tr>'+sess.map(x=>`<tr><td>${esc(x.host)} / ${esc(x.unit)}</td><td>${bn(bid(x))}</td><td>${esc(x.client)}</td><td>${esc(x.upstream)}</td><td class="mut">${esc(x.local)}</td><td class="n">${x.since_ts?dur(st.now-x.since_ts):'?'}</td><td class="n">${x.recvq}</td></tr>`).join('')+'</table>':'<span class="note">세션 없음</span>';
 }
 function lk(h,u,s,label){return `<a class="lnk" data-h="${esc(h)}" data-u="${esc(u)}" data-s="${s}">${label}</a>`}
 function renderHosts(hosts,alerts){
@@ -131,7 +155,7 @@ async function refresh(){
     const crit=st.alerts.filter(a=>a.level==='crit').length,warn=st.alerts.filter(a=>a.level==='warn').length;
     const units=st.hosts.reduce((n,h)=>n+(h.units||[]).length,0);
     $('#sum').innerHTML=`<span class="pill">호스트 ${st.hosts.length}</span><span class="pill">유닛 ${units}</span>`+(crit?`<span class="pill crit">심각 ${crit}</span>`:'')+(warn?`<span class="pill warn">주의 ${warn}</span>`:'')+(!crit&&!warn?'<span class="pill ok">정상</span>':'');
-    renderAlerts(st.alerts,st.now);renderMatrix(st.hosts);renderHosts(st.hosts,st.alerts);renderEvents(ev);
+    renderAlerts(st.alerts,st.now);renderRelay(st);renderMatrix(st.hosts);renderHosts(st.hosts,st.alerts);renderEvents(ev);
     $('#upd').textContent='갱신 '+tm(st.now);
     if(chartSel)drawChart();
   }catch(e){$('#upd').textContent='갱신 실패: '+e}
@@ -140,7 +164,7 @@ document.addEventListener('click',e=>{const a=e.target.closest('a.lnk');if(!a)re
   chartSel={h:a.dataset.h,u:a.dataset.u,s:a.dataset.s,p:a.dataset.p??''};$('#chart').style.display='block';drawChart();$('#chart').scrollIntoView({behavior:'smooth',block:'nearest'})});
 $('#cclose').onclick=()=>{chartSel=null;$('#chart').style.display='none'};
 $('#hours').onchange=()=>chartSel&&drawChart();
-const LABEL={cpu:'CPU %',rss:'RSS MB',fd:'FD',sessions:'세션',drops:'소켓 drops (누적)',owd:'owd ms',loss:'loss %',rx_mbps:'RX Mbps',tx_mbps:'TX Mbps'};
+const LABEL={probes:'프로브 (누적)',cpu:'CPU %',rss:'RSS MB',fd:'FD',sessions:'세션',drops:'소켓 drops (누적)',owd:'owd ms',loss:'loss %',rx_mbps:'RX Mbps',tx_mbps:'TX Mbps'};
 async function drawChart(){
   const c=chartSel,hours=$('#hours').value;
   const q=new URLSearchParams({host:c.h,unit:c.u,series:c.s,hours,path:c.p});

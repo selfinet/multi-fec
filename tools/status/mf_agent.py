@@ -26,7 +26,9 @@ RE_PATH    = re.compile(r'\[client\] path\[(\d+)\] (\w+) (?:owd=([\d.]+)ms jit=(
 RE_REPORT  = re.compile(r'\[report\](?:\[([^\]]+)\])?client-->server:\(original:(\d+) pkt;(\d+) byte\) '
                         r'\(fec:(\d+) pkt[;,](\d+) byte\)\s+server-->client:\(original:(\d+) pkt;(\d+) byte\) '
                         r'\(fec:(\d+) pkt[;,](\d+) byte\)')   # 클라이언트 쪽은 fec 구간이 "pkt," 로 찍힌다
-RE_SESSION = re.compile(r'\[relay\] (new session|session removed): client=(\S+)(?: upstream=(\S+))?')
+RE_SESSION = re.compile(r'\[relay\] (new session|session removed): client=(\S+)(?: upstream=(\S+))? fd=(\d+)')
+RE_PROBE   = re.compile(r'\[relay/decoy\] new session prober=(\S+)')
+RE_FULL    = re.compile(r'\[relay\] session table full')
 
 
 def sh(cmd, timeout=15):
@@ -129,6 +131,7 @@ class Agent:
         self.prev_ticks = {}       # pid -> (ticks, t)
         self.prev_net = None       # (rx, tx, t)
         self.head_cache = {}       # (unit, pid) -> parsed startup info
+        self.relay_state = {}      # (unit, pid) -> 세션 표·커서
 
     def units(self):
         out = sh(['systemctl', 'list-units', '--plain', '--no-legend', '--all', '--type=service'] + self.unit_glob)
@@ -197,6 +200,9 @@ class Agent:
         if info['routes']:
             d['routes'] = [dict(i=i, **r) for i, r in sorted(info['routes'].items())]
 
+        if d.get('role') == 'relay':
+            self.relay_sessions(u, pid, d, info)
+
         tail = journal_tail(u, pid)
         paths, reports, last_ts = {}, {}, None
         for l in tail:
@@ -225,6 +231,69 @@ class Agent:
         warn = [l for l in tail if ('[ERROR]' in l or '[FATAL]' in l)]
         d['errors_recent'] = len(warn)
         return d
+
+    def relay_sessions(self, u, pid, d, info):
+        """relay 세션 표: 로그의 new session / session removed 를 커서로 이어 읽어 fd 별 표를 유지하고,
+        그 fd 가 지금 실제로 열린 upstream 소켓인지 ss 로 확인한다. 세션별 트래픽은 OS 가 주지 않는다(UDP 소켓에 카운터 없음)."""
+        st = self.relay_state.get((u, pid))
+        if st is None:
+            self.relay_state = {k: v for k, v in self.relay_state.items() if k[0] != u}
+            st = self.relay_state[(u, pid)] = {'cursor': None, 'fds': {}, 'probes': 0, 'probe_ips': {}, 'full': 0}
+        cmd = ['journalctl', '-u', u, f'_PID={pid}', '-o', 'cat', '--no-pager', '-q', '--show-cursor',
+               '-g', r'\[relay(/decoy)?\] (new session|session removed|session table full)']
+        if st['cursor']:
+            cmd += ['--after-cursor', st['cursor']]
+        for l in sh(cmd, timeout=30).splitlines():
+            if l.startswith('-- cursor: '):
+                st['cursor'] = l[11:].strip(); continue
+            l = ANSI.sub('', l)
+            mt = RE_TS.match(l); ts = mt.group(1) if mt else None
+            m = RE_SESSION.search(l)
+            if m:
+                fd = int(m.group(4))
+                if m.group(1) == 'new session':
+                    st['fds'][fd] = {'client': m.group(2), 'upstream': m.group(3), 'since': ts}
+                elif st['fds'].get(fd, {}).get('client') == m.group(2):
+                    del st['fds'][fd]
+                continue
+            m = RE_PROBE.search(l)
+            if m:
+                st['probes'] += 1
+                ip = m.group(1).rsplit(':', 1)[0]
+                st['probe_ips'][ip] = st['probe_ips'].get(ip, 0) + 1
+                if len(st['probe_ips']) > 200:                     # 상한 — 많이 온 것만 남긴다
+                    st['probe_ips'] = dict(sorted(st['probe_ips'].items(), key=lambda x: -x[1])[:100])
+                continue
+            if RE_FULL.search(l):
+                st['full'] += 1
+        # 지금 열린 upstream 소켓 (fd → 로컬·원격·큐)
+        socks = {}
+        for line in sh(['ss', '-uanp']).splitlines():
+            if f'pid={pid},' not in line:
+                continue
+            f = line.split()
+            m = re.search(r'pid=%d,fd=(\d+)' % pid, line)
+            if m and len(f) >= 5 and not f[4].endswith(':*'):
+                socks[int(m.group(1))] = {'local': f[3], 'remote': f[4], 'recvq': int(f[1]), 'sendq': int(f[2])}
+        up2kf = {}
+        for r in info.get('routes', {}).values():
+            up2kf.setdefault(r['upstream'], []).append(r['kf'])
+        out = []
+        for fd, se in sorted(st['fds'].items()):
+            sk = socks.get(fd)
+            if not sk:
+                continue                      # 로그에는 있지만 소켓이 없다 = 놓친 removed (재시작 등)
+            kf = up2kf.get(se['upstream']) or ([info['kf']] if info.get('kf') else [])
+            try:     # 로그 시각은 호스트 현지 시각이다 — 여기서 epoch 로 바꿔야 타임존이 다른 중앙·브라우저에서 맞는다
+                since_ts = int(time.mktime(time.strptime(se['since'], '%Y-%m-%d %H:%M:%S'))) if se['since'] else None
+            except ValueError:
+                since_ts = None
+            out.append({'client': se['client'], 'upstream': se['upstream'], 'since': se['since'], 'since_ts': since_ts, 'fd': fd,
+                        'local': sk['local'], 'recvq': sk['recvq'], 'sendq': sk['sendq'], 'kf': ' '.join(kf)})
+        d['session_list'] = out[:500]
+        d['probes'] = st['probes']
+        d['probe_top'] = sorted(st['probe_ips'].items(), key=lambda x: -x[1])[:10]
+        d['table_full'] = st['full']
 
     def host(self, now):
         h = {'cores': os.cpu_count()}
