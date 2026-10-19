@@ -57,6 +57,10 @@ select,button{font:inherit;background:var(--chip);color:var(--fg);border:1px sol
 </header>
 <main>
   <section id="alertsec"><h2>경보</h2><div id="alerts" class="note">없음</div></section>
+  <section><h2>구성도 — 지사 ⇄ relay ⇄ server</h2><div class="scroll" id="topo"></div>
+    <div class="note">relay 세션 표로 그린다(선 1개 = 세션 1개). 선 위 NIC 는 커널이 실제로 고르는 송신 NIC(<code>ip route get</code>)이고,
+    relay 칸의 "수신" 은 리슨 IP 가 붙은 NIC 다 — 둘이 다르면 주황으로 표시한다(소스 IP 는 송신 NIC 를 정하지 않는다).
+    빨간 점선 = 늘 보이던 지사가 그 relay 에 세션이 없음. NIC 숫자는 그 NIC 전체 트래픽이다(세션별 양은 아직 없다).</div></section>
   <section><h2>relay 기준 — 지사 × relay</h2><div class="scroll" id="rmatrix"></div>
     <div class="note">relay 로그·소켓만으로 만든 표다. 지사 = 키 지문(서비스망은 PSK 가 지사). 칸 = 그 relay 를 지나는 세션(지사 주소·지속 시간).
     relay 는 60초 무통신 세션을 지우므로 "없음" 은 최소 1분 이상 끊겼다는 뜻이다. 세션별 트래픽 양은 OS 가 주지 않아 표시하지 않는다.</div></section>
@@ -103,6 +107,52 @@ function renderMatrix(hosts){
       s+=p?`<td><span class="st ${esc(p.status)}">${esc(p.status)}</span> ${p.owd!=null?`<a class="lnk" data-h="${esc(h.host)}" data-u="${esc(u.name)}" data-s="owd" data-p="${i}">${p.owd.toFixed(1)}ms</a>`:''} <a class="lnk" data-h="${esc(h.host)}" data-u="${esc(u.name)}" data-s="loss" data-p="${i}">loss ${p.loss}%</a>${p.dev?` <span class="mut">${esc(p.dev)}</span>`:''}</td>`:'<td class="mut">—</td>'}
     s+='</tr>'}
   $('#matrix').innerHTML=s+'</table>';
+}
+function renderTopo(st){
+  const L=st.labels||{};
+  const relays=[];
+  for(const h of st.hosts)for(const u of h.units||[])if(u.role==='relay')relays.push({id:`${h.host}/${u.name}`,h,u,ifs:(h.host_stats||{}).ifaces||[]});
+  if(!relays.length){$('#topo').innerHTML='<span class="note">relay 보고 없음</span>';return}
+  const bid=x=>x.kf||x.client.replace(/:\d+$/,'');
+  const B=new Map(),S=new Map(),E=[];
+  for(const r of relays)for(const x of r.u.session_list||[]){const b=bid(x);
+    if(!B.has(b))B.set(b,new Set());B.get(b).add(x.client.replace(/:\d+$/,''));
+    if(!S.has(x.upstream))S.set(x.upstream,0);S.set(x.upstream,S.get(x.upstream)+1);
+    E.push({b,r:r.id,x})}
+  const gone=[];for(const z of st.branch_seen||[]){if(!E.some(e=>e.r===z.relay&&e.b===z.branch)){if(!B.has(z.branch))B.set(z.branch,new Set());gone.push(z)}}
+  const bl=[...B.keys()].sort(),sl=[...S.keys()].sort();
+  const RH=104,top=40,W=1140,X0=20,BW=210,X1=420,RW=300,X2=900,SW=220;
+  const H=Math.max(bl.length,relays.length,sl.length)*RH+top+10;
+  const yB=i=>top+i*RH+(H-top-bl.length*RH)/2,yR=i=>top+i*RH+(H-top-relays.length*RH)/2,yS=i=>top+i*RH+(H-top-sl.length*RH)/2;
+  const nicOf=(r,ip)=>{const f=r.ifs.find(i=>(i.addr||[]).includes(ip));return f?f.name:null};
+  const T=(x,y,t,c='var(--fg)',sz=12,w=400,a='start')=>`<text x="${x}" y="${y}" font-size="${sz}" font-weight="${w}" style="fill:${c}" text-anchor="${a}">${esc(t)}</text>`;
+  let g=T(X0,22,'지사 (client)','var(--mut)',12,600)+T(X1,22,'relay','var(--mut)',12,600)+T(X2,22,'server','var(--mut)',12,600);
+  const BY={},RY={},SY={};
+  bl.forEach((b,i)=>{const y=yB(i);BY[b]=y+38;const nm=L[b]||b;
+    g+=`<rect x="${X0}" y="${y}" width="${BW}" height="76" rx="8" style="fill:var(--card);stroke:var(--line)"/>`+T(X0+12,y+22,nm,'var(--fg)',13,600)+(L[b]?T(X0+12,y+40,b,'var(--mut)',11):'')+
+      T(X0+12,y+(L[b]?58:42),[...B.get(b)].join(', '),'var(--mut)',11)});
+  relays.forEach((r,i)=>{const y=yR(i);RY[r.id]=y+40;const u=r.u,lis=(u.listen||[])[0]||'?',lip=lis.replace(/:\d+$/,''),inNic=nicOf(r,lip);
+    const outs=[...new Set((u.session_list||[]).flatMap(x=>[x.up_dev,x.reply_dev]).filter(Boolean))];
+    const mism=inNic&&outs.length&&outs.some(d=>d!==inNic);
+    const nic=r.ifs.filter(f=>f.kind==='nic').map(f=>`${f.name} ↓${f.rx_mbps??'?'} ↑${f.tx_mbps??'?'}`).join('  ');
+    g+=`<rect x="${X1}" y="${y}" width="${RW}" height="80" rx="8" style="fill:var(--card);stroke:${u.active?'var(--line)':'var(--crit)'};stroke-width:${u.active?1:2}"/>`+
+      T(X1+12,y+20,u.name,'var(--fg)',12,600)+
+      T(X1+12,y+38,`${r.h.host} · ${u.version||'?'} · listen ${lis}`,'var(--mut)',11)+
+      T(X1+12,y+55,`수신 ${inNic||'?'} · 송신 ${outs.join('/')||'?'}${mism?'  ⚠ NIC 불일치':''}`,mism?'var(--warn)':'var(--mut)',11,mism?600:400)+
+      T(X1+12,y+71,`Mbps ${nic}`,'var(--mut)',10)});
+  sl.forEach((sv,i)=>{const y=yS(i);SY[sv]=y+30;
+    g+=`<rect x="${X2}" y="${y}" width="${SW}" height="60" rx="8" style="fill:var(--card);stroke:var(--line)"/>`+T(X2+12,y+24,sv,'var(--fg)',13,600)+T(X2+12,y+44,`세션 ${S.get(sv)}`,'var(--mut)',11)});
+  const off={};const nxt=k=>{off[k]=(off[k]??-1)+1;return off[k]*14};
+  let ln='';
+  for(const e of E){const y1=BY[e.b],y2=RY[e.r],y3=SY[e.x.upstream],d1=nxt('a'+e.r)-7,d2=nxt('b'+e.r)-7;
+    ln+=`<path d="M${X0+BW},${y1} C${X0+BW+90},${y1} ${X1-90},${y2+d1} ${X1},${y2+d1}" style="fill:none;stroke:var(--ok);stroke-width:2"/>`+
+      T((X0+BW+X1)/2,(y1+y2+d1)/2-5,`${e.x.client} · 응답 ${e.x.reply_dev||'?'}`,'var(--fg)',10,400,'middle')+
+      `<path d="M${X1+RW},${y2+d2} C${X1+RW+80},${y2+d2} ${X2-80},${y3} ${X2},${y3}" style="fill:none;stroke:var(--ok);stroke-width:2"/>`+
+      T((X1+RW+X2)/2,(y2+d2+y3)/2-5,`${e.x.local} · ${e.x.up_dev||'?'}`,'var(--fg)',10,400,'middle')}
+  for(const z of gone){const y1=BY[z.branch],y2=RY[z.relay];if(y1==null||y2==null)continue;
+    ln+=`<path d="M${X0+BW},${y1} C${X0+BW+90},${y1} ${X1-90},${y2} ${X1},${y2}" style="fill:none;stroke:var(--crit);stroke-width:2;stroke-dasharray:6 5"/>`+
+      T((X0+BW+X1)/2,(y1+y2)/2+14,`세션 없음 · ${dur(st.now-z.last)} 전 마지막`,'var(--crit)',10,600,'middle')}
+  $('#topo').innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;min-width:760px;height:auto;display:block" font-family="inherit">${ln}${g}</svg>`;
 }
 function renderRelay(st){
   const L=st.labels||{},bn=b=>L[b]?`${esc(L[b])} <span class="mut">${esc(b)}</span>`:esc(b);
@@ -165,7 +215,7 @@ async function refresh(){
     const crit=st.alerts.filter(a=>a.level==='crit').length,warn=st.alerts.filter(a=>a.level==='warn').length;
     const units=st.hosts.reduce((n,h)=>n+(h.units||[]).length,0);
     $('#sum').innerHTML=`<span class="pill">호스트 ${st.hosts.length}</span><span class="pill">유닛 ${units}</span>`+(crit?`<span class="pill crit">심각 ${crit}</span>`:'')+(warn?`<span class="pill warn">주의 ${warn}</span>`:'')+(!crit&&!warn?'<span class="pill ok">정상</span>':'');
-    renderAlerts(st.alerts,st.now);renderRelay(st);renderMatrix(st.hosts);renderHosts(st.hosts,st.alerts);renderEvents(ev);
+    renderAlerts(st.alerts,st.now);renderTopo(st);renderRelay(st);renderMatrix(st.hosts);renderHosts(st.hosts,st.alerts);renderEvents(ev);
     $('#upd').textContent='갱신 '+tm(st.now);
     if(chartSel)drawChart();
   }catch(e){$('#upd').textContent='갱신 실패: '+e}

@@ -133,6 +133,7 @@ class Agent:
         self.prev_if = {}          # 인터페이스 -> (카운터들, t)
         self.head_cache = {}       # (unit, pid) -> parsed startup info
         self.relay_state = {}      # (unit, pid) -> 세션 표·커서
+        self.route_cache = {}      # (dst, src) -> (dev, t)
 
     def units(self):
         out = sh(['systemctl', 'list-units', '--plain', '--no-legend', '--all', '--type=service'] + self.unit_glob)
@@ -233,6 +234,18 @@ class Agent:
         d['errors_recent'] = len(warn)
         return d
 
+    def egress(self, dst, src=None):
+        """커널이 실제로 고르는 송신 NIC (ip route get). 소스 IP 는 NIC 를 정하지 않는다 — 그래서 직접 묻는다. 5분 캐시."""
+        k = (dst, src); now = time.time()
+        c = self.route_cache.get(k)
+        if c and now - c[1] < 300:
+            return c[0]
+        cmd = ['ip', 'route', 'get', dst] + (['from', src] if src else [])
+        m = re.search(r' dev (\S+)', sh(cmd, timeout=5))
+        dev = m.group(1) if m else None
+        self.route_cache[k] = (dev, now)
+        return dev
+
     def relay_sessions(self, u, pid, d, info):
         """relay 세션 표: 로그의 new session / session removed 를 커서로 이어 읽어 fd 별 표를 유지하고,
         그 fd 가 지금 실제로 열린 upstream 소켓인지 ss 로 확인한다. 세션별 트래픽은 OS 가 주지 않는다(UDP 소켓에 카운터 없음)."""
@@ -268,7 +281,7 @@ class Agent:
             if RE_FULL.search(l):
                 st['full'] += 1
         # 지금 열린 upstream 소켓 (fd → 로컬·원격·큐)
-        socks = {}
+        socks, listen = {}, []
         for line in sh(['ss', '-uanp']).splitlines():
             if f'pid={pid},' not in line:
                 continue
@@ -276,6 +289,8 @@ class Agent:
             m = re.search(r'pid=%d,fd=(\d+)' % pid, line)
             if m and len(f) >= 5 and not f[4].endswith(':*'):
                 socks[int(m.group(1))] = {'local': f[3], 'remote': f[4], 'recvq': int(f[1]), 'sendq': int(f[2])}
+            elif m and len(f) >= 5:
+                listen.append(f[3])
         up2kf = {}
         for r in info.get('routes', {}).values():
             up2kf.setdefault(r['upstream'], []).append(r['kf'])
@@ -289,9 +304,13 @@ class Agent:
                 since_ts = int(time.mktime(time.strptime(se['since'], '%Y-%m-%d %H:%M:%S'))) if se['since'] else None
             except ValueError:
                 since_ts = None
-            out.append({'client': se['client'], 'upstream': se['upstream'], 'since': se['since'], 'since_ts': since_ts, 'fd': fd,
+            lip = listen[0].rsplit(':', 1)[0] if listen else ''
+            out.append({'up_dev': self.egress(se['upstream'].rsplit(':', 1)[0], sk['local'].rsplit(':', 1)[0]),
+                        'reply_dev': self.egress(se['client'].rsplit(':', 1)[0], lip if lip not in ('0.0.0.0', '*', '') else None),
+                        'client': se['client'], 'upstream': se['upstream'], 'since': se['since'], 'since_ts': since_ts, 'fd': fd,
                         'local': sk['local'], 'recvq': sk['recvq'], 'sendq': sk['sendq'], 'kf': ' '.join(kf)})
         d['session_list'] = out[:500]
+        d['listen'] = listen
         d['probes'] = st['probes']
         d['probe_top'] = sorted(st['probe_ips'].items(), key=lambda x: -x[1])[:10]
         d['table_full'] = st['full']

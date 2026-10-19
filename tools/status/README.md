@@ -44,6 +44,7 @@ python3 mf_agent.py --once
 
 | 보이는 것 | 출처 |
 |---|---|
+| **구성도** — 지사 ⇄ relay ⇄ server SVG. 선 = 세션, 선 위 = 지사 주소·relay 소스와 **커널이 실제로 고르는 송신 NIC**, relay 칸 = 리슨 NIC vs 송신 NIC(다르면 주황 "NIC 불일치")·NIC Mbps, 빨간 점선 = 지사 이탈 | 세션 표 + `ss` 리슨 주소 + `ip route get <목적지> from <소스>`(5분 캐시) |
 | 지사 × relay 표 — 지사(키 지문, `labels` 로 이름) 가 어느 relay 를 지나는지, 세션 주소·지속 시간 | 로그 `[relay] new session`/`session removed`(커서로 이어 읽음) + 그 fd 가 지금 열린 upstream 소켓인지 `ss` 로 확인 |
 | 경로 끊김 경보 — 늘 보이던 relay 에서 그 지사 세션이 **2분** 이상 없음 | relay 는 60초 무통신 세션을 지우므로 "없음" = 최소 1분 이상 끊김. 24시간 안 보이면 감시 해제 |
 | 세션 생성·종료 · 프로브(인증 실패) · 세션 테이블 포화 이벤트 | 프로브는 `--decoy` 를 쓸 때만 info 로그가 남는다(내장 응답은 debug) |
