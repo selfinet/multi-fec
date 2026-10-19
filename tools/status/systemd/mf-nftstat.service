@@ -1,0 +1,13 @@
+# mfstat nft 카운터 (테스트망 전용). 정지하면 테이블을 지운다 — 다른 nft 테이블은 건드리지 않는다.
+[Unit]
+Description=multi-fec relay per-session traffic counters (nft, test network only)
+After=network-pre.target
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+ExecStart=/usr/sbin/nft -f /etc/mf-status/mfstat.nft
+ExecStop=/usr/sbin/nft delete table inet mfstat
+
+[Install]
+WantedBy=multi-user.target

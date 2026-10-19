@@ -60,11 +60,12 @@ select,button{font:inherit;background:var(--chip);color:var(--fg);border:1px sol
   <section><h2>구성도 — 지사 ⇄ relay ⇄ server</h2><div class="scroll" id="topo"></div>
     <div class="note">relay 세션 표로 그린다(선 1개 = 세션 1개). 선 위 NIC 는 커널이 실제로 고르는 송신 NIC(<code>ip route get</code>)이고,
     relay 칸의 "수신" 은 리슨 IP 가 붙은 NIC 다 — 둘이 다르면 주황으로 표시한다(소스 IP 는 송신 NIC 를 정하지 않는다).
-    빨간 점선 = 늘 보이던 지사가 그 relay 에 세션이 없음. NIC 숫자는 그 NIC 전체 트래픽이다(세션별 양은 아직 없다).</div></section>
+    빨간 점선 = 늘 보이던 지사가 그 relay 에 세션이 없음. 선 아래 ↑↓ 는 그 세션의 구간 트래픽(nft 카운터, ↑ = server 쪽으로) — 선 굵기도 비례.
+    client 쪽은 들어오는데 server 쪽 응답이 0 이면 빨간 선 · "응답 없음"(60초 넘게 이어지면 경보). 세션 목록의 숫자를 누르면 추이.</div></section>
   <section><h2>relay 기준 — 지사 × relay</h2><div class="scroll" id="rmatrix"></div>
     <div class="note">relay 로그·소켓만으로 만든 표다. 지사 = 키 지문(서비스망은 PSK 가 지사). 칸 = 그 relay 를 지나는 세션(지사 주소·지속 시간).
     relay 는 60초 무통신 세션을 지우므로 "없음" 은 최소 1분 이상 끊겼다는 뜻이다. 세션별 트래픽 양은 OS 가 주지 않아 표시하지 않는다.</div></section>
-  <section><h2>relay 세션</h2><div class="scroll" id="rsessions"></div></section>
+  <section><h2>relay 세션 <span class="note">구간 트래픽 Mbps / pps (nft 카운터)</span></h2><div class="scroll" id="rsessions"></div></section>
   <section id="pathsec"><h2>경로 — 지사(client) × path</h2><div class="scroll" id="matrix"></div>
     <div class="note">owd 는 편도 지연이며 양쪽 시계에 의존한다. 1.3.2 이하 클라이언트는 owd 대신 옛 rtt 표기라 비워 둔다.</div></section>
   <section id="chart"><h2 id="ctitle">추이</h2>
@@ -144,11 +145,19 @@ function renderTopo(st){
     g+=`<rect x="${X2}" y="${y}" width="${SW}" height="60" rx="8" style="fill:var(--card);stroke:var(--line)"/>`+T(X2+12,y+24,sv,'var(--fg)',13,600)+T(X2+12,y+44,`세션 ${S.get(sv)}`,'var(--mut)',11)});
   const off={};const nxt=k=>{off[k]=(off[k]??-1)+1;return off[k]*14};
   let ln='';
-  for(const e of E){const y1=BY[e.b],y2=RY[e.r],y3=SY[e.x.upstream],d1=nxt('a'+e.r)-7,d2=nxt('b'+e.r)-7;
-    ln+=`<path d="M${X0+BW},${y1} C${X0+BW+90},${y1} ${X1-90},${y2+d1} ${X1},${y2+d1}" style="fill:none;stroke:var(--ok);stroke-width:2"/>`+
-      T((X0+BW+X1)/2,(y1+y2+d1)/2-5,`${e.x.client} · 응답 ${e.x.reply_dev||'?'}`,'var(--fg)',10,400,'middle')+
-      `<path d="M${X1+RW},${y2+d2} C${X1+RW+80},${y2+d2} ${X2-80},${y3} ${X2},${y3}" style="fill:none;stroke:var(--ok);stroke-width:2"/>`+
-      T((X1+RW+X2)/2,(y2+d2+y3)/2-5,`${e.x.local} · ${e.x.up_dev||'?'}`,'var(--fg)',10,400,'middle')}
+  const mb=v=>v==null?'?':v>=10?v.toFixed(1):v>=1?v.toFixed(2):v.toFixed(3);
+  const sw=v=>v==null?2:Math.min(8,2+Math.log10(1+v*10)*2.5);
+  for(const e of E){const y1=BY[e.b],y2=RY[e.r],y3=SY[e.x.upstream],d1=nxt('a'+e.r)-7,d2=nxt('b'+e.r)-7,t=e.x.traffic||{};
+    const cdead=t.c2r_pps===0&&t.r2c_pps===0,sbad=t.c2r_pps>0&&t.s2r_pps===0;
+    const c1=cdead?'var(--warn)':'var(--ok)',c2=sbad?'var(--crit)':'var(--ok)';
+    const tc=e.x.traffic?`↑${mb(t.c2r_mbps)} ↓${mb(t.r2c_mbps)} Mbps`:'트래픽 카운터 없음';
+    const ts=e.x.traffic?`↑${mb(t.r2s_mbps)} ↓${mb(t.s2r_mbps)} Mbps${sbad?' · 응답 없음':''}`:'';
+    ln+=`<path d="M${X0+BW},${y1} C${X0+BW+90},${y1} ${X1-90},${y2+d1} ${X1},${y2+d1}" style="fill:none;stroke:${c1};stroke-width:${sw(Math.max(t.c2r_mbps||0,t.r2c_mbps||0))}"/>`+
+      T((X0+BW+X1)/2,(y1+y2+d1)/2-6,`${e.x.client} · 응답 ${e.x.reply_dev||'?'}`,'var(--fg)',10,400,'middle')+
+      T((X0+BW+X1)/2,(y1+y2+d1)/2+16,tc,c1==='var(--ok)'?'var(--info)':c1,10,600,'middle')+
+      `<path d="M${X1+RW},${y2+d2} C${X1+RW+80},${y2+d2} ${X2-80},${y3} ${X2},${y3}" style="fill:none;stroke:${c2};stroke-width:${sw(Math.max(t.r2s_mbps||0,t.s2r_mbps||0))}"/>`+
+      T((X1+RW+X2)/2,(y2+d2+y3)/2-6,`${e.x.local} · ${e.x.up_dev||'?'}`,'var(--fg)',10,400,'middle')+
+      T((X1+RW+X2)/2,(y2+d2+y3)/2+16,ts,c2==='var(--ok)'?'var(--info)':c2,10,600,'middle')}
   for(const z of gone){const y1=BY[z.branch],y2=RY[z.relay];if(y1==null||y2==null)continue;
     ln+=`<path d="M${X0+BW},${y1} C${X0+BW+90},${y1} ${X1-90},${y2} ${X1},${y2}" style="fill:none;stroke:var(--crit);stroke-width:2;stroke-dasharray:6 5"/>`+
       T((X0+BW+X1)/2,(y1+y2)/2+14,`세션 없음 · ${dur(st.now-z.last)} 전 마지막`,'var(--crit)',10,600,'middle')}
@@ -171,7 +180,8 @@ function renderRelay(st){
     t+='</tr>'}
   t+='<tr><td class="mut">relay 합계</td>'+relays.map(r=>`<td class="mut">세션 ${r.u.sessions??'?'} · 프로브 ${r.u.probes??0}${r.u.table_full?` · <b style="color:var(--crit)">포화 ${r.u.table_full}</b>`:''}</td>`).join('')+'</tr>';
   $('#rmatrix').innerHTML=t+'</table>';
-  $('#rsessions').innerHTML=sess.length?'<table><tr><th>relay</th><th>지사</th><th>지사 주소</th><th>upstream</th><th>relay 소스</th><th class="n">지속</th><th class="n">수신큐</th></tr>'+sess.map(x=>`<tr><td>${esc(x.host)} / ${esc(x.unit)}</td><td>${bn(bid(x))}</td><td>${esc(x.client)}</td><td>${esc(x.upstream)}</td><td class="mut">${esc(x.local)}</td><td class="n">${x.since_ts?dur(st.now-x.since_ts):'?'}</td><td class="n">${x.recvq}</td></tr>`).join('')+'</table>':'<span class="note">세션 없음</span>';
+  $('#rsessions').innerHTML=sess.length?'<table><tr><th>relay</th><th>지사</th><th>지사 주소</th><th>upstream</th><th>relay 소스</th><th class="n">c→r</th><th class="n">r→s</th><th class="n">s→r</th><th class="n">r→c</th><th class="n">지속</th><th class="n">수신큐</th></tr>'+sess.map(x=>{const t=x.traffic||{},sl=k=>`<a class="lnk" data-h="${esc(x.host)}" data-u="${esc(x.unit)}" data-c="${esc(x.client)}" data-s="${k}_mbps">${t[k+'_mbps']??'—'}</a><br><span class="mut">${t[k+'_pps']??'—'} pps</span>`;
+    return `<tr><td>${esc(x.host)} / ${esc(x.unit)}</td><td>${bn(bid(x))}</td><td>${esc(x.client)}</td><td>${esc(x.upstream)}</td><td class="mut">${esc(x.local)}</td><td class="n">${sl('c2r')}</td><td class="n">${sl('r2s')}</td><td class="n">${sl('s2r')}</td><td class="n">${sl('r2c')}</td><td class="n">${x.since_ts?dur(st.now-x.since_ts):'?'}</td><td class="n">${x.recvq}</td></tr>`}).join('')+'</table>':'<span class="note">세션 없음</span>';
 }
 function ilk(h,i,s,label){return `<a class="lnk" data-h="${esc(h)}" data-i="${esc(i)}" data-s="${s}">${label}</a>`}
 function ifTable(h){const L=(h.host_stats||{}).ifaces||[];if(!L.length)return'';
@@ -221,14 +231,14 @@ async function refresh(){
   }catch(e){$('#upd').textContent='갱신 실패: '+e}
 }
 document.addEventListener('click',e=>{const a=e.target.closest('a.lnk');if(!a)return;
-  chartSel={h:a.dataset.h,u:a.dataset.u??'',s:a.dataset.s,p:a.dataset.p??'',i:a.dataset.i??''};$('#chart').style.display='block';drawChart();$('#chart').scrollIntoView({behavior:'smooth',block:'nearest'})});
+  chartSel={h:a.dataset.h,u:a.dataset.u??'',s:a.dataset.s,p:a.dataset.p??'',i:a.dataset.i??'',c:a.dataset.c??''};$('#chart').style.display='block';drawChart();$('#chart').scrollIntoView({behavior:'smooth',block:'nearest'})});
 $('#cclose').onclick=()=>{chartSel=null;$('#chart').style.display='none'};
 $('#hours').onchange=()=>chartSel&&drawChart();
-const LABEL={rx_pps:'RX pps',tx_pps:'TX pps',rxd_d:'RX 드롭 (구간)',txd_d:'TX 드롭 (구간)',qd_d:'qdisc 드롭 (구간)',probes:'프로브 (누적)',cpu:'CPU %',rss:'RSS MB',fd:'FD',sessions:'세션',drops:'소켓 drops (누적)',owd:'owd ms',loss:'loss %',rx_mbps:'RX Mbps',tx_mbps:'TX Mbps'};
+const LABEL={c2r_mbps:'client→relay Mbps',r2s_mbps:'relay→server Mbps',s2r_mbps:'server→relay Mbps',r2c_mbps:'relay→client Mbps',rx_pps:'RX pps',tx_pps:'TX pps',rxd_d:'RX 드롭 (구간)',txd_d:'TX 드롭 (구간)',qd_d:'qdisc 드롭 (구간)',probes:'프로브 (누적)',cpu:'CPU %',rss:'RSS MB',fd:'FD',sessions:'세션',drops:'소켓 drops (누적)',owd:'owd ms',loss:'loss %',rx_mbps:'RX Mbps',tx_mbps:'TX Mbps'};
 async function drawChart(){
   const c=chartSel,hours=$('#hours').value;
-  const q=new URLSearchParams({host:c.h,unit:c.u,series:c.s,hours,path:c.p,iface:c.i});
-  $('#ctitle').textContent=`추이 — ${c.h}${c.u?' / '+c.u:''}${c.i?' / '+c.i:''}${c.p!==''?' / path['+c.p+']':''} · ${LABEL[c.s]||c.s}`;
+  const q=new URLSearchParams({host:c.h,unit:c.u,series:c.s,hours,path:c.p,iface:c.i,client:c.c});
+  $('#ctitle').textContent=`추이 — ${c.h}${c.u?' / '+c.u:''}${c.c?' / '+c.c:''}${c.i?' / '+c.i:''}${c.p!==''?' / path['+c.p+']':''} · ${LABEL[c.s]||c.s}`;
   const pts=await fetch('api/history?'+q).then(r=>r.json());
   $('#cnote').textContent=`${pts.length}점`;
   if(pts.length<2){$('#csvg').innerHTML='<div class="note">점이 부족하다</div>';return}
