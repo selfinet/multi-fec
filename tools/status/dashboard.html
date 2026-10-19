@@ -123,6 +123,16 @@ function renderRelay(st){
   $('#rmatrix').innerHTML=t+'</table>';
   $('#rsessions').innerHTML=sess.length?'<table><tr><th>relay</th><th>지사</th><th>지사 주소</th><th>upstream</th><th>relay 소스</th><th class="n">지속</th><th class="n">수신큐</th></tr>'+sess.map(x=>`<tr><td>${esc(x.host)} / ${esc(x.unit)}</td><td>${bn(bid(x))}</td><td>${esc(x.client)}</td><td>${esc(x.upstream)}</td><td class="mut">${esc(x.local)}</td><td class="n">${x.since_ts?dur(st.now-x.since_ts):'?'}</td><td class="n">${x.recvq}</td></tr>`).join('')+'</table>':'<span class="note">세션 없음</span>';
 }
+function ilk(h,i,s,label){return `<a class="lnk" data-h="${esc(h)}" data-i="${esc(i)}" data-s="${s}">${label}</a>`}
+function ifTable(h){const L=(h.host_stats||{}).ifaces||[];if(!L.length)return'';
+  return `<div class="scroll"><table><tr><th>인터페이스</th><th>주소</th><th class="n">RX Mbps</th><th class="n">TX Mbps</th><th class="n">RX pps</th><th class="n">TX pps</th><th class="n">드롭 Δ<br><span class="mut">rx/tx/qdisc</span></th><th class="n">오류 Δ</th><th class="n">누적 RX / TX</th></tr>`+
+  L.map(i=>`<tr><td><span class="dot ${i.oper==='up'||i.oper==='unknown'?'ok':'crit'}"></span>${esc(i.name)} <span class="mut">${i.kind==='nic'?'':'가상 '}${i.oper!=='up'?esc(i.oper):''} mtu ${i.mtu}${i.speed?' · '+i.speed+'M':''}</span></td>
+   <td class="mut">${esc((i.addr||[]).join(' '))}</td>
+   <td class="n">${ilk(h.host,i.name,'rx_mbps',i.rx_mbps??'—')}</td><td class="n">${ilk(h.host,i.name,'tx_mbps',i.tx_mbps??'—')}</td>
+   <td class="n">${ilk(h.host,i.name,'rx_pps',i.rx_pps??'—')}</td><td class="n">${ilk(h.host,i.name,'tx_pps',i.tx_pps??'—')}</td>
+   <td class="n">${ilk(h.host,i.name,'rxd_d',i.rxd_d??'—')} / ${ilk(h.host,i.name,'txd_d',i.txd_d??'—')} / ${ilk(h.host,i.name,'qd_d',i.qd_d??'—')}</td>
+   <td class="n">${(i.rxe_d??0)+(i.txe_d??0)}</td><td class="n mut">${fmtB(i.rx_bytes)} / ${fmtB(i.tx_bytes)}</td></tr>`).join('')+'</table></div>'}
+const fmtB=b=>b==null?'—':b>=1e12?(b/1e12).toFixed(2)+' TB':b>=1e9?(b/1e9).toFixed(1)+' GB':b>=1e6?(b/1e6).toFixed(1)+' MB':(b/1e3).toFixed(0)+' kB';
 function lk(h,u,s,label){return `<a class="lnk" data-h="${esc(h)}" data-u="${esc(u)}" data-s="${s}">${label}</a>`}
 function renderHosts(hosts,alerts){
   $('#hosts').innerHTML=hosts.map(h=>{
@@ -144,7 +154,7 @@ function renderHosts(hosts,alerts){
       <span>메모리 <b>${hs.mem_used_mb??'?'} / ${hs.mem_total_mb??'?'} MB</b></span>
       <span>RX ${lk(h.host,'','rx_mbps',(hs.rx_mbps??'—')+' Mbps')}</span><span>TX ${lk(h.host,'','tx_mbps',(hs.tx_mbps??'—')+' Mbps')}</span>
       <span>UDP 버퍼 넘침(누적) <b>${hs.udp?fmtN(hs.udp.RcvbufErrors):'?'}</b></span><span>시계 <b>${hs.ntp_sync?'동기':'미동기'}</b></span></div>
-      ${wg?`<div class="kv"><span>${wg}</span></div>`:''}${units||'<div class="note">multi-fec 유닛 없음</div>'}</section>`}).join('');
+      ${wg?`<div class="kv"><span>${wg}</span></div>`:''}${ifTable(h)}${units||'<div class="note">multi-fec 유닛 없음</div>'}</section>`}).join('');
 }
 function renderEvents(ev){
   $('#events').innerHTML=ev.length?'<tr><th>시각</th><th>수준</th><th>호스트</th><th>내용</th></tr>'+ev.map(e=>`<tr><td class="mut">${tm(e.ts)}</td><td><span class="lv ${e.level}">${e.level}</span></td><td>${esc(e.host)}</td><td>${esc(e.msg)}</td></tr>`).join(''):'<tr><td class="note">없음</td></tr>';
@@ -161,14 +171,14 @@ async function refresh(){
   }catch(e){$('#upd').textContent='갱신 실패: '+e}
 }
 document.addEventListener('click',e=>{const a=e.target.closest('a.lnk');if(!a)return;
-  chartSel={h:a.dataset.h,u:a.dataset.u,s:a.dataset.s,p:a.dataset.p??''};$('#chart').style.display='block';drawChart();$('#chart').scrollIntoView({behavior:'smooth',block:'nearest'})});
+  chartSel={h:a.dataset.h,u:a.dataset.u??'',s:a.dataset.s,p:a.dataset.p??'',i:a.dataset.i??''};$('#chart').style.display='block';drawChart();$('#chart').scrollIntoView({behavior:'smooth',block:'nearest'})});
 $('#cclose').onclick=()=>{chartSel=null;$('#chart').style.display='none'};
 $('#hours').onchange=()=>chartSel&&drawChart();
-const LABEL={probes:'프로브 (누적)',cpu:'CPU %',rss:'RSS MB',fd:'FD',sessions:'세션',drops:'소켓 drops (누적)',owd:'owd ms',loss:'loss %',rx_mbps:'RX Mbps',tx_mbps:'TX Mbps'};
+const LABEL={rx_pps:'RX pps',tx_pps:'TX pps',rxd_d:'RX 드롭 (구간)',txd_d:'TX 드롭 (구간)',qd_d:'qdisc 드롭 (구간)',probes:'프로브 (누적)',cpu:'CPU %',rss:'RSS MB',fd:'FD',sessions:'세션',drops:'소켓 drops (누적)',owd:'owd ms',loss:'loss %',rx_mbps:'RX Mbps',tx_mbps:'TX Mbps'};
 async function drawChart(){
   const c=chartSel,hours=$('#hours').value;
-  const q=new URLSearchParams({host:c.h,unit:c.u,series:c.s,hours,path:c.p});
-  $('#ctitle').textContent=`추이 — ${c.h}${c.u?' / '+c.u:''}${c.p!==''?' / path['+c.p+']':''} · ${LABEL[c.s]||c.s}`;
+  const q=new URLSearchParams({host:c.h,unit:c.u,series:c.s,hours,path:c.p,iface:c.i});
+  $('#ctitle').textContent=`추이 — ${c.h}${c.u?' / '+c.u:''}${c.i?' / '+c.i:''}${c.p!==''?' / path['+c.p+']':''} · ${LABEL[c.s]||c.s}`;
   const pts=await fetch('api/history?'+q).then(r=>r.json());
   $('#cnote').textContent=`${pts.length}점`;
   if(pts.length<2){$('#csvg').innerHTML='<div class="note">점이 부족하다</div>';return}

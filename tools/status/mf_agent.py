@@ -130,6 +130,7 @@ class Agent:
         self.unit_glob = unit_glob
         self.prev_ticks = {}       # pid -> (ticks, t)
         self.prev_net = None       # (rx, tx, t)
+        self.prev_if = {}          # 인터페이스 -> (카운터들, t)
         self.head_cache = {}       # (unit, pid) -> parsed startup info
         self.relay_state = {}      # (unit, pid) -> 세션 표·커서
 
@@ -295,6 +296,56 @@ class Agent:
         d['probe_top'] = sorted(st['probe_ips'].items(), key=lambda x: -x[1])[:10]
         d['table_full'] = st['full']
 
+    def ifaces(self, now):
+        """NIC 별 물리 트래픽: /proc/net/dev 카운터 차분(Mbps·pps·오류·드롭) + 상태·주소·MTU·속도 + 루트 qdisc 드롭.
+        드롭은 누적이라 구간 증가분(_d)으로 보낸다. 가상 인터페이스(wg*·tun*·lo)도 포함하되 kind 로 구분한다."""
+        addrs = {}
+        for line in sh(['ip', '-4', '-br', 'addr']).splitlines():
+            f = line.split()
+            if len(f) >= 3:
+                addrs[f[0].split('@')[0]] = [a.split('/')[0] for a in f[2:] if '/' in a]   # 'metric 100' 같은 꼬리 제외
+        qdrop = {}
+        cur_if = None
+        for line in sh(['tc', '-s', 'qdisc', 'show']).splitlines():
+            m = re.match(r'qdisc \S+ \S+ (?:dev (\S+) )?root', line)
+            if m:
+                cur_if = m.group(1) or re.search(r'dev (\S+)', line).group(1); continue
+            if line.startswith('qdisc'):
+                cur_if = None; continue
+            m = re.search(r'dropped (\d+)', line)
+            if m and cur_if and cur_if not in qdrop:
+                qdrop[cur_if] = int(m.group(1))
+        out = []
+        for line in open('/proc/net/dev').readlines()[2:]:
+            name, rest = line.split(':', 1); name = name.strip()
+            if name == 'lo':
+                continue
+            f = list(map(int, rest.split()))
+            c = {'rxb': f[0], 'rxp': f[1], 'rxe': f[2], 'rxd': f[3], 'txb': f[8], 'txp': f[9], 'txe': f[10], 'txd': f[11],
+                 'qd': qdrop.get(name, 0)}
+            def rd(n, d=''):
+                try:
+                    return open(f'/sys/class/net/{name}/{n}').read().strip()
+                except OSError:
+                    return d
+            speed = rd('speed', '-1')
+            i = {'name': name, 'oper': rd('operstate', '?'), 'mtu': int(rd('mtu', '0') or 0),
+                 'speed': int(speed) if speed.lstrip('-').isdigit() and int(speed) > 0 else None,
+                 'addr': addrs.get(name, []), 'kind': 'virtual' if not os.path.exists(f'/sys/class/net/{name}/device') else 'nic',
+                 'rx_bytes': c['rxb'], 'tx_bytes': c['txb']}
+            prev = self.prev_if.get(name)
+            if prev:
+                dt = max(1e-3, now - prev[1]); p = prev[0]
+                i['rx_mbps'] = round((c['rxb'] - p['rxb']) * 8 / dt / 1e6, 3)
+                i['tx_mbps'] = round((c['txb'] - p['txb']) * 8 / dt / 1e6, 3)
+                i['rx_pps'] = round((c['rxp'] - p['rxp']) / dt)
+                i['tx_pps'] = round((c['txp'] - p['txp']) / dt)
+                for k in ('rxe', 'txe', 'rxd', 'txd', 'qd'):
+                    i[k + '_d'] = max(0, c[k] - p[k])
+            self.prev_if[name] = (c, now)
+            out.append(i)
+        return out
+
     def host(self, now):
         h = {'cores': os.cpu_count()}
         try:
@@ -315,6 +366,7 @@ class Agent:
                 h['rx_mbps'] = round((rx - self.prev_net[0]) * 8 / dt / 1e6, 2)
                 h['tx_mbps'] = round((tx - self.prev_net[1]) * 8 / dt / 1e6, 2)
             self.prev_net = (rx, tx, now)
+            h['ifaces'] = self.ifaces(now)
             lines = [l.split() for l in open('/proc/net/snmp') if l.startswith('Udp:')]
             if len(lines) == 2:
                 u = dict(zip(lines[0][1:], map(int, lines[1][1:])))
