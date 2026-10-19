@@ -136,6 +136,13 @@ class Rules:
         e1, e0 = hs.get('udp', {}).get('RcvbufErrors'), ps.get('udp', {}).get('RcvbufErrors')
         if e1 is not None and e0 is not None and e1 > e0:
             self.st.event(now, h, 'warn', 'udp_rcvbuf', f'UDP 수신 버퍼 넘침 +{e1 - e0} (호스트 전체)')
+        for i in hs.get('ifaces', []):
+            if i.get('kind') == 'nic':
+                self._alert(now, h, f'if:{i["name"]}', i.get('oper') not in ('up', 'unknown'), 'crit',
+                            f'인터페이스 {i["name"]} {i.get("oper")} ({" ".join(i.get("addr", []))})')
+            e = i.get('rxe_d', 0) + i.get('txe_d', 0)
+            if e:
+                self.st.event(now, h, 'warn', f'if:{i["name"]}:err', f'인터페이스 {i["name"]} 오류 +{e} (rx {i.get("rxe_d", 0)} / tx {i.get("txe_d", 0)})')
         self._alert(now, h, 'ntp', hs.get('ntp_sync') is False, 'warn',
                     '시계 동기 안 됨 (mud timetolerance 30초를 넘으면 터널이 조용히 멈춘다)')
         for w in hs.get('wg', []):
@@ -234,6 +241,16 @@ def history(store, host, unit, series, path, hours):
             v = f(u, p)
             if v is not None:
                 out.append([d['ts'], v])
+    return out
+
+
+def iface_history(store, host, iface, key, hours):
+    now = int(time.time())
+    out = []
+    for d in store.samples(host, now - int(hours * 3600)):
+        for i in d.get('host_stats', {}).get('ifaces', []):
+            if i['name'] == iface and i.get(key) is not None:
+                out.append([d['ts'], i[key]])
     return out
 
 
@@ -351,6 +368,10 @@ def handler(app):
                     return self.send(200, app.st.events(min(int(q.get('limit', 200)), 2000)))
                 if u.path == '/api/history':
                     hours = min(float(q.get('hours', 6)), KEEP_DAYS * 24)
+                    if q.get('iface'):
+                        if q.get('series') not in ('rx_mbps', 'tx_mbps', 'rx_pps', 'tx_pps', 'rxd_d', 'txd_d', 'qd_d', 'rxe_d', 'txe_d'):
+                            return self.send(400, {'error': 'series'})
+                        return self.send(200, iface_history(app.st, q['host'], q['iface'], q['series'], hours))
                     if q.get('series') in ('rx_mbps', 'tx_mbps'):
                         return self.send(200, host_history(app.st, q['host'], q['series'], hours))
                     if q.get('series') not in SERIES:
