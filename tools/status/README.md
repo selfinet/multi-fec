@@ -17,7 +17,7 @@
 | 호스트 | 유닛 | 파일 |
 |---|---|---|
 | s `192.168.100.102` | `mf-status`(중앙, `192.168.100.102:8780`) | `/opt/mf-status/` · `/etc/mf-status/{tokens,status.env,labels}`(600) · `/var/lib/mf-status/status.db` |
-| r `.88` | `mf-agent` (**수집은 relay 에서만**, 2026-10-19) | `/opt/mf-status/mf_agent.py` · `/etc/mf-status/agent.env`(600, URL+토큰) |
+| r `.88` | `mf-agent` (**수집은 relay 에서만**, 2026-10-19) + `mf-nftstat`(세션 구간 카운터) | `/opt/mf-status/mf_agent.py` · `/etc/mf-status/agent.env`(600, URL+토큰) · `/etc/mf-status/mfstat.nft` |
 | c `.92` · s | `mf-agent` 설치돼 있으나 **disabled** | 토큰은 s `tokens.bak-all` 에 보관 — 다시 켜려면 tokens 에 줄을 되돌리고 `mf-status` 재시작 |
 
 에이전트는 WG 터널이 아니라 하부망(`.102`)으로 보낸다 — 터널이 죽어도 보고가 끊기지 않아야 하므로.
@@ -55,7 +55,14 @@ NIC 드롭 읽는 법(테스트망 r 실측): RX 드롭이 NIC 마다 초당 ~2 
 **증가 속도가 바뀔 때**만 본다. qdisc 드롭은 테스트망에선 netem 이 흉내 낸 손실이다(서비스망엔 netem 이 없으니 0 이어야 정상).
 ens19 TX 가 0 인 것은 결함이 아니라 라우팅이 ens18 을 고르기 때문(§30) — `via` 를 쓰면 바뀐다.
 
-**못 보는 것**: 세션별 트래픽 양(UDP 소켓에는 바이트 카운터가 없다 — nft 카운터 등 호스트 설정이 필요), 경로 owd·loss(client 로그에만 있다).
+**세션 구간 트래픽 (nft, 2026-10-19)**: UDP 소켓에는 바이트 카운터가 없어 relay 호스트에 `nft/mfstat.nft`(테이블 `inet mfstat`, **세기만 하고 전부 accept**)를 둔다.
+동적 집합 4개 — client 구간은 `client IP . 포트 . relay IP`, server 구간은 `relay 소스 IP . 포트` 키. 에이전트가 세션 표로 이어 붙여 c→r · r→s · s→r · r→c Mbps/pps 를 낸다.
+테이블이 없으면 트래픽 칸만 비고 나머지는 그대로 동작한다. 리슨 포트가 443 이 아니면 파일의 `LISTEN` 을 고친다. 리슨이 `0.0.0.0` 이면 같은 client 주소 항목을 합친다.
+**구간 경보**: client→relay 가 들어오는데 server→relay 가 0 인 상태가 60초 넘으면 crit ("응답 없음") — relay↔server 구간 문제를 가린다.
+검증(테스트망 r): 세션 4방향 합이 ens18 TX 와 일치(0.199 vs 0.2 Mbps), c→r 과 r→s 가 패킷·바이트까지 동일(relay 는 그대로 넘긴다).
+되돌리기: `systemctl disable --now mf-nftstat`(정지 시 테이블 삭제) → 유닛·`mfstat.nft` 삭제.
+
+**못 보는 것**: 경로 owd·loss(client 로그에만 있다).
 `labels` 파일: 한 줄에 `kf:xxxxxxxx 지사이름`.
 
 ## 무엇을 보내나 · 안 보내나

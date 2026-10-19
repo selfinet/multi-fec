@@ -134,6 +134,8 @@ class Agent:
         self.head_cache = {}       # (unit, pid) -> parsed startup info
         self.relay_state = {}      # (unit, pid) -> 세션 표·커서
         self.route_cache = {}      # (dst, src) -> (dev, t)
+        self.nft_cache = None      # (now, 카운터)
+        self.seg_prev = {}         # (client, relay 소스) -> (카운터, t)
 
     def units(self):
         out = sh(['systemctl', 'list-units', '--plain', '--no-legend', '--all', '--type=service'] + self.unit_glob)
@@ -234,6 +236,64 @@ class Agent:
         d['errors_recent'] = len(warn)
         return d
 
+    def nft_counts(self, now):
+        """mfstat nft 집합(c2r·r2c·r2s·s2r)의 원소별 누적 카운터. 테이블이 없으면 None — 트래픽 칸을 비운다. 수집 주기당 1회."""
+        if self.nft_cache and self.nft_cache[0] == now:
+            return self.nft_cache[1]
+        out = None
+        raw = sh(['nft', '-j', 'list', 'table', 'inet', 'mfstat'], timeout=10)
+        if raw.strip():
+            try:
+                out = {'c2r': {}, 'r2c': {}, 'r2s': {}, 's2r': {}}
+                for o in json.loads(raw).get('nftables', []):
+                    st = o.get('set')
+                    if not st or st.get('name') not in out:
+                        continue
+                    for e in st.get('elem', []):
+                        e = e.get('elem', e)
+                        val = e.get('val', {})
+                        key = tuple(str(x) for x in val.get('concat', [val])) if isinstance(val, dict) else (str(val),)
+                        c = e.get('counter', {})
+                        out[st['name']][key] = (c.get('bytes', 0), c.get('packets', 0))
+            except (ValueError, AttributeError):
+                out = None
+        self.nft_cache = (now, out)
+        return out
+
+    def seg_traffic(self, sess, lip, now):
+        """세션 하나의 구간별 Mbps·pps. 키는 nft 규칙과 같다(client=ip.port.relayIP, server 쪽=relay소스ip.port).
+        리슨이 0.0.0.0 이면 relay IP 를 모르므로 같은 client 주소의 항목을 모두 더한다."""
+        cnt = self.nft_counts(now)
+        if cnt is None:
+            return None
+        cip, cport = sess['client'].rsplit(':', 1)
+        loc_ip, loc_port = sess['local'].rsplit(':', 1)
+        def pick(setname, keyfn):
+            b = p = 0
+            for k, (kb, kp) in cnt[setname].items():
+                if keyfn(k):
+                    b += kb; p += kp
+            return b, p
+        wild = lip in ('', '0.0.0.0', '*')
+        cur = {
+            'c2r': pick('c2r', lambda k: k[0] == cip and k[1] == cport and (wild or k[2] == lip)),
+            'r2c': pick('r2c', lambda k: k[0] == cip and k[1] == cport and (wild or k[2] == lip)),
+            'r2s': pick('r2s', lambda k: k[0] == loc_ip and k[1] == loc_port),
+            's2r': pick('s2r', lambda k: k[0] == loc_ip and k[1] == loc_port),
+        }
+        key = (sess['client'], sess['local'])
+        prev = self.seg_prev.get(key)
+        self.seg_prev[key] = (cur, now)
+        res = {f'{seg}_bytes': cur[seg][0] for seg in cur}
+        if prev and now > prev[1]:
+            dt = now - prev[1]
+            for seg in cur:
+                db, dp = cur[seg][0] - prev[0][seg][0], cur[seg][1] - prev[0][seg][1]
+                if db >= 0:                       # 음수 = 항목이 만료·재생성됨 → 이번 구간은 비운다
+                    res[f'{seg}_mbps'] = round(db * 8 / dt / 1e6, 3)
+                    res[f'{seg}_pps'] = round(dp / dt)
+        return res
+
     def egress(self, dst, src=None):
         """커널이 실제로 고르는 송신 NIC (ip route get). 소스 IP 는 NIC 를 정하지 않는다 — 그래서 직접 묻는다. 5분 캐시."""
         k = (dst, src); now = time.time()
@@ -305,10 +365,14 @@ class Agent:
             except ValueError:
                 since_ts = None
             lip = listen[0].rsplit(':', 1)[0] if listen else ''
-            out.append({'up_dev': self.egress(se['upstream'].rsplit(':', 1)[0], sk['local'].rsplit(':', 1)[0]),
+            tr = self.seg_traffic({'client': se['client'], 'local': sk['local']}, lip, self.now)
+            out.append({'traffic': tr, 'up_dev': self.egress(se['upstream'].rsplit(':', 1)[0], sk['local'].rsplit(':', 1)[0]),
                         'reply_dev': self.egress(se['client'].rsplit(':', 1)[0], lip if lip not in ('0.0.0.0', '*', '') else None),
                         'client': se['client'], 'upstream': se['upstream'], 'since': se['since'], 'since_ts': since_ts, 'fd': fd,
                         'local': sk['local'], 'recvq': sk['recvq'], 'sendq': sk['sendq'], 'kf': ' '.join(kf)})
+        live = {(x['client'], x['local']) for x in out}
+        for k in [k for k, v in self.seg_prev.items() if k not in live and self.now - v[1] > 600]:
+            del self.seg_prev[k]
         d['session_list'] = out[:500]
         d['listen'] = listen
         d['probes'] = st['probes']
@@ -406,6 +470,7 @@ class Agent:
 
     def collect(self):
         now = time.time()
+        self.now = now
         return {'v': 1, 'agent': VERSION, 'host': socket.gethostname(), 'ts': int(now),
                 'units': [self.unit(u, now) for u in self.units()], 'host_stats': self.host(now)}
 

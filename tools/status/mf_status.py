@@ -172,6 +172,23 @@ class Rules:
                     self.st.event(now, h, 'warn', f'{n}:probe', f'{n} 인증 실패 접속(프로브) +{u["probes"] - p["probes"]} — {top}')
                 if u.get('table_full', 0) > p.get('table_full', 0):
                     self.st.event(now, h, 'crit', f'{n}:full', f'{n} 세션 테이블 가득 참 +{u["table_full"] - p["table_full"]} (LRU 축출)')
+            # 구간 판정: client 쪽은 들어오는데 server 쪽 응답이 없으면 relay↔server 구간 문제 (60초 이상 이어질 때)
+            for x in u['session_list']:
+                t = x.get('traffic') or {}
+                if 'c2r_pps' not in t or 's2r_pps' not in t:
+                    continue
+                key = f'{n}:seg:{x["client"]}'; tk = f'bad:{h}:{key}'
+                bad = t['c2r_pps'] > 0 and t['s2r_pps'] == 0
+                if bad:
+                    since = self.st.state.get(tk) or now
+                    if not self.st.state.get(tk):
+                        self.st.set_state(tk, now)
+                    self._alert(now, h, key, now - since >= 60, 'crit',
+                                f'{branch_name(self.labels, x)} {x["client"]} — {n} → {x["upstream"]} 응답 없음 '
+                                f'(client→relay {t["c2r_pps"]} pps 들어오는데 server→relay 0, {fmt_dur(now - since)}째)')
+                else:
+                    self.st.set_state(tk, None)
+                    self._alert(now, h, key, False, 'crit', '')
             # 지사(키) × relay 존재 감시
             present = {branch_id(x) for x in u['session_list']}
             for b in present:
@@ -241,6 +258,19 @@ def history(store, host, unit, series, path, hours):
             v = f(u, p)
             if v is not None:
                 out.append([d['ts'], v])
+    return out
+
+
+def session_history(store, host, unit, client, key, hours):
+    now = int(time.time())
+    out = []
+    for d in store.samples(host, now - int(hours * 3600)):
+        for u in d.get('units', []):
+            if u['name'] != unit:
+                continue
+            for x in u.get('session_list', []):
+                if x['client'] == client and (x.get('traffic') or {}).get(key) is not None:
+                    out.append([d['ts'], x['traffic'][key]])
     return out
 
 
@@ -368,6 +398,10 @@ def handler(app):
                     return self.send(200, app.st.events(min(int(q.get('limit', 200)), 2000)))
                 if u.path == '/api/history':
                     hours = min(float(q.get('hours', 6)), KEEP_DAYS * 24)
+                    if q.get('client'):
+                        if q.get('series') not in ('c2r_mbps', 'r2c_mbps', 'r2s_mbps', 's2r_mbps', 'c2r_pps', 'r2c_pps', 'r2s_pps', 's2r_pps'):
+                            return self.send(400, {'error': 'series'})
+                        return self.send(200, session_history(app.st, q['host'], q['unit'], q['client'], q['series'], hours))
                     if q.get('iface'):
                         if q.get('series') not in ('rx_mbps', 'tx_mbps', 'rx_pps', 'tx_pps', 'rxd_d', 'txd_d', 'qd_d', 'rxe_d', 'txe_d'):
                             return self.send(400, {'error': 'series'})
