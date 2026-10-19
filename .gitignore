@@ -37,3 +37,6 @@ libev/config.log
 libev/config.status
 libev/autom4te.cache/
 
+
+# 로컬 전용 (커밋하지 말 것 — 상시 미커밋 상태로 유지)
+.env

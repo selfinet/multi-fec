@@ -18,14 +18,16 @@
   (Ubuntu 24.04 · kernel 6.8 · **2 vCPU** · 3.9 GB · **타임존 UTC**). 접속은 `ssh root@<이름 또는 IP>`,
   sv1 에서는 `sv1-gw` WG 터널로 직접 닿는다(`ip route get 192.168.100.92` → `dev sv1-gw`).
 
-  | 역할 | 호스트명 | IP | 유닛 (`/etc/multi-fec/*.conf`) |
+  | 역할 | 호스트명 | IP | 유닛 (`/etc/multi-fec/instances/*.conf`, 2026-10-19 v1.4.0 전환) |
   |---|---|---|---|
-  | client | `c.xdn.selfinet.com` | **192.168.100.92** | `multi-fec-client` (`client.conf`) |
-  | relay1 | `r1.xdn.selfinet.com` | **192.168.100.88** (ens18) | `multi-fec-relay` (`relay.conf`) |
-  | relay2 | `r2.xdn.selfinet.com` | **192.168.100.117** (ens19) | `multi-fec-relay-b` (`relay-b.conf`) |
-  | server | `s.xdn.selfinet.com` | **192.168.100.102** | `multi-fec-server` (`server.conf`) |
+  | client | `c.xdn.selfinet.com` | **192.168.100.92** | `multi-fec@client` |
+  | relay1 | `r1.xdn.selfinet.com` | **192.168.100.88** (ens18) | `multi-fec@relay` |
+  | relay2 | `r2.xdn.selfinet.com` | **192.168.100.117** (ens19) | `multi-fec@relay-b` |
+  | server | `s.xdn.selfinet.com` | **192.168.100.102** | `multi-fec@server` |
 
-  배포 바이너리 `/usr/sbin/multi-fec-dist`(교체 전 `.bak-v<이전버전>` 보관). **주소는 전부 DHCP** 다 —
+  배포 바이너리 `/usr/sbin/multi-fec-dist` = **v1.4.0**(2026-10-19, 버전별 사본 `.v1.3.1`·`.v1.4.0` 등 보관). 구 유닛
+  `multi-fec-client/-relay/-relay-b/-server` 와 `/etc/multi-fec/*.conf` 는 **disabled 로 남겨 둔 롤백용**이다 — 되돌리기는
+  `multi-fec@<이름>` disable --now → 구 유닛 enable --now(+ 필요 시 `.v1.3.1` 복원). 하네스가 구 유닛 이름을 쓰면 고칠 것. **주소는 전부 DHCP** 다 —
   DHCP 서버는 gw(`.1`)가 아니라 별개 VM `.12` 이고 리스 2h. ⚠️ **r1·r2 는 같은 VM 의 NIC 2개**다
   (ens19 를 DHCP 로 추가, 사용자 방침 — 경로당 VM 을 새로 만들지 않는다). **프로세스 장애만 분리되고
   호스트·회선 장애는 분리되지 않는다** — 결과 해석 시 명시할 것.

@@ -23,6 +23,11 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 측정·문서·테스트 하네스만(제품 코드 변경은 아래 버전 섹션).
 
+### 2026-10-19 — 테스트망을 v1.4.0 정식 구성으로 전환
+
+- 3대 바이너리 v1.4.0(`3cbf7cb2…`), `mf-migrate.py` 로 4개 유닛 → `multi-fec@{client,relay,relay-b,server}` (`instances/*.conf`).
+  키 지문 일치(kf:53d21bbd), 경로 2개 RUNNING, WG RTT 53.4 ms, `ps` 에 `--config` 만, 규칙 2 위반 0. 구 유닛은 disabled 로 롤백용 보관.
+
 ### 2026-10-19 — 상태 웹페이지 1단계 (`tools/status/`, 테스트망 전용)
 
 - `mf_agent.py`(호스트 수집·push) · `mf_status.py`(중앙: SQLite·규칙·API) · `dashboard.html`. 표준 라이브러리만, 제품 바이너리 무관.
