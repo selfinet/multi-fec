@@ -49,6 +49,8 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 | 5 | aggregate + 고손실 회귀 원인 분석 | v1.3.4 probe 답신 제한(`beat/4`) 전후 A/B, 손실 추정·rate 피드백 경로 계측 | `test_path_failure.py` aggregate·B 손실 60%: v1.3.3 8회 중 7회 <2% → v1.4.0 9회 중 0회. duplicate 무관 |
 | 6 | 터널 루프 차단 끄기 옵션 | path 가 `wg*`/`tun*` 로 라우팅되면 기동 거부 — tun 을 하부 회선으로 쓰는 환경용 예외 | 설계상 의도, 서비스 무관 |
 | 7 | `via` 같은 목적지 2회선 owd 이상값 | 첫 보고 1회 수십억 ms, 재실행 재현 안 됨 | T5b — 원인 미확인 |
+| 8 | **relay 키 필수** | 키(`key`/`--route`)가 하나도 없는 relay 는 기동 거부. 지금은 투명 중계로 조용히 뜬다 — 운영 방침은 "키는 무조건 있어야 함"(2026-10-19) | `main.cpp:1502` 주석, 도움말 "If omitted, relay forwards all packets transparently" |
+| 9 | **`--upstream`(+`-k`) 와 `--route` 동시 지정 거부** | 지금은 오류·경고 없이 route 만 쓰고 upstream·키를 버린다. 문서·도움말은 "혼용 불가(시작 시 오류)" 라고 적혀 있었다 | 2026-10-19 테스트망 r 실측: `mode=key-routing routes=1`, exit 0 |
 
 - 추가 · 2026-10-19 — **`mf-migrate.py`** — 1.3.x 식 유닛(인자 펼침 + EnvironmentFile)을 1.4.0 `--config` 형식으로 변환. systemd 와 같은
   규칙으로 해석(`${VAR}` 한 단어 · 단독 `$VAR` 분리 · EnvironmentFile 의 줄 끝 주석), relay `--route` 는 원래 주석을 달아 routes 파일로,
