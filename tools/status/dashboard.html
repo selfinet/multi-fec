@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>multi-fec 상태</title>
+<style>
+:root{--bg:#f6f7f9;--card:#fff;--fg:#1d2330;--mut:#6b7385;--line:#e3e6eb;--ok:#1f9d55;--warn:#d98b00;--crit:#d64545;--info:#3a6fd8;--chip:#eef1f5}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#12151b;--card:#1a1e26;--fg:#e4e7ee;--mut:#8b93a5;--line:#2a303b;--chip:#252b36}}
+:root[data-theme=dark]{--bg:#12151b;--card:#1a1e26;--fg:#e4e7ee;--mut:#8b93a5;--line:#2a303b;--chip:#252b36}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI","Noto Sans KR",sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;padding:12px 16px;border-bottom:1px solid var(--line);background:var(--card);position:sticky;top:0;z-index:2}
+header h1{font-size:16px;margin:0}
+.sum{display:flex;gap:8px;flex-wrap:wrap}
+.pill{padding:2px 10px;border-radius:99px;background:var(--chip);font-size:12px;white-space:nowrap}
+.pill.crit{background:var(--crit);color:#fff}.pill.warn{background:var(--warn);color:#fff}.pill.ok{background:var(--ok);color:#fff}
+.sp{flex:1}.mut{color:var(--mut)}
+main{padding:16px;display:grid;gap:16px;max-width:1400px;margin:0 auto}
+section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+section h2{font-size:14px;margin:0 0 8px}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{text-align:left;padding:5px 8px;border-bottom:1px solid var(--line);white-space:nowrap;vertical-align:top}
+th{color:var(--mut);font-weight:500}
+td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:6px;background:var(--mut)}
+.dot.ok{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.crit{background:var(--crit)}
+.st{font-size:12px;padding:1px 7px;border-radius:4px;background:var(--chip)}
+.st.RUNNING{background:var(--ok);color:#fff}.st.LOSSY,.st.DEGRADED{background:var(--crit);color:#fff}.st.PROBING,.st.WAITING{background:var(--warn);color:#fff}
+.hosts{display:grid;gap:16px;grid-template-columns:repeat(auto-fill,minmax(440px,1fr))}
+@media (max-width:520px){.hosts{grid-template-columns:1fr}}
+.hh{display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:6px}
+.hh b{font-size:15px}
+.kv{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--mut);margin:4px 0 8px}
+.kv span b{color:var(--fg);font-weight:500}
+.unit{border-top:1px solid var(--line);padding-top:8px;margin-top:8px}
+.unit .cmd{font:11px/1.4 ui-monospace,monospace;color:var(--mut);word-break:break-all;margin-top:4px}
+a.lnk{color:var(--info);cursor:pointer;text-decoration:none}
+.ev td{white-space:normal}
+.lv{font-size:11px;padding:0 6px;border-radius:4px;color:#fff}
+.lv.crit{background:var(--crit)}.lv.warn{background:var(--warn)}.lv.ok{background:var(--ok)}.lv.info{background:var(--info)}
+#chart{display:none}
+#chart svg{width:100%;height:220px;display:block}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:6px}
+select,button{font:inherit;background:var(--chip);color:var(--fg);border:1px solid var(--line);border-radius:6px;padding:3px 8px}
+.note{font-size:12px;color:var(--mut)}
+</style>
+</head>
+<body>
+<header>
+  <h1>multi-fec 상태</h1>
+  <div class="sum" id="sum"></div>
+  <div class="sp"></div>
+  <span class="note" id="upd">—</span>
+  <button id="theme" title="테마">◐</button>
+</header>
+<main>
+  <section id="alertsec"><h2>경보</h2><div id="alerts" class="note">없음</div></section>
+  <section><h2>경로 — 지사(client) × path</h2><div class="scroll" id="matrix"></div>
+    <div class="note">owd 는 편도 지연이며 양쪽 시계에 의존한다. 1.3.2 이하 클라이언트는 owd 대신 옛 rtt 표기라 비워 둔다.</div></section>
+  <section id="chart"><h2 id="ctitle">추이</h2>
+    <div class="ctl"><select id="hours"><option value="1">1시간</option><option value="6" selected>6시간</option><option value="24">24시간</option><option value="168">7일</option></select>
+      <span class="note" id="cnote"></span><span class="sp"></span><button id="cclose">닫기</button></div>
+    <div id="csvg"></div></section>
+  <div class="hosts" id="hosts"></div>
+  <section><h2>이벤트</h2><div class="scroll"><table class="ev" id="events"></table></div></section>
+</main>
+<script>
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const tm=t=>{const d=new Date(t*1000);return d.toLocaleString('ko-KR',{month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hour12:false})};
+const dur=s=>s<120?`${s|0}초`:s<7200?`${s/60|0}분`:s<172800?`${s/3600|0}시간`:`${s/86400|0}일`;
+const fmtN=n=>n==null?'—':n>=1e6?(n/1e6).toFixed(1)+'M':n>=1e3?(n/1e3).toFixed(1)+'k':String(n);
+try{const t=localStorage.getItem('mf-theme');if(t)document.documentElement.dataset.theme=t}catch(e){}
+$('#theme').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme: dark)').matches;r.dataset.theme=dark?'light':'dark';try{localStorage.setItem('mf-theme',r.dataset.theme)}catch(e){}};
+let chartSel=null;
+
+function hostLevel(h,alerts){
+  if(h.age>90)return'crit';
+  const a=alerts.filter(x=>x.host===h.host);
+  return a.some(x=>x.level==='crit')?'crit':a.some(x=>x.level==='warn')?'warn':'ok';
+}
+function renderAlerts(alerts,now){
+  $('#alerts').innerHTML=alerts.length?`<div class="scroll"><table>${alerts.map(a=>`<tr><td><span class="lv ${a.level}">${a.level}</span></td><td>${esc(a.host)}</td><td style="white-space:normal">${esc(a.msg)}</td><td class="n mut">${dur(now-a.since)}째</td></tr>`).join('')}</table></div>`:'없음';
+}
+function renderMatrix(hosts){
+  const rows=[];
+  for(const h of hosts)for(const u of h.units||[])if(u.role==='client'&&u.paths)rows.push([h,u]);
+  if(!rows.length){$('#matrix').innerHTML='<span class="note">client 경로 보고 없음</span>';return}
+  const maxp=Math.max(...rows.map(([,u])=>u.paths.length));
+  let s='<table><tr><th>호스트 / 유닛</th><th>버전</th>';
+  for(let i=0;i<maxp;i++)s+=`<th>path[${i}]</th>`;
+  s+='</tr>';
+  for(const [h,u] of rows){
+    s+=`<tr><td>${esc(h.host)} / ${esc(u.name)}</td><td>${esc(u.version||'?')}</td>`;
+    for(let i=0;i<maxp;i++){const p=u.paths.find(x=>x.i===i);
+      s+=p?`<td><span class="st ${esc(p.status)}">${esc(p.status)}</span> ${p.owd!=null?`<a class="lnk" data-h="${esc(h.host)}" data-u="${esc(u.name)}" data-s="owd" data-p="${i}">${p.owd.toFixed(1)}ms</a>`:''} <a class="lnk" data-h="${esc(h.host)}" data-u="${esc(u.name)}" data-s="loss" data-p="${i}">loss ${p.loss}%</a>${p.dev?` <span class="mut">${esc(p.dev)}</span>`:''}</td>`:'<td class="mut">—</td>'}
+    s+='</tr>'}
+  $('#matrix').innerHTML=s+'</table>';
+}
+function lk(h,u,s,label){return `<a class="lnk" data-h="${esc(h)}" data-u="${esc(u)}" data-s="${s}">${label}</a>`}
+function renderHosts(hosts,alerts){
+  $('#hosts').innerHTML=hosts.map(h=>{
+    const hs=h.host_stats||{},lv=hostLevel(h,alerts);
+    const wg=(hs.wg||[]).map(w=>`WG ${esc(w.if)} 핸드셰이크 <b>${w.handshake_age==null?'없음':dur(w.handshake_age)+' 전'}</b>`).join(' · ');
+    const units=(h.units||[]).map(u=>{
+      const rt=u.routes?`<div class="note">${u.routes.map(r=>`route[${r.i}] ${esc(r.kf)} → ${esc(r.upstream)}`).join('<br>')}</div>`:'';
+      const ps=u.paths&&u.role!=='client'?'':'';
+      const rep=(u.reports||[]).map(r=>`${r.peer?esc(r.peer)+' ':''}up ${fmtN(r.up_pkt)} · down ${fmtN(r.dn_pkt)} pkt`).join('<br>');
+      return `<div class="unit"><div class="hh"><span class="dot ${u.active?'ok':'crit'}"></span><b>${esc(u.name)}</b>
+        <span class="pill">${esc(u.role||'?')}</span><span class="pill">${esc(u.version||'?')}</span>
+        <span class="mut">${esc(u.kf||'')}</span><span class="sp"></span><span class="mut">${esc(u.state)} · 재시작 ${u.restarts}</span></div>
+        <table><tr><th class="n">CPU%</th><th class="n">RSS MB</th><th class="n">FD</th>${u.role==='relay'?'<th class="n">세션</th>':''}<th class="n">drops</th><th>기동</th></tr>
+        <tr><td class="n">${lk(h.host,u.name,'cpu',u.cpu??'—')}</td><td class="n">${lk(h.host,u.name,'rss',u.rss_mb??'—')}</td><td class="n">${lk(h.host,u.name,'fd',u.fd??'—')}</td>
+        ${u.role==='relay'?`<td class="n">${lk(h.host,u.name,'sessions',u.sessions??'—')}</td>`:''}<td class="n">${lk(h.host,u.name,'drops',u.drops??'—')}</td><td class="mut">${esc(u.started)}</td></tr></table>
+        ${rt}${rep?`<div class="note">${rep}</div>`:''}<div class="cmd">${esc(u.cmdline||'')}</div></div>`}).join('');
+    return `<section><div class="hh"><span class="dot ${lv}"></span><b>${esc(h.host)}</b><span class="sp"></span><span class="mut">${dur(h.age)} 전 보고</span></div>
+      <div class="kv"><span>코어 <b>${hs.cores??'?'}</b></span><span>load <b>${(hs.load||[]).join(' ')}</b></span>
+      <span>메모리 <b>${hs.mem_used_mb??'?'} / ${hs.mem_total_mb??'?'} MB</b></span>
+      <span>RX ${lk(h.host,'','rx_mbps',(hs.rx_mbps??'—')+' Mbps')}</span><span>TX ${lk(h.host,'','tx_mbps',(hs.tx_mbps??'—')+' Mbps')}</span>
+      <span>UDP 버퍼 넘침(누적) <b>${hs.udp?fmtN(hs.udp.RcvbufErrors):'?'}</b></span><span>시계 <b>${hs.ntp_sync?'동기':'미동기'}</b></span></div>
+      ${wg?`<div class="kv"><span>${wg}</span></div>`:''}${units||'<div class="note">multi-fec 유닛 없음</div>'}</section>`}).join('');
+}
+function renderEvents(ev){
+  $('#events').innerHTML=ev.length?'<tr><th>시각</th><th>수준</th><th>호스트</th><th>내용</th></tr>'+ev.map(e=>`<tr><td class="mut">${tm(e.ts)}</td><td><span class="lv ${e.level}">${e.level}</span></td><td>${esc(e.host)}</td><td>${esc(e.msg)}</td></tr>`).join(''):'<tr><td class="note">없음</td></tr>';
+}
+async function refresh(){
+  try{
+    const [st,ev]=await Promise.all([fetch('api/status').then(r=>r.json()),fetch('api/events?limit=100').then(r=>r.json())]);
+    const crit=st.alerts.filter(a=>a.level==='crit').length,warn=st.alerts.filter(a=>a.level==='warn').length;
+    const units=st.hosts.reduce((n,h)=>n+(h.units||[]).length,0);
+    $('#sum').innerHTML=`<span class="pill">호스트 ${st.hosts.length}</span><span class="pill">유닛 ${units}</span>`+(crit?`<span class="pill crit">심각 ${crit}</span>`:'')+(warn?`<span class="pill warn">주의 ${warn}</span>`:'')+(!crit&&!warn?'<span class="pill ok">정상</span>':'');
+    renderAlerts(st.alerts,st.now);renderMatrix(st.hosts);renderHosts(st.hosts,st.alerts);renderEvents(ev);
+    $('#upd').textContent='갱신 '+tm(st.now);
+    if(chartSel)drawChart();
+  }catch(e){$('#upd').textContent='갱신 실패: '+e}
+}
+document.addEventListener('click',e=>{const a=e.target.closest('a.lnk');if(!a)return;
+  chartSel={h:a.dataset.h,u:a.dataset.u,s:a.dataset.s,p:a.dataset.p??''};$('#chart').style.display='block';drawChart();$('#chart').scrollIntoView({behavior:'smooth',block:'nearest'})});
+$('#cclose').onclick=()=>{chartSel=null;$('#chart').style.display='none'};
+$('#hours').onchange=()=>chartSel&&drawChart();
+const LABEL={cpu:'CPU %',rss:'RSS MB',fd:'FD',sessions:'세션',drops:'소켓 drops (누적)',owd:'owd ms',loss:'loss %',rx_mbps:'RX Mbps',tx_mbps:'TX Mbps'};
+async function drawChart(){
+  const c=chartSel,hours=$('#hours').value;
+  const q=new URLSearchParams({host:c.h,unit:c.u,series:c.s,hours,path:c.p});
+  $('#ctitle').textContent=`추이 — ${c.h}${c.u?' / '+c.u:''}${c.p!==''?' / path['+c.p+']':''} · ${LABEL[c.s]||c.s}`;
+  const pts=await fetch('api/history?'+q).then(r=>r.json());
+  $('#cnote').textContent=`${pts.length}점`;
+  if(pts.length<2){$('#csvg').innerHTML='<div class="note">점이 부족하다</div>';return}
+  const W=1000,H=220,L=48,B=22,T=8,R=8;
+  const t0=pts[0][0],t1=pts[pts.length-1][0];let y0=Math.min(...pts.map(p=>p[1])),y1=Math.max(...pts.map(p=>p[1]));
+  if(y0>0&&y0<y1*0.5)y0=0;if(y1===y0){y1+=1;y0=Math.max(0,y0-1)}
+  const X=t=>L+(t-t0)/(t1-t0||1)*(W-L-R),Y=v=>T+(1-(v-y0)/(y1-y0))*(H-T-B);
+  let d='',prev=null;
+  for(const [t,v] of pts){d+=(prev!=null&&t-prev>150?'M':(d?'L':'M'))+X(t).toFixed(1)+','+Y(v).toFixed(1);prev=t}
+  const grid=[0,.5,1].map(f=>{const v=y0+(y1-y0)*f;return `<line x1="${L}" x2="${W-R}" y1="${Y(v)}" y2="${Y(v)}" stroke="var(--line)"/><text x="${L-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="var(--mut)">${+v.toFixed(2)}</text>`}).join('');
+  const xl=[t0,(t0+t1)/2,t1].map((t,i)=>`<text x="${X(t)}" y="${H-5}" text-anchor="${['start','middle','end'][i]}" font-size="11" fill="var(--mut)">${tm(t)}</text>`).join('');
+  $('#csvg').innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none">${grid}${xl}<path d="${d}" fill="none" stroke="var(--info)" stroke-width="1.6" vector-effect="non-scaling-stroke"/></svg>`;
+}
+refresh();setInterval(refresh,10000);
+</script>
+</body>
+</html>

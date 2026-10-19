@@ -1,0 +1,50 @@
+# tools/status — multi-fec 상태 웹페이지 (1단계, 테스트망 전용)
+
+> ⚠️ **실서비스망에는 적용하지 않는다** (2026-10-19 결정). 개발은 sv1 루프백, 실측은 테스트망까지.
+
+```
+각 호스트 mf_agent.py ──30초 push(JSON, 호스트 토큰)──▶ mf_status.py (SQLite·규칙) ──▶ 브라우저 대시보드
+```
+
+| 파일 | 역할 |
+|---|---|
+| `mf_agent.py` | 호스트에서 유닛·경로·세션·자원 수집 → `POST /api/push`. 읽기 전용(systemctl·journalctl·/proc·ss·wg). root 로 실행 |
+| `mf_status.py` | 중앙 서버. 저장(7일)·규칙·이벤트(30일)·API·대시보드. 표준 라이브러리만 |
+| `dashboard.html` | 단일 페이지. 10초마다 갱신, 숫자를 누르면 추이 그래프 |
+
+## 실행
+
+```bash
+# 중앙 (토큰 파일: 한 줄에 "호스트명 토큰", 권한 600)
+python3 mf_status.py --listen 127.0.0.1:8780 --db status.db --tokens tokens
+
+# 호스트 (hostname 이 토큰 파일의 호스트명과 같아야 한다)
+MF_AGENT_TOKEN=<토큰> python3 mf_agent.py --url http://<중앙>:8780
+
+# 시험 — push 없이 출력
+python3 mf_agent.py --once
+```
+
+## 무엇을 보내나 · 안 보내나
+
+- 보냄: 유닛 상태·PID·재시작 수, 버전, CPU%·RSS·FD, 소켓 drops, relay 세션 수, client 경로(상태·owd·loss·tx/rx·dev),
+  report 카운터, 호스트 load·메모리·트래픽·UDP 오류·NTP·WireGuard 핸드셰이크 나이, **키 지문(kf:)**
+- 안 보냄: **키**. 명령줄의 `-k`/`--key`/`--route` 값은 `****` 로 가린다(1.3.x 는 argv 에 키가 평문이다).
+
+## 경보 규칙
+
+| 규칙 | 수준 |
+|---|---|
+| 에이전트 보고 90초 끊김 | crit |
+| 유닛 정지 | crit |
+| client 경로가 RUNNING 아님 2분 이상 | crit |
+| 재시작(PID 변경, 버전 변화 표시) · 소켓 drops 증가 · 로그 ERROR 증가 · UDP 수신 버퍼 넘침 증가 | warn (이벤트) |
+| NTP 미동기 · WireGuard 핸드셰이크 3분 초과 · 에이전트 시계 ±10초 | warn |
+| 호스트 간 버전 혼재 | info |
+
+## 한계
+
+- GET API·대시보드는 인증이 없다 → 루프백이나 신뢰 구간에만 연다(외부에 열려면 리버스 프록시 인증).
+- relay 는 자체 통계가 없어 트래픽은 **호스트 인터페이스 합계**다(relay 전용 호스트면 거의 relay 몫).
+- 1.3.x client 는 owd 대신 옛 `rtt=..us` 표기라 지연 칸이 빈다(상태·loss 는 나온다).
+- 키 지문(kf:)은 1.4.0 부터 기동 로그에 남는다 — 1.3.x 는 비어 있다.
