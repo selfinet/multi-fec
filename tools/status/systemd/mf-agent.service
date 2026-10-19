@@ -1,0 +1,19 @@
+# mf-agent — multi-fec 상태 수집·push (테스트망 전용 — 서비스망 적용 금지). 읽기 전용이지만 저널·소켓을 보려고 root 로 돈다.
+[Unit]
+Description=multi-fec status agent (test network only)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/mf-status/agent.env
+ExecStart=/usr/bin/python3 /opt/mf-status/mf_agent.py --url ${MF_STATUS_URL} --interval 30
+Restart=always
+RestartSec=10
+Nice=10
+NoNewPrivileges=yes
+ProtectSystem=strict
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target
