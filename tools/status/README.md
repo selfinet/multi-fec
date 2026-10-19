@@ -12,6 +12,18 @@
 | `mf_status.py` | 중앙 서버. 저장(7일)·규칙·이벤트(30일)·API·대시보드. 표준 라이브러리만 |
 | `dashboard.html` | 단일 페이지. 10초마다 갱신, 숫자를 누르면 추이 그래프 |
 
+## 테스트망 설치 현황 (2026-10-19, 2단계)
+
+| 호스트 | 유닛 | 파일 |
+|---|---|---|
+| s `192.168.100.102` | `mf-status`(중앙, `192.168.100.102:8780`) + `mf-agent` | `/opt/mf-status/` · `/etc/mf-status/{tokens,status.env}`(600) · `/var/lib/mf-status/status.db` |
+| c `.92` · r `.88` | `mf-agent` | `/opt/mf-status/mf_agent.py` · `/etc/mf-status/agent.env`(600, URL+토큰) |
+
+에이전트는 WG 터널이 아니라 하부망(`.102`)으로 보낸다 — 터널이 죽어도 보고가 끊기지 않아야 하므로.
+보기: sv1 경유 `ssh -p 2234 -N -L 8780:192.168.100.102:8780 <계정>@sv1` → http://localhost:8780 (sv1 에는 아무것도 띄우지 않는다).
+되돌리기: 각 호스트 `systemctl disable --now mf-agent`(s 는 `mf-status` 도) → `/opt/mf-status` `/etc/mf-status` `/var/lib/mf-status` 삭제,
+`/etc/systemd/system/mf-{agent,status}.service` 삭제 후 `daemon-reload`.
+
 ## 실행
 
 ```bash

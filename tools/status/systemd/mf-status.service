@@ -1,0 +1,20 @@
+# mf-status 중앙 서버 (테스트망 전용 — 서비스망 적용 금지). 설치: tools/status/README.md
+[Unit]
+Description=multi-fec status central (test network only)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/mf-status/status.env
+ExecStart=/usr/bin/python3 /opt/mf-status/mf_status.py --listen ${LISTEN} --db /var/lib/mf-status/status.db --tokens /etc/mf-status/tokens
+Restart=on-failure
+RestartSec=5
+DynamicUser=no
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/var/lib/mf-status
+ProtectHome=yes
+
+[Install]
+WantedBy=multi-user.target
