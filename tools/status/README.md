@@ -16,8 +16,9 @@
 
 | 호스트 | 유닛 | 파일 |
 |---|---|---|
-| s `192.168.100.102` | `mf-status`(중앙, `192.168.100.102:8780`) + `mf-agent` | `/opt/mf-status/` · `/etc/mf-status/{tokens,status.env}`(600) · `/var/lib/mf-status/status.db` |
-| c `.92` · r `.88` | `mf-agent` | `/opt/mf-status/mf_agent.py` · `/etc/mf-status/agent.env`(600, URL+토큰) |
+| s `192.168.100.102` | `mf-status`(중앙, `192.168.100.102:8780`) | `/opt/mf-status/` · `/etc/mf-status/{tokens,status.env,labels}`(600) · `/var/lib/mf-status/status.db` |
+| r `.88` | `mf-agent` (**수집은 relay 에서만**, 2026-10-19) | `/opt/mf-status/mf_agent.py` · `/etc/mf-status/agent.env`(600, URL+토큰) |
+| c `.92` · s | `mf-agent` 설치돼 있으나 **disabled** | 토큰은 s `tokens.bak-all` 에 보관 — 다시 켜려면 tokens 에 줄을 되돌리고 `mf-status` 재시작 |
 
 에이전트는 WG 터널이 아니라 하부망(`.102`)으로 보낸다 — 터널이 죽어도 보고가 끊기지 않아야 하므로.
 보기: sv1 경유 `ssh -p 2234 -N -L 8780:192.168.100.102:8780 <계정>@sv1` → http://localhost:8780 (sv1 에는 아무것도 띄우지 않는다).
@@ -36,6 +37,20 @@ MF_AGENT_TOKEN=<토큰> python3 mf_agent.py --url http://<중앙>:8780
 # 시험 — push 없이 출력
 python3 mf_agent.py --once
 ```
+
+## relay 만으로 보는 것 (relay 기준 화면)
+
+지사 고객 장비(c·s)에 설치하지 않고 relay 에만 에이전트를 둘 때 쓰는 화면이다.
+
+| 보이는 것 | 출처 |
+|---|---|
+| 지사 × relay 표 — 지사(키 지문, `labels` 로 이름) 가 어느 relay 를 지나는지, 세션 주소·지속 시간 | 로그 `[relay] new session`/`session removed`(커서로 이어 읽음) + 그 fd 가 지금 열린 upstream 소켓인지 `ss` 로 확인 |
+| 경로 끊김 경보 — 늘 보이던 relay 에서 그 지사 세션이 **2분** 이상 없음 | relay 는 60초 무통신 세션을 지우므로 "없음" = 최소 1분 이상 끊김. 24시간 안 보이면 감시 해제 |
+| 세션 생성·종료 · 프로브(인증 실패) · 세션 테이블 포화 이벤트 | 프로브는 `--decoy` 를 쓸 때만 info 로그가 남는다(내장 응답은 debug) |
+| relay 자원 · 버전 · 키 지문 · 재시작 | `/proc`, 기동 로그 |
+
+**못 보는 것**: 세션별 트래픽 양(UDP 소켓에는 바이트 카운터가 없다 — nft 카운터 등 호스트 설정이 필요), 경로 owd·loss(client 로그에만 있다).
+`labels` 파일: 한 줄에 `kf:xxxxxxxx 지사이름`.
 
 ## 무엇을 보내나 · 안 보내나
 
