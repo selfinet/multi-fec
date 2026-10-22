@@ -1,0 +1,49 @@
+[00:14:54] ##### rep1 v1.5-perf
+  설치 c=aaf66381eec5 s=aaf66381eec5
+[run] steady 15 Mbps rep1  up 0.15431%  dn 0.00000%  cliEAGAIN 22  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.09920%  dn 0.20267%  cliEAGAIN 21  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.05689%  dn 0.04764%  cliEAGAIN 6  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.00924%  dn 0.00284%  cliEAGAIN 13  srvEAGAIN 0
+strace: Process 1573599 attached
+strace: Process 1573038 attached
+strace: Process 1573599 detached
+strace: Process 1573038 detached
+client PID 1573038 · server PID 1573599
+up: total expected 93750 rx 93750 lost 0 loss_pct 0.00000 dup 0 ooo 4322
+dn: total expected 93750 rx 93750 lost 0 loss_pct 0.00000 dup 0 ooo 4320
+[00:24:49] STRACE_DONE
+[00:25:02] 가드 감시 중 · client PID 1573038 · server PID 1573599
+up: total expected 93750 rx 93750 lost 0 loss_pct 0.00000 dup 0 ooo 4440
+dn: total expected 93750 rx 93750 lost 0 loss_pct 0.00000 dup 0 ooo 4386
+[00:26:09] MPSTAT_DONE
+[00:26:09] ##### rep1 v1.5-gso
+  설치 c=15b5b1d36827 s=15b5b1d36827
+[run] steady 15 Mbps rep1  up 0.54116%  dn 0.00000%  cliEAGAIN 33  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.00000%  dn 0.00160%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.01849%  dn 0.03484%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.06756%  dn 0.00000%  cliEAGAIN 23  srvEAGAIN 0
+strace: Process 1584409 attached
+strace: Process 1584960 attached
+strace: Process 1584409 detached
+strace: Process 1584960 detached
+client PID 1584409 · server PID 1584960
+up: total expected 93750 rx 93750 lost 0 loss_pct 0.00000 dup 0 ooo 4418
+dn: total expected 93750 rx 93606 lost 144 loss_pct 0.15360 dup 0 ooo 4310
+[00:36:05] STRACE_DONE
+[00:36:18] 가드 감시 중 · client PID 1584409 · server PID 1584960
+up: total expected 93750 rx 93750 lost 0 loss_pct 0.00000 dup 0 ooo 4348
+dn: total expected 93750 rx 93750 lost 0 loss_pct 0.00000 dup 0 ooo 4422
+[00:37:25] MPSTAT_DONE
+[00:37:25] ##### rep2 v1.5-perf
+  설치 c=aaf66381eec5 s=aaf66381eec5
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[00:41:54] ##### rep2 v1.5-gso
+  설치 c=15b5b1d36827 s=15b5b1d36827
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.27893%  dn 0.00213%  cliEAGAIN 33  srvEAGAIN 0
+[00:46:23] GSOAB_DONE
+[00:46:23] ===== 1.4.0 복원
+  설치 c=3cbf7cb2298b s=3cbf7cb2298b
+multi-fec-client 3cbf7cb2298b5e7d active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive active 
