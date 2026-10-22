@@ -14,7 +14,7 @@ SRCS_C   = mud_lite.c
 
 SRCS_CXX = main.cpp mf_config.cpp mf_netcfg.cpp obfs.cpp port_hopper.cpp mf_client.cpp mf_server.cpp mf_relay.cpp \
            log.cpp misc.cpp my_ev.cpp common.cpp \
-           fec_manager.cpp rnlc.cpp packet.cpp connection.cpp fd_manager.cpp delay_manager.cpp \
+           fec_manager.cpp rnlc.cpp wg_batch.cpp packet.cpp connection.cpp fd_manager.cpp delay_manager.cpp \
            lib/fec.cpp lib/rs.cpp crc32/Crc32.cpp
 
 OBJS = $(SRCS_C:.c=.o) $(SRCS_CXX:.cpp=.o)

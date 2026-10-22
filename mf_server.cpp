@@ -18,6 +18,7 @@
 
 #include "tunnel.h"
 #include "mf_common.h"
+#include "wg_batch.h"
 #include "obfs.h"
 
 extern "C" {
@@ -775,7 +776,7 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
         dest.type       = type_fd64;
         dest.inner.fd64 = fd64;
 
-        delay_send(out_delay[i], dest, new_data, new_len);
+        wg_batch_send(out_delay[i], dest, new_data, new_len);
     }
 }
 
@@ -1215,6 +1216,7 @@ static void delay_manager_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watc
 
 static void prepare_cb(struct ev_loop * /*loop*/, struct ev_prepare * /*watcher*/, int /*revents*/)
 {
+    wg_batch_flush();   /* 잠들기 전에 WG 쪽 묶음을 내보낸다 (wg_batch.h) */
     delay_manager.check();
 }
 
