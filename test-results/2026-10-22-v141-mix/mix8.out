@@ -1,0 +1,38 @@
+[21:12:50] ##### c=1.4.0 r=1.4.0 s=1.4.0
+  터널 정상  sha 3cbf7cb2 3cbf7cb2 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.11840%  dn 0.11520%  cliEAGAIN 0  srvEAGAIN 0
+[21:16:18] ##### c=1.4.0 r=1.4.0 s=1.4.1-v2
+  터널 정상  sha 3cbf7cb2 3cbf7cb2 02eecf43 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.10080%  dn 0.10560%  cliEAGAIN 2  srvEAGAIN 0
+[21:19:44] ##### c=1.4.0 r=1.4.1-v2 s=1.4.0
+  터널 정상  sha 3cbf7cb2 02eecf43 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.10400%  dn 0.08800%  cliEAGAIN 0  srvEAGAIN 0
+[21:23:10] ##### c=1.4.0 r=1.4.1-v2 s=1.4.1-v2
+  터널 정상  sha 3cbf7cb2 02eecf43 02eecf43 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.14720%  dn 0.10560%  cliEAGAIN 16  srvEAGAIN 0
+[21:26:35] ##### c=1.4.1-v2 r=1.4.0 s=1.4.0
+  터널 정상  sha 02eecf43 3cbf7cb2 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.04960%  dn 0.06720%  cliEAGAIN 0  srvEAGAIN 0
+[21:30:01] ##### c=1.4.1-v2 r=1.4.0 s=1.4.1-v2
+  터널 정상  sha 02eecf43 3cbf7cb2 02eecf43 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.09120%  dn 0.06720%  cliEAGAIN 0  srvEAGAIN 0
+[21:33:26] ##### c=1.4.1-v2 r=1.4.1-v2 s=1.4.0
+  터널 정상  sha 02eecf43 02eecf43 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.10080%  dn 0.09760%  cliEAGAIN 0  srvEAGAIN 0
+[21:36:51] ##### c=1.4.1-v2 r=1.4.1-v2 s=1.4.1-v2
+  터널 정상  sha 02eecf43 02eecf43 02eecf43 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.10240%  dn 0.06880%  cliEAGAIN 0  srvEAGAIN 0
+[21:40:16] MIX_DONE
+[21:40:16] ===== 1.4.0 복원
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive inactive active 
+rtt min/avg/max/mdev = 52.123/52.695/53.767/0.669 ms

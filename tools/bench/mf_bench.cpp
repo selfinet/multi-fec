@@ -28,6 +28,9 @@ int main() {
     do { rs_encode2(K, N, p, SZ); n++; } while ((t = now()) - t0 < DUR);
     double enc = n * (double)K * SZ / (t - t0) / 1e6;
     printf("rs_encode 20+4 x1350B   %8.1f MB/s 데이터  (%7.0f 그룹/s)\n", enc, n / (t - t0));
+    { unsigned long long h = 1469598103934665603ULL;   // 패리티 해시 — 구현이 달라도 같아야 한다(호환 확인)
+      for (int i = K; i < N; i++) for (int j = 0; j < SZ; j++) { h ^= (unsigned char)buf[i][j]; h *= 1099511628211ULL; }
+      printf("parity hash              %016llx\n", h); }
 
     // 2) RS 복구: 데이터 4개 손실 → 패리티로 복원
     static char save[4][SZ];
