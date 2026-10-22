@@ -1,0 +1,2 @@
+1792675649.681727 multi-fec-server multi-fec-dist[1566775]: [2026-10-22 13:27:29][INFO][report][192.168.100.88:48575]client-->server:(original:213326 pkt;270485568 byte) (fec:260368 pkt;332730284 byte)  server-->client:(original:213397 pkt;270581644 byte) (fec:260625 pkt;333068418 byte)
+1792675710.081316 multi-fec-server multi-fec-dist[1566775]: [2026-10-22 13:28:30][INFO][report][192.168.100.88:48575]client-->server:(original:328135 pkt;416063380 byte) (fec:398329 pkt;509044442 byte)  server-->client:(original:328130 pkt;416063088 byte) (fec:398395 pkt;509138478 byte)

@@ -1,0 +1,12 @@
+1792674556.695146 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:09:16][INFO][client] path[0] RUNNING owd=25.77ms jit=0.16ms loss=4% rate=52.6Mbps tx=39987 rx=37987 dev=ens18
+1792674556.695146 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:09:16][INFO][client] path[1] RUNNING owd=31.08ms jit=0.39ms loss=1% rate=32.6Mbps tx=39894 rx=38978 dev=ens18
+1792674557.491566 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:09:17][INFO][report]client-->server:(original:32914 pkt;41725500 byte) (fec:40480 pkt,51715768 byte)  server-->client:(original:32882 pkt;41689796 byte) (fec:40477 pkt;51722754 byte)
+1792674569.510790 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:09:29][WARN][client] mud_send EAGAIN #50
+1792674569.521900 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:09:29][WARN][client] mud_send EAGAIN #100
+1792674569.527148 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:09:29][WARN][client] mud_send EAGAIN #150
+1792674569.532556 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:09:29][INFO][client] flushed 170 pending packet(s)
+1792674586.692029 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:09:46][INFO][client] path[0] RUNNING owd=26.37ms jit=0.66ms loss=4% rate=35.9Mbps tx=98119 rx=93353 dev=ens18
+1792674586.692029 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:09:46][INFO][client] path[1] RUNNING owd=31.20ms jit=0.29ms loss=1% rate=32.6Mbps tx=97983 rx=95958 dev=ens18
+1792674616.691880 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:10:16][INFO][client] path[0] RUNNING owd=27.26ms jit=2.04ms loss=6% rate=35.8Mbps tx=156328 rx=148700 dev=ens18
+1792674616.700623 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:10:16][INFO][client] path[1] RUNNING owd=32.09ms jit=1.45ms loss=1% rate=29.6Mbps tx=156146 rx=152913 dev=ens18
+1792674617.891198 multi-fec-client multi-fec-dist[1550225]: [2026-10-22 13:10:17][INFO][report]client-->server:(original:127289 pkt;161393000 byte) (fec:156574 pkt,200083900 byte)  server-->client:(original:127258 pkt;161358564 byte) (fec:156683 pkt;200234022 byte)
