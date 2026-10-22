@@ -1,0 +1,12 @@
+1792658962.633117 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:49:22][INFO][client] path[0] RUNNING owd=25.76ms jit=0.32ms loss=10% rate=46.2Mbps tx=178757 rx=169288 dev=ens18
+1792658962.633117 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:49:22][INFO][client] path[1] RUNNING owd=30.64ms jit=0.14ms loss=7% rate=43.4Mbps tx=178507 rx=174439 dev=ens18
+1792658992.633572 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:49:52][INFO][client] path[0] RUNNING owd=25.60ms jit=0.11ms loss=5% rate=124.6Mbps tx=237024 rx=224695 dev=ens18
+1792658992.633572 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:49:52][INFO][client] path[1] DEGRADED owd=31.40ms jit=1.25ms loss=1% rate=32.6Mbps tx=216947 rx=210040 dev=ens18
+1792658993.834581 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:49:53][INFO][report]client-->server:(original:191663 pkt;243016884 byte) (fec:236207 pkt,301853642 byte)  server-->client:(original:191456 pkt;242759224 byte) (fec:234641 pkt;299859574 byte)
+1792659000.324761 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:50:00][WARN][client] mud_send EAGAIN #50
+1792659000.345605 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:50:00][INFO][client] flushed 87 pending packet(s)
+1792659022.633059 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:50:22][INFO][client] path[0] RUNNING owd=25.83ms jit=0.48ms loss=4% rate=102.6Mbps tx=295280 rx=280075 dev=ens18
+1792659022.635409 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:50:22][INFO][client] path[1] RUNNING owd=31.02ms jit=0.53ms loss=0% rate=1000.0Mbps tx=217655 rx=210046 dev=ens18
+1792659052.633388 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:50:52][INFO][client] path[0] RUNNING owd=25.97ms jit=0.11ms loss=0% rate=17.1Mbps tx=350700 rx=332952 dev=ens18
+1792659052.633388 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:50:52][INFO][client] path[1] RUNNING owd=30.95ms jit=0.17ms loss=0% rate=8.0Mbps tx=273027 rx=263185 dev=ens18
+1792659054.232320 multi-fec-client multi-fec-dist[1445604]: [2026-10-22 08:50:54][INFO][report]client-->server:(original:281260 pkt;356625880 byte) (fec:346535 pkt,442852826 byte)  server-->client:(original:281194 pkt;356547008 byte) (fec:342405 pkt;437581966 byte)

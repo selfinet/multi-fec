@@ -1,0 +1,7 @@
+1792660492.521952 multi-fec-client multi-fec-dist[1471955]: [2026-10-22 09:14:52][INFO][client] path[0] RUNNING owd=30.36ms jit=9.57ms loss=0% rate=47.0Mbps tx=375849 rx=356361 dev=ens18
+1792660492.521952 multi-fec-client multi-fec-dist[1471955]: [2026-10-22 09:14:52][INFO][client] path[1] RUNNING owd=34.79ms jit=8.16ms loss=14% rate=1000.0Mbps tx=296341 rx=286618 dev=ens18
+1792660522.521277 multi-fec-client multi-fec-dist[1471955]: [2026-10-22 09:15:22][INFO][client] path[0] DEGRADED owd=25.71ms jit=0.61ms loss=4% rate=1000.0Mbps tx=392348 rx=369908 dev=ens18
+1792660522.596549 multi-fec-client multi-fec-dist[1471955]: [2026-10-22 09:15:22][INFO][client] path[1] RUNNING owd=30.34ms jit=0.10ms loss=1% rate=1000.0Mbps tx=354567 rx=343727 dev=ens18
+1792660524.921651 multi-fec-client multi-fec-dist[1471955]: [2026-10-22 09:15:24][INFO][report]client-->server:(original:351905 pkt;446203740 byte) (fec:433496 pkt,553988984 byte)  server-->client:(original:351181 pkt;445289292 byte) (fec:427806 pkt;546721980 byte)
+1792660552.523684 multi-fec-client multi-fec-dist[1471955]: [2026-10-22 09:15:52][INFO][client] path[0] RUNNING owd=25.58ms jit=0.37ms loss=4% rate=1000.0Mbps tx=415306 rx=389707 dev=ens18
+1792660552.523684 multi-fec-client multi-fec-dist[1471955]: [2026-10-22 09:15:52][INFO][client] path[1] RUNNING owd=30.79ms jit=0.48ms loss=1% rate=1000.0Mbps tx=412830 rx=400807 dev=ens18

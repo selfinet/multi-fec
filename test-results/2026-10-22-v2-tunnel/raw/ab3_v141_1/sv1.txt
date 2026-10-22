@@ -1,0 +1,6 @@
+[17:00:17] sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
+multi-fec-client 6d74bcb3d026c7e2 active inactive inactive inactive 
+multi-fec-relay 6d74bcb3d026c7e2 inactive active active inactive 
+multi-fec-server 6d74bcb3d026c7e2 inactive inactive inactive active 
+rtt min/avg/max/mdev = 52.956/53.342/53.722/0.309 ms
+[17:11:35] sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e

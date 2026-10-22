@@ -29,7 +29,9 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
   ② 경로 하나만 남으면 `mud->rate` 가 실제 송신량 아래로 내려가 EAGAIN → client pending 무음 폐기.
 - 수정: `mud_agg_weight()` = rate × (1−loss)², `mud_update_rl()` 송신 한도 ≥ 실제 송신 × 5/4(무조건), pending 넘침 경고. 와이어 무변경.
 - 테스트망 r netns: aggregate 손실 60% 7/20 → 10/10, 기존 8 시나리오 → 8/8, duplicate 단일 경로 8 Mbps·WAN 유실 회차 5/20 → 0/20.
-  상세 `test-results/2026-10-21-aggregate-regression/REPORT.md`. 실망 확인·비회귀 스위트 남음 → 1.4.1 후보.
+  상세 `test-results/2026-10-21-aggregate-regression/REPORT.md`. 비회귀 스위트 전부 통과 · probe 핑퐁 재발 없음.
+- 실터널 3버전 비교(15·20 Mbps, n=18): 상향 평균 1.4.0 0.317% · A안(다른 세션, 미채택) 0.298%·하향 0.603% · **v2 0.192%**. `test-results/2026-10-22-v2-tunnel/`, `2026-10-21-v140-regress/`(다른 세션 기록).
+  남음: 기제 2(호스트 순간 정지로 전 경로 DEGRADED), TCP 절단 시험.
 
 ### 2026-10-19 — 테스트망을 v1.4.0 정식 구성으로 전환
 

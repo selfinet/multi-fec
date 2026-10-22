@@ -1,0 +1,10 @@
+1792597245.355948 multi-fec-client multi-fec-dist[1372501]: [2026-10-21 15:40:45][INFO][client] path[0] RUNNING owd=26.36ms jit=0.56ms loss=9% rate=78.8Mbps tx=119566 rx=113585 dev=ens18
+1792597245.355948 multi-fec-client multi-fec-dist[1372501]: [2026-10-21 15:40:45][INFO][client] path[1] RUNNING owd=31.31ms jit=0.66ms loss=9% rate=1000.0Mbps tx=117750 rx=115829 dev=ens18
+1792597275.354848 multi-fec-client multi-fec-dist[1372501]: [2026-10-21 15:41:15][INFO][client] path[0] RUNNING owd=25.83ms jit=0.10ms loss=5% rate=1000.0Mbps tx=159156 rx=151152 dev=ens18
+1792597275.359186 multi-fec-client multi-fec-dist[1372501]: [2026-10-21 15:41:15][INFO][client] path[1] DEGRADED owd=31.19ms jit=0.32ms loss=2% rate=1000.0Mbps tx=143867 rx=140039 dev=ens18
+1792597276.954495 multi-fec-client multi-fec-dist[1372501]: [2026-10-21 15:41:16][INFO][report]client-->server:(original:128166 pkt;162502688 byte) (fec:160154 pkt,204656792 byte)  server-->client:(original:128090 pkt;162411136 byte) (fec:160121 pkt;204621842 byte)
+1792597305.354898 multi-fec-client multi-fec-dist[1372501]: [2026-10-21 15:41:45][INFO][client] path[0] RUNNING owd=25.84ms jit=0.09ms loss=4% rate=1000.0Mbps tx=198704 rx=188714 dev=ens18
+1792597305.354898 multi-fec-client multi-fec-dist[1372501]: [2026-10-21 15:41:45][INFO][client] path[1] RUNNING owd=31.10ms jit=0.15ms loss=0% rate=1000.0Mbps tx=144515 rx=140045 dev=ens18
+1792597335.355301 multi-fec-client multi-fec-dist[1372501]: [2026-10-21 15:42:15][INFO][client] path[0] RUNNING owd=26.17ms jit=0.11ms loss=0% rate=1000.0Mbps tx=236430 rx=224643 dev=ens18
+1792597335.355301 multi-fec-client multi-fec-dist[1372501]: [2026-10-21 15:42:15][INFO][client] path[1] RUNNING owd=31.26ms jit=0.26ms loss=0% rate=1000.0Mbps tx=182176 rx=176238 dev=ens18
+1792597337.354335 multi-fec-client multi-fec-dist[1372501]: [2026-10-21 15:42:17][INFO][report]client-->server:(original:187510 pkt;237750880 byte) (fec:234275 pkt,299383430 byte)  server-->client:(original:187401 pkt;237617484 byte) (fec:232471 pkt;297085142 byte)

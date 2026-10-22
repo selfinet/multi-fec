@@ -1,0 +1,10 @@
+1792592142.899461 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:15:42][INFO][client] path[0] RUNNING owd=26.26ms jit=0.83ms loss=3% rate=26.8Mbps tx=4704441 rx=4481284 dev=ens18
+1792592142.902380 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:15:42][INFO][client] path[1] RUNNING owd=31.08ms jit=0.41ms loss=1% rate=12.8Mbps tx=4455817 rx=4370365 dev=ens18
+1792592156.097786 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:15:56][INFO][report]client-->server:(original:1062780 pkt;1333466052 byte) (fec:1308124 pkt,1645563588 byte)  server-->client:(original:1052559 pkt;1332673448 byte) (fec:1276541 pkt;1627489562 byte)
+1792592172.898226 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:16:12][INFO][client] path[0] DEGRADED owd=26.08ms jit=0.97ms loss=5% rate=23.9Mbps tx=4724925 rx=4499339 dev=ens18
+1792592172.900652 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:16:12][INFO][client] path[1] RUNNING owd=30.71ms jit=0.18ms loss=1% rate=48.5Mbps tx=4495341 rx=4409181 dev=ens18
+1792592202.899475 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:16:42][INFO][client] path[0] RUNNING owd=25.69ms jit=0.29ms loss=5% rate=21.7Mbps tx=4731085 rx=4503666 dev=ens18
+1792592202.906442 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:16:42][INFO][client] path[1] RUNNING owd=31.00ms jit=0.39ms loss=2% rate=39.8Mbps tx=4534903 rx=4448039 dev=ens18
+1792592216.498309 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:16:56][INFO][report]client-->server:(original:1125697 pkt;1413244808 byte) (fec:1386764 pkt,1746065508 byte)  server-->client:(original:1115470 pkt;1412444596 byte) (fec:1354184 pkt;1726717316 byte)
+1792592232.897724 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:17:12][INFO][client] path[0] RUNNING owd=25.96ms jit=0.14ms loss=0% rate=14.2Mbps tx=4763022 rx=4534034 dev=ens18
+1792592232.897724 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:17:12][INFO][client] path[1] RUNNING owd=31.05ms jit=0.16ms loss=0% rate=18.9Mbps tx=4566787 rx=4479306 dev=ens18
