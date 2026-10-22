@@ -1,0 +1,37 @@
+[22:08:15] ##### rep1 v1.4.1-v2
+  설치 c=02eecf43acc7 s=02eecf43acc7
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 3  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.00000%  dn 2.01387%  cliEAGAIN 0  srvEAGAIN 0
+strace: Process 1551120 attached
+strace: Process 1550225 attached
+strace: Process 1551120 detached
+strace: Process 1550225 detached
+client PID 1550225 · server PID 1551120
+up: total expected 93750 rx 93328 lost 422 loss_pct 0.45013 dup 0 ooo 4380
+dn: total expected 93750 rx 90048 lost 3702 loss_pct 3.94880 dup 0 ooo 5866
+[22:14:06] STRACE_DONE
+[22:14:06] ##### rep1 v1.5-perf
+  설치 c=aaf66381eec5 s=aaf66381eec5
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+strace: Process 1556594 attached
+strace: Process 1555730 attached
+strace: Process 1556594 detached
+strace: Process 1555730 detached
+client PID 1555730 · server PID 1556594
+up: total expected 93750 rx 93750 lost 0 loss_pct 0.00000 dup 0 ooo 4321
+dn: total expected 93750 rx 93750 lost 0 loss_pct 0.00000 dup 0 ooo 4363
+[22:19:56] STRACE_DONE
+[22:19:56] ##### rep2 v1.4.1-v2
+  설치 c=02eecf43acc7 s=02eecf43acc7
+[run] steady 15 Mbps rep1  up 0.14862%  dn 0.70542%  cliEAGAIN 19  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.36053%  dn 0.46347%  cliEAGAIN 40  srvEAGAIN 0
+[22:24:25] ##### rep2 v1.5-perf
+  설치 c=aaf66381eec5 s=aaf66381eec5
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 40  srvEAGAIN 0
+[22:28:54] PERFAB_DONE
+[22:28:54] ===== 1.4.0 복원
+  설치 c=3cbf7cb2298b s=3cbf7cb2298b
+multi-fec-client 3cbf7cb2298b5e7d active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive active 
