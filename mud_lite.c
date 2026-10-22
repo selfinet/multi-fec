@@ -193,6 +193,7 @@ struct mud {
     uint64_t           window_time;
     uint64_t           base_time;
     union mud_sockaddr last_remote;  /* source of the last packet mud_recv() returned */
+    uint64_t           last_dup_peer;/* see mud_get_last_dup_peer() */
 
     /* --accept-local: allowed local (destination) addresses. Empty = accept all. */
     union mud_sockaddr accept_local[MUD_ACCEPT_LOCAL_MAX];
@@ -235,6 +236,7 @@ struct mud {
         uint64_t pkt_time;   /* the packet's sent_time value */
         uint64_t recv_time;  /* receive time (for expiry check) */
         uint64_t hash;       /* payload content hash (see mud_dedup_hash) */
+        uint64_t peer;       /* peer_id of the path the first copy arrived on */
     } dedup[MUD_DEDUP_SIZE];
 };
 
@@ -1254,6 +1256,12 @@ mud_get_last_remote(struct mud *mud, union mud_sockaddr *out)
     return 0;
 }
 
+uint64_t
+mud_get_last_dup_peer(struct mud *mud)
+{
+    return mud ? mud->last_dup_peer : 0;
+}
+
 int
 mud_set_path_peer(struct mud *mud, union mud_sockaddr *remote, uint64_t peer)
 {
@@ -1470,6 +1478,7 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
              unsigned char *raw, ssize_t raw_size,
              union mud_sockaddr *remote, struct msghdr *msg)
 {
+    mud->last_dup_peer = 0;
     mud_unmapv4(remote);
 
     unsigned char decoded[MUD_PKT_MAX_SIZE];
@@ -1619,12 +1628,20 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
         if (mud->dedup[idx].recv_time &&
             MUD_TIME_MASK(now - mud->dedup[idx].recv_time) <= MUD_DEDUP_TTL &&
             mud->dedup[idx].pkt_time == pure_time &&
-            mud->dedup[idx].hash     == hash)
+            mud->dedup[idx].hash     == hash) {
+            /* Tell the caller whose packet this was: the server tags a path
+             * with its client only when data arrives over it, and the later
+             * copy never counts as data. A path that is lossless but always
+             * slower would otherwise stay untagged and never carry downstream
+             * traffic in duplicate mode. */
+            mud->last_dup_peer = mud->dedup[idx].peer;
             return 0;
+        }
 
         mud->dedup[idx].pkt_time  = pure_time;
         mud->dedup[idx].recv_time = now;
         mud->dedup[idx].hash      = hash;
+        mud->dedup[idx].peer      = path->peer_id;
     }
 
     size_t payload = (size_t)decoded_size - MUD_TIME_SIZE;

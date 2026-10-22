@@ -204,6 +204,11 @@ int mud_set_path_peer (struct mud *, union mud_sockaddr *remote, uint64_t peer);
  * peeks the socket to learn the sender can observe a different packet than the
  * one it was handed. Servers must use this instead of a peeked address. */
 int mud_get_last_remote (struct mud *, union mud_sockaddr *out);
+/* When the last mud_recv() returned 0 because the packet was a duplicate, the
+ * peer_id of the path its first copy arrived on (0 otherwise, or if that path
+ * was untagged). Lets the server tag the slower path of a duplicate-mode client,
+ * which would never deliver data of its own. */
+uint64_t mud_get_last_dup_peer (struct mud *);
 
 /* Restrict which *local* address a received packet may have arrived on.
  *
