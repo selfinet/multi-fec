@@ -1,0 +1,10 @@
+1792596866.440309 multi-fec-client multi-fec-dist[1365818]: [2026-10-21 15:34:26][INFO][client] path[0] RUNNING owd=29.18ms jit=5.81ms loss=11% rate=36.5Mbps tx=229034 rx=219176 dev=ens18
+1792596866.445603 multi-fec-client multi-fec-dist[1365818]: [2026-10-21 15:34:26][INFO][client] path[1] RUNNING owd=33.20ms jit=3.25ms loss=1% rate=22.2Mbps tx=231084 rx=226301 dev=ens18
+1792596896.439220 multi-fec-client multi-fec-dist[1365818]: [2026-10-21 15:34:56][INFO][client] path[0] RUNNING owd=25.80ms jit=0.14ms loss=5% rate=31.2Mbps tx=304631 rx=291019 dev=ens18
+1792596896.442390 multi-fec-client multi-fec-dist[1365818]: [2026-10-21 15:34:56][INFO][client] path[1] DEGRADED owd=34.13ms jit=2.97ms loss=1% rate=29.4Mbps tx=281330 rx=272939 dev=ens18
+1792596898.039538 multi-fec-client multi-fec-dist[1365818]: [2026-10-21 15:34:58][INFO][report]client-->server:(original:256216 pkt;324870088 byte) (fec:307944 pkt,393532412 byte)  server-->client:(original:256172 pkt;324819112 byte) (fec:306438 pkt;391614968 byte)
+1792596926.440640 multi-fec-client multi-fec-dist[1365818]: [2026-10-21 15:35:26][INFO][client] path[0] RUNNING owd=26.10ms jit=0.31ms loss=5% rate=108.1Mbps tx=380189 rx=362823 dev=ens18
+1792596926.440640 multi-fec-client multi-fec-dist[1365818]: [2026-10-21 15:35:26][INFO][client] path[1] RUNNING owd=32.89ms jit=2.52ms loss=0% rate=1000.0Mbps tx=282132 rx=272943 dev=ens18
+1792596956.440112 multi-fec-client multi-fec-dist[1365818]: [2026-10-21 15:35:56][INFO][client] path[0] RUNNING owd=26.83ms jit=1.11ms loss=0% rate=42.8Mbps tx=452346 rx=431365 dev=ens18
+1792596956.440112 multi-fec-client multi-fec-dist[1365818]: [2026-10-21 15:35:56][INFO][client] path[1] RUNNING owd=31.77ms jit=1.12ms loss=0% rate=8.8Mbps tx=354257 rx=341628 dev=ens18
+1792596958.440097 multi-fec-client multi-fec-dist[1365818]: [2026-10-21 15:35:58][INFO][report]client-->server:(original:375010 pkt;475500880 byte) (fec:450633 pkt,575888954 byte)  server-->client:(original:374904 pkt;475371288 byte) (fec:445547 pkt;569396270 byte)

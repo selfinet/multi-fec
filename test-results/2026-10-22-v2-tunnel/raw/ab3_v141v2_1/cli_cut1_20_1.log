@@ -1,0 +1,10 @@
+1792657176.994647 multi-fec-client multi-fec-dist[1406199]: [2026-10-22 08:19:36][INFO][client] path[0] RUNNING owd=26.77ms jit=0.96ms loss=4% rate=42.5Mbps tx=686584 rx=647955 dev=ens18
+1792657176.998196 multi-fec-client multi-fec-dist[1406199]: [2026-10-22 08:19:36][INFO][client] path[1] RUNNING owd=32.94ms jit=3.12ms loss=1% rate=38.6Mbps tx=686497 rx=667867 dev=ens18
+1792657179.794347 multi-fec-client multi-fec-dist[1406199]: [2026-10-22 08:19:39][INFO][report]client-->server:(original:625063 pkt;792560924 byte) (fec:763924 pkt,976265228 byte)  server-->client:(original:624004 pkt;791226416 byte) (fec:757172 pkt;967648020 byte)
+1792657206.994709 multi-fec-client multi-fec-dist[1406199]: [2026-10-22 08:20:06][INFO][client] path[0] RUNNING owd=26.41ms jit=0.61ms loss=4% rate=35.1Mbps tx=762142 rx=719700 dev=ens18
+1792657206.996674 multi-fec-client multi-fec-dist[1406199]: [2026-10-22 08:20:06][INFO][client] path[1] DEGRADED owd=32.98ms jit=2.89ms loss=3% rate=42.4Mbps tx=728231 rx=706071 dev=ens18
+1792657236.994763 multi-fec-client multi-fec-dist[1406199]: [2026-10-22 08:20:36][INFO][client] path[0] RUNNING owd=26.93ms jit=1.49ms loss=3% rate=214.7Mbps tx=837698 rx=791458 dev=ens18
+1792657236.994763 multi-fec-client multi-fec-dist[1406199]: [2026-10-22 08:20:36][INFO][client] path[1] RUNNING owd=31.21ms jit=0.25ms loss=1% rate=82.5Mbps tx=737737 rx=712651 dev=ens18
+1792657240.195009 multi-fec-client multi-fec-dist[1406199]: [2026-10-22 08:20:40][INFO][report]client-->server:(original:750899 pkt;952120972 byte) (fec:914997 pkt,1169336522 byte)  server-->client:(original:749709 pkt;950620356 byte) (fec:902970 pkt;1153977864 byte)
+1792657266.995216 multi-fec-client multi-fec-dist[1406199]: [2026-10-22 08:21:06][INFO][client] path[0] RUNNING owd=26.41ms jit=0.14ms loss=0% rate=36.8Mbps tx=901456 rx=852221 dev=ens18
+1792657266.995216 multi-fec-client multi-fec-dist[1406199]: [2026-10-22 08:21:06][INFO][client] path[1] RUNNING owd=31.57ms jit=0.29ms loss=0% rate=14.2Mbps tx=801471 rx=775155 dev=ens18

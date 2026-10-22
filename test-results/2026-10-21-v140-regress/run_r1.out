@@ -1,0 +1,27 @@
+[23:00:55] sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
+[run] 가드 PID 505474 감시 중
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.09067%  dn 0.09280%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00320%  dn 0.01067%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.46187%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.39413%  dn 0.05973%  cliEAGAIN 57  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.43253%  dn 0.00000%  cliEAGAIN 92  srvEAGAIN 0
+[run] steady 10 Mbps rep2  up 0.00000%  dn 0.00000%  cliEAGAIN 9  srvEAGAIN 0
+[run] cut1   10 Mbps rep2  up 0.09707%  dn 0.07573%  cliEAGAIN 1  srvEAGAIN 0
+[run] cut0   10 Mbps rep2  up 0.00853%  dn 0.00533%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep2  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   20 Mbps rep2  up 0.32640%  dn 0.08747%  cliEAGAIN 34  srvEAGAIN 0
+[run] cut0   20 Mbps rep2  up 3.26080%  dn 0.00000%  cliEAGAIN 104  srvEAGAIN 0
+[run] steady 10 Mbps rep3  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep3  up 0.08747%  dn 0.07893%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep3  up 0.00320%  dn 0.00640%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep3  up 1.48002%  dn 1.58880%  cliEAGAIN 116  srvEAGAIN 0
+[run] cut1   20 Mbps rep3  up 0.06347%  dn 0.07093%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   20 Mbps rep3  up 0.10293%  dn 0.32320%  cliEAGAIN 8  srvEAGAIN 0
+[run] 완료
+[23:33:39] ===== 정리
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive inactive active 
+rtt min/avg/max/mdev = 53.180/54.236/55.325/0.907 ms
+[23:33:53] sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e

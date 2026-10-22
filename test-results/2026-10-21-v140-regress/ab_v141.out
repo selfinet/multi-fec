@@ -1,0 +1,47 @@
+[00:00:19] ##### rep1 v1.4.1
+      3 multi-fec 1.4.1 
+[run] 가드 PID 550717 감시 중
+[run] steady 20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.07147%  dn 0.05013%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.57600%  dn 0.00480%  cliEAGAIN 0  srvEAGAIN 0
+[00:06:39] ##### rep1 v1.4.0
+      3 multi-fec 1.4.0 
+[run] 가드 PID 557479 감시 중
+[run] steady 20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.05227%  dn 1.76427%  cliEAGAIN 8  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.01280%  dn 0.09440%  cliEAGAIN 41  srvEAGAIN 0
+[00:12:58] ##### rep2 v1.4.1
+      3 multi-fec 1.4.1 
+[run] 가드 PID 564250 감시 중
+[run] steady 20 Mbps rep1  up 1.29227%  dn 1.34293%  cliEAGAIN 95  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.46240%  dn 0.57867%  cliEAGAIN 12  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.02240%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[00:19:17] ##### rep2 v1.4.0
+      3 multi-fec 1.4.0 
+[run] 가드 PID 570928 감시 중
+[run] steady 20 Mbps rep1  up 0.01707%  dn 0.00160%  cliEAGAIN 4  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.07680%  dn 0.07093%  cliEAGAIN 5  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.30560%  dn 0.00000%  cliEAGAIN 65  srvEAGAIN 0
+[00:25:35] ##### rep3 v1.4.1
+      3 multi-fec 1.4.1 
+[run] 가드 PID 577927 감시 중
+[run] steady 20 Mbps rep1  up 0.02987%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 1.29813%  dn 0.12907%  cliEAGAIN 54  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.21120%  dn 0.01120%  cliEAGAIN 0  srvEAGAIN 0
+[00:31:54] ##### rep3 v1.4.0
+      3 multi-fec 1.4.0 
+[run] 가드 PID 584842 감시 중
+[run] steady 20 Mbps rep1  up 0.31467%  dn 0.00000%  cliEAGAIN 63  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.04267%  dn 0.05440%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[00:38:13] ##### v1.4.1 10 Mbps 회귀 확인
+      3 multi-fec 1.4.1 
+[run] steady 10 Mbps rep1  up 0.58027%  dn 0.00320%  cliEAGAIN 23  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.09173%  dn 0.10880%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00427%  dn 0.00640%  cliEAGAIN 0  srvEAGAIN 0
+[00:44:32] AB_DONE
+[00:44:32] ===== 1.4.0 복원
+      3 multi-fec 1.4.0 
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive inactive active 

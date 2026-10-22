@@ -1,0 +1,10 @@
+1792592035.297984 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:13:55][INFO][report]client-->server:(original:955771 pkt;1197782220 byte) (fec:1174366 pkt,1474625676 byte)  server-->client:(original:945579 pkt;1197025212 byte) (fec:1145320 pkt;1459792760 byte)
+1792592052.898012 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:14:12][INFO][client] path[0] RUNNING owd=25.42ms jit=0.08ms loss=4% rate=22.1Mbps tx=4609207 rx=4390652 dev=ens18
+1792592052.898012 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:14:12][INFO][client] path[1] DEGRADED owd=31.34ms jit=0.60ms loss=1% rate=20.5Mbps tx=4409404 rx=4326462 dev=ens18
+1792592059.493263 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:14:19][WARN][client] mud_send EAGAIN #7900
+1792592059.530616 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:14:19][INFO][client] flushed 68 pending packet(s)
+1792592082.898320 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:14:42][INFO][client] path[0] RUNNING owd=25.48ms jit=0.06ms loss=6% rate=17.8Mbps tx=4648804 rx=4428306 dev=ens18
+1792592082.898320 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:14:42][INFO][client] path[1] DEGRADED owd=31.34ms jit=0.60ms loss=1% rate=20.5Mbps tx=4409701 rx=4326462 dev=ens18
+1792592095.699060 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:14:55][INFO][report]client-->server:(original:1018689 pkt;1277562244 byte) (fec:1253019 pkt,1575144210 byte)  server-->client:(original:1008425 pkt;1276713940 byte) (fec:1221304 pkt;1556900312 byte)
+1792592112.899178 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:15:12][INFO][client] path[0] RUNNING owd=25.63ms jit=0.17ms loss=4% rate=51.8Mbps tx=4688388 rx=4465959 dev=ens18
+1792592112.899178 multi-fec-client multi-fec-dist[1289774]: [2026-10-21 14:15:12][INFO][client] path[1] RUNNING owd=30.94ms jit=0.43ms loss=1% rate=11.6Mbps tx=4439769 rx=4354549 dev=ens18

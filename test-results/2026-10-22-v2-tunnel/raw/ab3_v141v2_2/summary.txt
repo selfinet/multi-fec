@@ -1,0 +1,7 @@
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.03769%  dn 0.04409%  cliEAGAIN 1  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.29920%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.42667%  dn 0.04533%  cliEAGAIN 39  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.32053%  dn 0.00000%  cliEAGAIN 42  srvEAGAIN 0
+[run] 완료

@@ -1,0 +1,87 @@
+[16:48:04] ##### rep1 v1.4.0
+      3 3cbf7cb2298b 
+[run] 가드 PID 749182 감시 중
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.03698%  dn 0.04196%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 4  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.06080%  dn 0.00000%  cliEAGAIN 20  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.06613%  dn 0.04213%  cliEAGAIN 18  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[16:59:50] ##### rep1 v1.4.1
+      3 6d74bcb3d026 
+[run] 가드 PID 762421 감시 중
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.06258%  dn 0.05262%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.85547%  dn 0.79573%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.40960%  dn 0.65653%  cliEAGAIN 37  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.35627%  dn 1.15520%  cliEAGAIN 67  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 1.22133%  dn 1.11363%  cliEAGAIN 82  srvEAGAIN 0
+[17:11:35] ##### rep1 v1.4.1-v2
+      3 02eecf43acc7 
+[run] 가드 PID 775464 감시 중
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.06116%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.04978%  dn 0.03342%  cliEAGAIN 3  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.00640%  dn 0.00356%  cliEAGAIN 9  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.40480%  dn 0.45280%  cliEAGAIN 39  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.05547%  dn 0.07093%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[17:23:20] ##### rep2 v1.4.0
+      3 3cbf7cb2298b 
+[run] 가드 PID 788391 감시 중
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 1  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.03982%  dn 0.04053%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.10667%  dn 0.00000%  cliEAGAIN 16  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.00000%  dn 0.01760%  cliEAGAIN 7  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.06453%  dn 0.04907%  cliEAGAIN 5  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.00000%  dn 0.00267%  cliEAGAIN 0  srvEAGAIN 0
+[17:35:04] ##### rep2 v1.4.1
+      3 6d74bcb3d026 
+[run] 가드 PID 801472 감시 중
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.03627%  dn 0.04124%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 1  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 1.03840%  dn 2.50400%  cliEAGAIN 102  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[17:46:50] ##### rep2 v1.4.1-v2
+      3 02eecf43acc7 
+[run] 가드 PID 814511 감시 중
+[run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.03769%  dn 0.04409%  cliEAGAIN 1  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.29920%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.42667%  dn 0.04533%  cliEAGAIN 39  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.32053%  dn 0.00000%  cliEAGAIN 42  srvEAGAIN 0
+[17:58:34] ##### rep3 v1.4.0
+      3 3cbf7cb2298b 
+[run] 가드 PID 827837 감시 중
+[run] steady 15 Mbps rep1  up 0.70827%  dn 0.00000%  cliEAGAIN 56  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.03840%  dn 0.03911%  cliEAGAIN 3  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 3  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.60427%  dn 1.21227%  cliEAGAIN 86  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 3.68000%  dn 0.05120%  cliEAGAIN 180  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.29547%  dn 0.11893%  cliEAGAIN 51  srvEAGAIN 0
+[18:10:20] ##### rep3 v1.4.1
+      3 6d74bcb3d026 
+[run] 가드 PID 840869 감시 중
+[run] steady 15 Mbps rep1  up 0.38471%  dn 0.47004%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.04836%  dn 0.01920%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.00000%  dn 3.21072%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.94880%  dn 0.62827%  cliEAGAIN 45  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.00000%  dn 0.20480%  cliEAGAIN 14  srvEAGAIN 0
+[18:22:05] ##### rep3 v1.4.1-v2
+      3 02eecf43acc7 
+[run] 가드 PID 853683 감시 중
+[run] steady 15 Mbps rep1  up 1.18471%  dn 0.54969%  cliEAGAIN 81  srvEAGAIN 0
+[run] cut1   15 Mbps rep1  up 0.04693%  dn 0.25671%  cliEAGAIN 8  srvEAGAIN 0
+[run] cut0   15 Mbps rep1  up 0.00000%  dn 0.07182%  cliEAGAIN 16  srvEAGAIN 0
+[run] steady 20 Mbps rep1  up 0.15200%  dn 0.00213%  cliEAGAIN 13  srvEAGAIN 0
+[run] cut1   20 Mbps rep1  up 0.47520%  dn 0.16747%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[18:33:50] AB3_DONE
+[18:33:50] ===== 1.4.0 복원
+      3 3cbf7cb2298b 
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive inactive active 
