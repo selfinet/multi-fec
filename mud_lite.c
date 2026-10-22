@@ -95,9 +95,6 @@ static uint64_t mud_random_beat(const void *path_ptr)
  * well clear of ordinary jitter while still reacting fast enough that an
  * aggregate rotation does not keep feeding a black hole. */
 #define MUD_PATH_DEAD_TIMEOUT (MUD_ONE_SEC)
-/* tx.loss at or below this (25/255 ≈ 10%) counts as "delivering what we send" for the
- * rate floor in mud_update_rl(). Above it the measured rate governs. */
-#define MUD_RATE_FLOOR_LOSS 25U
 
 /* Overhead after removing encryption: only the 6-byte time header */
 #define MUD_TIME_OVERHEAD MUD_TIME_SIZE
@@ -690,11 +687,18 @@ mud_update_rl(struct mud *mud, struct mud_path *path, uint64_t now,
          * alone (the other one cut) drifted under its own offered load: the
          * send window ran dry, EAGAIN, and the 512-entry pending ring dropped
          * whole seconds of traffic (2026-10-21 testnet r netns, 25/30 ms paths:
-         * 1.3.1 0/10 runs over 1% loss, 1.4.0 2/10 at 4.8-9.3%). While the path
-         * delivers what we send, it can carry at least that much — never set
-         * the rate below 5/4 of it. Above MUD_RATE_FLOOR_LOSS the path is
-         * really losing packets and the measured rate is left to govern. */
-        if (!path->conf.fixed_rate && path->tx.loss <= MUD_RATE_FLOOR_LOSS) {
+         * 1.3.1 0/10 runs over 1% loss, 1.4.0 2/10 at 4.8-9.3%). Never set the
+         * rate below 5/4 of what we actually sent in the window.
+         *
+         * Not gated on tx.loss: a first version applied the floor only while
+         * tx.loss <= 10% and still failed the same way — when the receiver falls
+         * behind for a moment its probe under-reports what arrived, tx.loss
+         * reads 30-50% on a lossless path, the floor switched off and the window
+         * throttled again. The window is not congestion control for the tunnel
+         * (TCP inside does that); its job is pacing, and pacing below the
+         * offered load only converts into pending-queue drops. aggregate still
+         * moves traffic off a lossy path through mud_agg_weight(). */
+        if (!path->conf.fixed_rate) {
             uint64_t sent  = path->tx.bytes - path->msg.own_tx_bytes;
             uint64_t floor = (5 * sent * MUD_ONE_SEC) / (4 * rx_dt);
             if (path->tx.rate < floor)
