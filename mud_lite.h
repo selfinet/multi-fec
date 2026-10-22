@@ -107,6 +107,7 @@ struct mud_path {
          * so it also needs snapshots of our own counters — these two. */
         uint64_t loss_tx_acc;   /* snapshot of path->tx.total */
         uint64_t loss_rx_acc;   /* snapshot of path->rx.total */
+        uint64_t own_tx_bytes;  /* snapshot of path->tx.bytes — rate floor (see mud_update_rl) */
         uint64_t time;
         uint64_t sent;
         uint64_t set;

@@ -90,7 +90,14 @@ static void enqueue_pending(const char *data, int len)
         return;
     }
     if (s_pending_count == PENDING_Q_CAP) {
-        /* Ring full: drop oldest to keep the latest packets */
+        /* Ring full: drop oldest to keep the latest packets. This used to be
+         * silent — the only trace of a send window that ran dry was the EAGAIN
+         * counter, and the packets actually lost here went unreported. */
+        static uint64_t s_overflow = 0;
+        s_overflow++;
+        if (s_overflow == 1 || s_overflow % 1000 == 0)
+            mylog(log_warn, "[client] pending queue full (%d) — dropped oldest, total %llu\n",
+                  PENDING_Q_CAP, (unsigned long long)s_overflow);
         s_pending_head = (s_pending_head + 1) % PENDING_Q_CAP;
         s_pending_count--;
     }

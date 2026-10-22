@@ -95,6 +95,9 @@ static uint64_t mud_random_beat(const void *path_ptr)
  * well clear of ordinary jitter while still reacting fast enough that an
  * aggregate rotation does not keep feeding a black hole. */
 #define MUD_PATH_DEAD_TIMEOUT (MUD_ONE_SEC)
+/* tx.loss at or below this (25/255 ≈ 10%) counts as "delivering what we send" for the
+ * rate floor in mud_update_rl(). Above it the measured rate governs. */
+#define MUD_RATE_FLOOR_LOSS 25U
 
 /* Overhead after removing encryption: only the 6-byte time header */
 #define MUD_TIME_OVERHEAD MUD_TIME_SIZE
@@ -678,6 +681,26 @@ mud_update_rl(struct mud *mud, struct mud_path *path, uint64_t now,
         if (peer_tx_acc)
             path->rx.loss = own_rx_acc >= peer_tx_acc
                           ? 0 : (peer_tx_acc - own_rx_acc) * 255U / peer_tx_acc;
+
+        /* Rate floor from what we actually sent. tx.rate is 7/8 of what the
+         * peer reports receiving, so on its own it sits below the offered load
+         * and only the +10%-per-probe ramp below lifts it back. Until v1.3.3
+         * the probe ping-pong (fixed in v1.3.4) ramped it many times a second;
+         * with replies capped at beat/4 the ramp is slower, and a path left
+         * alone (the other one cut) drifted under its own offered load: the
+         * send window ran dry, EAGAIN, and the 512-entry pending ring dropped
+         * whole seconds of traffic (2026-10-21 testnet r netns, 25/30 ms paths:
+         * 1.3.1 0/10 runs over 1% loss, 1.4.0 2/10 at 4.8-9.3%). While the path
+         * delivers what we send, it can carry at least that much — never set
+         * the rate below 5/4 of it. Above MUD_RATE_FLOOR_LOSS the path is
+         * really losing packets and the measured rate is left to govern. */
+        if (!path->conf.fixed_rate && path->tx.loss <= MUD_RATE_FLOOR_LOSS) {
+            uint64_t sent  = path->tx.bytes - path->msg.own_tx_bytes;
+            uint64_t floor = (5 * sent * MUD_ONE_SEC) / (4 * rx_dt);
+            if (path->tx.rate < floor)
+                path->tx.rate = floor;
+        }
+        path->msg.own_tx_bytes = path->tx.bytes;
 
         path->msg.rx.acc      = rx_total;
         path->msg.tx.acc      = tx_total;
@@ -1331,6 +1354,23 @@ mud_send_all(struct mud *mud, const void *data, size_t size)
     return mud_send_all_peer(mud, 0, data, size);
 }
 
+/* aggregate weight: tx.rate scaled by the square of the delivery ratio
+ * q = 1 - tx.loss/255. tx.rate alone does not tell a good path from a bad one at
+ * application rates near the 1 MB/s floor — both sit near it, and a 60%-loss path
+ * was given about a third of the packets, more than FEC 20:5 can repair
+ * (2026-10-21 testnet r netns: 1.4.0 7/20 runs within 2% loss, this 19/20; loss
+ * sweep 5-80% 22/30 -> 30/30). tx.loss is already measured every second; it was
+ * just not used here. q^2 keeps a 10% path at 81% weight and a 60% path at 16%. */
+static uint64_t
+mud_agg_weight(const struct mud_path *path)
+{
+    uint64_t w = path->tx.rate ? path->tx.rate : 1000000ULL;
+    uint64_t q = 255U - (path->tx.loss > 255U ? 255U : path->tx.loss);
+    w = w * q / 255U;
+    w = w * q / 255U;
+    return w ? w : 1;   /* a RUNNING path stays selectable, just rarely */
+}
+
 int
 mud_send_next_peer(struct mud *mud, uint64_t peer, const void *data, size_t size,
                    unsigned dup_count)
@@ -1355,7 +1395,7 @@ mud_send_next_peer(struct mud *mud, uint64_t peer, const void *data, size_t size
         struct mud_path *path = &mud->paths[i];
         if (path->status != MUD_RUNNING) continue;
         if (!mud_peer_match(path, peer)) continue;
-        uint64_t r = path->tx.rate ? path->tx.rate : 1000000ULL;
+        uint64_t r = mud_agg_weight(path);
         path->agg_credit += (int64_t)r;
         total_rate += r;
         n_running++;
