@@ -97,20 +97,25 @@ case "$NET" in
        D_PROFILE=single ;;
   # r 은 ens18(.88) + ens19(.117) 두 NIC 이다. arp_ignore=0 이라 .117 행 수신이 어느 쪽으로
   # 들어올지 보장되지 않으므로 링크 지표는 **두 인터페이스 합**으로 본다(쉼표 = 합산).
+  # 2026-10-23: path[1] 을 별도 VM rs2(.131)로 옮겼다 — 4번째 호스트 r2 로 함께 감시한다.
   new) D_C=root@192.168.100.92; D_R=root@192.168.100.88; D_S=root@192.168.100.102
+       D_R2=root@192.168.100.131; D_IF_R2=ens18
        D_IF_C=ens18; D_IF_R=ens18,ens19; D_IF_S=ens18
-       D_IPS="192.168.100.92 192.168.100.88 192.168.100.117 192.168.100.102"
+       D_IPS="192.168.100.92 192.168.100.88 192.168.100.117 192.168.100.131 192.168.100.102"
        D_PROFILE=vm ;;
   *) echo "GW_NET 은 old 또는 new (받은 값: $NET)" >&2; exit 2 ;;
 esac
 C=${GUARD_C:-$D_C}
 R=${GUARD_R:-$D_R}
 S=${GUARD_S:-$D_S}
+R2=${GUARD_R2-${D_R2:-}}          # 두 번째 relay 호스트 (없으면 3대만 감시). GUARD_R2= 로 끌 수 있다
+HOSTS="$C $R $S${R2:+ $R2}"
+KEYS="c r s${R2:+ r2}"
 GUARD_IPS=${GUARD_IPS:-$D_IPS}
 
 # 부하 생성기가 도는 호스트들. 워치독은 여기서도 죽여야 한다 —
 # 2026-08-03: sv1 로컬에서만 pkill 해서 원격 부하가 안 죽고 무방비로 계속 돌았다.
-KILL_HOSTS=${GW_KILL_HOSTS:-"$C $R $S"}
+KILL_HOSTS=${GW_KILL_HOSTS:-"$HOSTS"}
 
 INTERVAL=${GW_INTERVAL:-1}
 
@@ -184,6 +189,7 @@ STREAK=${GW_STREAK:-$P_STREAK}          # 연속 초과 횟수에서 트립 (단
 IF_C=${GW_IF_C:-$D_IF_C}
 IF_R=${GW_IF_R:-$D_IF_R}
 IF_S=${GW_IF_S:-$D_IF_S}
+IF_R2=${GW_IF_R2:-${D_IF_R2:-ens18}}
 
 usage() { cat <<U
 사용법:
@@ -195,7 +201,7 @@ usage() { cat <<U
 임계값:  c 전체 ${CPU_C}%  ·  r·s 전체 ${CPU_VM}%  ·  최고 1코어 ${CORE}%  ·  링크 ${LINK} Mbps
          ${STREAK}회 연속 초과에서 트립, ${INTERVAL}초 간격
 환경변수: GW_PROFILE(single|multi) GW_CPU_C GW_CPU_VM GW_CORE GW_LINK GW_STREAK GW_INTERVAL GW_KILL_HOSTS
-         GW_IF_C GW_IF_R GW_IF_S GUARD_C GUARD_R GUARD_S
+         GW_IF_C GW_IF_R GW_IF_S GW_IF_R2 GUARD_C GUARD_R GUARD_S GUARD_R2
 U
 }
 
@@ -239,14 +245,15 @@ probe() {  # $1=host $2=iface
       }'" 2>/dev/null
 }
 
-iface_of() { case "$1" in c) echo "$IF_C";; r) echo "$IF_R";; *) echo "$IF_S";; esac; }
-host_of()  { case "$1" in c) echo "$C";;    r) echo "$R";;    *) echo "$S";;    esac; }
+iface_of() { case "$1" in c) echo "$IF_C";; r) echo "$IF_R";; r2) echo "$IF_R2";; *) echo "$IF_S";; esac; }
+host_of()  { case "$1" in c) echo "$C";;    r) echo "$R";;    r2) echo "$R2";;    *) echo "$S";;    esac; }
 cpulim_of(){ case "$1" in c) echo "$CPU_C";; *) echo "$CPU_VM";; esac; }
 
 probe_all() {  # $1=출력 디렉터리
   probe "$C" "$IF_C" > "$1/c" &
   probe "$R" "$IF_R" > "$1/r" &
   probe "$S" "$IF_S" > "$1/s" &
+  if [ -n "$R2" ]; then probe "$R2" "$IF_R2" > "$1/r2" & fi
   wait
 }
 
@@ -256,7 +263,7 @@ probe_all() {  # $1=출력 디렉터리
 precheck() {
   local fail=0
   echo "[precheck] 호스트 도달성"
-  for h in $C $R $S; do
+  for h in $HOSTS; do
     if SSH "$h" true 2>/dev/null; then
       echo "  ✓ $h"
     else
@@ -265,7 +272,7 @@ precheck() {
   done
 
   echo "[precheck] 인터페이스"
-  for k in c r s; do
+  for k in $KEYS; do
     h=$(host_of $k); i=$(iface_of $k)
     if SSH "$h" "for x in \$(echo $i | tr , ' '); do test -d /sys/class/net/\$x || exit 1; done" 2>/dev/null; then
       echo "  ✓ $h $i"
@@ -276,7 +283,7 @@ precheck() {
 
   # 데이터 경로가 온링크인가. gw 가 경로로 돌아오면 대역폭 지표가 다시 필요해진다.
   echo "[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)"
-  for h in $C $R $S; do
+  for h in $HOSTS; do
     out=$(SSH "$h" 'v=0; n=0
       for ip in '"$GUARD_IPS"'; do
         o=$(ip route get $ip 2>/dev/null | head -1)
@@ -301,7 +308,7 @@ precheck() {
 # ── sample: 세 호스트 동시 측정 ──────────────────────────────────
 sample() {
   local tmp; tmp=$(mktemp -d); probe_all "$tmp"
-  for k in c r s; do
+  for k in $KEYS; do
     lim=$(cpulim_of $k)
     tot=""; read -r tot mx mbps n sp < "$tmp/$k" 2>/dev/null || true
     if [ -z "$tot" ]; then
@@ -322,7 +329,7 @@ sample() {
 check_over() {
   local tmp; tmp=$(mktemp -d); probe_all "$tmp"
   local why=""
-  for k in c r s; do
+  for k in $KEYS; do
     lim=$(cpulim_of $k)
     tot=""; read -r tot mx mbps n sp < "$tmp/$k" 2>/dev/null || true
     [ -z "$tot" ] && continue

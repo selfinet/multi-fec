@@ -14,35 +14,40 @@
   - `--version` 표기: `common.h`의 `MULTI_FEC_VERSION`("1.0.0") + Makefile `git_version`이 `git describe --tags --dirty --always`로 넣는 실제 리비전 + 빌드시각. (구버전은 git 리비전만 표기했음)
   - 빌드: `make clean` 후 곧바로 `make -j$(nproc)` 해도 된다. (v1.0.3에서 `git_version.h`를 실제 파일 타깃으로 바꿔 병렬 빌드 경합을 없앴다 — §20-바. 그 전에는 `make git_version`을 먼저 실행해야 했다.)
   - 메모리·미정의동작 점검이 필요하면 `make asan` → `./multi-fec-asan` (테스트 스크립트에 `BIN=./multi-fec-asan`).
-- **실행(테스트)**: 실제 실행·측정은 **신규 테스트망**(2026-10-02 구축, 10-06 호스트명 지정)에서. 3대 모두 **Proxmox VM**
-  (Ubuntu 24.04 · kernel 6.8 · **2 vCPU** · 3.9 GB · **타임존 UTC**). 접속은 `ssh root@<이름 또는 IP>`,
+- **실행(테스트)**: 실제 실행·측정은 **신규 테스트망**(2026-10-02 구축, 10-06 호스트명 지정, **10-23 rs2 추가**)에서. 4대 모두 **Proxmox VM**
+  (Ubuntu 24.04 · kernel 6.8 · **2 vCPU** · 3.9 GB · **타임존 UTC** — **rs2 만 Ubuntu 22.04 · kernel 5.15**). 접속은 `ssh root@<이름 또는 IP>`,
   sv1 에서는 `sv1-gw` WG 터널로 직접 닿는다(`ip route get 192.168.100.92` → `dev sv1-gw`).
 
   | 역할 | 호스트명 | IP | 유닛 (`/etc/multi-fec/instances/*.conf`, 2026-10-19 v1.4.0 전환) |
   |---|---|---|---|
   | client | `c.xdn.selfinet.com` | **192.168.100.92** | `multi-fec@client` |
   | relay1 | `r1.xdn.selfinet.com` | **192.168.100.88** (ens18) | `multi-fec@relay` |
-  | relay2 | `r2.xdn.selfinet.com` | **192.168.100.117** (ens19) | `multi-fec@relay-b` |
+  | relay2 | `rs2` (DNS 이름 없음) | **192.168.100.131** (ens18) | `multi-fec@relay` (rs2) |
+  | ~~relay2 구~~ | `r2.xdn.selfinet.com` | 192.168.100.117 (r 의 ens19) | `multi-fec@relay-b` — **2026-10-23 disabled**(롤백용) |
   | server | `s.xdn.selfinet.com` | **192.168.100.102** | `multi-fec@server` |
 
   배포 바이너리 `/usr/sbin/multi-fec-dist` = **v1.4.0**(2026-10-19, 버전별 사본 `.v1.3.1`·`.v1.4.0` 등 보관). 구 유닛
   `multi-fec-client/-relay/-relay-b/-server` 와 `/etc/multi-fec/*.conf` 는 **disabled 로 남겨 둔 롤백용**이다 — 되돌리기는
   `multi-fec@<이름>` disable --now → 구 유닛 enable --now(+ 필요 시 `.v1.3.1` 복원). 하네스가 구 유닛 이름을 쓰면 고칠 것. **주소는 전부 DHCP** 다 —
-  DHCP 서버는 gw(`.1`)가 아니라 별개 VM `.12` 이고 리스 2h. ⚠️ **r1·r2 는 같은 VM 의 NIC 2개**다
-  (ens19 를 DHCP 로 추가, 사용자 방침 — 경로당 VM 을 새로 만들지 않는다). **프로세스 장애만 분리되고
-  호스트·회선 장애는 분리되지 않는다** — 결과 해석 시 명시할 것.
+  DHCP 서버는 gw(`.1`)가 아니라 별개 VM `.12` 이고 리스 2h.
+  **2026-10-23: path[1] 을 별도 VM rs2(.131)로 옮겼다** — 그 전까지 r1·r2 는 같은 VM 의 NIC 2개(r 의 ens19 .117)라
+  호스트·회선 장애가 분리되지 않았다. 이제 **경로별 호스트가 분리**되므로 10-22 이전의 SPOF·절단·"기제 2"(r 정지 = 두 경로 동시 소멸)
+  측정과 직접 비교하지 말 것. r 의 `multi-fec@relay-b`·ens19 는 disabled 로 남겨 둔 롤백용이다 — 되돌리기:
+  c `client.conf.bak-2026-10-23` 복원·재시작, r `enable --now multi-fec@relay-b` + `netem.conf.bak-2026-10-23` 복원, rs2 `disable --now multi-fec@relay mf-netem`.
+  ⚠️ **r 한 대를 전제로 짠 하네스**(`tunnel_regress.sh` 의 cut1 = r `multi-fec@relay-b` 정지, 샘플러·정리가 c·r·s 3대)는 **path[1] 을 끊지 못한다** — 재사용 전 rs2 로 고칠 것.
   ⚠️ **`c.xdn`·`s.xdn` 은 2026-10-06 전까지 구 테스트망을 가리켰다**(아래). `r.xdn` 은 더 이상 해석되지 않는다.
 - **경로 구성**: 2경로 모두 릴레이 경유, 릴레이 1단·`--upstream` 방식(서비스망은 2단·`--route` — 다르다).
   ```
-  path[0]  c .92 ──► r1 .88:443  (multi-fec-relay,   --upstream-local .88)  ──┐
-  path[1]  c .92 ──► r2 .117:443 (multi-fec-relay-b, --upstream-local .117) ──┴─► s .102:443
+  path[0]  c .92 ──► r   .88:443  (multi-fec@relay,     upstream-local .88)  ──┐
+  path[1]  c .92 ──► rs2 .131:443 (rs2 multi-fec@relay, upstream-local .131) ──┴─► s .102:443
   ```
   c·r·s 가 전부 `192.168.100.0/24` 온링크라 데이터 경로는 gw 를 지나지 않는다.
 - **터널**: `wg-fec` — **s = 10.9.20.1**(ListenPort 51820) ↔ **c = 10.9.20.2**(Endpoint `127.0.0.1:51821`,
   keepalive 25), MTU 1300, AllowedIPs 상대 /32 만, 개인키 각 호스트 `/etc/wireguard/wg-fec.key`.
   `wg-quick@wg-fec` c·s enabled. 서버 multi-fec 은 `--wg 127.0.0.1:51820`.
-- **netem**: `mf-netem.service`(**r 만 enabled**, `/etc/multi-fec/netem.conf` `ROLE=relay-both`)로 **`c↔r` 구간 양방향을 r 에서** 건다 —
-  **path[0](.88) 25ms/5%, path[1](.117) 30ms/2%**. r→c 는 r ens18 송신(.117 소스도 ens18 로 나감), c→r 은 r 수신(ens18·**ens19**)을
+- **netem**: `mf-netem.service`(**r·rs2 enabled**, `/etc/multi-fec/netem.conf` `ROLE=relay-both`)로 **`c↔relay` 구간 양방향을 relay 에서** 건다 —
+  **path[0](r .88) 25ms/5%, path[1](rs2 .131) 30ms/2%** — 2026-10-23 부터 호스트당 경로 1개(`P1_ADDR=` 비움, rs2 `IN_IFACES=ens18`).
+  아래 ens19 설명은 path[1] 이 r 의 .117 이던 10-22~23 의 구성이다. r→c 는 r ens18 송신(.117 소스도 ens18 로 나감), c→r 은 r 수신(ens18·**ens19**)을
   IFB `ifb0` 로 돌려 건다(.117 이 ens19 에 붙어 c→.117 이 ens19 로 들어온다 — ens18 에만 걸면 path[1] 왕복이 31 ms 로 한쪽만 걸린다).
   c 의 `mf-netem` 은 **disabled**(2026-10-22 변경). 이유: c 에서 걸면 multi-fec 의 UDP GSO 덩어리가 잘리기 전에 netem 을 지나 덩어리째
   버려진다. 스크립트 `test-results/2026-08-02-50mbps-soak/mf-netem.sh`, r 원본 `*.bak-2026-10-22`.
@@ -51,10 +56,10 @@
   > ⚠️ **u32 필터는 UDP + IP + 443 포트까지 매치한다**(c→r 은 dst IP·dport 443, r→c 는 src IP·sport 443·dst c). 다른 포트로 쏘면 netem 을 전혀
   > 받지 않는다 — 측정이 조용히 무의미해진다.
 - **소켓 버퍼 sysctl** (2026-10-05, VM 정상 부하 손실 0.4~1% 의 원인이었다 — `test-results/2026-10-05-vm-guard-calib/REPORT.md` §3):
-  r `/etc/sysctl.d/90-multi-fec-relay.conf` = `rmem/wmem_max` 8 MB + `rmem/wmem_default` 4 MB,
+  r·rs2 `/etc/sysctl.d/90-multi-fec-relay.conf` = `rmem/wmem_max` 8 MB + `rmem/wmem_default` 4 MB,
   c·s `90-multi-fec.conf` = `rmem/wmem_max` 8 MB. v1.3.4 이하 relay 는 `--sock-buf` 를 무시하므로
   `rmem_default` 가 relay 버퍼를 정한다(v1.3.5 에서 수정 — 유닛에 `--sock-buf` 를 줘야 효과).
-- **apt 자동 업데이트 3대 모두 비활성**(배경 작업이 가드를 트립시킨다). 원본 `/root/20auto-upgrades.bak-2026-10-05`.
+- **apt 자동 업데이트 4대 모두 비활성**(배경 작업이 가드를 트립시킨다). 원본 `/root/20auto-upgrades.bak-2026-10-05`(rs2 는 `-2026-10-23`).
 - **부하 생성은 `mfgen`**(`test-results/2026-10-05-vm-guard-calib/mfgen.c`, 각 호스트 `/usr/local/sbin/mfgen`).
   iperf3 3.16 UDP 송신은 레이트와 무관하게 1코어를 100% 먹어 2 vCPU 에서는 측정 대상의 절반을 빼앗는다.
   하네스는 같은 디렉터리의 `run_load.sh`(계단·지속) · `ab_run.sh` · `xver_new.sh`(버전 교차).
@@ -63,8 +68,8 @@
 
 | 구간 | 값 |
 |---|---|
-| WG 터널 `10.9.20.2 → 10.9.20.1` | RTT **53.3~54.3 ms**, 손실 0% (netem 적용 상태) |
-| 경로 owd (클라 로그) | path[0] **~25.8 ms**, path[1] **~30.9 ms** |
+| WG 터널 `10.9.20.2 → 10.9.20.1` | RTT **53.3~54.3 ms**, 손실 0% (netem 적용 상태) — 10-23 rs2 전환 후 53.7 ms |
+| 경로 owd (클라 로그) | path[0] **~25.8 ms**, path[1] **~30.9 ms** — 10-23 rs2 전환 후 26.0 / 31.1 ms |
 | 하부망 온링크 (netem 없는 구간) | 0.6~0.7 ms |
 | 지속 부하 (sysctl 적용 후) | 각 20/25 Mbps 9분 손실 **0.000~0.043%** — 25 Mbps 넘어서는 링크 백스톱이 먼저 걸린다(미검증 구간) |
 
@@ -72,7 +77,7 @@
 
 **규칙 0 — 트래픽 생성 전에 가드를 띄운다.** 가드 없으면 시작하지 않는다. 손계산으로 "여유롭다"
 판단 금지(2026-08-03 구 망에서 가드 없이 돌려 gw 가 800 Mbps 를 넘겼다). 가드는
-`test-results/2026-08-02-50mbps-soak/mf_gwguard.sh` — **신규 망은 반드시 `GW_NET=new`**(IP 프리셋 +
+`test-results/2026-08-02-50mbps-soak/mf_gwguard.sh` — **신규 망은 반드시 `GW_NET=new`**(2026-10-23 부터 rs2 를 4번째 호스트 `r2` 로 감시, IP 프리셋 +
 `vm` 프로파일: **c 85% · r·s 88% · 최고1코어 95% · 3연속**, 링크 RX+TX 400 Mbps 백스톱).
 ⚠️ `GW_NET` 기본값은 `old` 이고 그 프리셋은 `c/r/s.xdn` 이름을 쓴다 — 이름이 신규 망으로 바뀐 지금 기본값으로
 돌리면 **구 망 전제(인터페이스명 등)로 신규 망을 건드린다.** 근거: `2026-10-05-vm-guard-calib/REPORT.md` §4.
@@ -83,11 +88,11 @@
 **규칙 2 — c/r/s 의 IP 는 절대 터널로 라우팅하지 않는다.** 터널을 *실어 나르는* 주소를 터널 안으로 보내면
 multi-fec 이 자기 전송을 삼키고 `duplicate` 가 **한 바퀴마다 2배**로 키운다. 신규 망 `wg-fec` 은
 AllowedIPs 가 상대 /32 뿐이라 해당 없음 — 설정을 바꾼 뒤 아래가 전부 "위반 0" 인지 확인한다
-(2026-10-06 3대 모두 0 확인. 트래픽 안 만듦):
+(2026-10-06 3대, **10-23 rs2 포함 4대** 모두 0 확인. 트래픽 안 만듦):
 
 ```bash
-for h in 192.168.100.92 192.168.100.88 192.168.100.102; do ssh root@$h 'n=0
-  for ip in 192.168.100.92 192.168.100.88 192.168.100.117 192.168.100.102; do
+for h in 192.168.100.92 192.168.100.88 192.168.100.102 192.168.100.131; do ssh root@$h 'n=0
+  for ip in 192.168.100.92 192.168.100.88 192.168.100.117 192.168.100.131 192.168.100.102; do
     ip route get $ip | head -1 | grep -qE "wg|tun" && n=$((n+1)); done
   echo "$(hostname) 위반 $n"'; done
 ```

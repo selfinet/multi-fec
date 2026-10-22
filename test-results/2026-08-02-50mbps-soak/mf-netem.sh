@@ -17,6 +17,8 @@
 #   이유: c 의 multi-fec 이 UDP GSO 로 묶어 보내면 그 덩어리가 잘리기 전에 c 의 netem 을 지나
 #   덩어리째 버려진다(실회선에 없는 몰아치기 손실). 선 위에서 이미 개별 패킷이 된 뒤 r 에서 걸면 패킷 단위다.
 #
+# 2026-10-23: 경로마다 relay 호스트가 따로면(r=.88, rs2=.131) 호스트당 경로 1개 — P1_ADDR 을 비우면 path1 은 걸지 않는다.
+#
 # 설정: /etc/multi-fec/netem.conf
 # 사용: mf-netem.sh apply | clear | show
 set -u
@@ -28,8 +30,9 @@ CONF=${CONF:-/etc/multi-fec/netem.conf}
 
 : "${ROLE:?ROLE 필요 (client|relay|relay-both)}"
 : "${IFACE:?IFACE 필요}"
-: "${P0_ADDR:?}" "${P1_ADDR:?}"
-: "${P0_DELAY:?}" "${P0_LOSS:?}" "${P1_DELAY:?}" "${P1_LOSS:?}"
+: "${P0_ADDR:?}" "${P0_DELAY:?}" "${P0_LOSS:?}"
+P1_ADDR=${P1_ADDR:-}        # 비우면 path1 없음 (호스트당 경로 1개)
+P1_DELAY=${P1_DELAY:-0ms}; P1_LOSS=${P1_LOSS:-0%}
 PORT=${PORT:-443}
 
 IFB=${IFB:-ifb0}
@@ -58,7 +61,7 @@ apply_ingress() {
     tc filter add dev "$IFB" protocol ip parent 1: prio 1 u32 \
         match ip protocol 17 0xff \
         match ip dst "$P0_ADDR/32" match ip dport "$PORT" 0xffff flowid 1:1
-    tc filter add dev "$IFB" protocol ip parent 1: prio 1 u32 \
+    [ -n "$P1_ADDR" ] && tc filter add dev "$IFB" protocol ip parent 1: prio 1 u32 \
         match ip protocol 17 0xff \
         match ip dst "$P1_ADDR/32" match ip dport "$PORT" 0xffff flowid 1:2
     # ingress: 클라이언트(PEER)에서 온 UDP:PORT 만 IFB 로 — 나머지 수신은 그대로
@@ -86,7 +89,7 @@ apply() {
         tc filter add dev "$IFACE" protocol ip parent 1: prio 1 u32 \
             match ip protocol 17 0xff \
             match ip dst "$P0_ADDR/32" match ip dport "$PORT" 0xffff flowid 1:1
-        tc filter add dev "$IFACE" protocol ip parent 1: prio 1 u32 \
+        [ -n "$P1_ADDR" ] && tc filter add dev "$IFACE" protocol ip parent 1: prio 1 u32 \
             match ip protocol 17 0xff \
             match ip dst "$P1_ADDR/32" match ip dport "$PORT" 0xffff flowid 1:2
         ;;
@@ -97,7 +100,7 @@ apply() {
             match ip protocol 17 0xff \
             match ip src "$P0_ADDR/32" match ip sport "$PORT" 0xffff \
             match ip dst "$PEER/32" flowid 1:1
-        tc filter add dev "$IFACE" protocol ip parent 1: prio 1 u32 \
+        [ -n "$P1_ADDR" ] && tc filter add dev "$IFACE" protocol ip parent 1: prio 1 u32 \
             match ip protocol 17 0xff \
             match ip src "$P1_ADDR/32" match ip sport "$PORT" 0xffff \
             match ip dst "$PEER/32" flowid 1:2
@@ -105,7 +108,7 @@ apply() {
     *) echo "알 수 없는 ROLE: $ROLE" >&2; exit 1 ;;
     esac
     [ "$ROLE" = relay-both ] && apply_ingress
-    echo "mf-netem: $ROLE/$IFACE  path0=$P0_DELAY/$P0_LOSS  path1=$P1_DELAY/$P1_LOSS"
+    echo "mf-netem: $ROLE/$IFACE  path0($P0_ADDR)=$P0_DELAY/$P0_LOSS  path1(${P1_ADDR:-없음})=$P1_DELAY/$P1_LOSS"
 }
 
 case "${1:-apply}" in
