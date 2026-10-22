@@ -41,10 +41,15 @@
 - **터널**: `wg-fec` — **s = 10.9.20.1**(ListenPort 51820) ↔ **c = 10.9.20.2**(Endpoint `127.0.0.1:51821`,
   keepalive 25), MTU 1300, AllowedIPs 상대 /32 만, 개인키 각 호스트 `/etc/wireguard/wg-fec.key`.
   `wg-quick@wg-fec` c·s enabled. 서버 multi-fec 은 `--wg 127.0.0.1:51820`.
-- **netem**: `mf-netem.service`(c·r enabled, `/etc/multi-fec/netem.conf`)로 **`c↔r` 구간 양방향** —
-  **path[0](.88) 25ms/5%, path[1](.117) 30ms/2%**. r 은 `.117` 소스도 ens18 로 나가므로 ens18 에만 건다.
-  > ⚠️ **u32 필터는 UDP + dst IP + `dport 443` 까지 매치한다**(구 망과 같음). 다른 포트로 쏘면 band 3 로
-  > 빠져 netem 을 전혀 받지 않는다 — 측정이 조용히 무의미해진다.
+- **netem**: `mf-netem.service`(**r 만 enabled**, `/etc/multi-fec/netem.conf` `ROLE=relay-both`)로 **`c↔r` 구간 양방향을 r 에서** 건다 —
+  **path[0](.88) 25ms/5%, path[1](.117) 30ms/2%**. r→c 는 r ens18 송신(.117 소스도 ens18 로 나감), c→r 은 r 수신(ens18·**ens19**)을
+  IFB `ifb0` 로 돌려 건다(.117 이 ens19 에 붙어 c→.117 이 ens19 로 들어온다 — ens18 에만 걸면 path[1] 왕복이 31 ms 로 한쪽만 걸린다).
+  c 의 `mf-netem` 은 **disabled**(2026-10-22 변경). 이유: c 에서 걸면 multi-fec 의 UDP GSO 덩어리가 잘리기 전에 netem 을 지나 덩어리째
+  버려진다. 스크립트 `test-results/2026-08-02-50mbps-soak/mf-netem.sh`, r 원본 `*.bak-2026-10-22`.
+  > ⚠️ **10-05~10-22 의 측정은 c 쪽 netem(c 송신 + r 송신) 조건**이다. 지연·손실 값은 같고 변경 직후 기준선(WG RTT 54.1 ms, owd 26.2/31.2 ms)도
+  > 같게 나왔지만, c 의 CPU 에 netem 처리가 실려 있었다 — c CPU 수치를 비교할 때 유의.
+  > ⚠️ **u32 필터는 UDP + IP + 443 포트까지 매치한다**(c→r 은 dst IP·dport 443, r→c 는 src IP·sport 443·dst c). 다른 포트로 쏘면 netem 을 전혀
+  > 받지 않는다 — 측정이 조용히 무의미해진다.
 - **소켓 버퍼 sysctl** (2026-10-05, VM 정상 부하 손실 0.4~1% 의 원인이었다 — `test-results/2026-10-05-vm-guard-calib/REPORT.md` §3):
   r `/etc/sysctl.d/90-multi-fec-relay.conf` = `rmem/wmem_max` 8 MB + `rmem/wmem_default` 4 MB,
   c·s `90-multi-fec.conf` = `rmem/wmem_max` 8 MB. v1.3.4 이하 relay 는 `--sock-buf` 를 무시하므로
