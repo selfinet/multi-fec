@@ -53,6 +53,11 @@
 #include <sys/time.h>
 #include <arpa/inet.h>
 #include <net/if.h>
+#include <netinet/udp.h>   /* UDP_SEGMENT / UDP_GRO */
+
+#ifndef SOL_UDP
+#define SOL_UDP 17
+#endif
 
 #if !defined MSG_CONFIRM
 #define MSG_CONFIRM 0
@@ -115,7 +120,17 @@ static uint64_t mud_random_beat(const void *path_ptr)
 #endif
 
 #define MUD_CTRL_SIZE (CMSG_SPACE(MUD_PKTINFO_SIZE) + \
-                       CMSG_SPACE(sizeof(struct in6_pktinfo)))
+                       CMSG_SPACE(sizeof(struct in6_pktinfo)) + \
+                       CMSG_SPACE(sizeof(int)))          /* UDP_GRO segment size */
+
+/* UDP GSO / GRO. One sendmmsg entry may carry several equal-sized packets for
+ * the same destination (UDP_SEGMENT), and one recvmmsg entry may return several
+ * coalesced packets (UDP_GRO). Each packet still goes on the wire as its own UDP
+ * datagram — the wire format is unchanged; only the number of trips through the
+ * kernel stack drops. Off with MF_UDP_GSO=0 / MF_UDP_GRO=0 in the environment. */
+#define MUD_GSO_CTRL_SIZE (MUD_CTRL_SIZE + CMSG_SPACE(sizeof(uint16_t)))
+#define MUD_GSO_MAX_BYTES 60000U          /* one GSO send must stay under 64 KB */
+#define MUD_GRO_BUF_SIZE  65536U
 
 /* ─── Internal structures ─────────────────────────────────────── */
 
@@ -216,6 +231,18 @@ struct mud {
     struct mmsghdr       *rq_msgs;
     int                   rq_len;
     int                   rq_idx;
+    size_t                rq_off;    /* GRO: offset of the next segment in rq[rq_idx] */
+    size_t                rq_seg;    /* GRO: segment size of rq[rq_idx] */
+
+    /* UDP GSO / GRO (see MUD_GSO_CTRL_SIZE) */
+    int                   gso;
+    int                   gro;
+    unsigned char        *rq_big;    /* GRO receive buffers, MUD_GRO_BUF_SIZE per slot */
+    size_t                rq_bufsz;
+    struct mmsghdr       *gq_msgs;   /* coalesced send messages */
+    struct iovec         *gq_iov;
+    unsigned char        *gq_ctrl;   /* MUD_GSO_CTRL_SIZE per message */
+    struct mud_batch_stats bstat;
 
     /* direct-mapped table for deduplicating packets in duplicate mode */
 /* Must stay a power of two (index masking).
@@ -449,14 +476,115 @@ mud_get_path(struct mud *mud,
 
 /* ─── sendmmsg batch flush ───────────────────────────────────── */
 
+static int
+mud_same_flow(const struct msghdr *a, const struct msghdr *b)
+{
+    return a->msg_namelen == b->msg_namelen &&
+           !memcmp(a->msg_name, b->msg_name, a->msg_namelen) &&
+           a->msg_controllen == b->msg_controllen &&
+           !memcmp(a->msg_control, b->msg_control, a->msg_controllen);
+}
+
+/* Coalesce the queue into GSO messages: same destination and source (msg_name
+ * and IP_PKTINFO bytes equal) and the same size; a shorter packet may close a
+ * group, as the kernel allows only the last segment to be short. Groups keep
+ * the queue order of their members, so order per destination is preserved. */
+static int
+mud_send_flush_gso(struct mud *mud, int n)
+{
+    int    gm[MUD_SEND_QUEUE_CAP][MUD_SEND_QUEUE_CAP];
+    int    gcnt[MUD_SEND_QUEUE_CAP];
+    size_t gseg[MUD_SEND_QUEUE_CAP], gbytes[MUD_SEND_QUEUE_CAP];
+    int    gclosed[MUD_SEND_QUEUE_CAP];
+    int    ng = 0;
+
+    for (int i = 0; i < n; i++) {
+        struct msghdr *m = &mud->sq_msgs[i].msg_hdr;
+        size_t len = mud->sq[i].iov.iov_len;
+        int g = -1;
+        for (int k = 0; k < ng; k++) {
+            if (gclosed[k] || !mud_same_flow(&mud->sq_msgs[gm[k][0]].msg_hdr, m))
+                continue;
+            if (len > gseg[k] || gbytes[k] + len > MUD_GSO_MAX_BYTES) {
+                /* this packet starts a new group for the flow; a later one must
+                 * not join the older group and overtake it on the wire */
+                gclosed[k] = 1;
+                continue;
+            }
+            g = k;
+            break;
+        }
+        if (g < 0) {
+            g = ng++;
+            gcnt[g] = 0; gseg[g] = len; gbytes[g] = 0; gclosed[g] = 0;
+        }
+        gm[g][gcnt[g]++] = i;
+        gbytes[g] += len;
+        if (len < gseg[g]) gclosed[g] = 1;
+    }
+
+    int iov = 0;
+    for (int g = 0; g < ng; g++) {
+        struct msghdr *first = &mud->sq_msgs[gm[g][0]].msg_hdr;
+        struct msghdr *out   = &mud->gq_msgs[g].msg_hdr;
+        if (gcnt[g] == 1) {
+            *out = *first;
+            continue;
+        }
+        unsigned char *ctrl = mud->gq_ctrl + (size_t)g * MUD_GSO_CTRL_SIZE;
+        memset(ctrl, 0, MUD_GSO_CTRL_SIZE);
+        memcpy(ctrl, first->msg_control, first->msg_controllen);
+        *out = *first;
+        out->msg_iov        = &mud->gq_iov[iov];
+        out->msg_iovlen     = (size_t)gcnt[g];
+        out->msg_control    = ctrl;
+        out->msg_controllen = first->msg_controllen + CMSG_SPACE(sizeof(uint16_t));
+        struct cmsghdr *c = CMSG_FIRSTHDR(out);
+        if (first->msg_controllen) c = CMSG_NXTHDR(out, c);
+        c->cmsg_level = SOL_UDP;
+        c->cmsg_type  = UDP_SEGMENT;
+        c->cmsg_len   = CMSG_LEN(sizeof(uint16_t));
+        uint16_t seg  = (uint16_t)gseg[g];
+        memcpy(CMSG_DATA(c), &seg, sizeof(seg));
+        for (int j = 0; j < gcnt[g]; j++)
+            mud->gq_iov[iov++] = mud->sq[gm[g][j]].iov;
+        mud->bstat.gso_msgs++;
+        mud->bstat.gso_segs += (uint64_t)gcnt[g];
+    }
+    mud->bstat.send_calls++;
+    mud->bstat.send_pkts += (uint64_t)n;
+
+    int done = 0;
+    while (done < ng) {
+        int r = sendmmsg(mud->fd, mud->gq_msgs + done, (unsigned int)(ng - done), 0);
+        if (r > 0) { done += r; continue; }
+        /* The kernel refuses GSO for some routes and devices (e.g. EIO through
+         * xfrm). Turn it off for good and send this group's packets one by one,
+         * so the packets are not lost and later flushes take the plain path. */
+        if (gcnt[done] > 1 && errno != EAGAIN && errno != EWOULDBLOCK) {
+            mud->gso = 0;
+            mud->bstat.gso_fallback++;
+            for (int j = 0; j < gcnt[done]; j++)
+                sendmsg(mud->fd, &mud->sq_msgs[gm[done][j]].msg_hdr, 0);
+            done++;
+            continue;
+        }
+        break;   /* as before: the rest of the batch is dropped */
+    }
+    return done;
+}
+
 int mud_send_flush(struct mud *mud)
 {
     if (!mud->sq_len) return 0;
-    /* sq_msgs[] is a contiguous array pointing at sq[]'s iov/ctrl/remote */
-    int sent = sendmmsg(mud->fd, mud->sq_msgs,
-                        (unsigned int)mud->sq_len, 0);
+    int n = mud->sq_len;
     mud->sq_len = 0;
-    return sent;
+    if (mud->gso && n > 1)
+        return mud_send_flush_gso(mud, n);
+    mud->bstat.send_calls++;
+    mud->bstat.send_pkts += (uint64_t)n;
+    /* sq_msgs[] is a contiguous array pointing at sq[]'s iov/ctrl/remote */
+    return sendmmsg(mud->fd, mud->sq_msgs, (unsigned int)n, 0);
 }
 
 static int
@@ -1037,8 +1165,14 @@ mud_create(union mud_sockaddr *addr)
         mud->rq_msgs[i].msg_hdr.msg_control    = mud->rq[i].ctrl;
         mud->rq_msgs[i].msg_hdr.msg_controllen = sizeof(mud->rq[i].ctrl);
     }
-    mud->rq_len = 0;
-    mud->rq_idx = 0;
+    mud->rq_len   = 0;
+    mud->rq_idx   = 0;
+    mud->rq_bufsz = sizeof(mud->rq[0].buf);
+
+    mud->gq_msgs = (struct mmsghdr *)calloc(MUD_SEND_QUEUE_CAP, sizeof(struct mmsghdr));
+    mud->gq_iov  = (struct iovec *)calloc(MUD_SEND_QUEUE_CAP, sizeof(struct iovec));
+    mud->gq_ctrl = (unsigned char *)calloc(MUD_SEND_QUEUE_CAP, MUD_GSO_CTRL_SIZE);
+    if (!mud->gq_msgs || !mud->gq_iov || !mud->gq_ctrl) goto err;
 
     mud->conf.keepalive    = 25 * MUD_ONE_SEC;
     mud->conf.timetolerance = 10 * MUD_ONE_SEC;
@@ -1093,6 +1227,26 @@ mud_create(union mud_sockaddr *addr)
 
     if (bind(fd, &addr->sa, addrlen)) goto err;
 
+    {
+        const char *e;
+        e = getenv("MF_UDP_GSO");
+        mud->gso = !(e && *e == '0');
+        e = getenv("MF_UDP_GRO");
+        if (!(e && *e == '0') && mud_sso_int(fd, SOL_UDP, UDP_GRO, 1) == 0) {
+            /* A GRO entry can hold up to 64 KB; a smaller buffer would truncate
+             * it and lose every packet in it. */
+            mud->rq_big = (unsigned char *)malloc((size_t)MUD_RECV_QUEUE_CAP * MUD_GRO_BUF_SIZE);
+            if (mud->rq_big) {
+                for (int i = 0; i < MUD_RECV_QUEUE_CAP; i++)
+                    mud->rq[i].iov.iov_base = mud->rq_big + (size_t)i * MUD_GRO_BUF_SIZE;
+                mud->rq_bufsz = MUD_GRO_BUF_SIZE;
+                mud->gro = 1;
+            } else {
+                mud_sso_int(fd, SOL_UDP, UDP_GRO, 0);
+            }
+        }
+    }
+
     return mud;
 
 err:
@@ -1107,6 +1261,10 @@ mud_delete(struct mud *mud)
     if (mud->fd >= 0) close(mud->fd);
     /* Every buffer mud_create() allocated, including the send/receive batch
      * queues that were previously leaked here and on its error paths. */
+    free(mud->rq_big);
+    free(mud->gq_ctrl);
+    free(mud->gq_iov);
+    free(mud->gq_msgs);
     free(mud->rq_msgs);
     free(mud->rq);
     free(mud->sq_msgs);
@@ -1645,28 +1803,63 @@ mud_recv_pending(struct mud *mud)
     return mud->rq_idx < mud->rq_len;
 }
 
+/* UDP_GRO segment size of a received entry; 0 when it holds a single packet. */
+static size_t
+mud_gro_size(struct msghdr *msg)
+{
+    for (struct cmsghdr *c = CMSG_FIRSTHDR(msg); c; c = CMSG_NXTHDR(msg, c)) {
+        if (c->cmsg_level == SOL_UDP && c->cmsg_type == UDP_GRO) {
+            int v;
+            memcpy(&v, CMSG_DATA(c), sizeof(v));
+            return v > 0 ? (size_t)v : 0;
+        }
+    }
+    return 0;
+}
+
 int
 mud_recv(struct mud *mud, void *data, size_t size)
 {
     for (;;) {
-        /* process remaining items in the queue */
+        /* process remaining items in the queue (with GRO, one item may hold
+         * several packets of rq_seg bytes each, the last possibly shorter) */
         while (mud->rq_idx < mud->rq_len) {
-            int idx = mud->rq_idx++;
-            if (mud->rq_msgs[idx].msg_hdr.msg_flags & (MSG_TRUNC | MSG_CTRUNC))
+            int idx = mud->rq_idx;
+            struct msghdr *mh = &mud->rq_msgs[idx].msg_hdr;
+            if (mh->msg_flags & (MSG_TRUNC | MSG_CTRUNC)) {
+                mud->rq_idx++;
+                mud->rq_off = 0;
                 continue;
-            ssize_t raw_size = (ssize_t)mud->rq_msgs[idx].msg_len;
+            }
+            size_t total = (size_t)mud->rq_msgs[idx].msg_len;
+            if (mud->rq_off == 0) {
+                mud->rq_seg = mud->gro ? mud_gro_size(mh) : 0;
+                if (!mud->rq_seg || mud->rq_seg > total) mud->rq_seg = total;
+                if (mud->rq_seg < total) {
+                    mud->bstat.gro_msgs++;
+                    mud->bstat.gro_segs += (total + mud->rq_seg - 1) / mud->rq_seg;
+                }
+            }
+            unsigned char *raw = (unsigned char *)mud->rq[idx].iov.iov_base + mud->rq_off;
+            size_t raw_size = total - mud->rq_off;
+            if (raw_size > mud->rq_seg) raw_size = mud->rq_seg;
+            mud->rq_off += raw_size;
+            if (mud->rq_off >= total) {
+                mud->rq_idx++;
+                mud->rq_off = 0;
+            }
+            mud->bstat.recv_pkts++;
             int ret = mud_recv_one(mud, data, size,
-                                   mud->rq[idx].buf, raw_size,
-                                   &mud->rq[idx].remote,
-                                   &mud->rq_msgs[idx].msg_hdr);
+                                   raw, (ssize_t)raw_size,
+                                   &mud->rq[idx].remote, mh);
             /* Publish the source of *this* packet. The caller cannot recover it
              * by peeking the socket: the batch below may hold several packets
              * from different clients, so a peek returns whichever packet is next
              * in the socket buffer, not the one returned here. */
             if (ret >= 0) {
                 mud->last_remote  = mud->rq[idx].remote;
-                mud->last_raw     = mud->rq[idx].buf;
-                mud->last_raw_len = (size_t)raw_size;
+                mud->last_raw     = raw;
+                mud->last_raw_len = raw_size;
             }
             if (ret > 0) return ret;   /* data packet */
             if (ret == 0) return 0;    /* probe/keepalive — notify the caller */
@@ -1675,10 +1868,11 @@ mud_recv(struct mud *mud, void *data, size_t size)
         /* queue drained → refill via recvmmsg */
         mud->rq_len = 0;
         mud->rq_idx = 0;
+        mud->rq_off = 0;
         for (int i = 0; i < MUD_RECV_QUEUE_CAP; i++) {
             mud->rq_msgs[i].msg_hdr.msg_namelen    = sizeof(mud->rq[i].remote);
             mud->rq_msgs[i].msg_hdr.msg_controllen = sizeof(mud->rq[i].ctrl);
-            mud->rq[i].iov.iov_len                 = sizeof(mud->rq[i].buf);
+            mud->rq[i].iov.iov_len                 = mud->rq_bufsz;
         }
         int nrecv = recvmmsg(mud->fd, mud->rq_msgs,
                              MUD_RECV_QUEUE_CAP, MSG_DONTWAIT, NULL);
@@ -1686,9 +1880,20 @@ mud_recv(struct mud *mud, void *data, size_t size)
             errno = EAGAIN;
             return -1;
         }
+        mud->bstat.recv_calls++;
         mud->rq_len = nrecv;
         /* loop back to the top to process the queue */
     }
+}
+
+int
+mud_get_batch_stats(struct mud *mud, struct mud_batch_stats *out)
+{
+    if (!mud || !out) { errno = EINVAL; return -1; }
+    *out = mud->bstat;
+    out->gso_on = mud->gso;
+    out->gro_on = mud->gro;
+    return 0;
 }
 
 int

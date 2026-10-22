@@ -224,6 +224,17 @@ int mud_send_all_peer  (struct mud *, uint64_t peer, const void *, size_t);
 int mud_send_next_peer (struct mud *, uint64_t peer, const void *, size_t,
                         unsigned dup_count);
 
+/* sendmmsg / recvmmsg batching and UDP GSO / GRO counters (cumulative). */
+struct mud_batch_stats {
+    uint64_t send_calls, send_pkts;   /* sendmmsg flushes, packets in them      */
+    uint64_t gso_msgs, gso_segs;      /* GSO messages sent, packets inside them */
+    uint64_t gso_fallback;            /* GSO refused by the kernel → turned off */
+    uint64_t recv_calls, recv_pkts;   /* recvmmsg calls, packets handed to mud  */
+    uint64_t gro_msgs, gro_segs;      /* coalesced entries received, packets    */
+    int      gso_on, gro_on;
+};
+int    mud_get_batch_stats (struct mud *, struct mud_batch_stats *);
+
 int    mud_get_errors (struct mud *, struct mud_errors *);
 int    mud_get_fd     (struct mud *);
 size_t mud_get_mtu    (struct mud *);

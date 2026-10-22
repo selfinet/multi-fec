@@ -302,11 +302,29 @@ static bool session_insert(uint64_t sid, const address_t &addr, my_time_t now)
     return true;
 }
 
+static void log_batch_stats(const char *who)
+{
+    /* Cumulative; diff two lines for a rate. send/recv = packets per syscall,
+     * gso/gro = how many of them went through the stack as one coalesced unit. */
+    struct mud_batch_stats b;
+    if (!g_mud || mud_get_batch_stats(g_mud, &b) != 0) return;
+    mylog(log_info,
+          "[%s] batch gso=%s gro=%s send=%llu/%llu gso=%llu/%llu fallback=%llu "
+          "recv=%llu/%llu gro=%llu/%llu\n", who,
+          b.gso_on ? "on" : "off", b.gro_on ? "on" : "off",
+          (unsigned long long)b.send_pkts, (unsigned long long)b.send_calls,
+          (unsigned long long)b.gso_segs,  (unsigned long long)b.gso_msgs,
+          (unsigned long long)b.gso_fallback,
+          (unsigned long long)b.recv_pkts, (unsigned long long)b.recv_calls,
+          (unsigned long long)b.gro_segs,  (unsigned long long)b.gro_msgs);
+}
+
 static void session_cleanup_cb(struct ev_loop * /*loop*/, struct ev_timer * /*w*/,
                                int /*revents*/)
 {
     size_t before = g_session_to_addr.size();
     session_sweep((my_time_t)get_current_time());
+    log_batch_stats("server");
     if (before != g_session_to_addr.size())
         mylog(log_debug, "[server] session sweep: %zu → %zu\n",
               before, g_session_to_addr.size());

@@ -385,6 +385,24 @@ static void fec_encode_cb(struct ev_loop * /*loop*/, struct ev_timer *watcher, i
     data_from_local_or_fec_timeout(ci, 1);
 }
 
+
+static void log_batch_stats(const char *who)
+{
+    /* Cumulative; diff two lines for a rate. send/recv = packets per syscall,
+     * gso/gro = how many of them went through the stack as one coalesced unit. */
+    struct mud_batch_stats b;
+    if (!g_mud || mud_get_batch_stats(g_mud, &b) != 0) return;
+    mylog(log_info,
+          "[%s] batch gso=%s gro=%s send=%llu/%llu gso=%llu/%llu fallback=%llu "
+          "recv=%llu/%llu gro=%llu/%llu\n", who,
+          b.gso_on ? "on" : "off", b.gro_on ? "on" : "off",
+          (unsigned long long)b.send_pkts, (unsigned long long)b.send_calls,
+          (unsigned long long)b.gso_segs,  (unsigned long long)b.gso_msgs,
+          (unsigned long long)b.gso_fallback,
+          (unsigned long long)b.recv_pkts, (unsigned long long)b.recv_calls,
+          (unsigned long long)b.gro_segs,  (unsigned long long)b.gro_msgs);
+}
+
 static void conn_timer_cb(struct ev_loop * /*loop*/, struct ev_timer *watcher, int revents)
 {
     assert(!(revents & EV_ERROR));
@@ -395,6 +413,7 @@ static void conn_timer_cb(struct ev_loop * /*loop*/, struct ev_timer *watcher, i
     {
         static unsigned s_path_ticks = 0;
         if (++s_path_ticks % 75 == 0) {  /* ~30s at 400ms interval */
+            log_batch_stats("client");
             struct mud_paths paths;
             mud_get_paths(g_mud, &paths, NULL, NULL);
             static const char *s_status_names[] = {
