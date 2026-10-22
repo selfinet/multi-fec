@@ -1,0 +1,231 @@
+[0m[32m[2026-10-22 04:55:59][INFO][client] starting event loop
+[0m[32m[2026-10-22 04:55:59][INFO][client] local listen fd=6 addr=127.0.0.1:34445
+[0m[32m[2026-10-22 04:55:59][INFO][client] wg-side sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+[0m[32m[2026-10-22 04:55:59][INFO][client] listening at 127.0.0.1:34445, 2 static path(s)
+[0m[32m[2026-10-22 04:55:59][INFO][client] sent QUIC Initial on 2 path(s)
+[0mDUPDBG rate=0 window=0 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=1 rate=10000000 txloss=0 | p1 st=1 rate=10000000 txloss=0
+DUPDBG rate=0 window=0 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=3 rate=5559908 txloss=255 | p1 st=3 rate=4177242 txloss=255
+DUPDBG rate=9737150 window=973715 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=5559908 txloss=0 | p1 st=6 rate=4177242 txloss=0
+DUPDBG rate=5594966 window=559496 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=1000000 txloss=0 | p1 st=6 rate=4594966 txloss=0
+[32m[2026-10-22 04:56:02][INFO][client] new conv from 127.0.0.1:60569 conv_id=6c6d1230
+[0mDUPDBG rate=9913391 window=991339 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=6115898 txloss=0 | p1 st=6 rate=3797493 txloss=0
+DUPDBG rate=17703597 window=1770359 eagain=0 enq=0 over=0 stale=0 floor=2 | p0 st=6 rate=10195037 txloss=16 | p1 st=6 rate=7508560 txloss=19
+DUPDBG rate=22042293 window=2204229 eagain=0 enq=0 over=0 stale=0 floor=2 | p0 st=6 rate=13096980 txloss=0 | p1 st=6 rate=8945313 txloss=0
+DUPDBG rate=21988673 window=2198867 eagain=0 enq=0 over=0 stale=0 floor=2 | p0 st=6 rate=13071358 txloss=0 | p1 st=6 rate=8917315 txloss=0
+DUPDBG rate=21194158 window=2119415 eagain=0 enq=0 over=0 stale=0 floor=2 | p0 st=6 rate=13077178 txloss=0 | p1 st=6 rate=8116980 txloss=0
+DUPDBG rate=21187609 window=2118760 eagain=0 enq=0 over=0 stale=0 floor=2 | p0 st=6 rate=13071474 txloss=0 | p1 st=6 rate=8116135 txloss=0
+DUPDBG rate=20435635 window=2043563 eagain=0 enq=0 over=0 stale=0 floor=2 | p0 st=6 rate=13068016 txloss=0 | p1 st=6 rate=7367619 txloss=0
+DUPDBG rate=19260257 window=1926025 eagain=0 enq=0 over=0 stale=0 floor=2 | p0 st=6 rate=11884541 txloss=0 | p1 st=6 rate=7375716 txloss=0
+DUPDBG rate=19255021 window=1925502 eagain=0 enq=0 over=0 stale=0 floor=2 | p0 st=6 rate=11879715 txloss=0 | p1 st=6 rate=7375306 txloss=0
+DUPDBG rate=18601062 window=1860106 eagain=0 enq=0 over=0 stale=0 floor=2 | p0 st=6 rate=11889654 txloss=0 | p1 st=6 rate=6711408 txloss=0
+DUPDBG rate=14249881 window=1424988 eagain=0 enq=0 over=0 stale=0 floor=2 | p0 st=6 rate=11898821 txloss=0 | p1 st=6 rate=2351060 txloss=0
+DUPDBG rate=11885051 window=1188505 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=11885051 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=10809327 window=1080932 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=10809327 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=10793879 window=1079387 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=10793879 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=10804273 window=1080427 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=10804273 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=10807349 window=1080734 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=10807349 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=10802894 window=1080289 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=10802894 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=10803640 window=1080364 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=10803640 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=10801534 window=1080153 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=10801534 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=9812462 window=981246 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=9812462 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=9823488 window=982348 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=9823488 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=9825242 window=982524 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=9825242 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=9817156 window=981715 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=9817156 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=9821773 window=982177 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=9821773 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=8929316 window=892931 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=8929316 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=8925906 window=892590 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=8925906 txloss=0 | p1 st=2 rate=2351060 txloss=0
+[32m[2026-10-22 04:56:28][INFO][client] path[0] RUNNING owd=25.34ms jit=0.11ms loss=0% rate=22.7Mbps tx=163747 rx=583 dev=vA
+[0m[32m[2026-10-22 04:56:28][INFO][client] path[1] DEGRADED owd=30.24ms jit=0.10ms loss=0% rate=18.8Mbps tx=69731 rx=221 dev=vB
+[0mDUPDBG rate=8924422 window=892442 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=8924422 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=8934797 window=893479 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=8934797 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=8921501 window=892150 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=8921501 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=4164174 window=524288 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=4164174 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=1210000 window=524288 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=1210000 txloss=71 | p1 st=2 rate=2351060 txloss=0
+[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #50
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #100
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #150
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #200
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #250
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #300
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #350
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #400
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #450
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #500
+[0m[33m[2026-10-22 04:56:34][WARN][client] pending queue full (512) — dropped oldest, total 1
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #550
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #600
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #650
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #700
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #750
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #800
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #850
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #900
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #950
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1000
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1050
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1100
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1150
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1200
+[0m[32m[2026-10-22 04:56:34][INFO][client] flushed 512 pending packet(s)
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1250
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1300
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1350
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1400
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1450
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1500
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1550
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1600
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1650
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1700
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1750
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1800
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1850
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1900
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #1950
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2000
+[0m[33m[2026-10-22 04:56:34][WARN][client] pending queue full (512) — dropped oldest, total 1000
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2050
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2100
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2150
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2200
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2250
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2300
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2350
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2400
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2450
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2500
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2550
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2600
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2650
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2700
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2750
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2800
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2850
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2900
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #2950
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3000
+[0m[33m[2026-10-22 04:56:34][WARN][client] pending queue full (512) — dropped oldest, total 2000
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3050
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3100
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3150
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3200
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3250
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3300
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3350
+[0m[32m[2026-10-22 04:56:34][INFO][client] flushed 512 pending packet(s)
+[0mDUPDBG rate=2357946 window=112886 eagain=3359 enq=3359 over=2335 stale=0 floor=0 | p0 st=6 rate=2357946 txloss=27 | p1 st=2 rate=2351060 txloss=0
+[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3400
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3450
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3500
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3550
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3600
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3650
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3700
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3750
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3800
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3850
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3900
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #3950
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4000
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4050
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4100
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4150
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4200
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4250
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4300
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4350
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4400
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4450
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4500
+[0m[33m[2026-10-22 04:56:34][WARN][client] pending queue full (512) — dropped oldest, total 3000
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4550
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4600
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4650
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4700
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4750
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4800
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4850
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4900
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #4950
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5000
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5050
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5100
+[0m[32m[2026-10-22 04:56:34][INFO][client] flushed 512 pending packet(s)
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5150
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5200
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5250
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5300
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5350
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5400
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5450
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5500
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5550
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5600
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5650
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5700
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5750
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5800
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5850
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5900
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #5950
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6000
+[0m[33m[2026-10-22 04:56:34][WARN][client] pending queue full (512) — dropped oldest, total 4000
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6050
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6100
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6150
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6200
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6250
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6300
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6350
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6400
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6450
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6500
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6550
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6600
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6650
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6700
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6750
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6800
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6850
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6900
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #6950
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7000
+[0m[33m[2026-10-22 04:56:34][WARN][client] pending queue full (512) — dropped oldest, total 5000
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7050
+[0m[32m[2026-10-22 04:56:34][INFO][client] flushed 512 pending packet(s)
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7100
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7150
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7200
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7250
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7300
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7350
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7400
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7450
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7500
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7550
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7600
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7650
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7700
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7750
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7800
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7850
+[0m[33m[2026-10-22 04:56:34][WARN][client] mud_send EAGAIN #7900
+[0m[32m[2026-10-22 04:56:34][INFO][client] flushed 512 pending packet(s)
+[0mDUPDBG rate=13201367 window=1320136 eagain=4577 enq=4577 over=3041 stale=0 floor=1 | p0 st=6 rate=13201367 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=9818260 window=981826 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=9818260 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=9826512 window=982651 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=9826512 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=8923829 window=892382 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=8923829 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=8935517 window=893551 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=8935517 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=8922265 window=892226 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=8922265 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=8933650 window=893365 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=8933650 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=8121952 window=812195 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=8121952 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=5692493 window=569249 eagain=0 enq=0 over=0 stale=0 floor=1 | p0 st=6 rate=5692493 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=3452267 window=524288 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=3452267 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=3452267 window=524288 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=3452267 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=3138425 window=524288 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=3138425 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=3138425 window=524288 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=3138425 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=3138425 window=524288 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=3138425 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=3138425 window=524288 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=3138425 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=3452267 window=524288 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=3452267 txloss=0 | p1 st=2 rate=2351060 txloss=0
+DUPDBG rate=4177242 window=524288 eagain=0 enq=0 over=0 stale=0 floor=0 | p0 st=6 rate=4177242 txloss=0 | p1 st=2 rate=2351060 txloss=0

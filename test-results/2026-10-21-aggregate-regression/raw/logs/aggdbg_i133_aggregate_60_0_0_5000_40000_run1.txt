@@ -1,0 +1,16 @@
+[0mAGGDBG t=103719093327 path=0 st=6 rate=125000000 txloss=0 rxloss=0 sent=1 share=1.000
+AGGDBG t=103719093327 path=1 st=2 rate=10000000 txloss=0 rxloss=0 sent=0 share=0.000
+AGGDBG t=103719094327 path=0 st=6 rate=125000000 txloss=0 rxloss=0 sent=6251 share=1.000
+AGGDBG t=103719094327 path=1 st=2 rate=10000000 txloss=0 rxloss=0 sent=0 share=0.000
+AGGDBG t=103719095328 path=0 st=6 rate=125000000 txloss=0 rxloss=0 sent=6251 share=1.000
+AGGDBG t=103719095328 path=1 st=2 rate=10000000 txloss=0 rxloss=0 sent=0 share=0.000
+AGGDBG t=103719096328 path=0 st=6 rate=125000000 txloss=0 rxloss=0 sent=6250 share=1.000
+AGGDBG t=103719096328 path=1 st=2 rate=10000000 txloss=0 rxloss=0 sent=0 share=0.000
+AGGDBG t=103719097328 path=0 st=6 rate=125000000 txloss=0 rxloss=0 sent=6252 share=1.000
+AGGDBG t=103719097328 path=1 st=3 rate=1100000 txloss=255 rxloss=0 sent=0 share=0.000
+AGGDBG t=103719098328 path=0 st=6 rate=125000000 txloss=0 rxloss=0 sent=6249 share=1.000
+AGGDBG t=103719098328 path=1 st=3 rate=1100000 txloss=180 rxloss=221 sent=0 share=0.000
+AGGDBG t=103719099328 path=0 st=6 rate=125000000 txloss=0 rxloss=0 sent=6239 share=0.998
+AGGDBG t=103719099328 path=1 st=6 rate=1100000 txloss=198 rxloss=117 sent=11 share=0.002
+AGGDBG t=103719100329 path=0 st=6 rate=125000000 txloss=0 rxloss=0 sent=6171 share=0.987
+AGGDBG t=103719100329 path=1 st=6 rate=1100000 txloss=167 rxloss=98 sent=79 share=0.013
