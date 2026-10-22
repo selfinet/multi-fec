@@ -1,0 +1,40 @@
+[18:57:11] sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
+[run] 가드 PID 870016 감시 중
+[18:57:23] ##### rep1 v1.4.0
+  설치       3 3cbf7cb2298b 
+[run] 1.4.0     steady rep1  up 14.77Mbps rtx=3 구간최저=11.5 반토막초=2  dn 14.79Mbps rtx=7 구간최저=11.5 반토막초=1
+[run] 1.4.0     cut1   rep1  up 12.28Mbps rtx=90 구간최저=3.1 반토막초=15  dn 10.96Mbps rtx=93 구간최저=0.0 반토막초=27
+[run] 1.4.0     cut0   rep1  up 14.89Mbps rtx=2 구간최저=11.5 반토막초=1  dn 14.89Mbps rtx=2 구간최저=10.5 반토막초=7
+[19:02:58] ##### rep1 v1.4.1-v2
+  설치       3 02eecf43acc7 
+[run] 1.4.1-v2  steady rep1  up 14.71Mbps rtx=3 구간최저=10.5 반토막초=1  dn 14.71Mbps rtx=16 구간최저=12.6 반토막초=1
+[run] 1.4.1-v2  cut1   rep1  up 12.75Mbps rtx=64 구간최저=3.1 반토막초=12  dn 11.60Mbps rtx=68 구간최저=3.1 반토막초=22
+[run] 1.4.1-v2  cut0   rep1  up 14.79Mbps rtx=3 구간최저=10.5 반토막초=0  dn 14.81Mbps rtx=10 구간최저=12.6 반토막초=0
+[19:08:32] ##### rep2 v1.4.0
+  설치       3 3cbf7cb2298b 
+[run] 1.4.0     steady rep2  up 14.90Mbps rtx=3 구간최저=12.6 반토막초=0  dn 14.93Mbps rtx=3 구간최저=12.6 반토막초=0
+[run] 1.4.0     cut1   rep2  up 12.63Mbps rtx=57 구간최저=6.3 반토막초=27  dn 12.39Mbps rtx=70 구간최저=3.1 반토막초=15
+[run] 1.4.0     cut0   rep2  up 14.87Mbps rtx=5 구간최저=13.6 반토막초=0  dn 14.91Mbps rtx=1 구간최저=12.6 반토막초=0
+[19:14:07] ##### rep2 v1.4.1-v2
+  설치       3 02eecf43acc7 
+[run] 1.4.1-v2  steady rep2  up 14.67Mbps rtx=4 구간최저=12.6 반토막초=3  dn 14.73Mbps rtx=7 구간최저=13.6 반토막초=1
+[run] 1.4.1-v2  cut1   rep2  up 12.33Mbps rtx=61 구간최저=4.2 반토막초=22  dn 12.03Mbps rtx=65 구간최저=2.1 반토막초=20
+[run] 1.4.1-v2  cut0   rep2  up 14.72Mbps rtx=2 구간최저=7.3 반토막초=2  dn 14.75Mbps rtx=21 구간최저=9.5 반토막초=1
+[19:19:42] ##### rep3 v1.4.0
+  설치       3 3cbf7cb2298b 
+[run] 1.4.0     steady rep3  up 14.52Mbps rtx=4 구간최저=6.3 반토막초=2  dn 14.80Mbps rtx=12 구간최저=10.4 반토막초=12
+[run] 1.4.0     cut1   rep3  up 11.32Mbps rtx=96 구간최저=0.0 반토막초=23  dn 11.43Mbps rtx=76 구간최저=0.0 반토막초=19
+[run] 1.4.0     cut0   rep3  up 14.90Mbps rtx=3 구간최저=11.5 반토막초=0  dn 14.88Mbps rtx=5 구간최저=11.5 반토막초=0
+[19:25:17] ##### rep3 v1.4.1-v2
+  설치       3 02eecf43acc7 
+[run] 1.4.1-v2  steady rep3  up 14.88Mbps rtx=2 구간최저=8.4 반토막초=1  dn 14.88Mbps rtx=3 구간최저=10.5 반토막초=0
+[run] 1.4.1-v2  cut1   rep3  up 12.12Mbps rtx=77 구간최저=2.1 반토막초=21  dn 12.77Mbps rtx=72 구간최저=3.1 반토막초=13
+[run] 1.4.1-v2  cut0   rep3  up 14.89Mbps rtx=1 구간최저=13.6 반토막초=0  dn 14.93Mbps rtx=1 구간최저=11.5 반토막초=0
+[19:30:51] TCPCUT_DONE
+[19:30:51] ===== 정리
+  설치       3 3cbf7cb2298b 
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive inactive active 
+rtt min/avg/max/mdev = 52.524/53.990/58.365/2.213 ms
+[19:31:24] sv1 운영: MainPID=754 ActiveEnterTimestamp=Wed 2026-08-12 18:53:47 KST  md5 3db3617e
