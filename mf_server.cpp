@@ -1042,62 +1042,31 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
     assert(!(revents & EV_ERROR));
 
     int mfd = mud_get_fd(g_mud);
-    static char peek_buf[buf_len];
     static char recv_buf[buf_len];
 
+    /* v1.5 candidate: no MSG_PEEK. Until v1.4 every packet was first peeked with
+     * recvfrom(MSG_PEEK) for its source and raw bytes, then consumed by mud_recv() —
+     * one extra system call and copy per packet (15 Mbps: ~3,600/s, 42% of the
+     * server's syscall time, test-results/2026-10-22-strace). mud_recv() already
+     * batches with recvmmsg and now publishes the source and raw bytes of the packet
+     * it returned (mud_get_last_remote / mud_get_last_raw). That is also more exact:
+     * a peek returns whatever is next in the socket, not necessarily the packet mud
+     * handed back (§19-나). */
     for (;;) {
-        /* Peek to get source address */
-        struct sockaddr_storage ss;
-        socklen_t ssl = sizeof(ss);
-        ssize_t pn = recvfrom(mfd, peek_buf, sizeof(peek_buf),
-                              MSG_PEEK | MSG_DONTWAIT,
-                              (struct sockaddr *)&ss, &ssl);
-        if (pn < 0) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-                break;
-            mylog(log_warn, "[server] recvfrom peek: %s\n", strerror(errno));
-            break;
-        }
-
-        address_t src_addr;
-        src_addr.from_sockaddr((struct sockaddr *)&ss, ssl);
-
-        /* Consume via mud_recv — this applies obfs decode */
         struct mud_errors _e0;
         mud_get_errors(g_mud, &_e0);
         int n = mud_recv(g_mud, recv_buf, sizeof(recv_buf));
-        if (n < 0) {
-            if (errno == EAGAIN || errno == EWOULDBLOCK)
-                break;
-            /* HMAC auth failure = external prober (GFW active probing, etc.).
-             *
-             * Determine probe type from the first byte of peek_buf:
-             *   0x16 → TLS Handshake (ClientHello)
-             *   0x17 → TLS Application Data
-             *   0x15 → TLS Alert
-             *   0x14 → TLS ChangeCipherSpec
-             *   0xC0+ → QUIC Long Header (Initial)
-             *   0x40-0x7F → QUIC Short Header
-             *
-             * In all cases respond with a TLS close_notify Alert.
-             *   → prober's view: "a TLS server that closed the connection" = normal behavior
-             *   → GFW: confirms a TLS server exists on port 443 → avoids blocking
-             *
-             * TCP/443 probes are handled by nginx/caddy independently of multi-fec.
-             * (TCP and UDP are independent in the kernel — same port can be bound simultaneously) */
-            if (pn >= 1) {
-                if (g_decoy_enabled) {
-                    decoy_forward(src_addr, mfd, peek_buf, (int)pn);
-                    mylog(log_debug, "[server] probe from %s (0x%02x) → decoy\n",
-                          src_addr.get_str(), (unsigned char)peek_buf[0]);
-                } else {
-                    probe_respond_builtin(mfd, src_addr);
-                    mylog(log_debug, "[server] probe from %s (0x%02x) → builtin-quic\n",
-                          src_addr.get_str(), (unsigned char)peek_buf[0]);
-                }
-            }
-            break;
-        }
+        if (n < 0)
+            break;   /* mud_recv only fails with EAGAIN: batch and socket drained */
+
+        address_t src_addr;
+        union mud_sockaddr real_remote;
+        if (mud_get_last_remote(g_mud, &real_remote) == 0)
+            src_addr.from_sockaddr((struct sockaddr *)&real_remote,
+                                   real_remote.sa.sa_family == AF_INET
+                                       ? sizeof(real_remote.sin)
+                                       : sizeof(real_remote.sin6));
+
         if (n == 0) {
             struct mud_errors _e1;
             mud_get_errors(g_mud, &_e1);
@@ -1108,11 +1077,22 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
                 "probe";
             mylog(log_trace, "[server] mud_recv=0 from %s: %s\n",
                   src_addr.get_str(), _why);
-            if (auth_fail && pn >= 1) {
-                if (g_decoy_enabled)
-                    decoy_forward(src_addr, mfd, peek_buf, (int)pn);
-                else
+            /* HMAC auth failure = external prober (GFW active probing, etc.):
+             * answer like a QUIC/TLS server would (decoy or builtin Initial). */
+            const void *raw = NULL; size_t raw_len = 0;
+            if (auth_fail && mud_get_last_raw(g_mud, &raw, &raw_len) == 0 && raw_len >= 1) {
+                static char probe_buf[buf_len];
+                size_t m = raw_len < sizeof(probe_buf) ? raw_len : sizeof(probe_buf);
+                memcpy(probe_buf, raw, m);   /* next mud_recv() reuses the slot */
+                if (g_decoy_enabled) {
+                    decoy_forward(src_addr, mfd, probe_buf, (int)m);
+                    mylog(log_debug, "[server] probe from %s (0x%02x) → decoy\n",
+                          src_addr.get_str(), (unsigned char)probe_buf[0]);
+                } else {
                     probe_respond_builtin(mfd, src_addr);
+                    mylog(log_debug, "[server] probe from %s (0x%02x) → builtin-quic\n",
+                          src_addr.get_str(), (unsigned char)probe_buf[0]);
+                }
             }
             continue;
         }
@@ -1127,21 +1107,7 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
         uint64_t sid = 0;
         memcpy(&sid, recv_buf, SESSION_ID_LEN);
 
-        /* Source of the packet mud_recv() actually returned.
-         *
-         * peek_buf/src_addr above come from a separate MSG_PEEK, which only
-         * matches when mud's recvmmsg batch happens to be empty. Under load the
-         * batch holds packets from several clients, so the peeked address
-         * belongs to a different packet — using it bound sessions and paths to
-         * the wrong client. */
-        address_t data_addr = src_addr;
-        union mud_sockaddr real_remote;
-        if (mud_get_last_remote(g_mud, &real_remote) == 0)
-            data_addr.from_sockaddr((struct sockaddr *)&real_remote,
-                                    real_remote.sa.sa_family == AF_INET
-                                        ? sizeof(real_remote.sin)
-                                        : sizeof(real_remote.sin6));
-
+        const address_t &data_addr = src_addr;
         address_t routing_addr;
         my_time_t now_ms = (my_time_t)get_current_time();
         auto sit = g_session_to_addr.find(sid);
@@ -1149,13 +1115,13 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
             if (!session_insert(sid, data_addr, now_ms)) continue;
             routing_addr = data_addr;
             mylog(log_info, "[server] new session %016llx from %s\n",
-                  (unsigned long long)sid, data_addr.get_str());
+                  (unsigned long long)sid, const_cast<address_t &>(data_addr).get_str());
         } else {
             sit->second.last_seen = now_ms;
             routing_addr = sit->second.addr;
             if (!(routing_addr == data_addr)) {
                 mylog(log_debug, "[server] session %016llx: alt path %s\n",
-                      (unsigned long long)sid, data_addr.get_str());
+                      (unsigned long long)sid, const_cast<address_t &>(data_addr).get_str());
             }
             session_note_path(sit->second, data_addr);
             /* Restore the canonical mapping if an LRU eviction dropped it while
@@ -1174,27 +1140,6 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
         process_mud_data(routing_addr,
                          recv_buf + SESSION_ID_LEN,
                          n - SESSION_ID_LEN);
-    }
-
-    /* Drain items left in the recvmmsg queue.
-     * Even after the MSG_PEEK loop ends by exhausting the socket buffer,
-     * unprocessed packets received in the recvmmsg batch may remain.
-     * They are already authenticated, so do session_id routing only, no probe handling. */
-    while (mud_recv_pending(g_mud)) {
-        int n2 = mud_recv(g_mud, recv_buf, sizeof(recv_buf));
-        if (n2 < 0) break;
-        if (n2 == 0) continue;
-        if (n2 < (int)SESSION_ID_LEN) continue;
-
-        uint64_t sid2 = 0;
-        memcpy(&sid2, recv_buf, SESSION_ID_LEN);
-        auto sit2 = g_session_to_addr.find(sid2);
-        if (sit2 == g_session_to_addr.end()) continue; /* new session handled on next event */
-        sit2->second.last_seen = (my_time_t)get_current_time();
-
-        process_mud_data(sit2->second.addr,
-                         recv_buf + SESSION_ID_LEN,
-                         n2 - SESSION_ID_LEN);
     }
 }
 

@@ -193,6 +193,8 @@ struct mud {
     uint64_t           window_time;
     uint64_t           base_time;
     union mud_sockaddr last_remote;  /* source of the last packet mud_recv() returned */
+    const unsigned char *last_raw;   /* its raw (still obfuscated) bytes — valid until the next mud_recv() */
+    size_t last_raw_len;
 
     /* --accept-local: allowed local (destination) addresses. Empty = accept all. */
     union mud_sockaddr accept_local[MUD_ACCEPT_LOCAL_MAX];
@@ -1661,7 +1663,11 @@ mud_recv(struct mud *mud, void *data, size_t size)
              * by peeking the socket: the batch below may hold several packets
              * from different clients, so a peek returns whichever packet is next
              * in the socket buffer, not the one returned here. */
-            if (ret >= 0) mud->last_remote = mud->rq[idx].remote;
+            if (ret >= 0) {
+                mud->last_remote  = mud->rq[idx].remote;
+                mud->last_raw     = mud->rq[idx].buf;
+                mud->last_raw_len = (size_t)raw_size;
+            }
             if (ret > 0) return ret;   /* data packet */
             if (ret == 0) return 0;    /* probe/keepalive — notify the caller */
         }
@@ -1683,6 +1689,15 @@ mud_recv(struct mud *mud, void *data, size_t size)
         mud->rq_len = nrecv;
         /* loop back to the top to process the queue */
     }
+}
+
+int
+mud_get_last_raw(struct mud *mud, const void **data, size_t *size)
+{
+    if (!mud || !mud->last_raw) { errno = ENOENT; return -1; }
+    *data = mud->last_raw;
+    *size = mud->last_raw_len;
+    return 0;
 }
 
 int

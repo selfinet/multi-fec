@@ -204,6 +204,10 @@ int mud_set_path_peer (struct mud *, union mud_sockaddr *remote, uint64_t peer);
  * peeks the socket to learn the sender can observe a different packet than the
  * one it was handed. Servers must use this instead of a peeked address. */
 int mud_get_last_remote (struct mud *, union mud_sockaddr *out);
+/* Raw bytes of the packet mud_recv() last returned (also for a 0 return, e.g. a failed
+ * auth) — what a probe responder needs without a separate MSG_PEEK. Valid until the
+ * next mud_recv(). */
+int mud_get_last_raw (struct mud *, const void **data, size_t *size);
 
 /* Restrict which *local* address a received packet may have arrived on.
  *
