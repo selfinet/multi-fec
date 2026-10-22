@@ -23,6 +23,14 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 측정·문서·테스트 하네스만(제품 코드 변경은 아래 버전 섹션).
 
+### 2026-10-22 — aggregate 회귀 · duplicate 단일 경로 유실 원인 확정 + 수정 (브랜치 `fix/mud-rate-agg`, 미릴리스)
+
+- 둘 다 v1.3.4 probe 핑퐁 수정이 가리던 약점: ① aggregate 배분이 `tx.loss` 를 안 씀(손실 60% 경로에 ~1/3),
+  ② 경로 하나만 남으면 `mud->rate` 가 실제 송신량 아래로 내려가 EAGAIN → client pending 무음 폐기.
+- 수정: `mud_agg_weight()` = rate × (1−loss)², `mud_update_rl()` 송신 한도 ≥ 실제 송신 × 5/4(무조건), pending 넘침 경고. 와이어 무변경.
+- 테스트망 r netns: aggregate 손실 60% 7/20 → 10/10, 기존 8 시나리오 → 8/8, duplicate 단일 경로 8 Mbps·WAN 유실 회차 5/20 → 0/20.
+  상세 `test-results/2026-10-21-aggregate-regression/REPORT.md`. 실망 확인·비회귀 스위트 남음 → 1.4.1 후보.
+
 ### 2026-10-19 — 테스트망을 v1.4.0 정식 구성으로 전환
 
 - 3대 바이너리 v1.4.0(`3cbf7cb2…`), `mf-migrate.py` 로 4개 유닛 → `multi-fec@{client,relay,relay-b,server}` (`instances/*.conf`).
@@ -48,7 +56,7 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 | 2 | **`--check` 출력의 키 가림** | 포트를 쥔 프로세스 명령줄을 보여 줄 때 `-k`/`--key`/`--route` 값을 가린다 — 1.3.x 프로세스면 키 앞부분이 찍힌다 | 테스트망 `-k a8fec…` 출력 확인. 지금은 `mf-migrate.py` 출력에서만 가린다 |
 | 3 | **호환 회귀 테스트 추가** | 1.3.x 가 받아 주던 입력(줄 끝 주석·뒤쪽 단어·`$VAR` 분리·EnvironmentFile 해석)과 `--config` 파서·path/route 형식을 스위트에 | 1.4.0 의 `#` 호환 결함을 스위트가 잡지 못했다 |
 | 4 | **키 출처 충돌 경고** | `-k` 와 `--key-file`(또는 `MF_KEY`)을 함께 주면 경고 — 지금은 조용히 `-k` 가 이긴다 | 실측 `key kf:… from command line` |
-| 5 | aggregate + 고손실 회귀 원인 분석 | v1.3.4 probe 답신 제한(`beat/4`) 전후 A/B, 손실 추정·rate 피드백 경로 계측 | `test_path_failure.py` aggregate·B 손실 60%: v1.3.3 8회 중 7회 <2% → v1.4.0 9회 중 0회. duplicate 무관 |
+| 5 | ~~aggregate + 고손실 회귀 원인 분석~~ → **원인 확정·수정 브랜치 `fix/mud-rate-agg`(2026-10-22)**. duplicate 단일 경로 유실도 같은 뿌리로 함께 수정. 실망 확인·비회귀 스위트 후 1.4.1 | v1.3.4 probe 답신 제한(`beat/4`) 전후 A/B, 손실 추정·rate 피드백 경로 계측 | `test_path_failure.py` aggregate·B 손실 60%: v1.3.3 8회 중 7회 <2% → v1.4.0 9회 중 0회. duplicate 무관 |
 | 6 | 터널 루프 차단 끄기 옵션 | path 가 `wg*`/`tun*` 로 라우팅되면 기동 거부 — tun 을 하부 회선으로 쓰는 환경용 예외 | 설계상 의도, 서비스 무관 |
 | 7 | `via` 같은 목적지 2회선 owd 이상값 | 첫 보고 1회 수십억 ms, 재실행 재현 안 됨 | T5b — 원인 미확인 |
 | 8 | **relay 키 필수** | 키(`key`/`--route`)가 하나도 없는 relay 는 기동 거부. 지금은 투명 중계로 조용히 뜬다 — 운영 방침은 "키는 무조건 있어야 함"(2026-10-19) | `main.cpp:1502` 주석, 도움말 "If omitted, relay forwards all packets transparently" |

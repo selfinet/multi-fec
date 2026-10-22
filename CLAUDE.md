@@ -2051,7 +2051,10 @@ direct-mapped라 짝의 슬롯이 덮이면 중복이 FEC 디코더까지 통과
 
 > ⚠️ **회귀 (2026-10-18 발견, 미수정)**: `test_path_failure.py` aggregate · B 손실 60% 가 v1.3.3 까지 8회 중 7회 2% 이내였는데
 > **v1.3.4 부터 대부분 1~11%**(v1.3.4 8회 중 2회, v1.4.0 9회 중 0회). v1.3.4 의 probe 답신 제한(§ probe 핑퐁)과 함께 시작 —
-> 손실 경로의 추정·rate 피드백이 느려진 것으로 추정(미확정). duplicate 는 전 버전 0%. 아래 지침의 "aggregate 가 열화에 강하다"는
+> 손실 경로의 추정·rate 피드백이 느려진 것으로 추정(미확정).
+> **2026-10-22 원인 확정**: 배분이 `tx.loss` 를 쓰지 않았고 1.3.3 까지는 probe 핑퐁이 경로 rate 를 상한에 붙여 가렸다. 같은 뿌리로
+> **duplicate 도 경로 하나만 남으면 송신 한도가 실제 송신량 아래로 내려가 유실**(8 Mbps 이상). 수정 브랜치 `fix/mud-rate-agg`(미릴리스) —
+> `test-results/2026-10-21-aggregate-regression/REPORT.md`. duplicate 는 전 버전 0%. 아래 지침의 "aggregate 가 열화에 강하다"는
 > **v1.3.3 이하 기준**이다. 근거 `test-results/2026-10-18-v140/REPORT.md` 시험 5-B.
 
 - **점진적 열화에는 aggregate가 더 강하다** — rate 피드백이 나쁜 경로 몫을 줄이고 FEC가 덮는다.
