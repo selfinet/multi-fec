@@ -1,0 +1,11 @@
+1792683070.956787 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:31:10][INFO][client] batch gso=on gro=on send=854117/218846 gso=696667/279137 fallback=0 recv=834926/321243 gro=521188/223256
+1792683070.959583 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:31:10][INFO][client] path[0] RUNNING owd=25.27ms jit=0.18ms loss=5% rate=47.8Mbps tx=430949 rx=410967 dev=ens18
+1792683070.959583 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:31:10][INFO][client] path[1] RUNNING owd=30.34ms jit=0.13ms loss=2% rate=84.9Mbps tx=432901 rx=423957 dev=ens18
+1792683072.956738 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:31:12][INFO][report]client-->server:(original:356210 pkt;451654336 byte) (fec:433065 pkt,553421878 byte)  server-->client:(original:356090 pkt;451508224 byte) (fec:433215 pkt;553624458 byte)
+1792683100.956965 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:31:40][INFO][client] batch gso=on gro=on send=922380/252454 gso=746726/300671 fallback=0 recv=898544/354307 gro=560990/240327
+1792683100.960532 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:31:40][INFO][client] path[0] RUNNING owd=25.29ms jit=0.11ms loss=4% rate=57.9Mbps tx=489246 rx=466328 dev=ens18
+1792683100.960532 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:31:40][INFO][client] path[1] DEGRADED owd=34.83ms jit=7.76ms loss=2% rate=32.7Mbps tx=443579 rx=432214 dev=ens18
+1792683130.958108 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:32:10][INFO][client] batch gso=on gro=on send=1008401/286066 gso=809409/327443 fallback=0 recv=979937/392622 gro=611338/261357
+1792683130.972196 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:32:10][INFO][client] path[0] RUNNING owd=26.25ms jit=0.66ms loss=4% rate=48.0Mbps tx=547550 rx=521774 dev=ens18
+1792683130.972196 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:32:10][INFO][client] path[1] RUNNING owd=31.51ms jit=1.62ms loss=1% rate=29.8Mbps tx=472127 rx=458161 dev=ens18
+1792683133.358457 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:32:13][INFO][report]client-->server:(original:450587 pkt;571322024 byte) (fec:549406 pkt,702103328 byte)  server-->client:(original:450416 pkt;571112420 byte) (fec:545542 pkt;697177192 byte)

@@ -1,0 +1,14 @@
+1792682920.956736 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:28:40][INFO][client] batch gso=on gro=on send=355232/103529 gso=255082/106911 fallback=0 recv=349402/144275 gro=198839/86189
+1792682920.958524 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:28:40][INFO][client] path[0] RUNNING owd=25.83ms jit=1.00ms loss=5% rate=91.1Mbps tx=180173 rx=172236 dev=ens18
+1792682920.958524 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:28:40][INFO][client] path[1] RUNNING owd=30.51ms jit=0.67ms loss=2% rate=46.7Mbps tx=179916 rx=177164 dev=ens18
+1792682950.961716 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:29:10][INFO][client] batch gso=on gro=on send=505286/136988 gso=391122/159815 fallback=0 recv=495222/196548 gro=298189/128717
+1792682950.961716 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:29:10][INFO][client] path[0] RUNNING owd=25.30ms jit=0.17ms loss=5% rate=133.2Mbps tx=255726 rx=244056 dev=ens18
+1792682950.961716 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:29:10][INFO][client] path[1] RUNNING owd=30.68ms jit=0.61ms loss=1% rate=146.6Mbps tx=255409 rx=251164 dev=ens18
+1792682952.158179 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:29:12][INFO][report]client-->server:(original:209930 pkt;266181788 byte) (fec:256558 pkt,327864568 byte)  server-->client:(original:209917 pkt;266168944 byte) (fec:256667 pkt;328011110 byte)
+1792682980.957288 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:29:40][INFO][client] batch gso=on gro=on send=655348/170473 gso=526560/212161 fallback=0 recv=640914/247068 gro=397076/170538
+1792682980.962441 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:29:40][INFO][client] path[0] RUNNING owd=25.47ms jit=0.24ms loss=5% rate=161.2Mbps tx=331268 rx=315832 dev=ens18
+1792682980.962441 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:29:40][INFO][client] path[1] RUNNING owd=30.62ms jit=0.37ms loss=1% rate=75.2Mbps tx=330893 rx=325080 dev=ens18
+1792683010.957126 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:30:10][INFO][client] batch gso=on gro=on send=792603/200895 gso=651843/259925 fallback=0 recv=775791/294100 gro=489408/209414
+1792683010.959140 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:30:10][INFO][client] path[0] RUNNING owd=25.64ms jit=0.08ms loss=0% rate=8.8Mbps tx=399154 rx=382738 dev=ens18
+1792683010.959140 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:30:10][INFO][client] path[1] RUNNING owd=30.70ms jit=0.12ms loss=14% rate=8.0Mbps tx=401221 rx=393051 dev=ens18
+1792683012.557611 multi-fec-client multi-fec-dist[1584409]: [2026-10-22 15:30:12][INFO][report]client-->server:(original:328135 pkt;416063380 byte) (fec:398465 pkt,509219366 byte)  server-->client:(original:328128 pkt;416059320 byte) (fec:398791 pkt;509644410 byte)

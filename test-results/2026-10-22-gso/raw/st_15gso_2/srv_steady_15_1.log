@@ -1,0 +1,5 @@
+1792683775.484116 multi-fec-server multi-fec-dist[1600910]: [2026-10-22 15:42:55][INFO][server] batch gso=on gro=on send=76694/21453 gso=56520/22728 fallback=0 recv=75743/31587 gro=33536/14264
+1792683777.684136 multi-fec-server multi-fec-dist[1600910]: [2026-10-22 15:42:57][INFO][report][192.168.100.88:46518]client-->server:(original:34507 pkt;43746656 byte) (fec:42490 pkt;54287012 byte)  server-->client:(original:34594 pkt;43860612 byte) (fec:42585 pkt;54414470 byte)
+1792683805.484608 multi-fec-server multi-fec-dist[1600910]: [2026-10-22 15:43:25][INFO][server] batch gso=on gro=on send=192198/54774 gso=140746/58092 fallback=0 recv=188137/78661 gro=81166/34806
+1792683835.483926 multi-fec-server multi-fec-dist[1600910]: [2026-10-22 15:43:55][INFO][server] batch gso=on gro=on send=307668/87829 gso=225050/93036 fallback=0 recv=300562/124755 gro=130204/55779
+1792683838.084323 multi-fec-server multi-fec-dist[1600910]: [2026-10-22 15:43:58][INFO][report][192.168.100.88:46518]client-->server:(original:128883 pkt;163415424 byte) (fec:158791 pkt;202919690 byte)  server-->client:(original:128971 pkt;163530648 byte) (fec:158836 pkt;202983248 byte)
