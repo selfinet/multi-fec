@@ -1,0 +1,30 @@
+#!/bin/bash
+# mix8.sh — 1.4.0 ↔ 1.4.1-v2 혼용 (2026-10-22, 테스트망 전용)
+# c·r·s 버전 8조합. 조합마다 해당 호스트만 .v<버전> 으로 install → 재시작, tunnel_regress.sh(무수정)로 steady·cut1 10 Mbps 60초.
+#   작업: /usr/sbin/multi-fec-dist 교체 + multi-fec@* 재시작. 영향: 교체마다 터널 1초 안팎 끊김. 되돌리기: 끝나면(중단돼도) 3대 .v1.4.0 복원
+set -u
+cd "$(dirname "$0")"
+C=root@192.168.100.92; R=root@192.168.100.88; S=root@192.168.100.102
+A=1.4.0; B=1.4.1-v2
+inst() { # host units ver
+  ssh "$1" "install -m 755 /usr/sbin/multi-fec-dist.v$3 /usr/sbin/multi-fec-dist && systemctl restart $2"
+}
+restore() {
+  echo "[$(date +%T)] ===== 1.4.0 복원"
+  inst $S multi-fec@server $A; inst $R "multi-fec@relay multi-fec@relay-b" $A; inst $C multi-fec@client $A
+  sleep 8
+  for h in $C $R $S; do ssh "$h" 'echo "$(hostname) $(sha256sum /usr/sbin/multi-fec-dist | cut -c1-16) $(systemctl is-active multi-fec@client multi-fec@relay multi-fec@relay-b multi-fec@server 2>/dev/null | tr "\n" " ")"'; done
+  ssh $C 'ping -c 5 -i 0.3 -W 1 -q 10.9.20.1 | tail -1'
+}
+trap restore EXIT
+for cv in $A $B; do for rv in $A $B; do for sv in $A $B; do
+  tag=c${cv//[.-]/}_r${rv//[.-]/}_s${sv//[.-]/}
+  echo "[$(date +%T)] ##### c=$cv r=$rv s=$sv"
+  inst $S multi-fec@server $sv; inst $R "multi-fec@relay multi-fec@relay-b" $rv; inst $C multi-fec@client $cv
+  ok=0; for i in $(seq 1 12); do ssh $C 'ping -c 3 -W 1 -q 10.9.20.1' >/dev/null 2>&1 && { ok=1; break; }; sleep 5; done
+  echo "  터널 $([ $ok = 1 ] && echo 정상 || echo 불통)  sha $(for h in $C $R $S; do ssh $h 'sha256sum /usr/sbin/multi-fec-dist | cut -c1-8'; done | tr '\n' ' ')"
+  [ $ok = 1 ] || continue
+  sleep 15
+  RUNID=$tag RATES=10 REPS=1 DUR=60 CUT_AT=20 UP_AT=45 SCEN="steady cut1" ./tunnel_regress.sh | grep -E '^\[run\] (steady|cut)|트립|기동 실패' || exit 3
+done; done; done
+echo "[$(date +%T)] MIX_DONE"
