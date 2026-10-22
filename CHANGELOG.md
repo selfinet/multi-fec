@@ -23,6 +23,14 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 측정·문서·테스트 하네스만(제품 코드 변경은 아래 버전 섹션).
 
+### 2026-10-23 — duplicate 서버 하향 경로 태그 누락 수정 (브랜치 `fix/dup-path-tag`, 미릴리스) · UDP GSO 프로토타입
+
+- 늦게 온 사본이 dedup 으로 데이터에 안 잡혀, **손실 없이 늘 늦는 경로는 태그되지 않고 하향에서 빠졌다**(루프백 path[1] rx 491 vs 59,489).
+  dedup 표에 첫 사본 경로의 peer 를 두고 `mud_get_last_dup_peer()` 로 서버가 그 경로도 태그. 서버 단독·와이어 무변경, client 1.4.0 상대도 해소.
+  `test_dup_path_tag.py` 신설. `test-results/2026-10-23-dup-path-tag/REPORT.md`.
+- UDP GSO 송신·GRO 수신 프로토타입(브랜치 `perf/udp-gso`): 스택 통과 −49%, CPU −0~4%p(잡음 범위), 1.4.0 혼용 정상 — 단독 릴리스 비권장.
+  `test-results/2026-10-22-gso/REPORT.md`.
+
 ### 2026-10-22 — aggregate 회귀 · duplicate 단일 경로 유실 원인 확정 + 수정 (브랜치 `fix/mud-rate-agg`, 미릴리스)
 
 - 둘 다 v1.3.4 probe 핑퐁 수정이 가리던 약점: ① aggregate 배분이 `tx.loss` 를 안 씀(손실 60% 경로에 ~1/3),
@@ -64,6 +72,7 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 | 7 | `via` 같은 목적지 2회선 owd 이상값 | 첫 보고 1회 수십억 ms, 재실행 재현 안 됨 | T5b — 원인 미확인 |
 | 8 | **relay 키 필수** | 키(`key`/`--route`)가 하나도 없는 relay 는 기동 거부. 지금은 투명 중계로 조용히 뜬다 — 운영 방침은 "키는 무조건 있어야 함"(2026-10-19) | `main.cpp:1502` 주석, 도움말 "If omitted, relay forwards all packets transparently" |
 | 9 | **`--upstream`(+`-k`) 와 `--route` 동시 지정 거부** | 지금은 오류·경고 없이 route 만 쓰고 upstream·키를 버린다. 문서·도움말은 "혼용 불가(시작 시 오류)" 라고 적혀 있었다 | 2026-10-19 테스트망 r 실측: `mode=key-routing routes=1`, exit 0 |
+| 10 | **duplicate 하향 경로 태그(`fix/dup-path-tag`)** | 늘 늦는 무손실 경로를 서버가 하향에 쓰지 않던 문제 — 1.4.1 에 `fix/mud-rate-agg` 와 함께 | `test-results/2026-10-23-dup-path-tag/` |
 
 - 추가 · 2026-10-19 — **`mf-migrate.py`** — 1.3.x 식 유닛(인자 펼침 + EnvironmentFile)을 1.4.0 `--config` 형식으로 변환. systemd 와 같은
   규칙으로 해석(`${VAR}` 한 단어 · 단독 `$VAR` 분리 · EnvironmentFile 의 줄 끝 주석), relay `--route` 는 원래 주석을 달아 routes 파일로,

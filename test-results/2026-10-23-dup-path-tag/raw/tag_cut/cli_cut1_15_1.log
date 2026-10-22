@@ -1,0 +1,45 @@
+1792685683.583292 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:43][INFO][client] path[0] RUNNING owd=27.46ms jit=2.44ms loss=10% rate=52.3Mbps tx=433798 rx=412465 dev=ens18
+1792685683.597687 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:43][INFO][client] path[1] RUNNING owd=33.24ms jit=4.10ms loss=1% rate=102.4Mbps tx=433363 rx=424832 dev=ens18
+1792685685.585483 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:45][INFO][report]client-->server:(original:356577 pkt;452119692 byte) (fec:433420 pkt,553875568 byte)  server-->client:(original:355983 pkt;451372548 byte) (fec:432920 pkt;553247448 byte)
+1792685695.588898 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #1850
+1792685695.610039 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #1900
+1792685695.617508 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #1950
+1792685695.621461 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][INFO][client] flushed 125 pending packet(s)
+1792685695.654313 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2000
+1792685695.664989 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2050
+1792685695.673921 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2100
+1792685695.675312 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2150
+1792685695.681338 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2200
+1792685695.714774 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2250
+1792685695.732403 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][INFO][client] flushed 295 pending packet(s)
+1792685695.754473 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2300
+1792685695.761177 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2350
+1792685695.769271 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2400
+1792685695.773940 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2450
+1792685695.778018 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2500
+1792685695.778018 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2550
+1792685695.782092 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2600
+1792685695.785577 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2650
+1792685695.788050 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2700
+1792685695.791073 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2750
+1792685695.791073 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2800
+1792685695.794643 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2850
+1792685695.798403 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2900
+1792685695.808102 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] pending queue full (512) — dropped oldest, total 1000
+1792685695.811211 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #2950
+1792685695.818970 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #3000
+1792685695.831778 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][INFO][client] flushed 357 pending packet(s)
+1792685695.845009 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #3050
+1792685695.857668 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #3100
+1792685695.885043 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #3150
+1792685695.913172 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][WARN][client] mud_send EAGAIN #3200
+1792685695.986192 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:55][INFO][client] flushed 355 pending packet(s)
+1792685696.756613 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:56][INFO][client] flushed 24 pending packet(s)
+1792685696.846402 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:56][WARN][client] mud_send EAGAIN #3250
+1792685696.854227 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:56][WARN][client] mud_send EAGAIN #3300
+1792685696.856773 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:14:56][INFO][client] flushed 96 pending packet(s)
+1792685713.585445 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:15:13][INFO][client] path[0] RUNNING owd=25.66ms jit=0.28ms loss=5% rate=63.8Mbps tx=491631 rx=467796 dev=ens18
+1792685713.585445 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:15:13][INFO][client] path[1] DEGRADED owd=36.70ms jit=6.49ms loss=1% rate=76.8Mbps tx=443483 rx=432492 dev=ens18
+1792685743.583540 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:15:43][INFO][client] path[0] RUNNING owd=26.79ms jit=1.35ms loss=5% rate=47.9Mbps tx=549875 rx=523063 dev=ens18
+1792685743.586531 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:15:43][INFO][client] path[1] RUNNING owd=31.84ms jit=0.94ms loss=1% rate=63.6Mbps tx=473178 rx=459354 dev=ens18
+1792685745.983127 multi-fec-client multi-fec-dist[1605315]: [2026-10-22 16:15:45][INFO][report]client-->server:(original:450954 pkt;571787380 byte) (fec:549488 pkt,702208124 byte)  server-->client:(original:450255 pkt;570908272 byte) (fec:545112 pkt;696627652 byte)
