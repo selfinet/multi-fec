@@ -1,0 +1,2 @@
+1792739321.527769 NF01M multi-fec-dist[74308]: [2026-10-23 16:08:41][INFO][report][192.168.2.86:46324]client-->server:(original:698756 pkt;886000944 byte) (fec:839620 pkt;1073004204 byte)  server-->client:(original:703271 pkt;891735836 byte) (fec:844022 pkt;1078642320 byte)
+1792739381.528246 NF01M multi-fec-dist[74308]: [2026-10-23 16:09:41][INFO][report][192.168.2.86:46324]client-->server:(original:935985 pkt;1186807316 byte) (fec:1120709 pkt;1432235946 byte)  server-->client:(original:937505 pkt;1188744548 byte) (fec:1125116 pkt;1437880452 byte)

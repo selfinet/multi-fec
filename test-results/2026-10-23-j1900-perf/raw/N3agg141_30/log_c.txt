@@ -1,0 +1,5 @@
+1792740122.407100 dj19 multi-fec-dist[131339]: [2026-10-23 16:22:02][INFO][client] path[0] RUNNING owd=25.57ms jit=0.23ms loss=5% rate=29.3Mbps tx=112051 rx=204369 dev=enp3s0
+1792740122.408246 dj19 multi-fec-dist[131339]: [2026-10-23 16:22:02][INFO][client] path[1] RUNNING owd=30.51ms jit=0.48ms loss=3% rate=85.5Mbps tx=105103 rx=1995 dev=enp3s0
+1792740123.207467 dj19 multi-fec-dist[131339]: [2026-10-23 16:22:03][INFO][report]client-->server:(original:179969 pkt;228192472 byte) (fec:215996 pkt,276028796 byte)  server-->client:(original:179691 pkt;227842376 byte) (fec:205132 pkt;262148244 byte)
+1792740152.407118 dj19 multi-fec-dist[131339]: [2026-10-23 16:22:32][INFO][client] path[0] RUNNING owd=25.58ms jit=0.20ms loss=6% rate=77.0Mbps tx=161988 rx=311796 dev=enp3s0
+1792740152.407118 dj19 multi-fec-dist[131339]: [2026-10-23 16:22:32][INFO][client] path[1] RUNNING owd=30.38ms jit=0.10ms loss=0% rate=75.2Mbps tx=168692 rx=2462 dev=enp3s0

@@ -22,6 +22,9 @@ teardown() {
   echo "[$(date +%T)] ===== 복구"
   for h in $C $S; do ssh -o BatchMode=yes $h '
     systemctl stop mft-client mft-server 2>/dev/null; systemctl reset-failed mft-client mft-server 2>/dev/null
+    [ -f /opt/mftest/netem.conf ] && CONF=/opt/mftest/netem.conf /opt/mftest/mf-netem.sh clear >/dev/null 2>&1
+    lsmod | grep -q "^ifb " && [ -f /opt/mftest/loaded-ifb ] && rmmod ifb 2>/dev/null
+    lsmod | grep -q "^sch_netem " && [ -f /opt/mftest/loaded-netem ] && rmmod sch_netem 2>/dev/null
     pkill -x mfgen 2>/dev/null; [ -f /tmp/mft_hs.csv.pid ] && kill $(cat /tmp/mft_hs.csv.pid) 2>/dev/null
     ip link del wg-mft 2>/dev/null
     ip addr del 192.168.2.250/24 dev enp3s0 2>/dev/null
@@ -69,6 +72,12 @@ log-level = 4
 report = 60
 EOF
   unset KEY
+  if [ "${NETEM:-0}" = 1 ]; then
+    scp -q bin/mf-netem.sh bin/netem.conf $S:/opt/mftest/
+    ssh -o BatchMode=yes $S 'lsmod | grep -q "^ifb " || touch /opt/mftest/loaded-ifb
+      lsmod | grep -q "^sch_netem " || touch /opt/mftest/loaded-netem
+      chmod 755 /opt/mftest/mf-netem.sh; CONF=/opt/mftest/netem.conf /opt/mftest/mf-netem.sh apply; tc qdisc show dev enp3s0 | grep netem; tc qdisc show dev ifb0 | grep netem'
+  fi
   # 규칙 2: 하부 주소가 터널로 가면 안 된다
   for h in $C $S; do ssh -o BatchMode=yes $h 'n=0; for ip in 192.168.2.83 192.168.2.86 192.168.2.250; do ip route get $ip | head -1 | grep -q wg && n=$((n+1)); done; echo "$(hostname) 규칙2 위반 $n"'; done
 }
@@ -144,6 +153,9 @@ setsid "$G" watch "mfgen tx" > raw/guard.log 2>&1 < /dev/null & GP=$!
 sleep 12; kill -0 $GP 2>/dev/null && grep -q '감시 시작' raw/guard.log || { echo "가드 기동 실패"; cat raw/guard.log; exit 2; }
 echo "[run] 가드 PID $GP (링크 백스톱 195 Mbps, CPU 임계 해제 — 성능 한계 측정)"
 
+if [ -n "${PLAN:-}" ]; then
+  eval "$PLAN"; mf_stop; echo "[$(date +%T)] J1900_DONE"; exit 0
+fi
 if [ "${SKIP_H:-0}" != 1 ]; then
 echo "[$(date +%T)] ##### H1 직접 UDP (multi-fec·WG 없음)"
 ladder H1raw "10 20 40" 192.168.2.86 192.168.2.83

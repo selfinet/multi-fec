@@ -1,0 +1,19 @@
+1792739225.323928 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:05][INFO][client] path[0] RUNNING owd=25.15ms jit=0.03ms loss=0% rate=9.7Mbps tx=567231 rx=539200 dev=enp3s0
+1792739225.325150 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:05][INFO][client] path[1] RUNNING owd=30.14ms jit=0.01ms loss=0% rate=27.6Mbps tx=566825 rx=4241 dev=enp3s0
+1792739231.108136 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][WARN][client] mud_send EAGAIN #2300
+1792739231.120115 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][WARN][client] mud_send EAGAIN #2350
+1792739231.125047 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][INFO][client] flushed 86 pending packet(s)
+1792739231.204112 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][WARN][client] mud_send EAGAIN #2400
+1792739231.216063 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][WARN][client] mud_send EAGAIN #2450
+1792739231.225811 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][INFO][client] flushed 115 pending packet(s)
+1792739231.303127 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][WARN][client] mud_send EAGAIN #2500
+1792739231.315088 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][WARN][client] mud_send EAGAIN #2550
+1792739231.325359 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][INFO][client] flushed 104 pending packet(s)
+1792739231.409389 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][WARN][client] mud_send EAGAIN #2600
+1792739231.420095 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][WARN][client] mud_send EAGAIN #2650
+1792739231.424571 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:11][INFO][client] flushed 76 pending packet(s)
+1792739255.323230 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:35][INFO][client] path[0] RUNNING owd=25.52ms jit=0.32ms loss=6% rate=174.8Mbps tx=676004 rx=642546 dev=enp3s0
+1792739255.324677 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:35][INFO][client] path[1] RUNNING owd=30.43ms jit=0.17ms loss=3% rate=108.6Mbps tx=675563 rx=4676 dev=enp3s0
+1792739257.723097 dj19 multi-fec-dist[110256]: [2026-10-23 16:07:37][INFO][report]client-->server:(original:567791 pkt;719940904 byte) (fec:681393 pkt,870794910 byte)  server-->client:(original:566995 pkt;718940272 byte) (fec:647574 pkt;827585412 byte)
+1792739285.323281 dj19 multi-fec-dist[110256]: [2026-10-23 16:08:05][INFO][client] path[0] RUNNING owd=25.68ms jit=0.65ms loss=6% rate=89.8Mbps tx=807667 rx=767650 dev=enp3s0
+1792739285.324662 dj19 multi-fec-dist[110256]: [2026-10-23 16:08:05][INFO][client] path[1] RUNNING owd=30.36ms jit=0.19ms loss=4% rate=98.7Mbps tx=807191 rx=5075 dev=enp3s0
