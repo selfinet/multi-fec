@@ -93,6 +93,10 @@ struct mud_path {
         uint64_t time;
         uint64_t rate;
         uint64_t loss;
+        /* tx only: capacity estimate for the aggregate split — what the peer
+         * reports delivered (7/8, +10% per probe), WITHOUT the own-sent floor
+         * that tx.rate carries for the send window (see mud_update_rl). */
+        uint64_t est;
     } tx, rx;
     struct {
         struct {
