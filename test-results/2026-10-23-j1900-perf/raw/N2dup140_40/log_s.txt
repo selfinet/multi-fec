@@ -1,0 +1,5 @@
+1792739849.858357 NF01M multi-fec-dist[90421]: [2026-10-23 16:17:29][INFO][report][192.168.2.86:60833]client-->server:(original:736525 pkt;933897088 byte) (fec:883597 pkt;1129210786 byte)  server-->client:(original:738163 pkt;935978832 byte) (fec:885909 pkt;1132171514 byte)
+1792739885.695279 NF01M multi-fec-dist[90421]: [2026-10-23 16:18:05][WARN]unexpected tmp_seq==seq ,seq=344592824
+1792739885.704432 NF01M multi-fec-dist[90421]: [2026-10-23 16:18:05][WARN]unexpected tmp_seq==seq ,seq=344592826
+1792739885.714004 NF01M multi-fec-dist[90421]: [2026-10-23 16:18:05][WARN]unexpected tmp_seq==seq ,seq=344592828
+1792739897.785698 NF01M multi-fec-dist[90421]: [2026-10-23 16:18:17][WARN]unexpected tmp_seq==seq ,seq=344595344
