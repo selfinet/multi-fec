@@ -1,0 +1,19 @@
+[03:46:15] ##### restart v1.4.0 rep1
+[rst] rst_140_1 up 전체손실 0.73600% | server: 반토막초 0 손실 140 · client: 반토막초 1 손실 1015 · relay-rs2: 반토막초 0 손실 1 · relay-r: 반토막초 0 손실 2
+[rst] rst_140_1 dn 전체손실 1.08864% | server: 반토막초 1 손실 233 · client: 반토막초 1 손실 1466 · relay-rs2: 반토막초 0 손실 7 · relay-r: 반토막초 0 손실 2
+[03:49:24] ##### restart v1.4.1-v3 rep1
+[rst] rst_141v3_1 up 전체손실 0.73600% | server: 반토막초 0 손실 111 · client: 반토막초 1 손실 1041 · relay-rs2: 반토막초 0 손실 2 · relay-r: 반토막초 0 손실 3
+[rst] rst_141v3_1 dn 전체손실 1.07840% | server: 반토막초 1 손실 204 · client: 반토막초 2 손실 1484 · relay-rs2: 반토막초 0 손실 3 · relay-r: 반토막초 0 손실 3
+[03:52:34] ##### restart v1.4.0 rep2
+[rst] rst_140_2 up 전체손실 0.75648% | server: 반토막초 0 손실 138 · client: 반토막초 1 손실 1046 · relay-rs2: 반토막초 0 손실 2 · relay-r: 반토막초 0 손실 2
+[rst] rst_140_2 dn 전체손실 1.10272% | server: 반토막초 1 손실 225 · client: 반토막초 1 손실 1497 · relay-rs2: 반토막초 0 손실 6 · relay-r: 반토막초 0 손실 1
+[03:55:43] ##### restart v1.4.1-v3 rep2
+[rst] rst_141v3_2 up 전체손실 0.76736% | server: 반토막초 0 손실 149 · client: 반토막초 1 손실 1052 · relay-rs2: 반토막초 0 손실 0 · relay-r: 반토막초 0 손실 2
+[rst] rst_141v3_2 dn 전체손실 1.13152% | server: 반토막초 1 손실 254 · client: 반토막초 1 손실 1512 · relay-rs2: 반토막초 0 손실 3 · relay-r: 반토막초 0 손실 2
+[03:58:53] RESTART_DONE
+[03:58:53] ===== 정리 · 1.4.0 복원
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 52.616/53.474/55.079/0.847 ms

@@ -1,0 +1,5 @@
+1792696056.577670 multi-fec-client multi-fec-dist[1706647]: [2026-10-22 19:07:36][INFO][client] path[0] RUNNING owd=25.73ms jit=0.18ms loss=3% rate=18.8Mbps tx=106494 rx=103908 dev=ens18
+1792696056.580961 multi-fec-client multi-fec-dist[1706647]: [2026-10-22 19:07:36][INFO][client] path[1] RUNNING owd=30.68ms jit=0.12ms loss=2% rate=26.0Mbps tx=81218 rx=76207 dev=ens18
+1792696086.577366 multi-fec-client multi-fec-dist[1706647]: [2026-10-22 19:08:06][INFO][client] path[0] RUNNING owd=25.76ms jit=0.12ms loss=3% rate=35.1Mbps tx=111238 rx=105718 dev=ens18
+1792696086.579260 multi-fec-client multi-fec-dist[1706647]: [2026-10-22 19:08:06][INFO][client] path[1] RUNNING owd=30.76ms jit=0.12ms loss=0% rate=22.8Mbps tx=116378 rx=112911 dev=ens18
+1792696088.577145 multi-fec-client multi-fec-dist[1706647]: [2026-10-22 19:08:08][INFO][report]client-->server:(original:177901 pkt;225566668 byte) (fec:222505 pkt,284342486 byte)  server-->client:(original:177302 pkt;224810720 byte) (fec:214138 pkt;273654276 byte)

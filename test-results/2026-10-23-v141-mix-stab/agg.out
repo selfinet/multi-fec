@@ -1,0 +1,28 @@
+multipath-mode = aggregate
+multipath-mode = aggregate
+[03:59:18] ##### aggregate v1.4.0 rep1
+[run] steady 10 Mbps rep1  up 0.09280%  dn 0.08320%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.88375%  dn 0.37760%  cliEAGAIN 3  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 1.04480%  dn 0.33760%  cliEAGAIN 21  srvEAGAIN 0
+[04:04:04] ##### aggregate v1.4.1-v3 rep1
+[run] steady 10 Mbps rep1  up 0.08000%  dn 0.06080%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 1.30560%  dn 0.41280%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 1.18400%  dn 0.41600%  cliEAGAIN 0  srvEAGAIN 0
+[04:08:49] ##### aggregate v1.4.0 rep2
+[run] steady 10 Mbps rep1  up 0.06080%  dn 0.09440%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 1.28160%  dn 0.53760%  cliEAGAIN 2  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.76160%  dn 0.20480%  cliEAGAIN 0  srvEAGAIN 0
+[04:13:34] ##### aggregate v1.4.1-v3 rep2
+[run] steady 10 Mbps rep1  up 0.03520%  dn 0.06880%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.84320%  dn 0.35360%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 1.03200%  dn 0.28000%  cliEAGAIN 0  srvEAGAIN 0
+[04:18:20] AGG_DONE
+[04:18:20] ===== 정리 · duplicate 원복 · 1.4.0 복원
+multipath-mode = duplicate
+multipath-mode = duplicate
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 53.398/53.614/54.398/0.392 ms
+NEXT_DONE

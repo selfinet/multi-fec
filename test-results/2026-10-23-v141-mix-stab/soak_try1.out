@@ -1,0 +1,16 @@
+[02:44:15] ##### 4대 1.4.1-v3 설치
+  sha c/r/rs2/s 03a40393 03a40393 03a40393 03a40393 
+./tunnel_regress.sh: line 73: 1122982 Killed                  ssh "$C" "mfgen tx 10.9.20.1 5301 $r $DUR" > "$OUT/tx_up_$tag.txt" 2>&1
+./tunnel_regress.sh: line 73: 1122983 Killed                  ssh "$S" "mfgen tx 10.9.20.2 5302 $r $DUR" > "$OUT/tx_dn_$tag.txt" 2>&1
+[run] 가드 PID 1122597 감시 중
+[run] steady 15 Mbps rep1  up 0.00000%  dn 1.55377%  cliEAGAIN 0  srvEAGAIN 0
+[run] 가드 트립
+[guard] 02:47:52 트립 → s:전체=97.9%>88% s:1코어=97.9%>95%  → 'mfgen tx' 중단
+[03:45:23] SOAK_DONE
+[03:45:23] ===== 정리 · 1.4.0 복원
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 53.074/57.034/72.010/7.488 ms
+ALL_DONE
