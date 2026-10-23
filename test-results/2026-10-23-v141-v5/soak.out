@@ -1,0 +1,12 @@
+[15:33:11] ##### 4대 1.4.1-v5 설치
+  sha c/r/rs2/s 7a144ac9 7a144ac9 7a144ac9 7a144ac9 
+[run] 가드 PID 1603924 감시 중
+[run] steady 15 Mbps rep1  up 0.04802%  dn 0.05705%  cliEAGAIN 85  srvEAGAIN 0
+[run] 완료
+[16:34:21] SOAK_DONE
+[16:34:21] ===== 정리 · 1.4.0 복원
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 53.483/58.348/76.501/9.078 ms

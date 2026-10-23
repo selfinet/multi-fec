@@ -1,0 +1,108 @@
+[13:29:22] ##### ① 속도 제한 30 Mbps
+qdisc netem 10: parent 1:1 limit 300 delay 25ms loss 5% rate 30Mbit
+qdisc netem 10: parent 1:1 limit 300 delay 30ms loss 2% rate 30Mbit
+== rl_140_agg
+  [aggregate 15] [run] steady 15 Mbps rep1  up 0.01493%  dn 0.01387%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 20] [run] steady 20 Mbps rep1  up 0.02720%  dn 0.27520%  cliEAGAIN 39  srvEAGAIN 0
+  [aggregate 25] [run] steady 25 Mbps rep1  up 1.68577%  dn 0.12800%  cliEAGAIN 95  srvEAGAIN 0
+  [aggregate 30] [run] steady 30 Mbps rep1  up 0.61600%  dn 0.05973%  cliEAGAIN 86  srvEAGAIN 0
+  [aggregate 35] [run] steady 35 Mbps rep1  up 1.30057%  dn 0.41554%  cliEAGAIN 268  srvEAGAIN 0
+  [aggregate 40] [run] steady 40 Mbps rep1  up 6.41320%  dn 5.12080%  cliEAGAIN 537  srvEAGAIN 0
+== rl_v4_agg
+  [aggregate 15] [run] steady 15 Mbps rep1  up 0.02133%  dn 0.03733%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 20] [run] steady 20 Mbps rep1  up 0.13440%  dn 0.02880%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 25] [run] steady 25 Mbps rep1  up 2.81346%  dn 0.24192%  cliEAGAIN 93  srvEAGAIN 0
+  [aggregate 30] [run] steady 30 Mbps rep1  up 0.25920%  dn 1.47787%  cliEAGAIN 18  srvEAGAIN 0
+  [aggregate 35] [run] steady 35 Mbps rep1  up 3.26583%  dn 0.21851%  cliEAGAIN 137  srvEAGAIN 0
+  [aggregate 40] [run] steady 40 Mbps rep1  up 3.32440%  dn 2.16600%  cliEAGAIN 81  srvEAGAIN 0
+== rl_v5_agg_1
+  [aggregate 15] [run] steady 15 Mbps rep1  up 0.01387%  dn 0.02347%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 20] [run] steady 20 Mbps rep1  up 0.01680%  dn 0.01200%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 25] [run] steady 25 Mbps rep1  up 0.41792%  dn 0.84737%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 30] [run] steady 30 Mbps rep1  up 0.17173%  dn 0.21813%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 35] [run] steady 35 Mbps rep1  up 0.33966%  dn 0.41691%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 40] [run] steady 40 Mbps rep1  up 2.15280%  dn 2.15120%  cliEAGAIN 22  srvEAGAIN 0
+== rl_v5_agg_2
+  [aggregate 15] [run] steady 15 Mbps rep1  up 0.03093%  dn 0.01813%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 20] [run] steady 20 Mbps rep1  up 1.74640%  dn 0.23600%  cliEAGAIN 57  srvEAGAIN 0
+  [aggregate 25] [run] steady 25 Mbps rep1  up 0.10240%  dn 0.28544%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 30] [run] steady 30 Mbps rep1  up 1.26240%  dn 0.05067%  cliEAGAIN 83  srvEAGAIN 0
+  [aggregate 35] [run] steady 35 Mbps rep1  up 7.90857%  dn 1.03223%  cliEAGAIN 205  srvEAGAIN 0
+  [aggregate 40] [run] steady 40 Mbps rep1  up 4.62000%  dn 1.86480%  cliEAGAIN 75  srvEAGAIN 0
+== rl_v5_dup
+  [duplicate 15] [run] steady 15 Mbps rep1  up 0.00000%  dn 0.28160%  cliEAGAIN 9  srvEAGAIN 0
+  [duplicate 20] [run] steady 20 Mbps rep1  up 0.00560%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate 25] [run] steady 25 Mbps rep1  up 1.33761%  dn 0.83521%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate 30] [run] steady 30 Mbps rep1  up 13.46773%  dn 6.40007%  cliEAGAIN 11  srvEAGAIN 0
+  [duplicate 35] [run] steady 35 Mbps rep1  up 26.41396%  dn 18.67474%  cliEAGAIN 45  srvEAGAIN 0
+  [duplicate 40] [run] steady 40 Mbps rep1  up 34.80720%  dn 27.63080%  cliEAGAIN 25  srvEAGAIN 0
+Oct 23 05:23:21 multi-fec-relay mf-netem.sh[2322772]: mf-netem: relay-both/ens18  path0(192.168.100.88)=25ms/5%  path1(없음)=0ms/0%
+Oct 23 05:23:22 rs2 mf-netem.sh[301491]: mf-netem: relay-both/ens18  path0(192.168.100.131)=30ms/2%  path1(없음)=0ms/0%
+[14:23:22] ##### ② 제한 없는 계단
+== ul_v5
+  [duplicate 30] [run] steady 30 Mbps rep1  up 0.07360%  dn 0.00000%  cliEAGAIN 56  srvEAGAIN 0
+  [duplicate 35] [run] steady 35 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 11  srvEAGAIN 0
+  [duplicate 40] [run] steady 40 Mbps rep1  up 0.75760%  dn 0.30200%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate 50] [run] steady 50 Mbps rep1  up 0.41280%  dn 0.66850%  cliEAGAIN 98  srvEAGAIN 0
+  [duplicate 60] [run] steady 60 Mbps rep1  up 4.93387%  dn 11.48960%  cliEAGAIN 137  srvEAGAIN 0
+  [aggregate 30] [run] steady 30 Mbps rep1  up 0.82560%  dn 0.01547%  cliEAGAIN 85  srvEAGAIN 0
+  [aggregate 35] [run] steady 35 Mbps rep1  up 0.05531%  dn 0.00960%  cliEAGAIN 1  srvEAGAIN 0
+  [aggregate 40] [run] steady 40 Mbps rep1  up 1.03440%  dn 0.06160%  cliEAGAIN 65  srvEAGAIN 0
+  [aggregate 50] [run] steady 50 Mbps rep1  up 0.34912%  dn 0.53440%  cliEAGAIN 121  srvEAGAIN 0
+  [aggregate 60] [run] steady 60 Mbps rep1  up 2.96053%  dn 1.20933%  cliEAGAIN 427  srvEAGAIN 0
+[14:41:07] ##### ③ 안정성
+== mix8
+[14:41:07] ##### c=1.4.0 relay=1.4.0 s=1.4.0
+  터널 정상  sha c/r/rs2/s 3cbf7cb2 3cbf7cb2 3cbf7cb2 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.08480%  dn 0.06880%  cliEAGAIN 9  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00480%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[14:45:55] ##### c=1.4.0 relay=1.4.0 s=1.4.1-v5
+  터널 정상  sha c/r/rs2/s 3cbf7cb2 3cbf7cb2 3cbf7cb2 7a144ac9 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.09760%  dn 0.13600%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00320%  dn 0.00480%  cliEAGAIN 0  srvEAGAIN 0
+[14:50:43] ##### c=1.4.0 relay=1.4.1-v5 s=1.4.0
+  터널 정상  sha c/r/rs2/s 3cbf7cb2 7a144ac9 7a144ac9 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.10880%  dn 0.08480%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.01120%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[14:55:33] ##### c=1.4.0 relay=1.4.1-v5 s=1.4.1-v5
+  터널 정상  sha c/r/rs2/s 3cbf7cb2 7a144ac9 7a144ac9 7a144ac9 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.13280%  dn 0.11360%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00320%  dn 0.00480%  cliEAGAIN 0  srvEAGAIN 0
+[15:00:24] ##### c=1.4.1-v5 relay=1.4.0 s=1.4.0
+  터널 정상  sha c/r/rs2/s 7a144ac9 3cbf7cb2 3cbf7cb2 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.05920%  dn 0.08320%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00480%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[15:05:12] ##### c=1.4.1-v5 relay=1.4.0 s=1.4.1-v5
+  터널 정상  sha c/r/rs2/s 7a144ac9 3cbf7cb2 3cbf7cb2 7a144ac9 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.11200%  dn 0.08800%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[15:10:00] ##### c=1.4.1-v5 relay=1.4.1-v5 s=1.4.0
+  터널 정상  sha c/r/rs2/s 7a144ac9 7a144ac9 7a144ac9 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.09440%  dn 0.13120%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 5  srvEAGAIN 0
+[15:14:49] ##### c=1.4.1-v5 relay=1.4.1-v5 s=1.4.1-v5
+  터널 정상  sha c/r/rs2/s 7a144ac9 7a144ac9 7a144ac9 7a144ac9 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.10400%  dn 0.07680%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00800%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+== restart
+[rst] rst_140_1 up 전체손실 0.77952% | server: 반토막초 0 손실 139 · client: 반토막초 1 손실 1082 · relay-rs2: 반토막초 0 손실 2 · relay-r: 반토막초 0 손실 4
+[rst] rst_140_1 dn 전체손실 1.11040% | server: 반토막초 1 손실 236 · client: 반토막초 2 손실 1501 · relay-rs2: 반토막초 0 손실 2 · relay-r: 반토막초 0 손실 1
+[rst] rst_141v5_1 up 전체손실 0.87552% | server: 반토막초 0 손실 155 · client: 반토막초 1 손실 1032 · relay-rs2: 반토막초 0 손실 4 · relay-r: 반토막초 0 손실 186
+[rst] rst_141v5_1 dn 전체손실 1.19488% | server: 반토막초 1 손실 227 · client: 반토막초 2 손실 1487 · relay-rs2: 반토막초 0 손실 3 · relay-r: 반토막초 0 손실 154
+[rst] rst_140_2 up 전체손실 0.76096% | server: 반토막초 0 손실 138 · client: 반토막초 1 손실 1052 · relay-rs2: 반토막초 0 손실 2 · relay-r: 반토막초 0 손실 1
+[rst] rst_140_2 dn 전체손실 1.14496% | server: 반토막초 1 손실 282 · client: 반토막초 2 손실 1507 · relay-rs2: 반토막초 0 손실 1 · relay-r: 반토막초 0 손실 3
+[rst] rst_141v5_2 up 전체손실 0.74048% | server: 반토막초 0 손실 102 · client: 반토막초 1 손실 1055 · relay-rs2: 반토막초 0 손실 0 · relay-r: 반토막초 0 손실 2
+[rst] rst_141v5_2 dn 전체손실 1.12128% | server: 반토막초 1 손실 248 · client: 반토막초 1 손실 1502 · relay-rs2: 반토막초 0 손실 5 · relay-r: 반토막초 0 손실 2
+== soak
+[run] 가드 PID 1603924 감시 중
+[run] steady 15 Mbps rep1  up 0.04802%  dn 0.05705%  cliEAGAIN 85  srvEAGAIN 0
+[run] 완료
+[16:34:46] ALL_DONE

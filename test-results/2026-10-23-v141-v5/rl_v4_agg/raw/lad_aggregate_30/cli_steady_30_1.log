@@ -1,0 +1,31 @@
+1792730752.574554 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #4700
+1792730752.577988 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][INFO][client] flushed 43 pending packet(s)
+1792730752.646403 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #4750
+1792730752.660920 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #4800
+1792730752.673583 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #4850
+1792730752.679252 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][INFO][client] flushed 146 pending packet(s)
+1792730752.731634 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #4900
+1792730752.745428 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #4950
+1792730752.758566 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #5000
+1792730752.772729 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #5050
+1792730752.780762 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][INFO][client] flushed 210 pending packet(s)
+1792730752.825005 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #5100
+1792730752.838099 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #5150
+1792730752.851670 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #5200
+1792730752.864400 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #5250
+1792730752.878852 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][INFO][client] flushed 223 pending packet(s)
+1792730752.928772 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #5300
+1792730752.940635 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #5350
+1792730752.951302 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #5400
+1792730752.963679 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][WARN][client] mud_send EAGAIN #5450
+1792730752.983075 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:52][INFO][client] flushed 208 pending packet(s)
+1792730753.052886 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:53][WARN][client] mud_send EAGAIN #5500
+1792730753.066122 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:53][WARN][client] mud_send EAGAIN #5550
+1792730753.078415 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:45:53][INFO][client] flushed 91 pending packet(s)
+1792730771.335948 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:46:11][WARN]unexpected tmp_seq==seq ,seq=-1556184025
+1792730771.339747 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:46:11][WARN]unexpected tmp_seq==seq ,seq=-1556184024
+1792730777.976383 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:46:17][INFO][client] path[0] RUNNING owd=26.10ms jit=0.39ms loss=4% rate=48.0Mbps tx=308172 rx=265619 dev=ens18
+1792730777.994539 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:46:17][INFO][client] path[1] RUNNING owd=32.07ms jit=0.85ms loss=1% rate=77.5Mbps tx=249539 rx=273923 dev=ens18
+1792730779.576220 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:46:19][INFO][report]client-->server:(original:459720 pkt;582892372 byte) (fec:554864 pkt,709053360 byte)  server-->client:(original:458058 pkt;580786356 byte) (fec:533613 pkt;681904374 byte)
+1792730807.978083 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:46:47][INFO][client] path[0] RUNNING owd=27.06ms jit=2.08ms loss=18% rate=65.0Mbps tx=363130 rx=314727 dev=ens18
+1792730807.978083 multi-fec-client multi-fec-dist[1871386]: [2026-10-23 04:46:47][INFO][client] path[1] RUNNING owd=40.33ms jit=12.91ms loss=1% rate=75.0Mbps tx=308076 rx=334527 dev=ens18

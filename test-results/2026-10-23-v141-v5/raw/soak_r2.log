@@ -1,0 +1,38 @@
+1792737193.348986 rs2 multi-fec-dist[366124]: [2026-10-23 06:33:13][INFO]signal 15 received, exiting
+1792737193.348986 rs2 multi-fec-dist[366124]: [2026-10-23 06:33:13][WARN][relay] ev_run returned
+1792737193.350459 rs2 multi-fec-dist[366124]: 
+1792737193.351484 rs2 systemd[1]: Stopping multi-fec relay...
+1792737193.353616 rs2 systemd[1]: multi-fec@relay.service: Deactivated successfully.
+1792737193.354532 rs2 systemd[1]: Stopped multi-fec relay.
+1792737193.359953 rs2 systemd[1]: Starting multi-fec relay...
+1792737193.372717 rs2 multi-fec-dist[366179]: [2026-10-23 06:33:13][INFO]parsing address: 192.168.100.131:443
+1792737193.372717 rs2 multi-fec-dist[366179]: [2026-10-23 06:33:13][INFO]its an ipv4 adress
+1792737193.372717 rs2 multi-fec-dist[366179]: [2026-10-23 06:33:13][INFO]ip_address is {192.168.100.131}, port is {443}
+1792737193.372717 rs2 multi-fec-dist[366179]: [2026-10-23 06:33:13][INFO]parsing address: 192.168.100.102:443
+1792737193.372717 rs2 multi-fec-dist[366179]: [2026-10-23 06:33:13][INFO]its an ipv4 adress
+1792737193.372717 rs2 multi-fec-dist[366179]: [2026-10-23 06:33:13][INFO]ip_address is {192.168.100.102}, port is {443}
+1792737193.374962 rs2 multi-fec-dist[366179]: [2026-10-23 06:33:13][INFO]relay upstream: 192.168.100.102:443
+1792737193.374962 rs2 multi-fec-dist[366179]: [2026-10-23 06:33:13][INFO]relay upstream source: 192.168.100.131:0
+1792737193.375340 rs2 multi-fec-dist[366179]: 
+1792737193.375655 rs2 systemd[1]: Started multi-fec relay.
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]parsing address: 192.168.100.131:443
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]its an ipv4 adress
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]ip_address is {192.168.100.131}, port is {443}
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]parsing address: 192.168.100.102:443
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]its an ipv4 adress
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]ip_address is {192.168.100.102}, port is {443}
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]relay upstream: 192.168.100.102:443
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]relay upstream source: 192.168.100.131:0
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]multi-fec 1.4.0 (git v1.4.0-27-g63f4fa4) build 2026-10-23 13:28:29 KST
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]config /etc/multi-fec/instances/relay.conf (instance relay)
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]key kf:53d21bbd from config
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]relay HMAC verification enabled (obfs=quic)
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO]relay mode started: 192.168.100.131:443 → 192.168.100.102:443
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO][relay] upstream source IP = 192.168.100.131:0 (bound)
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO][relay] listen=192.168.100.131:443  upstream=192.168.100.102:443  hmac=enabled
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO][relay] listen fd=5
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO][relay] sock-buf=4096 kB (listen + each upstream socket, rcv=4096 snd=4096 kB)
+1792737193.388399 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO][relay] ready, forwarding 192.168.100.131:443 → 192.168.100.102:443
+1792737193.551305 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:13][INFO][relay] new session: client=192.168.100.92:42920 upstream=192.168.100.102:443 fd=6
+1792737194.126010 rs2 multi-fec-dist[366180]: [2026-10-23 06:33:14][INFO][relay] new session: client=192.168.100.92:43267 upstream=192.168.100.102:443 fd=7
+1792737563.389035 rs2 multi-fec-dist[366180]: [2026-10-23 06:39:23][INFO][relay] session removed: client=192.168.100.92:42920 fd=6
