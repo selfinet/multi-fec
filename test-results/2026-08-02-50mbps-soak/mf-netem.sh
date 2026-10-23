@@ -33,6 +33,9 @@ CONF=${CONF:-/etc/multi-fec/netem.conf}
 : "${P0_ADDR:?}" "${P0_DELAY:?}" "${P0_LOSS:?}"
 P1_ADDR=${P1_ADDR:-}        # 비우면 path1 없음 (호스트당 경로 1개)
 P1_DELAY=${P1_DELAY:-0ms}; P1_LOSS=${P1_LOSS:-0%}
+# 선택: 경로 속도 제한 (예 P0_RATE=30mbit). 비우면 제한 없음. 제한 시 대기열은 RATE_LIMIT_PKTS(기본 300 패킷 ≈ 30 Mbps 에서 ~110 ms)
+# — netem 기본 1000 이면 ~370 ms 버퍼라 실회선보다 지연이 커진다. 2026-10-23 경로별 속도 제한 계단 시험용
+P0_RATE=${P0_RATE:-}; P1_RATE=${P1_RATE:-}
 PORT=${PORT:-443}
 
 IFB=${IFB:-ifb0}
@@ -55,8 +58,8 @@ apply_ingress() {
     ip link set "$IFB" up
     tc qdisc add dev "$IFB" root handle 1: prio bands 3 \
         priomap 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-    tc qdisc add dev "$IFB" parent 1:1 handle 10: netem delay "$P0_DELAY" loss "$P0_LOSS"
-    tc qdisc add dev "$IFB" parent 1:2 handle 20: netem delay "$P1_DELAY" loss "$P1_LOSS"
+    tc qdisc add dev "$IFB" parent 1:1 handle 10: netem delay "$P0_DELAY" loss "$P0_LOSS" ${P0_RATE:+rate $P0_RATE limit ${RATE_LIMIT_PKTS:-300}}
+    tc qdisc add dev "$IFB" parent 1:2 handle 20: netem delay "$P1_DELAY" loss "$P1_LOSS" ${P1_RATE:+rate $P1_RATE limit ${RATE_LIMIT_PKTS:-300}}
     tc qdisc add dev "$IFB" parent 1:3 handle 30: fq_codel
     tc filter add dev "$IFB" protocol ip parent 1: prio 1 u32 \
         match ip protocol 17 0xff \
@@ -79,8 +82,8 @@ apply() {
     # band 3 = 분류되지 않은 전부(관리 트래픽, r→s). 임피어먼트 없음.
     tc qdisc add dev "$IFACE" root handle 1: prio bands 3 \
         priomap 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
-    tc qdisc add dev "$IFACE" parent 1:1 handle 10: netem delay "$P0_DELAY" loss "$P0_LOSS"
-    tc qdisc add dev "$IFACE" parent 1:2 handle 20: netem delay "$P1_DELAY" loss "$P1_LOSS"
+    tc qdisc add dev "$IFACE" parent 1:1 handle 10: netem delay "$P0_DELAY" loss "$P0_LOSS" ${P0_RATE:+rate $P0_RATE limit ${RATE_LIMIT_PKTS:-300}}
+    tc qdisc add dev "$IFACE" parent 1:2 handle 20: netem delay "$P1_DELAY" loss "$P1_LOSS" ${P1_RATE:+rate $P1_RATE limit ${RATE_LIMIT_PKTS:-300}}
     tc qdisc add dev "$IFACE" parent 1:3 handle 30: fq_codel
 
     case "$ROLE" in
@@ -108,7 +111,7 @@ apply() {
     *) echo "알 수 없는 ROLE: $ROLE" >&2; exit 1 ;;
     esac
     [ "$ROLE" = relay-both ] && apply_ingress
-    echo "mf-netem: $ROLE/$IFACE  path0($P0_ADDR)=$P0_DELAY/$P0_LOSS  path1(${P1_ADDR:-없음})=$P1_DELAY/$P1_LOSS"
+    echo "mf-netem: $ROLE/$IFACE  path0($P0_ADDR)=$P0_DELAY/$P0_LOSS${P0_RATE:+/$P0_RATE}  path1(${P1_ADDR:-없음})=$P1_DELAY/$P1_LOSS"
 }
 
 case "${1:-apply}" in
