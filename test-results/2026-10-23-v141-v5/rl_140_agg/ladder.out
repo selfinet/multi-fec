@@ -1,0 +1,18 @@
+[13:29:24] ##### mode=aggregate v1.4.0
+multipath-mode = aggregate
+multipath-mode = aggregate
+  [aggregate 15] [run] steady 15 Mbps rep1  up 0.01493%  dn 0.01387%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 20] [run] steady 20 Mbps rep1  up 0.02720%  dn 0.27520%  cliEAGAIN 39  srvEAGAIN 0
+  [aggregate 25] [run] steady 25 Mbps rep1  up 1.68577%  dn 0.12800%  cliEAGAIN 95  srvEAGAIN 0
+  [aggregate 30] [run] steady 30 Mbps rep1  up 0.61600%  dn 0.05973%  cliEAGAIN 86  srvEAGAIN 0
+  [aggregate 35] [run] steady 35 Mbps rep1  up 1.30057%  dn 0.41554%  cliEAGAIN 268  srvEAGAIN 0
+  [aggregate 40] [run] steady 40 Mbps rep1  up 6.41320%  dn 5.12080%  cliEAGAIN 537  srvEAGAIN 0
+[13:39:47] LADDER_DONE
+[13:39:47] ===== 정리 · duplicate 원복 · 1.4.0 복원
+multipath-mode = duplicate
+multipath-mode = duplicate
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 52.451/54.560/57.494/2.316 ms

@@ -1,0 +1,39 @@
+1792737192.720439 multi-fec-relay multi-fec-dist[2388459]: [2026-10-23 06:33:12][INFO]signal 15 received, exiting
+1792737192.720439 multi-fec-relay multi-fec-dist[2388459]: [2026-10-23 06:33:12][WARN][relay] ev_run returned
+1792737192.719732 multi-fec-relay systemd[1]: Stopping multi-fec@relay.service - multi-fec relay...
+1792737192.722395 multi-fec-relay multi-fec-dist[2388459]: 
+1792737192.725585 multi-fec-relay systemd[1]: multi-fec@relay.service: Deactivated successfully.
+1792737192.726426 multi-fec-relay systemd[1]: Stopped multi-fec@relay.service - multi-fec relay.
+1792737192.739517 multi-fec-relay systemd[1]: Starting multi-fec@relay.service - multi-fec relay...
+1792737192.810904 multi-fec-relay multi-fec-dist[2388516]: [2026-10-23 06:33:12][INFO]parsing address: 192.168.100.88:443
+1792737192.810904 multi-fec-relay multi-fec-dist[2388516]: [2026-10-23 06:33:12][INFO]its an ipv4 adress
+1792737192.811874 multi-fec-relay multi-fec-dist[2388516]: [2026-10-23 06:33:12][INFO]ip_address is {192.168.100.88}, port is {443}
+1792737192.811874 multi-fec-relay multi-fec-dist[2388516]: [2026-10-23 06:33:12][INFO]parsing address: 192.168.100.102:443
+1792737192.811874 multi-fec-relay multi-fec-dist[2388516]: [2026-10-23 06:33:12][INFO]its an ipv4 adress
+1792737192.811874 multi-fec-relay multi-fec-dist[2388516]: [2026-10-23 06:33:12][INFO]ip_address is {192.168.100.102}, port is {443}
+1792737192.811874 multi-fec-relay multi-fec-dist[2388516]: [2026-10-23 06:33:12][INFO]relay upstream: 192.168.100.102:443
+1792737192.811874 multi-fec-relay multi-fec-dist[2388516]: [2026-10-23 06:33:12][INFO]relay upstream source: 192.168.100.88:0
+1792737192.812461 multi-fec-relay multi-fec-dist[2388516]: 
+1792737192.818836 multi-fec-relay systemd[1]: Started multi-fec@relay.service - multi-fec relay.
+1792737192.835809 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]parsing address: 192.168.100.88:443
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]its an ipv4 adress
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]ip_address is {192.168.100.88}, port is {443}
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]parsing address: 192.168.100.102:443
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]its an ipv4 adress
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]ip_address is {192.168.100.102}, port is {443}
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]relay upstream: 192.168.100.102:443
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]relay upstream source: 192.168.100.88:0
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]multi-fec 1.4.0 (git v1.4.0-27-g63f4fa4) build 2026-10-23 13:28:29 KST
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]config /etc/multi-fec/instances/relay.conf (instance relay)
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]key kf:53d21bbd from config
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]v1.4.0 defaults in effect (not set in config/CLI): sock-buf=4096
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]relay HMAC verification enabled (obfs=quic)
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO]relay mode started: 192.168.100.88:443 → 192.168.100.102:443
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO][relay] upstream source IP = 192.168.100.88:0 (bound)
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO][relay] listen=192.168.100.88:443  upstream=192.168.100.102:443  hmac=enabled
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO][relay] listen fd=5
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO][relay] sock-buf=4096 kB (listen + each upstream socket, rcv=4096 snd=4096 kB)
+1792737192.837261 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO][relay] ready, forwarding 192.168.100.88:443 → 192.168.100.102:443
+1792737192.887280 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:12][INFO][relay] new session: client=192.168.100.92:42920 upstream=192.168.100.102:443 fd=6
+1792737194.161246 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:33:14][INFO][relay] new session: client=192.168.100.92:43267 upstream=192.168.100.102:443 fd=7
+1792737562.837844 multi-fec-relay multi-fec-dist[2388517]: [2026-10-23 06:39:22][INFO][relay] session removed: client=192.168.100.92:42920 fd=6

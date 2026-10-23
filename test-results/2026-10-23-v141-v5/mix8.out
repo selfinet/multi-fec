@@ -1,0 +1,47 @@
+[14:41:07] ##### c=1.4.0 relay=1.4.0 s=1.4.0
+  터널 정상  sha c/r/rs2/s 3cbf7cb2 3cbf7cb2 3cbf7cb2 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.08480%  dn 0.06880%  cliEAGAIN 9  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00480%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[14:45:55] ##### c=1.4.0 relay=1.4.0 s=1.4.1-v5
+  터널 정상  sha c/r/rs2/s 3cbf7cb2 3cbf7cb2 3cbf7cb2 7a144ac9 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.09760%  dn 0.13600%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00320%  dn 0.00480%  cliEAGAIN 0  srvEAGAIN 0
+[14:50:43] ##### c=1.4.0 relay=1.4.1-v5 s=1.4.0
+  터널 정상  sha c/r/rs2/s 3cbf7cb2 7a144ac9 7a144ac9 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.10880%  dn 0.08480%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.01120%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[14:55:33] ##### c=1.4.0 relay=1.4.1-v5 s=1.4.1-v5
+  터널 정상  sha c/r/rs2/s 3cbf7cb2 7a144ac9 7a144ac9 7a144ac9 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.13280%  dn 0.11360%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00320%  dn 0.00480%  cliEAGAIN 0  srvEAGAIN 0
+[15:00:24] ##### c=1.4.1-v5 relay=1.4.0 s=1.4.0
+  터널 정상  sha c/r/rs2/s 7a144ac9 3cbf7cb2 3cbf7cb2 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.05920%  dn 0.08320%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00480%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[15:05:12] ##### c=1.4.1-v5 relay=1.4.0 s=1.4.1-v5
+  터널 정상  sha c/r/rs2/s 7a144ac9 3cbf7cb2 3cbf7cb2 7a144ac9 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.11200%  dn 0.08800%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[15:10:00] ##### c=1.4.1-v5 relay=1.4.1-v5 s=1.4.0
+  터널 정상  sha c/r/rs2/s 7a144ac9 7a144ac9 7a144ac9 3cbf7cb2 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.09440%  dn 0.13120%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 5  srvEAGAIN 0
+[15:14:49] ##### c=1.4.1-v5 relay=1.4.1-v5 s=1.4.1-v5
+  터널 정상  sha c/r/rs2/s 7a144ac9 7a144ac9 7a144ac9 7a144ac9 
+[run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut1   10 Mbps rep1  up 0.10400%  dn 0.07680%  cliEAGAIN 0  srvEAGAIN 0
+[run] cut0   10 Mbps rep1  up 0.00800%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[15:19:39] MIX_DONE
+[15:19:39] ===== 1.4.0 복원
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 53.168/53.325/53.676/0.182 ms
