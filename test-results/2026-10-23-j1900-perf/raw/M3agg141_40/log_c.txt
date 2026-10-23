@@ -1,0 +1,77 @@
+1792738545.673532 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1
+1792738545.683454 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #50
+1792738545.693578 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #100
+1792738545.698976 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][INFO][client] flushed 120 pending packet(s)
+1792738545.726764 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #150
+1792738545.736534 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #200
+1792738545.746574 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #250
+1792738545.756578 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #300
+1792738545.767619 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #350
+1792738545.777455 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #400
+1792738545.787595 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #450
+1792738545.801059 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][INFO][client] flushed 287 pending packet(s)
+1792738545.801758 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #500
+1792738545.807966 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #550
+1792738545.816813 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #600
+1792738545.827023 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #650
+1792738545.836786 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #700
+1792738545.846601 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #750
+1792738545.856518 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #800
+1792738545.866521 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #850
+1792738545.876573 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #900
+1792738545.880512 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] pending queue full (512) — dropped oldest, total 1
+1792738545.887470 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #950
+1792738545.901821 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][INFO][client] flushed 348 pending packet(s)
+1792738545.902236 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1000
+1792738545.907496 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1050
+1792738545.917496 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1100
+1792738545.927843 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1150
+1792738545.936789 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1200
+1792738545.946807 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1250
+1792738545.956790 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1300
+1792738545.966503 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1350
+1792738545.976526 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1400
+1792738545.986577 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1450
+1792738545.996573 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][WARN][client] mud_send EAGAIN #1500
+1792738546.002588 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:45][INFO][client] flushed 421 pending packet(s)
+1792738546.007510 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #1550
+1792738546.017442 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #1600
+1792738546.027496 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #1650
+1792738546.037497 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #1700
+1792738546.047809 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #1750
+1792738546.056797 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #1800
+1792738546.066859 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #1850
+1792738546.076796 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #1900
+1792738546.086551 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #1950
+1792738546.096521 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2000
+1792738546.103369 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][INFO][client] flushed 510 pending packet(s)
+1792738546.106549 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2050
+1792738546.116575 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2100
+1792738546.127493 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2150
+1792738546.137444 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2200
+1792738546.147519 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2250
+1792738546.157496 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2300
+1792738546.167812 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2350
+1792738546.176791 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2400
+1792738546.186797 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2450
+1792738546.196804 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2500
+1792738546.203493 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][INFO][client] flushed 503 pending packet(s)
+1792738546.229952 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2550
+1792738546.239734 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2600
+1792738546.249564 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2650
+1792738546.259449 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2700
+1792738546.269526 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2750
+1792738546.279449 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2800
+1792738546.289558 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2850
+1792738546.302248 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][INFO][client] flushed 387 pending packet(s)
+1792738546.372751 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2900
+1792738546.381587 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #2950
+1792738546.391966 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][WARN][client] mud_send EAGAIN #3000
+1792738546.399044 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:46][INFO][client] flushed 137 pending packet(s)
+1792738547.297517 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:47][INFO][client] path[0] RUNNING owd=4.89ms jit=5.98ms loss=0% rate=149.5Mbps tx=227115 rx=466587 dev=enp3s0
+1792738547.298742 dj19 multi-fec-dist[102576]: [2026-10-23 15:55:47][INFO][client] path[1] RUNNING owd=1.44ms jit=0.89ms loss=0% rate=118.9Mbps tx=239849 rx=5391 dev=enp3s0
+1792738577.297527 dj19 multi-fec-dist[102576]: [2026-10-23 15:56:17][INFO][client] path[0] RUNNING owd=0.89ms jit=0.40ms loss=0% rate=290.7Mbps tx=318055 rx=618379 dev=enp3s0
+1792738577.298986 dj19 multi-fec-dist[102576]: [2026-10-23 15:56:17][INFO][client] path[1] RUNNING owd=0.80ms jit=0.34ms loss=0% rate=163.1Mbps tx=299511 rx=5991 dev=enp3s0
+1792738579.297331 dj19 multi-fec-dist[102576]: [2026-10-23 15:56:19][INFO][report]client-->server:(original:515613 pkt;653781904 byte) (fec:621887 pkt,794747870 byte)  server-->client:(original:515618 pkt;653796700 byte) (fec:622390 pkt;795404088 byte)
+1792738607.298441 dj19 multi-fec-dist[102576]: [2026-10-23 15:56:47][INFO][client] path[0] RUNNING owd=0.25ms jit=0.10ms loss=9% rate=8.0Mbps tx=390503 rx=760247 dev=enp3s0
+1792738607.299858 dj19 multi-fec-dist[102576]: [2026-10-23 15:56:47][INFO][client] path[1] RUNNING owd=0.28ms jit=0.08ms loss=9% rate=11.7Mbps tx=368948 rx=6591 dev=enp3s0

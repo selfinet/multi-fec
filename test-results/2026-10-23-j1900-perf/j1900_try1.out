@@ -1,0 +1,18 @@
+[15:19:37] ===== 설치
+dj19 규칙2 위반 0
+NF01M 규칙2 위반 0
+[run] 가드 PID 1569537 (링크 백스톱 195 Mbps, CPU 임계 해제 — 성능 한계 측정)
+[15:20:13] ##### H1 직접 UDP (multi-fec·WG 없음)
+[run] H1raw     10 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 3% max 6% mf 0% nic 21 | s: tot 5% max 7% mf 0% nic 21
+[run] H1raw     20 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 3% max 5% mf 0% nic 41 | s: tot 5% max 7% mf 0% nic 41
+[run] H1raw     40 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 3% max 6% mf 0% nic 83 | s: tot 24% max 48% mf 0% nic 83
+[15:24:22] ##### H2 WireGuard 만
+[run] H2wg      10 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 3% max 5% mf 0% nic 22 | s: tot 13% max 23% mf 0% nic 22
+[run] H2wg      20 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 3% max 6% mf 0% nic 44 | s: tot 27% max 48% mf 0% nic 44
+[run] H2wg      40 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 9% max 17% mf 0% nic 87 | s: tot 46% max 55% mf 0% nic 87
+[15:28:41] ##### M1 duplicate 1.4.1
+Failed to find executable /opt/mftest/j83/multi-fec-dist: No such file or directory
+[15:30:47] ===== 복구
+sha256sum: /opt/mftest/j86/multi-fec-dist: No such file or directory
+  ✓ j86 시험 전과 동일
+  ✓ j83 시험 전과 동일
