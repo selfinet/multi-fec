@@ -191,6 +191,14 @@ struct mud {
     uint64_t           rate;
     uint64_t           window;
     uint64_t           window_time;
+    /* Aggregate send-window floor (see mud_update). win_spent counts every byte
+     * taken from the window; agg_floor is 5/4 of that rate over the last second;
+     * agg_time is when mud_send_next*() last ran (aggregate modes only). */
+    uint64_t           win_spent;
+    uint64_t           win_spent_snap;
+    uint64_t           win_spent_time;
+    uint64_t           agg_floor;
+    uint64_t           agg_time;
     uint64_t           base_time;
     union mud_sockaddr last_remote;  /* source of the last packet mud_recv() returned */
     uint64_t           last_dup_peer;/* see mud_get_last_dup_peer() */
@@ -540,6 +548,7 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
         path->tx.time   = now;
         if (mud->window > enc_size) mud->window -= enc_size;
         else                        mud->window  = 0;
+        mud->win_spent += enc_size;
         return (int)ret;
     }
 
@@ -550,6 +559,7 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
     path->tx.time   = now;
     if (mud->window > enc_size) mud->window -= enc_size;
     else                        mud->window  = 0;
+    mud->win_spent += enc_size;
 
     return (int)enc_size;
 }
@@ -1230,6 +1240,32 @@ mud_update(struct mud *mud)
         mud->pref = pref;
     }
 
+    /* Aggregate: the window refills at the sum of the per-path rate estimates,
+     * and each estimate only covers the share that path carries. In duplicate
+     * every path carries everything, so the sum is ~2x what the window spends;
+     * in aggregate it is ~1x, and a dip in one estimate starves the window —
+     * measured 2026-10-23 (testnet, 1.4.1): aggregate lost 0.9% upstream at
+     * 35 Mbps and 2.1% at 40 with client EAGAIN 91/242 while CPU had headroom,
+     * per-path estimates swinging 79 -> 14 and 133 -> 25 Mbps against ~25 needed.
+     * So in aggregate the window refills at least at 5/4 of what was actually
+     * taken from it over the last second, whatever the per-path split. */
+    if (!mud->win_spent_time) {
+        mud->win_spent_time = now;
+        mud->win_spent_snap = mud->win_spent;
+    } else {
+        uint64_t dt = MUD_TIME_MASK(now - mud->win_spent_time);
+        if (dt >= MUD_ONE_SEC) {
+            uint64_t spent = mud->win_spent - mud->win_spent_snap;
+            mud->agg_floor      = (5 * spent * MUD_ONE_SEC) / (4 * dt);
+            mud->win_spent_snap = mud->win_spent;
+            mud->win_spent_time = now;
+        }
+    }
+    if (rate && mud->agg_time &&
+        MUD_TIME_MASK(now - mud->agg_time) < 2 * MUD_ONE_SEC &&
+        rate < mud->agg_floor)
+        rate = mud->agg_floor;
+
     mud->rate = rate;
     mud->mtu  = mtu;
     mud_update_window(mud, now);
@@ -1388,6 +1424,7 @@ mud_send_next_peer(struct mud *mud, uint64_t peer, const void *data, size_t size
                    unsigned dup_count)
 {
     if (!size) return 0;
+    mud->agg_time = mud_now(mud);   /* aggregate in use: enables the window floor in mud_update() */
     if (mud->window < 1500) { errno = EAGAIN; return -1; }
 
     unsigned char packet[MUD_PKT_MAX_SIZE];
