@@ -62,6 +62,8 @@
 - **2026-10-23 c·s VM: vCPU 4 + virtio Multiqueue 4**(Proxmox, 사용자 변경. CPU 모델은 그대로 `QEMU Virtual CPU`, r1·rs2 는 2 vCPU·큐 1).
   이전 c·s CPU 기준선과 비교하지 말 것. c·s 에 **`chrony-wait.service` enabled** — 부팅 직후 chrony 가 시계를 step 하기 전에 multi-fec 이 뜨면
   mud 가 시작 때 잡은 시간 기준이 어긋난 채 남는다(실측: s 1.09초 step → client owd 1,118 ms, multi-fec@server 재시작으로 정상화).
+- **시간 동기**: s 가 공용 NTP 풀에 맞추고 `allow 192.168.100.0/24` 로 테스트망에 시간을 준다. c·r1·rs2 는 chrony `/etc/chrony/sources.d/testnet.sources`
+  (`server 192.168.100.102 iburst minpoll 4 maxpoll 6 prefer`) — rs2 는 2026-10-23 timesyncd(해외 1대, 오차 −34 ms)에서 chrony 로 바꿨다.
 - **apt 자동 업데이트 4대 모두 비활성**(배경 작업이 가드를 트립시킨다). 원본 `/root/20auto-upgrades.bak-2026-10-05`(rs2 는 `-2026-10-23`).
 - **부하 생성은 `mfgen`**(`test-results/2026-10-05-vm-guard-calib/mfgen.c`, 각 호스트 `/usr/local/sbin/mfgen`).
   iperf3 3.16 UDP 송신은 레이트와 무관하게 1코어를 100% 먹어 2 vCPU 에서는 측정 대상의 절반을 빼앗는다.
