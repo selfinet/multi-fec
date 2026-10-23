@@ -103,7 +103,14 @@ case "$NET" in
        D_IF_C=ens18; D_IF_R=ens18,ens19; D_IF_S=ens18
        D_IPS="192.168.100.92 192.168.100.88 192.168.100.117 192.168.100.131 192.168.100.102"
        D_PROFILE=vm ;;
-  *) echo "GW_NET 은 old 또는 new (받은 값: $NET)" >&2; exit 2 ;;
+  # 2026-10-23: J1900 여분 장비 2대(mac mini 192.168.100.162 경유, ~/.ssh/config 별칭 j86·j83).
+  # 성능 한계를 재는 시험이라 CPU 임계는 호출 측에서 GW_CPU_*/GW_CORE 로 올려 쓴다 — 링크 백스톱이 안전장치.
+  # relay 가 없어 r 자리에 server(j83)를 한 번 더 둔다(감시만 중복).
+  j1900) D_C=j86; D_R=j83; D_S=j83; D_R2=
+       D_IF_C=enp3s0; D_IF_R=enp3s0; D_IF_S=enp3s0
+       D_IPS="192.168.2.86 192.168.2.83 192.168.2.250"
+       D_PROFILE=vm ;;
+  *) echo "GW_NET 은 old · new · j1900 (받은 값: $NET)" >&2; exit 2 ;;
 esac
 C=${GUARD_C:-$D_C}
 R=${GUARD_R:-$D_R}
@@ -111,6 +118,9 @@ S=${GUARD_S:-$D_S}
 R2=${GUARD_R2-${D_R2:-}}          # 두 번째 relay 호스트 (없으면 3대만 감시). GUARD_R2= 로 끌 수 있다
 HOSTS="$C $R $S${R2:+ $R2}"
 KEYS="c r s${R2:+ r2}"
+# relay 자리가 client/server 와 같은 호스트면(GW_NET=j1900) 한 번만 감시한다 — 매초 ssh 를 두 번 받으면
+# 그 호스트에만 측정 비용이 두 배로 얹힌다.
+if [ "$R" = "$S" ] || [ "$R" = "$C" ]; then HOSTS="$C $S${R2:+ $R2}"; KEYS="c s${R2:+ r2}"; fi
 GUARD_IPS=${GUARD_IPS:-$D_IPS}
 
 # 부하 생성기가 도는 호스트들. 워치독은 여기서도 죽여야 한다 —

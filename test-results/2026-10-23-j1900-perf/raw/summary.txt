@@ -1,0 +1,24 @@
+[run] H1raw     10 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 3% max 6% mf 0% nic 21 | s: tot 5% max 7% mf 0% nic 21
+[run] H1raw     20 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 3% max 5% mf 0% nic 41 | s: tot 5% max 7% mf 0% nic 41
+[run] H1raw     40 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 3% max 6% mf 0% nic 83 | s: tot 24% max 48% mf 0% nic 83
+[run] H2wg      10 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 3% max 5% mf 0% nic 22 | s: tot 13% max 23% mf 0% nic 22
+[run] H2wg      20 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 3% max 6% mf 0% nic 44 | s: tot 27% max 48% mf 0% nic 44
+[run] H2wg      40 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 9% max 17% mf 0% nic 87 | s: tot 46% max 55% mf 0% nic 87
+[run] H0        40 Mbps up  c: tot 3% max 5% mf 0% nic 41 | s: tot 5% max 7% mf 0% nic 41
+[run] H0        40 Mbps dn  c: tot 20% max 42% mf 0% nic 41 | s: tot 5% max 8% mf 0% nic 41
+[run] M1dup141   5 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 4% max 7% mf 11% nic 24 | s: tot 10% max 18% mf 13% nic 24
+[run] M1dup141  10 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 18% max 24% mf 20% nic 44 | s: tot 11% max 21% mf 19% nic 45
+[run] M1dup141  15 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 16% max 37% mf 25% nic 65 | s: tot 11% max 16% mf 31% nic 66
+[run] M1dup141  20 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 12% max 26% mf 36% nic 85 | s: tot 22% max 30% mf 38% nic 85
+[run] M1dup141  25 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 17  c: tot 16% max 33% mf 37% nic 106 | s: tot 19% max 25% mf 44% nic 106
+[run] M1dup141  30 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 34  c: tot 43% max 63% mf 47% nic 127 | s: tot 25% max 36% mf 49% nic 127
+[run] M2dup140   5 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 4% max 6% mf 9% nic 24 | s: tot 6% max 8% mf 13% nic 24
+[run] M2dup140  10 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 26% max 54% mf 19% nic 45 | s: tot 8% max 12% mf 22% nic 45
+[run] M2dup140  15 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 28% max 43% mf 28% nic 66 | s: tot 21% max 31% mf 32% nic 66
+[run] M2dup140  20 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 37% max 46% mf 34% nic 85 | s: tot 42% max 48% mf 38% nic 85
+[run] M2dup140  25 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 28% max 50% mf 36% nic 106 | s: tot 23% max 34% mf 44% nic 106
+[run] M2dup140  30 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 11% max 20% mf 45% nic 127 | s: tot 32% max 48% mf 49% nic 127
+[run] M3agg141  10 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 4% max 7% mf 18% nic 30 | s: tot 19% max 24% mf 19% nic 30
+[run] M3agg141  20 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 10% max 22% mf 28% nic 56 | s: tot 10% max 18% mf 31% nic 56
+[run] M3agg141  30 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 16% max 36% mf 42% nic 84 | s: tot 25% max 37% mf 43% nic 84
+[run] M3agg141  40 Mbps  up 0.10120%  dn 0.00000%  cliEAGAIN 61  c: tot 25% max 52% mf 47% nic 112 | s: tot 38% max 46% mf 52% nic 112

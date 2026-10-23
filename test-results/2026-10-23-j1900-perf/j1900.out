@@ -1,0 +1,33 @@
+[15:31:43] ===== 설치
+dj19 규칙2 위반 0
+NF01M 규칙2 위반 0
+[run] 가드 PID 1601097 (링크 백스톱 195 Mbps, CPU 임계 해제 — 성능 한계 측정)
+[15:32:21] ##### H0 한 방향 진단 (직접 UDP 40 Mbps)
+[run] H0        40 Mbps up  c: tot 3% max 5% mf 0% nic 41 | s: tot 5% max 7% mf 0% nic 41
+[run] H0        40 Mbps dn  c: tot 20% max 42% mf 0% nic 41 | s: tot 5% max 8% mf 0% nic 41
+[15:33:50] ##### M1 duplicate 1.4.1
+  v141 duplicate: 7a144ac99ce9 active  server active
+[run] M1dup141   5 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 4% max 7% mf 11% nic 24 | s: tot 10% max 18% mf 13% nic 24
+[run] M1dup141  10 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 18% max 24% mf 20% nic 44 | s: tot 11% max 21% mf 19% nic 45
+[run] M1dup141  15 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 16% max 37% mf 25% nic 65 | s: tot 11% max 16% mf 31% nic 66
+[run] M1dup141  20 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 12% max 26% mf 36% nic 85 | s: tot 22% max 30% mf 38% nic 85
+[run] M1dup141  25 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 17  c: tot 16% max 33% mf 37% nic 106 | s: tot 19% max 25% mf 44% nic 106
+[run] M1dup141  30 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 34  c: tot 43% max 63% mf 47% nic 127 | s: tot 25% max 36% mf 49% nic 127
+[15:42:37] ##### M2 duplicate 1.4.0
+  v140 duplicate: 3cbf7cb2298b active  server active
+[run] M2dup140   5 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 4% max 6% mf 9% nic 24 | s: tot 6% max 8% mf 13% nic 24
+[run] M2dup140  10 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 26% max 54% mf 19% nic 45 | s: tot 8% max 12% mf 22% nic 45
+[run] M2dup140  15 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 28% max 43% mf 28% nic 66 | s: tot 21% max 31% mf 32% nic 66
+[run] M2dup140  20 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 37% max 46% mf 34% nic 85 | s: tot 42% max 48% mf 38% nic 85
+[run] M2dup140  25 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 28% max 50% mf 36% nic 106 | s: tot 23% max 34% mf 44% nic 106
+[run] M2dup140  30 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 11% max 20% mf 45% nic 127 | s: tot 32% max 48% mf 49% nic 127
+[15:51:15] ##### M3 aggregate 1.4.1
+  v141 aggregate: 7a144ac99ce9 active  server active
+[run] M3agg141  10 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 4% max 7% mf 18% nic 30 | s: tot 19% max 24% mf 19% nic 30
+[run] M3agg141  20 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 10% max 22% mf 28% nic 56 | s: tot 10% max 18% mf 31% nic 56
+[run] M3agg141  30 Mbps  up 0.00000%  dn 0.00000%  cliEAGAIN 0  c: tot 16% max 36% mf 42% nic 84 | s: tot 25% max 37% mf 43% nic 84
+[run] M3agg141  40 Mbps  up 0.10120%  dn 0.00000%  cliEAGAIN 61  c: tot 25% max 52% mf 47% nic 112 | s: tot 38% max 46% mf 52% nic 112
+[15:57:06] J1900_DONE
+[15:57:06] ===== 복구
+  ✓ j86 시험 전과 동일
+  ✓ j83 시험 전과 동일

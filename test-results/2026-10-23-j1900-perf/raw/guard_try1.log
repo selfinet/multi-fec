@@ -1,0 +1,15 @@
+[precheck] 호스트 도달성
+  ✓ j86
+  ✓ j83
+  ✓ j83
+[precheck] 인터페이스
+  ✓ j86 enp3s0
+  ✓ j83 enp3s0
+  ✓ j83 enp3s0
+[precheck] 데이터 경로 온링크 (gw 미통과 · 규칙 2)
+  ✓ j86  gw경유 0 · 터널경유 0
+  ✓ j83  gw경유 0 · 터널경유 0
+  ✓ j83  gw경유 0 · 터널경유 0
+[precheck] 통과
+[guard] 감시 시작 (프로파일 vm) — c 99% · r·s 99% · 1코어 101% · 링크 195Mbps
+[guard] 3회 연속 초과에서 'mfgen tx' 중단
