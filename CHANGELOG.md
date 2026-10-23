@@ -23,6 +23,11 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 측정·문서·테스트 하네스만(제품 코드 변경은 아래 버전 섹션).
 
+### 2026-10-23 — 경로별 속도 제한(각 30 Mbps) 계단 — duplicate vs aggregate (1.4.1-v4)
+
+- duplicate 는 회선 하나 몫(손실 1% 안쪽 \~20\~25 Mbps, 30 에서 13%), aggregate 는 회선 합산(30 Mbps 손실 0.7%, 40 에서 실수신 38\~39 Mbps).
+  배분 쏠림으로 이론치(\~41)보다 일찍 손실. `mf-netem.sh` 에 선택 옵션 `P0_RATE`/`P1_RATE`. `test-results/2026-10-23-ratelimit/REPORT.md`.
+
 ### 2026-10-23 — aggregate 송신 창 하한 수정 (브랜치 `fix/agg-window`, 미릴리스)
 
 - aggregate 에서 송신 창이 경로별 rate 추정 합(각 경로 몫만 반영)으로 차올라 추정이 흔들리면 말랐다 → aggregate 사용 중엔 창을 실제 전체 송신량의 5/4 이상으로.

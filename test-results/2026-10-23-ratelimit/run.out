@@ -1,0 +1,40 @@
+Oct 23 03:29:29 multi-fec-relay mf-netem.sh[2244604]: mf-netem: relay-both/ens18  path0(192.168.100.88)=25ms/5%/30mbit  path1(없음)=0ms/0%
+qdisc netem 10: parent 1:1 limit 300 delay 25ms loss 5% rate 30Mbit
+qdisc netem 10: parent 1:1 limit 300 delay 25ms loss 5% rate 30Mbit
+Oct 23 03:29:30 rs2 mf-netem.sh[225310]: mf-netem: relay-both/ens18  path0(192.168.100.131)=30ms/2%/30mbit  path1(없음)=0ms/0%
+qdisc netem 10: parent 1:1 limit 300 delay 30ms loss 2% rate 30Mbit
+qdisc netem 10: parent 1:1 limit 300 delay 30ms loss 2% rate 30Mbit
+[12:29:30] ##### mode=duplicate v1.4.1-v4
+multipath-mode = duplicate
+multipath-mode = duplicate
+  [duplicate 10] [run] steady 10 Mbps rep1  up 0.00000%  dn 0.18400%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate 15] [run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate 20] [run] steady 20 Mbps rep1  up 0.81120%  dn 0.60960%  cliEAGAIN 11  srvEAGAIN 0
+  [duplicate 25] [run] steady 25 Mbps rep1  up 1.05921%  dn 0.64580%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate 30] [run] steady 30 Mbps rep1  up 13.14987%  dn 6.74133%  cliEAGAIN 6  srvEAGAIN 0
+  [duplicate 35] [run] steady 35 Mbps rep1  up 27.16081%  dn 18.01783%  cliEAGAIN 97  srvEAGAIN 0
+  [duplicate 40] [run] steady 40 Mbps rep1  up 33.93747%  dn 27.35720%  cliEAGAIN 7  srvEAGAIN 0
+[12:41:31] ##### mode=aggregate v1.4.1-v4
+multipath-mode = aggregate
+multipath-mode = aggregate
+  [aggregate 10] [run] steady 10 Mbps rep1  up 0.06240%  dn 0.08000%  cliEAGAIN 13  srvEAGAIN 0
+  [aggregate 15] [run] steady 15 Mbps rep1  up 0.50240%  dn 0.00533%  cliEAGAIN 15  srvEAGAIN 0
+  [aggregate 20] [run] steady 20 Mbps rep1  up 0.06480%  dn 0.11920%  cliEAGAIN 4  srvEAGAIN 0
+  [aggregate 25] [run] steady 25 Mbps rep1  up 3.47906%  dn 0.13120%  cliEAGAIN 102  srvEAGAIN 0
+  [aggregate 30] [run] steady 30 Mbps rep1  up 0.46187%  dn 0.71680%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 35] [run] steady 35 Mbps rep1  up 4.50240%  dn 1.26949%  cliEAGAIN 165  srvEAGAIN 0
+  [aggregate 40] [run] steady 40 Mbps rep1  up 5.15360%  dn 3.06520%  cliEAGAIN 132  srvEAGAIN 0
+[12:53:30] LADDER_DONE
+[12:53:30] ===== 정리 · duplicate 원복 · 1.4.0 복원
+multipath-mode = duplicate
+multipath-mode = duplicate
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 53.532/54.592/58.487/1.949 ms
+[12:53:56] RATELIMIT_DONE
+[12:53:56] ===== netem 원복
+Oct 23 03:53:57 multi-fec-relay mf-netem.sh[2269104]: mf-netem: relay-both/ens18  path0(192.168.100.88)=25ms/5%  path1(없음)=0ms/0%
+Oct 23 03:53:58 rs2 mf-netem.sh[249517]: mf-netem: relay-both/ens18  path0(192.168.100.131)=30ms/2%  path1(없음)=0ms/0%
+rtt min/avg/max/mdev = 52.861/53.862/58.411/1.841 ms
