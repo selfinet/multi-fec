@@ -1,0 +1,10 @@
+[10:19:50] ##### mode=duplicate v1.4.1-v3
+./ladder.sh: line 14: $3: unbound variable
+[10:19:50] ===== 정리 · duplicate 원복 · 1.4.0 복원
+multipath-mode = duplicate
+multipath-mode = duplicate
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 51.854/52.452/53.282/0.482 ms
