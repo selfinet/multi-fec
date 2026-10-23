@@ -1,0 +1,7 @@
+1792723062.641631 multi-fec-client multi-fec-dist[1826266]: [2026-10-23 02:37:42][INFO][client] flushed 28 pending packet(s)
+1792723062.742091 multi-fec-client multi-fec-dist[1826266]: [2026-10-23 02:37:42][INFO][client] flushed 6 pending packet(s)
+1792723087.641662 multi-fec-client multi-fec-dist[1826266]: [2026-10-23 02:38:07][INFO][client] path[0] RUNNING owd=25.34ms jit=0.07ms loss=5% rate=52.1Mbps tx=47202 rx=40961 dev=ens18
+1792723087.641662 multi-fec-client multi-fec-dist[1826266]: [2026-10-23 02:38:07][INFO][client] path[1] RUNNING owd=30.28ms jit=0.15ms loss=1% rate=52.8Mbps tx=50371 rx=52558 dev=ens18
+1792723088.441529 multi-fec-client multi-fec-dist[1826266]: [2026-10-23 02:38:08][INFO][report]client-->server:(original:82169 pkt;104185652 byte) (fec:98609 pkt,126013022 byte)  server-->client:(original:81466 pkt;103295480 byte) (fec:94501 pkt;120765462 byte)
+1792723117.642182 multi-fec-client multi-fec-dist[1826266]: [2026-10-23 02:38:37][INFO][client] path[0] RUNNING owd=25.23ms jit=0.13ms loss=4% rate=43.8Mbps tx=107602 rx=102860 dev=ens18
+1792723117.646923 multi-fec-client multi-fec-dist[1826266]: [2026-10-23 02:38:37][INFO][client] path[1] RUNNING owd=30.22ms jit=0.13ms loss=4% rate=25.5Mbps tx=103469 rx=99959 dev=ens18

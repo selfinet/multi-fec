@@ -23,6 +23,12 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 측정·문서·테스트 하네스만(제품 코드 변경은 아래 버전 섹션).
 
+### 2026-10-23 — aggregate 송신 창 하한 수정 (브랜치 `fix/agg-window`, 미릴리스)
+
+- aggregate 에서 송신 창이 경로별 rate 추정 합(각 경로 몫만 반영)으로 차올라 추정이 흔들리면 말랐다 → aggregate 사용 중엔 창을 실제 전체 송신량의 5/4 이상으로.
+  테스트망 35/40 Mbps 상향 손실 0.92/2.11 % → 0.02/0.07 %. 50 Mbps 이상은 두 모드 모두 무너짐(원인 미분리). 와이어 무변경.
+  `test-results/2026-10-23-agg-window/REPORT.md`.
+
 ### 2026-10-23 — duplicate vs aggregate 최대 처리량 계단 (1.4.1-v3, rs2 구성)
 
 - duplicate 각 방향 40 Mbps 까지 손실 ≤0.4%, 50 Mbps 부터 붕괴(하향 8.6%), 70 은 가드 링크 백스톱 트립. aggregate 는 30 까지 깨끗, 35 부터 client 송신 창 고갈(EAGAIN)로 상향 손실.
@@ -85,6 +91,7 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 | 8 | **relay 키 필수** | 키(`key`/`--route`)가 하나도 없는 relay 는 기동 거부. 지금은 투명 중계로 조용히 뜬다 — 운영 방침은 "키는 무조건 있어야 함"(2026-10-19) | `main.cpp:1502` 주석, 도움말 "If omitted, relay forwards all packets transparently" |
 | 9 | **`--upstream`(+`-k`) 와 `--route` 동시 지정 거부** | 지금은 오류·경고 없이 route 만 쓰고 upstream·키를 버린다. 문서·도움말은 "혼용 불가(시작 시 오류)" 라고 적혀 있었다 | 2026-10-19 테스트망 r 실측: `mode=key-routing routes=1`, exit 0 |
 | 10 | **duplicate 하향 경로 태그(`fix/dup-path-tag`)** | 늘 늦는 무손실 경로를 서버가 하향에 쓰지 않던 문제 — 1.4.1 에 `fix/mud-rate-agg` 와 함께 | `test-results/2026-10-23-dup-path-tag/` |
+| 11 | **aggregate 송신 창 하한(`fix/agg-window`)** | aggregate 35~40 Mbps 송신 창 고갈 해소 — 1.4.1 후보에 함께 | `test-results/2026-10-23-agg-window/` |
 
 - 추가 · 2026-10-19 — **`mf-migrate.py`** — 1.3.x 식 유닛(인자 펼침 + EnvironmentFile)을 1.4.0 `--config` 형식으로 변환. systemd 와 같은
   규칙으로 해석(`${VAR}` 한 단어 · 단독 `$VAR` 분리 · EnvironmentFile 의 줄 끝 주석), relay `--route` 는 원래 주석을 달아 routes 파일로,
