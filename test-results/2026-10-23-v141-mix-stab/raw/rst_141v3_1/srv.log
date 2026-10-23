@@ -1,0 +1,109 @@
+1792695006.794229 multi-fec-server multi-fec-dist[1695288]: [2026-10-22 18:50:06][INFO]signal 15 received, exiting
+1792695006.794229 multi-fec-server multi-fec-dist[1695288]: [2026-10-22 18:50:06][WARN][server] ev_run returned
+1792695006.794229 multi-fec-server multi-fec-dist[1695288]: [2026-10-22 18:50:06][INFO]exiting
+1792695006.798351 multi-fec-server multi-fec-dist[1695288]: 
+1792695006.796318 multi-fec-server systemd[1]: Stopping multi-fec@server.service - multi-fec server...
+1792695006.800033 multi-fec-server systemd[1]: multi-fec@server.service: Deactivated successfully.
+1792695006.800969 multi-fec-server systemd[1]: Stopped multi-fec@server.service - multi-fec server.
+1792695006.801133 multi-fec-server systemd[1]: multi-fec@server.service: Consumed 7.672s CPU time.
+1792695006.816908 multi-fec-server systemd[1]: Starting multi-fec@server.service - multi-fec server...
+1792695006.866714 multi-fec-server multi-fec-dist[1695773]: [2026-10-22 18:50:06][INFO]parsing address: 192.168.100.102:443
+1792695006.867498 multi-fec-server multi-fec-dist[1695773]: [2026-10-22 18:50:06][INFO]its an ipv4 adress
+1792695006.867498 multi-fec-server multi-fec-dist[1695773]: [2026-10-22 18:50:06][INFO]ip_address is {192.168.100.102}, port is {443}
+1792695006.867498 multi-fec-server multi-fec-dist[1695773]: [2026-10-22 18:50:06][INFO]parsing address: 127.0.0.1:51820
+1792695006.867498 multi-fec-server multi-fec-dist[1695773]: [2026-10-22 18:50:06][INFO]its an ipv4 adress
+1792695006.867498 multi-fec-server multi-fec-dist[1695773]: [2026-10-22 18:50:06][INFO]ip_address is {127.0.0.1}, port is {51820}
+1792695006.867498 multi-fec-server multi-fec-dist[1695773]: [2026-10-22 18:50:06][INFO]WireGuard upstream: 127.0.0.1:51820
+1792695006.868046 multi-fec-server multi-fec-dist[1695773]: 
+1792695006.874950 multi-fec-server systemd[1]: Started multi-fec@server.service - multi-fec server.
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]parsing address: 192.168.100.102:443
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]its an ipv4 adress
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]ip_address is {192.168.100.102}, port is {443}
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]parsing address: 127.0.0.1:51820
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]its an ipv4 adress
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]ip_address is {127.0.0.1}, port is {51820}
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]WireGuard upstream: 127.0.0.1:51820
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]multi-fec 1.4.0 (git v1.4.0-24-g1f74be6-dirty) build 2026-10-23 00:56:22 KST
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]config /etc/multi-fec/instances/server.conf (instance server)
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]key kf:53d21bbd from config
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]jitter_min=0 jitter_max=0 output_interval_min=0 output_interval_max=0 fec_timeout=10 fec_mtu=1350 fec_queue_len=500 fec_mode=1
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]fec_str=5:1,20:4
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]fec_inner_parameter=1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:2,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4
+1792695006.903569 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]obfs: mode=QUIC-ShortHeader + HMAC-auth (interval=60s) + size-norm
+1792695006.913348 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]mud fd=5
+1792695006.913348 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+1792695006.913348 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][WARN]warning fifo file /run/multi-fec/server.fifo exist
+1792695006.913348 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]fifo=/run/multi-fec/server.fifo fd=6
+1792695006.913348 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO]server mode started (multipath=duplicate)
+1792695006.913348 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO][server] starting event loop
+1792695006.913348 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO][server] listening, forwarding to WireGuard at 127.0.0.1:51820
+1792695006.913348 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO][server] new session 1154ef8fd4f91204 from 192.168.100.131:36621
+1792695006.928001 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO][server] new client 192.168.100.131:36621
+1792695006.928274 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO][server][192.168.100.131:36621] new conv fe23ff0e fd=7 fd64=4294967395
+1792695006.934324 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:06][INFO][report][192.168.100.131:36621]client-->server:(original:36 pkt;45648 byte) (fec:44 pkt;56232 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+1792695007.943122 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:07][INFO][server] dropped 15 stale pending packet(s) (>1000 ms)
+1792695007.963232 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:07][INFO][server] dropped 27 stale pending packet(s) (>1000 ms)
+1792695007.983332 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:07][INFO][server] dropped 12 stale pending packet(s) (>1000 ms)
+1792695008.003252 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:08][INFO][server] dropped 9 stale pending packet(s) (>1000 ms)
+1792695008.023808 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:08][INFO][server] dropped 12 stale pending packet(s) (>1000 ms)
+1792695037.944469 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:37][INFO][server] dropped 25 stale pending packet(s) (>1000 ms)
+1792695037.964114 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:37][INFO][server] dropped 28 stale pending packet(s) (>1000 ms)
+1792695037.972307 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:37][INFO][server] new session 9c5098ee3dac1c36 from 192.168.100.88:39619
+1792695037.996109 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:37][INFO][server] new client 192.168.100.88:39619
+1792695037.996567 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:37][INFO][server][192.168.100.88:39619] new conv d846ae4b fd=8 fd64=4294967396
+1792695038.001391 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][report][192.168.100.88:39619]client-->server:(original:62 pkt;78616 byte) (fec:74 pkt;94572 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+1792695038.001722 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 47 stale pending packet(s) (>1000 ms)
+1792695038.004122 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 5 stale pending packet(s) (>1000 ms)
+1792695038.023986 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 25 stale pending packet(s) (>1000 ms)
+1792695038.044362 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 28 stale pending packet(s) (>1000 ms)
+1792695038.064446 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 24 stale pending packet(s) (>1000 ms)
+1792695038.093109 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 37 stale pending packet(s) (>1000 ms)
+1792695038.104134 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 15 stale pending packet(s) (>1000 ms)
+1792695038.124204 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 27 stale pending packet(s) (>1000 ms)
+1792695038.144092 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.164235 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.198218 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 43 stale pending packet(s) (>1000 ms)
+1792695038.204091 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 11 stale pending packet(s) (>1000 ms)
+1792695038.224208 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.244320 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.264126 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 24 stale pending packet(s) (>1000 ms)
+1792695038.300388 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 50 stale pending packet(s) (>1000 ms)
+1792695038.304237 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 5 stale pending packet(s) (>1000 ms)
+1792695038.324355 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 24 stale pending packet(s) (>1000 ms)
+1792695038.344172 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.364504 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 27 stale pending packet(s) (>1000 ms)
+1792695038.402879 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 49 stale pending packet(s) (>1000 ms)
+1792695038.403961 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 1 stale pending packet(s) (>1000 ms)
+1792695038.424256 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 30 stale pending packet(s) (>1000 ms)
+1792695038.444314 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 23 stale pending packet(s) (>1000 ms)
+1792695038.464397 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 27 stale pending packet(s) (>1000 ms)
+1792695038.498250 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 42 stale pending packet(s) (>1000 ms)
+1792695038.503873 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 10 stale pending packet(s) (>1000 ms)
+1792695038.523849 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 27 stale pending packet(s) (>1000 ms)
+1792695038.544037 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.563943 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.584025 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 24 stale pending packet(s) (>1000 ms)
+1792695038.603882 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.624028 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 25 stale pending packet(s) (>1000 ms)
+1792695038.643594 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 27 stale pending packet(s) (>1000 ms)
+1792695038.664076 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.683816 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.703991 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 27 stale pending packet(s) (>1000 ms)
+1792695038.723962 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 27 stale pending packet(s) (>1000 ms)
+1792695038.743944 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.763974 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 24 stale pending packet(s) (>1000 ms)
+1792695038.784347 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 27 stale pending packet(s) (>1000 ms)
+1792695038.803941 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 24 stale pending packet(s) (>1000 ms)
+1792695038.823880 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.843974 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 28 stale pending packet(s) (>1000 ms)
+1792695038.863910 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 26 stale pending packet(s) (>1000 ms)
+1792695038.883929 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 28 stale pending packet(s) (>1000 ms)
+1792695038.903966 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 24 stale pending packet(s) (>1000 ms)
+1792695038.923750 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 25 stale pending packet(s) (>1000 ms)
+1792695038.943718 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 27 stale pending packet(s) (>1000 ms)
+1792695038.963950 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 25 stale pending packet(s) (>1000 ms)
+1792695038.984127 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:38][INFO][server] dropped 12 stale pending packet(s) (>1000 ms)
+1792695039.003953 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:50:39][INFO][server] dropped 32 stale pending packet(s) (>1000 ms)
+1792695067.305171 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:51:07][INFO][report][192.168.100.131:36621]client-->server:(original:30962 pkt;39259816 byte) (fec:38761 pkt;49536558 byte)  server-->client:(original:32362 pkt;41035016 byte) (fec:40543 pkt;51813954 byte)
+1792695098.374711 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:51:38][INFO][report][192.168.100.88:39619]client-->server:(original:63284 pkt;80241764 byte) (fec:79208 pkt;101225476 byte)  server-->client:(original:62893 pkt;79747152 byte) (fec:78825 pkt;100737178 byte)
+1792695127.705030 multi-fec-server multi-fec-dist[1695774]: [2026-10-22 18:52:07][INFO][report][192.168.100.131:36621]client-->server:(original:30962 pkt;39259816 byte) (fec:38761 pkt;49536558 byte)  server-->client:(original:32362 pkt;41035016 byte) (fec:40543 pkt;51813954 byte)
