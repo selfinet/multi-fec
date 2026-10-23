@@ -1,0 +1,45 @@
+[17:14:52] ##### mode=duplicate v1.4.1-v5
+client mode started (multipath=duplicate)
+  [duplicate] [run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate] [run] steady 20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate] [run] steady 30 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate] [run] steady 40 Mbps rep1  up 0.07000%  dn 0.21120%  cliEAGAIN 73  srvEAGAIN 0
+  [duplicate] [run] steady 50 Mbps rep1  up 1.44320%  dn 22.02215%  cliEAGAIN 73  srvEAGAIN 0
+  [duplicate] [run] steady 60 Mbps rep1  up 5.68987%  dn 57.48560%  cliEAGAIN 144  srvEAGAIN 0
+  [duplicate] [run] cut1   15 Mbps rep1  up 0.05013%  dn 0.04160%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate] [run] cut0   15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate] [run] cut1   15 Mbps rep2  up 0.03947%  dn 0.03840%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate] [run] cut0   15 Mbps rep2  up 0.00427%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+[17:30:30] ##### mode=aggregate v1.4.1-v5
+client mode started (multipath=aggregate)
+  [aggregate] [run] steady 10 Mbps rep1  up 0.08960%  dn 0.05600%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate] [run] steady 20 Mbps rep1  up 0.02080%  dn 0.01040%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate] [run] steady 30 Mbps rep1  up 0.35733%  dn 0.01013%  cliEAGAIN 81  srvEAGAIN 0
+  [aggregate] [run] steady 40 Mbps rep1  up 0.04360%  dn 0.02960%  cliEAGAIN 83  srvEAGAIN 0
+  [aggregate] [run] steady 50 Mbps rep1  up 1.85249%  dn 1.06784%  cliEAGAIN 325  srvEAGAIN 0
+  [aggregate] [run] steady 60 Mbps rep1  up 10.43920%  dn 14.64107%  cliEAGAIN 751  srvEAGAIN 0
+  [aggregate] [run] cut1   15 Mbps rep1  up 1.31246%  dn 0.28005%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate] [run] cut0   15 Mbps rep1  up 0.58347%  dn 0.28373%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate] [run] cut1   15 Mbps rep2  up 1.17867%  dn 0.28800%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate] [run] cut0   15 Mbps rep2  up 1.12320%  dn 0.28800%  cliEAGAIN 0  srvEAGAIN 0
+[17:46:19] ##### mode=failover v1.4.1-v5
+client mode started (multipath=failover)
+  [failover] [run] steady 10 Mbps rep1  up 0.20000%  dn 0.21760%  cliEAGAIN 62  srvEAGAIN 0
+  [failover] [run] steady 20 Mbps rep1  up 0.29520%  dn 0.38000%  cliEAGAIN 216  srvEAGAIN 0
+  [failover] [run] steady 30 Mbps rep1  up 0.69333%  dn 0.13653%  cliEAGAIN 284  srvEAGAIN 0
+  [failover] [run] steady 40 Mbps rep1  up 0.99840%  dn 0.23240%  cliEAGAIN 322  srvEAGAIN 0
+  [failover] [run] steady 50 Mbps rep1  up 3.67233%  dn 0.56384%  cliEAGAIN 691  srvEAGAIN 0
+  [failover] [run] steady 60 Mbps rep1  up 7.21147%  dn 14.64213%  cliEAGAIN 1094  srvEAGAIN 0
+  [failover] [run] cut1   15 Mbps rep1  up 0.09707%  dn 0.07467%  cliEAGAIN 116  srvEAGAIN 0
+  [failover] [run] cut0   15 Mbps rep1  up 1.93280%  dn 0.63787%  cliEAGAIN 148  srvEAGAIN 0
+  [failover] [run] cut1   15 Mbps rep2  up 0.08853%  dn 0.09600%  cliEAGAIN 101  srvEAGAIN 0
+  [failover] [run] cut0   15 Mbps rep2  up 1.82720%  dn 0.67520%  cliEAGAIN 146  srvEAGAIN 0
+[18:02:01] 3MODES_DONE
+[18:02:01] ===== 정리 · duplicate 원복 · 1.4.0 복원
+multipath-mode = duplicate
+multipath-mode = duplicate
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 53.273/54.682/58.734/2.036 ms
