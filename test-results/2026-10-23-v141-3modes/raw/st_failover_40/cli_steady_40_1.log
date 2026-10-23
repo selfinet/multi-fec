@@ -1,0 +1,402 @@
+1792745521.410152 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28150
+1792745521.420278 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][INFO][client] flushed 54 pending packet(s)
+1792745521.463693 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28200
+1792745521.472298 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28250
+1792745521.482384 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28300
+1792745521.492540 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28350
+1792745521.502518 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28400
+1792745521.512086 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28450
+1792745521.520308 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][INFO][client] flushed 103 pending packet(s)
+1792745521.522031 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28500
+1792745521.532130 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28550
+1792745521.542073 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28600
+1792745521.553121 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28650
+1792745521.563179 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28700
+1792745521.573185 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28750
+1792745521.585473 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28800
+1792745521.592287 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28850
+1792745521.602402 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28900
+1792745521.612582 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #28950
+1792745521.622213 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][INFO][client] flushed 125 pending packet(s)
+1792745521.623707 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29000
+1792745521.632113 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29050
+1792745521.642048 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29100
+1792745521.652141 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29150
+1792745521.662102 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29200
+1792745521.673057 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29250
+1792745521.683072 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29300
+1792745521.693100 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29350
+1792745521.703309 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29400
+1792745521.704082 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] pending queue full (512) — dropped oldest, total 2000
+1792745521.712261 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29450
+1792745521.721963 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][INFO][client] flushed 151 pending packet(s)
+1792745521.722809 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29500
+1792745521.732478 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29550
+1792745521.742182 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29600
+1792745521.752108 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29650
+1792745521.762158 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29700
+1792745521.772042 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29750
+1792745521.782043 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29800
+1792745521.794136 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29850
+1792745521.803036 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29900
+1792745521.813110 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #29950
+1792745521.824286 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][INFO][client] flushed 182 pending packet(s)
+1792745521.825510 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30000
+1792745521.832194 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30050
+1792745521.842245 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30100
+1792745521.852502 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30150
+1792745521.862174 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30200
+1792745521.872101 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30250
+1792745521.882093 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30300
+1792745521.897704 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30350
+1792745521.903314 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30400
+1792745521.912545 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30450
+1792745521.926061 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][INFO][client] flushed 225 pending packet(s)
+1792745521.926772 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30500
+1792745521.932165 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30550
+1792745521.942246 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30600
+1792745521.952160 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30650
+1792745521.962053 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30700
+1792745521.972094 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30750
+1792745521.982035 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30800
+1792745521.992086 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:01][WARN][client] mud_send EAGAIN #30850
+1792745522.003764 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #30900
+1792745522.013062 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #30950
+1792745522.015057 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] pending queue full (512) — dropped oldest, total 3000
+1792745522.022450 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][INFO][client] flushed 263 pending packet(s)
+1792745522.026152 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31000
+1792745522.032250 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31050
+1792745522.045418 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31100
+1792745522.052211 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31150
+1792745522.066024 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31200
+1792745522.072166 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31250
+1792745522.082258 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31300
+1792745522.092158 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31350
+1792745522.102885 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31400
+1792745522.112133 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31450
+1792745522.124183 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][INFO][client] flushed 295 pending packet(s)
+1792745522.128497 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31500
+1792745522.132993 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31550
+1792745522.143443 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31600
+1792745522.152290 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31650
+1792745522.164742 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31700
+1792745522.172013 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31750
+1792745522.182071 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31800
+1792745522.192012 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31850
+1792745522.202032 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31900
+1792745522.225135 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][INFO][client] flushed 365 pending packet(s)
+1792745522.225677 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #31950
+1792745522.231725 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32000
+1792745522.232571 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32050
+1792745522.242085 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32100
+1792745522.252141 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32150
+1792745522.262090 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32200
+1792745522.273196 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32250
+1792745522.282571 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32300
+1792745522.292485 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32350
+1792745522.302302 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32400
+1792745522.312078 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32450
+1792745522.337166 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][INFO][client] flushed 427 pending packet(s)
+1792745522.338941 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32500
+1792745522.363736 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32550
+1792745522.371136 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32600
+1792745522.372024 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32650
+1792745522.372835 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32700
+1792745522.374001 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32750
+1792745522.382094 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32800
+1792745522.392120 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32850
+1792745522.402182 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32900
+1792745522.451390 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][INFO][client] flushed 454 pending packet(s)
+1792745522.452967 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #32950
+1792745522.477292 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33000
+1792745522.478749 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33050
+1792745522.480269 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33100
+1792745522.481180 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33150
+1792745522.482881 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33200
+1792745522.483828 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33250
+1792745522.495143 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33300
+1792745522.495714 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33350
+1792745522.501939 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33400
+1792745522.511979 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33450
+1792745522.524408 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][INFO][client] flushed 299 pending packet(s)
+1792745522.525209 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33500
+1792745522.532311 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33550
+1792745522.560098 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33600
+1792745522.560872 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33650
+1792745522.562035 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33700
+1792745522.571922 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33750
+1792745522.582211 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33800
+1792745522.592134 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33850
+1792745522.606060 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33900
+1792745522.612144 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #33950
+1792745522.624755 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][INFO][client] flushed 384 pending packet(s)
+1792745522.625306 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34000
+1792745522.631112 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34050
+1792745522.641239 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34100
+1792745522.651156 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34150
+1792745522.668855 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34200
+1792745522.672066 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34250
+1792745522.682059 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34300
+1792745522.692011 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34350
+1792745522.702137 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34400
+1792745522.718296 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34450
+1792745522.718296 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] pending queue full (512) — dropped oldest, total 4000
+1792745522.727648 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][INFO][client] flushed 464 pending packet(s)
+1792745522.728602 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34500
+1792745522.732573 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34550
+1792745522.740931 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34600
+1792745522.750950 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34650
+1792745522.760901 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34700
+1792745522.770930 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34750
+1792745522.781902 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34800
+1792745522.791911 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34850
+1792745522.810030 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34900
+1792745522.812042 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #34950
+1792745522.822831 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][INFO][client] flushed 512 pending packet(s)
+1792745522.834843 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #35000
+1792745522.842040 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #35050
+1792745522.851956 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #35100
+1792745522.862236 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #35150
+1792745522.873791 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #35200
+1792745522.883110 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #35250
+1792745522.893101 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #35300
+1792745522.903644 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #35350
+1792745522.912428 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][WARN][client] mud_send EAGAIN #35400
+1792745522.945166 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:02][INFO][client] flushed 424 pending packet(s)
+1792745523.002253 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:03][WARN][client] mud_send EAGAIN #35450
+1792745523.012074 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:03][WARN][client] mud_send EAGAIN #35500
+1792745523.020528 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:03][INFO][client] flushed 125 pending packet(s)
+1792745523.117213 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:03][WARN][client] mud_send EAGAIN #35550
+1792745523.119094 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:03][INFO][client] flushed 25 pending packet(s)
+1792745523.563249 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:03][WARN][client] mud_send EAGAIN #35600
+1792745523.584061 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:03][WARN][client] mud_send EAGAIN #35650
+1792745523.605961 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:03][WARN][client] mud_send EAGAIN #35700
+1792745523.621695 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:03][INFO][client] flushed 174 pending packet(s)
+1792745524.599144 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:04][WARN][client] mud_send EAGAIN #35750
+1792745524.603255 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:04][WARN][client] mud_send EAGAIN #35800
+1792745524.613105 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:04][WARN][client] mud_send EAGAIN #35850
+1792745524.621165 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:04][INFO][client] flushed 134 pending packet(s)
+1792745525.653564 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:05][WARN][client] mud_send EAGAIN #35900
+1792745525.665392 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:05][WARN][client] mud_send EAGAIN #35950
+1792745525.702089 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:05][WARN][client] mud_send EAGAIN #36000
+1792745525.709924 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:05][WARN][client] mud_send EAGAIN #36050
+1792745525.712117 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:05][WARN][client] mud_send EAGAIN #36100
+1792745525.727719 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:05][WARN][client] mud_send EAGAIN #36150
+1792745525.735197 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:05][INFO][client] flushed 293 pending packet(s)
+1792745526.719247 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:06][INFO][client] flushed 4 pending packet(s)
+1792745527.740464 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:07][WARN][client] mud_send EAGAIN #36200
+1792745527.754295 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:07][WARN][client] mud_send EAGAIN #36250
+1792745527.765183 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:07][WARN][client] mud_send EAGAIN #36300
+1792745527.778421 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:07][WARN][client] mud_send EAGAIN #36350
+1792745527.794377 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:07][WARN][client] mud_send EAGAIN #36400
+1792745527.826923 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:07][INFO][client] flushed 280 pending packet(s)
+1792745528.747063 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:08][WARN][client] mud_send EAGAIN #36450
+1792745528.748818 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:08][WARN][client] mud_send EAGAIN #36500
+1792745528.749567 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:08][WARN][client] mud_send EAGAIN #36550
+1792745528.760318 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:08][WARN][client] mud_send EAGAIN #36600
+1792745528.772119 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:08][WARN][client] mud_send EAGAIN #36650
+1792745528.819544 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:08][WARN][client] mud_send EAGAIN #36700
+1792745528.825416 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:08][INFO][client] flushed 283 pending packet(s)
+1792745529.755020 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:09][WARN][client] mud_send EAGAIN #36750
+1792745529.771696 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:09][WARN][client] mud_send EAGAIN #36800
+1792745529.785171 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:09][WARN][client] mud_send EAGAIN #36850
+1792745529.800034 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:09][WARN][client] mud_send EAGAIN #36900
+1792745529.814210 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:09][WARN][client] mud_send EAGAIN #36950
+1792745529.824586 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:09][INFO][client] flushed 231 pending packet(s)
+1792745530.803493 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:10][WARN][client] mud_send EAGAIN #37000
+1792745530.816955 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:10][WARN][client] mud_send EAGAIN #37050
+1792745530.819386 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:10][INFO][client] flushed 94 pending packet(s)
+1792745531.844291 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:11][WARN][client] mud_send EAGAIN #37100
+1792745531.857151 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:11][WARN][client] mud_send EAGAIN #37150
+1792745531.869135 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:11][WARN][client] mud_send EAGAIN #37200
+1792745531.893978 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:11][WARN][client] mud_send EAGAIN #37250
+1792745531.896461 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:11][WARN][client] mud_send EAGAIN #37300
+1792745531.906040 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:11][WARN][client] mud_send EAGAIN #37350
+1792745531.923034 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:11][INFO][client] flushed 339 pending packet(s)
+1792745532.871979 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:12][WARN][client] mud_send EAGAIN #37400
+1792745532.885477 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:12][WARN][client] mud_send EAGAIN #37450
+1792745532.899764 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:12][WARN][client] mud_send EAGAIN #37500
+1792745532.913437 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:12][WARN][client] mud_send EAGAIN #37550
+1792745532.924155 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:12][INFO][client] flushed 173 pending packet(s)
+1792745533.897016 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:13][WARN][client] mud_send EAGAIN #37600
+1792745533.910124 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:13][WARN][client] mud_send EAGAIN #37650
+1792745533.920265 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:13][INFO][client] flushed 111 pending packet(s)
+1792745534.996438 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:14][WARN][client] mud_send EAGAIN #37700
+1792745535.007270 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:15][WARN][client] mud_send EAGAIN #37750
+1792745535.021275 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:15][INFO][client] flushed 116 pending packet(s)
+1792745536.066456 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:16][WARN][client] mud_send EAGAIN #37800
+1792745536.078085 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:16][WARN][client] mud_send EAGAIN #37850
+1792745536.092034 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:16][WARN][client] mud_send EAGAIN #37900
+1792745536.107118 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:16][WARN][client] mud_send EAGAIN #37950
+1792745536.130059 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:16][INFO][client] flushed 188 pending packet(s)
+1792745537.119072 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:17][INFO][client] flushed 3 pending packet(s)
+1792745539.186281 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:19][WARN][client] mud_send EAGAIN #38000
+1792745539.232262 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:19][INFO][client] flushed 63 pending packet(s)
+1792745540.293432 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:20][WARN][client] mud_send EAGAIN #38050
+1792745540.295502 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:20][WARN][client] mud_send EAGAIN #38100
+1792745540.307445 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:20][WARN][client] mud_send EAGAIN #38150
+1792745540.323531 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:20][INFO][client] flushed 148 pending packet(s)
+1792745541.316810 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:21][WARN][client] mud_send EAGAIN #38200
+1792745541.320876 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:21][INFO][client] flushed 26 pending packet(s)
+1792745542.383804 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:22][WARN][client] mud_send EAGAIN #38250
+1792745542.398039 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:22][WARN][client] mud_send EAGAIN #38300
+1792745542.406868 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:22][WARN][client] mud_send EAGAIN #38350
+1792745542.428040 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:22][INFO][client] flushed 178 pending packet(s)
+1792745543.319290 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:23][INFO][client] path[0] RUNNING owd=31.20ms jit=6.42ms loss=7% rate=249.5Mbps tx=563698 rx=540687 dev=ens18
+1792745543.319830 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:23][INFO][client] path[1] READY owd=32.98ms jit=1.93ms loss=0% rate=8.8Mbps tx=7573 rx=5524 dev=ens18
+1792745543.432825 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:23][WARN][client] mud_send EAGAIN #38400
+1792745543.452930 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:23][WARN][client] mud_send EAGAIN #38450
+1792745543.463643 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:23][WARN][client] mud_send EAGAIN #38500
+1792745543.475301 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:23][WARN][client] mud_send EAGAIN #38550
+1792745543.489441 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:23][WARN][client] mud_send EAGAIN #38600
+1792745543.504318 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:23][WARN][client] mud_send EAGAIN #38650
+1792745543.516993 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:23][WARN][client] mud_send EAGAIN #38700
+1792745543.522512 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:23][INFO][client] flushed 308 pending packet(s)
+1792745544.465028 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:24][WARN][client] mud_send EAGAIN #38750
+1792745544.470224 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:24][WARN][client] mud_send EAGAIN #38800
+1792745544.491737 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:24][WARN][client] mud_send EAGAIN #38850
+1792745544.508072 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:24][WARN][client] mud_send EAGAIN #38900
+1792745544.534557 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:24][INFO][client] flushed 235 pending packet(s)
+1792745545.322756 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:25][INFO][report]client-->server:(original:475031 pkt;602304424 byte) (fec:573418 pkt,732765480 byte)  server-->client:(original:474048 pkt;601066340 byte) (fec:544219 pkt;695462350 byte)
+1792745545.473037 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:25][WARN][client] mud_send EAGAIN #38950
+1792745545.487150 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:25][WARN][client] mud_send EAGAIN #39000
+1792745545.501118 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:25][WARN][client] mud_send EAGAIN #39050
+1792745545.516256 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:25][WARN][client] mud_send EAGAIN #39100
+1792745545.522074 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:25][INFO][client] flushed 170 pending packet(s)
+1792745546.507120 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:26][WARN][client] mud_send EAGAIN #39150
+1792745546.520952 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:26][INFO][client] flushed 78 pending packet(s)
+1792745548.524298 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:28][WARN][client] mud_send EAGAIN #39200
+1792745548.542140 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:28][WARN][client] mud_send EAGAIN #39250
+1792745548.549174 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:28][WARN][client] mud_send EAGAIN #39300
+1792745548.562147 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:28][WARN][client] mud_send EAGAIN #39350
+1792745548.577181 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:28][WARN][client] mud_send EAGAIN #39400
+1792745548.589083 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:28][WARN][client] mud_send EAGAIN #39450
+1792745548.611409 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:28][WARN][client] mud_send EAGAIN #39500
+1792745548.615010 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:28][WARN][client] mud_send EAGAIN #39550
+1792745548.629132 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:28][INFO][client] flushed 371 pending packet(s)
+1792745549.743319 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #39600
+1792745549.768328 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #39650
+1792745549.769757 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #39700
+1792745549.771828 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #39750
+1792745549.776068 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #39800
+1792745549.786163 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #39850
+1792745549.796301 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #39900
+1792745549.806201 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #39950
+1792745549.812751 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][INFO][client] flushed 394 pending packet(s)
+1792745549.878225 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #40000
+1792745549.894181 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #40050
+1792745549.898039 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][WARN][client] mud_send EAGAIN #40100
+1792745549.910755 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:29][INFO][client] flushed 189 pending packet(s)
+1792745550.686184 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:30][WARN][client] mud_send EAGAIN #40150
+1792745550.707744 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:30][INFO][client] flushed 49 pending packet(s)
+1792745551.700459 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:31][WARN][client] mud_send EAGAIN #40200
+1792745551.707269 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:31][INFO][client] flushed 35 pending packet(s)
+1792745552.792426 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:32][WARN][client] mud_send EAGAIN #40250
+1792745552.813304 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:32][INFO][client] flushed 65 pending packet(s)
+1792745553.804710 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:33][WARN][client] mud_send EAGAIN #40300
+1792745553.807183 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:33][INFO][client] flushed 16 pending packet(s)
+1792745554.827324 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:34][WARN][client] mud_send EAGAIN #40350
+1792745554.841063 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:34][WARN][client] mud_send EAGAIN #40400
+1792745554.855038 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:34][WARN][client] mud_send EAGAIN #40450
+1792745554.869079 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:34][WARN][client] mud_send EAGAIN #40500
+1792745554.899185 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:34][WARN][client] mud_send EAGAIN #40550
+1792745554.900834 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:34][WARN][client] mud_send EAGAIN #40600
+1792745554.910852 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:34][INFO][client] flushed 327 pending packet(s)
+1792745555.897674 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:35][WARN][client] mud_send EAGAIN #40650
+1792745555.917780 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:35][INFO][client] flushed 34 pending packet(s)
+1792745556.915036 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:36][INFO][client] flushed 27 pending packet(s)
+1792745557.953976 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:37][WARN][client] mud_send EAGAIN #40700
+1792745557.966946 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:37][WARN][client] mud_send EAGAIN #40750
+1792745557.981706 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:37][WARN][client] mud_send EAGAIN #40800
+1792745557.997998 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:37][WARN][client] mud_send EAGAIN #40850
+1792745558.010296 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:38][INFO][client] flushed 186 pending packet(s)
+1792745559.017842 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:39][INFO][client] flushed 2 pending packet(s)
+1792745560.050950 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:40][WARN][client] mud_send EAGAIN #40900
+1792745560.053740 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:40][WARN][client] mud_send EAGAIN #40950
+1792745560.066177 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:40][WARN][client] mud_send EAGAIN #41000
+1792745560.080286 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:40][WARN][client] mud_send EAGAIN #41050
+1792745560.093259 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:40][WARN][client] mud_send EAGAIN #41100
+1792745560.131181 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:40][INFO][client] flushed 228 pending packet(s)
+1792745561.207579 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:41][INFO][client] flushed 37 pending packet(s)
+1792745562.201523 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:42][WARN][client] mud_send EAGAIN #41150
+1792745562.207023 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:42][INFO][client] flushed 19 pending packet(s)
+1792745563.250122 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:43][WARN][client] mud_send EAGAIN #41200
+1792745563.262060 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:43][WARN][client] mud_send EAGAIN #41250
+1792745563.284229 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:43][WARN][client] mud_send EAGAIN #41300
+1792745563.287993 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:43][WARN][client] mud_send EAGAIN #41350
+1792745563.301039 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:43][WARN][client] mud_send EAGAIN #41400
+1792745563.315733 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:43][INFO][client] flushed 250 pending packet(s)
+1792745564.258295 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:44][WARN][client] mud_send EAGAIN #41450
+1792745564.272049 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:44][WARN][client] mud_send EAGAIN #41500
+1792745564.286099 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:44][WARN][client] mud_send EAGAIN #41550
+1792745564.299111 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:44][WARN][client] mud_send EAGAIN #41600
+1792745564.313785 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:44][INFO][client] flushed 211 pending packet(s)
+1792745565.273735 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:45][WARN][client] mud_send EAGAIN #41650
+1792745565.287070 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:45][WARN][client] mud_send EAGAIN #41700
+1792745565.296416 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:45][WARN][client] mud_send EAGAIN #41750
+1792745565.313538 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:45][INFO][client] flushed 162 pending packet(s)
+1792745566.278686 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:46][WARN][client] mud_send EAGAIN #41800
+1792745566.295397 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:46][WARN][client] mud_send EAGAIN #41850
+1792745566.301157 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:46][WARN][client] mud_send EAGAIN #41900
+1792745566.309101 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:46][INFO][client] flushed 126 pending packet(s)
+1792745567.475266 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:47][WARN][client] mud_send EAGAIN #41950
+1792745567.476971 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:47][WARN][client] mud_send EAGAIN #42000
+1792745567.478979 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:47][WARN][client] mud_send EAGAIN #42050
+1792745567.492113 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:47][WARN][client] mud_send EAGAIN #42100
+1792745567.528288 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:47][INFO][client] flushed 230 pending packet(s)
+1792745569.545281 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:49][WARN][client] mud_send EAGAIN #42150
+1792745569.561281 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:49][WARN][client] mud_send EAGAIN #42200
+1792745569.574752 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:49][WARN][client] mud_send EAGAIN #42250
+1792745569.592545 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:49][WARN][client] mud_send EAGAIN #42300
+1792745569.611926 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:49][INFO][client] flushed 196 pending packet(s)
+1792745570.559887 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:50][WARN][client] mud_send EAGAIN #42350
+1792745570.562184 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:50][WARN][client] mud_send EAGAIN #42400
+1792745570.566277 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:50][WARN][client] mud_send EAGAIN #42450
+1792745570.578056 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:50][WARN][client] mud_send EAGAIN #42500
+1792745570.592176 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:50][WARN][client] mud_send EAGAIN #42550
+1792745570.609993 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:50][INFO][client] flushed 255 pending packet(s)
+1792745571.628023 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:51][WARN][client] mud_send EAGAIN #42600
+1792745571.643257 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:51][WARN][client] mud_send EAGAIN #42650
+1792745571.683675 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:51][WARN][client] mud_send EAGAIN #42700
+1792745571.685209 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:51][WARN][client] mud_send EAGAIN #42750
+1792745571.688216 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:51][WARN][client] mud_send EAGAIN #42800
+1792745571.710738 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:51][INFO][client] flushed 249 pending packet(s)
+1792745572.666048 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:52][WARN][client] mud_send EAGAIN #42850
+1792745572.702064 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:52][WARN][client] mud_send EAGAIN #42900
+1792745572.705105 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:52][WARN][client] mud_send EAGAIN #42950
+1792745572.712008 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:52][INFO][client] flushed 113 pending packet(s)
+1792745573.319521 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:53][INFO][client] path[0] RUNNING owd=30.92ms jit=4.56ms loss=3% rate=150.3Mbps tx=714193 rx=683449 dev=ens18
+1792745573.320082 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:53][INFO][client] path[1] READY owd=34.44ms jit=3.03ms loss=0% rate=8.8Mbps tx=8009 rx=5953 dev=ens18
+1792745573.730639 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:53][WARN][client] mud_send EAGAIN #43000
+1792745573.745232 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:53][WARN][client] mud_send EAGAIN #43050
+1792745573.763390 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:53][WARN][client] mud_send EAGAIN #43100
+1792745573.778552 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:53][WARN][client] mud_send EAGAIN #43150
+1792745573.792042 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:53][WARN][client] mud_send EAGAIN #43200
+1792745573.804316 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:53][WARN][client] mud_send EAGAIN #43250
+1792745573.809558 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:53][INFO][client] flushed 295 pending packet(s)
+1792745574.776881 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:54][WARN][client] mud_send EAGAIN #43300
+1792745574.789108 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:54][WARN][client] mud_send EAGAIN #43350
+1792745574.803110 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:54][WARN][client] mud_send EAGAIN #43400
+1792745574.809920 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:54][INFO][client] flushed 162 pending packet(s)
+1792745575.865114 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:55][WARN][client] mud_send EAGAIN #43450
+1792745575.878145 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:55][WARN][client] mud_send EAGAIN #43500
+1792745575.905255 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:55][WARN][client] mud_send EAGAIN #43550
+1792745575.909726 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:55][INFO][client] flushed 180 pending packet(s)
+1792745576.893271 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:56][WARN][client] mud_send EAGAIN #43600
+1792745576.895266 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:56][WARN][client] mud_send EAGAIN #43650
+1792745576.906079 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:56][WARN][client] mud_send EAGAIN #43700
+1792745576.911050 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:56][INFO][client] flushed 107 pending packet(s)
+1792745577.907413 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:57][INFO][client] flushed 16 pending packet(s)
+1792745578.974207 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:58][WARN][client] mud_send EAGAIN #43750
+1792745578.976201 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:58][WARN][client] mud_send EAGAIN #43800
+1792745578.986735 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:58][WARN][client] mud_send EAGAIN #43850
+1792745579.001088 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:58][WARN][client] mud_send EAGAIN #43900
+1792745579.019413 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:59][INFO][client] flushed 190 pending packet(s)
+1792745579.954208 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:59][WARN][client] mud_send EAGAIN #43950
+1792745579.974949 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:59][WARN][client] mud_send EAGAIN #44000
+1792745579.981867 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:59][WARN][client] mud_send EAGAIN #44050
+1792745579.996246 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:52:59][WARN][client] mud_send EAGAIN #44100
+1792745580.016427 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:53:00][WARN][client] mud_send EAGAIN #44150
+1792745580.031518 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:53:00][INFO][client] flushed 242 pending packet(s)
+1792745580.992151 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:53:00][WARN][client] mud_send EAGAIN #44200
+1792745581.008263 multi-fec-client multi-fec-dist[36911]: [2026-10-23 08:53:01][INFO][client] flushed 97 pending packet(s)

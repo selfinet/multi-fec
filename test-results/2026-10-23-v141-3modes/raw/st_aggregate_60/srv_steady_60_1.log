@@ -1,0 +1,4 @@
+1792744778.172499 multi-fec-server multi-fec-dist[18890]: [2026-10-23 08:39:38][INFO][report][192.168.100.131:35438]client-->server:(original:930894 pkt;1180321304 byte) (fec:1086435 pkt;1388368670 byte)  server-->client:(original:936412 pkt;1187327760 byte) (fec:1127288 pkt;1440593440 byte)
+1792744824.372300 multi-fec-server multi-fec-dist[18890]: [2026-10-23 08:40:24][WARN]unexpected tmp_seq==seq ,seq=1057283518
+1792744824.373799 multi-fec-server multi-fec-dist[18890]: [2026-10-23 08:40:24][WARN]unexpected tmp_seq==seq ,seq=1057283519
+1792744838.498196 multi-fec-server multi-fec-dist[18890]: [2026-10-23 08:40:38][INFO][report][192.168.100.131:35438]client-->server:(original:1257142 pkt;1594003768 byte) (fec:1466586 pkt;1874201648 byte)  server-->client:(original:1250902 pkt;1586101080 byte) (fec:1504770 pkt;1923015436 byte)
