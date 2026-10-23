@@ -1,0 +1,4 @@
+1792720434.141025 multi-fec-server multi-fec-dist[1815593]: [2026-10-23 01:53:54][INFO][server] dropped 395 stale pending packet(s) (>1000 ms)
+1792720434.169997 multi-fec-server multi-fec-dist[1815593]: [2026-10-23 01:53:54][INFO][server] dropped 52 stale pending packet(s) (>1000 ms)
+1792720434.245268 multi-fec-server multi-fec-dist[1815593]: [2026-10-23 01:53:54][INFO][server] dropped 126 stale pending packet(s) (>1000 ms)
+1792720460.022160 multi-fec-server multi-fec-dist[1815593]: [2026-10-23 01:54:20][INFO][report][192.168.100.88:38386]client-->server:(original:142620 pkt;180831840 byte) (fec:173060 pkt;221151176 byte)  server-->client:(original:143778 pkt;182301416 byte) (fec:172643 pkt;220619578 byte)

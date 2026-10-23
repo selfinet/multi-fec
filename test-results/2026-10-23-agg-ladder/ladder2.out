@@ -1,0 +1,25 @@
+[10:53:14] ##### mode=duplicate v1.4.1-v3
+multipath-mode = duplicate
+multipath-mode = duplicate
+  [duplicate 50] [run] steady 50 Mbps rep1  up 2.68833%  dn 8.60739%  cliEAGAIN 201  srvEAGAIN 0
+  [duplicate 60] [run] steady 60 Mbps rep1  up 3.39493%  dn 8.88836%  cliEAGAIN 116  srvEAGAIN 0
+  [duplicate 70] [run] steady 70 Mbps rep1  up 7.99771%  dn 21.60727%  cliEAGAIN 329  srvEAGAIN 0
+  [duplicate 70] [run] 가드 트립
+  [duplicate 70] [guard] 10:57:49 트립 → s:링크=449.63Mbps>400 r2:링크=417.83Mbps>400  → 'mfgen tx' 중단
+  [duplicate] 70 Mbps 에서 중단
+[guard] 10:57:49 트립 → s:링크=449.63Mbps>400 r2:링크=417.83Mbps>400  → 'mfgen tx' 중단
+[10:58:34] ##### mode=aggregate v1.4.1-v3
+multipath-mode = aggregate
+multipath-mode = aggregate
+  [aggregate 50] [run] steady 50 Mbps rep1  up 12.44036%  dn 6.98498%  cliEAGAIN 730  srvEAGAIN 0
+  [aggregate 60] [run] steady 60 Mbps rep1  up 6.69760%  dn 0.67467%  cliEAGAIN 1186  srvEAGAIN 0
+  [aggregate 70] [run] steady 70 Mbps rep1  up 14.90903%  dn 3.55726%  cliEAGAIN 2223  srvEAGAIN 0
+[11:03:56] LADDER_DONE
+[11:03:56] ===== 정리 · duplicate 원복 · 1.4.0 복원
+multipath-mode = duplicate
+multipath-mode = duplicate
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 52.752/53.378/54.191/0.472 ms

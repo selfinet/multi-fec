@@ -1,0 +1,17 @@
+1792720960.466241 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:02:40][INFO][report][192.168.100.88:53262]client-->server:(original:662489 pkt;840011660 byte) (fec:773653 pkt;988682002 byte)  server-->client:(original:724388 pkt;918504408 byte) (fec:869530 pkt;1111222532 byte)
+1792721010.018864 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637111
+1792721010.018864 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637112
+1792721010.018864 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637113
+1792721010.023132 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637114
+1792721010.024698 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637115
+1792721010.024698 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637116
+1792721010.024698 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637117
+1792721010.026731 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637118
+1792721010.027177 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637119
+1792721010.028552 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637120
+1792721010.031571 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637121
+1792721010.031571 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637122
+1792721010.031571 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637123
+1792721010.031571 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637124
+1792721010.032184 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637125
+1792721010.032959 multi-fec-server multi-fec-dist[1820614]: [2026-10-23 02:03:30][WARN]unexpected tmp_seq==seq ,seq=1578637126

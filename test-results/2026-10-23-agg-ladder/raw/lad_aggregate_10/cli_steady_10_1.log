@@ -1,0 +1,14 @@
+1792719716.847586 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:41:56][INFO][client] path[0] RUNNING owd=25.85ms jit=0.09ms loss=3% rate=22.0Mbps tx=19039 rx=17619 dev=ens18
+1792719716.847586 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:41:56][INFO][client] path[1] RUNNING owd=30.84ms jit=0.08ms loss=0% rate=8.9Mbps tx=16724 rx=16926 dev=ens18
+1792719717.646785 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:41:57][INFO][report]client-->server:(original:27804 pkt;35250832 byte) (fec:34762 pkt,44416556 byte)  server-->client:(original:27712 pkt;35135408 byte) (fec:33520 pkt;42834016 byte)
+1792719727.837155 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:07][WARN][client] mud_send EAGAIN #50
+1792719727.841276 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:07][WARN][client] mud_send EAGAIN #100
+1792719727.843287 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:07][WARN][client] mud_send EAGAIN #150
+1792719727.863035 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:07][WARN][client] mud_send EAGAIN #200
+1792719727.899560 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:07][WARN][client] mud_send EAGAIN #250
+1792719727.926425 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:07][INFO][client] flushed 279 pending packet(s)
+1792719727.969633 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:07][WARN][client] mud_send EAGAIN #300
+1792719728.006503 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:08][WARN][client] mud_send EAGAIN #350
+1792719728.025718 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:08][INFO][client] flushed 90 pending packet(s)
+1792719746.847471 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:26][INFO][client] path[0] RUNNING owd=25.83ms jit=0.12ms loss=5% rate=37.1Mbps tx=39674 rx=35844 dev=ens18
+1792719746.849050 multi-fec-client multi-fec-dist[1802959]: [2026-10-23 01:42:26][INFO][client] path[1] RUNNING owd=30.75ms jit=0.07ms loss=1% rate=18.5Mbps tx=36147 rx=37442 dev=ens18

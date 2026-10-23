@@ -1,0 +1,29 @@
+[10:28:50] ##### mode=duplicate v1.4.1-v3
+multipath-mode = duplicate
+multipath-mode = duplicate
+  [duplicate 10] [run] steady 10 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate 15] [run] steady 15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 13  srvEAGAIN 0
+  [duplicate 20] [run] steady 20 Mbps rep1  up 0.04480%  dn 0.00000%  cliEAGAIN 0  srvEAGAIN 0
+  [duplicate 25] [run] steady 25 Mbps rep1  up 0.67840%  dn 0.80961%  cliEAGAIN 46  srvEAGAIN 0
+  [duplicate 30] [run] steady 30 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 41  srvEAGAIN 0
+  [duplicate 35] [run] steady 35 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 10  srvEAGAIN 0
+  [duplicate 40] [run] steady 40 Mbps rep1  up 0.19400%  dn 0.37040%  cliEAGAIN 78  srvEAGAIN 0
+[10:40:53] ##### mode=aggregate v1.4.1-v3
+multipath-mode = aggregate
+multipath-mode = aggregate
+  [aggregate 10] [run] steady 10 Mbps rep1  up 0.06560%  dn 0.07200%  cliEAGAIN 7  srvEAGAIN 0
+  [aggregate 15] [run] steady 15 Mbps rep1  up 0.03093%  dn 0.01387%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 20] [run] steady 20 Mbps rep1  up 0.20160%  dn 0.03280%  cliEAGAIN 20  srvEAGAIN 0
+  [aggregate 25] [run] steady 25 Mbps rep1  up 0.02112%  dn 0.01920%  cliEAGAIN 1  srvEAGAIN 0
+  [aggregate 30] [run] steady 30 Mbps rep1  up 0.03467%  dn 0.02827%  cliEAGAIN 0  srvEAGAIN 0
+  [aggregate 35] [run] steady 35 Mbps rep1  up 0.91886%  dn 0.02697%  cliEAGAIN 91  srvEAGAIN 0
+  [aggregate 40] [run] steady 40 Mbps rep1  up 2.11040%  dn 0.01480%  cliEAGAIN 242  srvEAGAIN 0
+[10:52:55] LADDER_DONE
+[10:52:55] ===== 정리 · duplicate 원복 · 1.4.0 복원
+multipath-mode = duplicate
+multipath-mode = duplicate
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 03a403935c1b0deb inactive active inactive 
+rs2 03a403935c1b0deb inactive active inactive 
+multi-fec-server 03a403935c1b0deb inactive inactive active 
+rtt min/avg/max/mdev = 52.705/53.232/53.457/0.276 ms
