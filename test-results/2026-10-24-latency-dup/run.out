@@ -1,0 +1,23 @@
+[run] 가드 PID 2204042
+qdisc netem 10: parent 1:1 limit 1000 delay 25ms
+qdisc netem 10: parent 1:1 limit 1000 delay 50ms
+[run] A_v141-v5_1    up 0.00000%  dn 0.00000%  | p0 RUNNING owd=25.95 tx=27997 rx=119628 p1 RUNNING owd=50.87 tx=27112 rx=119673 
+[run] A_v140_1       up 0.00000%  dn 0.00000%  | p0 RUNNING owd=25.77 tx=28015 rx=119526 p1 RUNNING owd=50.82 tx=26887 rx=107103 
+[run] A_v140_2       up 0.00000%  dn 0.00000%  | p0 RUNNING owd=25.79 tx=28071 rx=119684 p1 RUNNING owd=50.76 tx=26953 rx=82935 
+[run] A_v141-v5_2    up 0.00000%  dn 0.00000%  | p0 RUNNING owd=25.71 tx=28016 rx=119592 p1 RUNNING owd=50.83 tx=27001 rx=119639 
+qdisc netem 10: parent 1:1 limit 1000 delay 37ms
+qdisc netem 10: parent 1:1 limit 1000 delay 37ms
+[run] B_v141-v5_1    up 0.00000%  dn 0.00000%  | p0 RUNNING owd=37.21 tx=27348 rx=118902 p1 RUNNING owd=37.50 tx=27256 rx=118812 
+[run] B_v140_1       up 0.00000%  dn 0.00000%  | p0 RUNNING owd=37.62 tx=27322 rx=119001 p1 RUNNING owd=37.54 tx=27219 rx=118898 
+[run] B_v140_2       up 0.00000%  dn 0.00000%  | p0 RUNNING owd=37.43 tx=27247 rx=118823 p1 RUNNING owd=37.52 tx=27248 rx=118822 
+[run] B_v141-v5_2    up 0.00000%  dn 0.00000%  | p0 RUNNING owd=37.61 tx=27231 rx=118804 p1 RUNNING owd=37.66 tx=27230 rx=118804 
+[18:31:19] LATDUP_DONE
+[18:31:19] ===== 정리 · netem 원본 · 1.4.0
+qdisc netem 10: parent 1:1 limit 1000 delay 25ms loss 5%
+qdisc netem 10: parent 1:1 limit 1000 delay 30ms loss 2%
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 53.425/53.592/53.795/0.146 ms
+sv1 운영: MainPID=754  md5 3db3617e

@@ -1,0 +1,74 @@
+[15:16:57] ##### rep1 active=r v1.4.1-v5  7:path = 0.0.0.0:192.168.100.88:443 8:path = 0.0.0.0:192.168.100.131:443 9:multipath-mode = failover 
+client mode started (multipath=failover)
+  [r_v141-v5_1] [run] steady 10 Mbps rep1  up 0.18080%  dn 0.17760%  cliEAGAIN 59  srvEAGAIN 0
+  [r_v141-v5_1] [run] steady 20 Mbps rep1  up 0.12720%  dn 0.09520%  cliEAGAIN 132  srvEAGAIN 0
+  [r_v141-v5_1] [run] steady 30 Mbps rep1  up 1.02933%  dn 0.13333%  cliEAGAIN 287  srvEAGAIN 0
+  [r_v141-v5_1] [run] steady 40 Mbps rep1  up 0.84680%  dn 0.33320%  cliEAGAIN 342  srvEAGAIN 0
+  [r_v141-v5_1] [run] cut1   15 Mbps rep1  up 0.15147%  dn 0.11520%  cliEAGAIN 93  srvEAGAIN 0
+  [r_v141-v5_1] [run] cut0   15 Mbps rep1  up 1.85387%  dn 0.71040%  cliEAGAIN 86  srvEAGAIN 0
+[15:26:51] ##### rep1 active=r v1.4.0  7:path = 0.0.0.0:192.168.100.88:443 8:path = 0.0.0.0:192.168.100.131:443 9:multipath-mode = failover 
+client mode started (multipath=failover)
+  [r_v140_1] [run] steady 10 Mbps rep1  up 0.14400%  dn 0.20640%  cliEAGAIN 57  srvEAGAIN 0
+  [r_v140_1] [run] steady 20 Mbps rep1  up 0.15840%  dn 0.37680%  cliEAGAIN 207  srvEAGAIN 0
+  [r_v140_1] [run] steady 30 Mbps rep1  up 0.62773%  dn 0.12160%  cliEAGAIN 899  srvEAGAIN 0
+  [r_v140_1] [run] steady 40 Mbps rep1  up 2.16160%  dn 0.16200%  cliEAGAIN 1981  srvEAGAIN 0
+  [r_v140_1] [run] cut1   15 Mbps rep1  up 0.28267%  dn 0.13013%  cliEAGAIN 170  srvEAGAIN 0
+  [r_v140_1] [run] cut0   15 Mbps rep1  up 1.79947%  dn 0.48960%  cliEAGAIN 148  srvEAGAIN 0
+[15:36:44] ##### rep1 active=rs2 v1.4.1-v5  7:path = 0.0.0.0:192.168.100.131:443 8:path = 0.0.0.0:192.168.100.88:443 9:multipath-mode = failover 
+client mode started (multipath=failover)
+  [rs2_v141-v5_1] [run] steady 10 Mbps rep1  up 0.01600%  dn 0.00480%  cliEAGAIN 55  srvEAGAIN 0
+  [rs2_v141-v5_1] [run] steady 20 Mbps rep1  up 0.00000%  dn 0.00560%  cliEAGAIN 144  srvEAGAIN 0
+  [rs2_v141-v5_1] [run] steady 30 Mbps rep1  up 2.29920%  dn 0.00000%  cliEAGAIN 367  srvEAGAIN 0
+  [rs2_v141-v5_1] [run] steady 40 Mbps rep1  up 0.78200%  dn 0.00160%  cliEAGAIN 368  srvEAGAIN 0
+  [rs2_v141-v5_1] [run] cut1   15 Mbps rep1  up 1.82293%  dn 0.50987%  cliEAGAIN 105  srvEAGAIN 0
+  [rs2_v141-v5_1] [run] cut0   15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 89  srvEAGAIN 0
+[15:46:39] ##### rep1 active=rs2 v1.4.0  7:path = 0.0.0.0:192.168.100.131:443 8:path = 0.0.0.0:192.168.100.88:443 9:multipath-mode = failover 
+client mode started (multipath=failover)
+  [rs2_v140_1] [run] steady 10 Mbps rep1  up 0.00000%  dn 0.01760%  cliEAGAIN 57  srvEAGAIN 0
+  [rs2_v140_1] [run] steady 20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 193  srvEAGAIN 0
+  [rs2_v140_1] [run] steady 30 Mbps rep1  up 1.30293%  dn 0.00373%  cliEAGAIN 943  srvEAGAIN 0
+  [rs2_v140_1] [run] steady 40 Mbps rep1  up 2.36640%  dn 0.42040%  cliEAGAIN 1895  srvEAGAIN 0
+  [rs2_v140_1] [run] cut1   15 Mbps rep1  up 1.92960%  dn 0.84480%  cliEAGAIN 146  srvEAGAIN 0
+  [rs2_v140_1] [run] cut0   15 Mbps rep1  up 0.01173%  dn 0.00000%  cliEAGAIN 88  srvEAGAIN 0
+[15:56:31] ##### rep2 active=r v1.4.0  7:path = 0.0.0.0:192.168.100.88:443 8:path = 0.0.0.0:192.168.100.131:443 9:multipath-mode = failover 
+client mode started (multipath=failover)
+  [r_v140_2] [run] steady 10 Mbps rep1  up 0.22560%  dn 0.18240%  cliEAGAIN 56  srvEAGAIN 0
+  [r_v140_2] [run] steady 20 Mbps rep1  up 0.41520%  dn 0.15920%  cliEAGAIN 269  srvEAGAIN 0
+  [r_v140_2] [run] steady 30 Mbps rep1  up 1.12640%  dn 0.10507%  cliEAGAIN 947  srvEAGAIN 0
+  [r_v140_2] [run] steady 40 Mbps rep1  up 4.48480%  dn 0.54240%  cliEAGAIN 2186  srvEAGAIN 0
+  [r_v140_2] [run] cut1   15 Mbps rep1  up 0.10240%  dn 0.08960%  cliEAGAIN 145  srvEAGAIN 0
+  [r_v140_2] [run] cut0   15 Mbps rep1  up 1.92533%  dn 0.63147%  cliEAGAIN 161  srvEAGAIN 0
+[16:06:24] ##### rep2 active=r v1.4.1-v5  7:path = 0.0.0.0:192.168.100.88:443 8:path = 0.0.0.0:192.168.100.131:443 9:multipath-mode = failover 
+client mode started (multipath=failover)
+  [r_v141-v5_2] [run] steady 10 Mbps rep1  up 0.29120%  dn 0.19040%  cliEAGAIN 62  srvEAGAIN 0
+  [r_v141-v5_2] [run] steady 20 Mbps rep1  up 0.11920%  dn 0.12960%  cliEAGAIN 147  srvEAGAIN 0
+  [r_v141-v5_2] [run] steady 30 Mbps rep1  up 0.20853%  dn 0.15093%  cliEAGAIN 223  srvEAGAIN 0
+  [r_v141-v5_2] [run] steady 40 Mbps rep1  up 1.15560%  dn 0.28040%  cliEAGAIN 368  srvEAGAIN 0
+  [r_v141-v5_2] [run] cut1   15 Mbps rep1  up 0.45440%  dn 0.12267%  cliEAGAIN 131  srvEAGAIN 0
+  [r_v141-v5_2] [run] cut0   15 Mbps rep1  up 1.83467%  dn 1.06987%  cliEAGAIN 87  srvEAGAIN 0
+[16:16:17] ##### rep2 active=rs2 v1.4.0  7:path = 0.0.0.0:192.168.100.131:443 8:path = 0.0.0.0:192.168.100.88:443 9:multipath-mode = failover 
+client mode started (multipath=failover)
+  [rs2_v140_2] [run] steady 10 Mbps rep1  up 0.00000%  dn 0.02080%  cliEAGAIN 58  srvEAGAIN 0
+  [rs2_v140_2] [run] steady 20 Mbps rep1  up 0.00000%  dn 0.00400%  cliEAGAIN 192  srvEAGAIN 0
+  [rs2_v140_2] [run] steady 30 Mbps rep1  up 1.10560%  dn 0.00000%  cliEAGAIN 878  srvEAGAIN 0
+  [rs2_v140_2] [run] steady 40 Mbps rep1  up 2.70080%  dn 0.30640%  cliEAGAIN 2121  srvEAGAIN 0
+  [rs2_v140_2] [run] cut1   15 Mbps rep1  up 1.94667%  dn 0.76053%  cliEAGAIN 125  srvEAGAIN 0
+  [rs2_v140_2] [run] cut0   15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 122  srvEAGAIN 0
+[16:26:11] ##### rep2 active=rs2 v1.4.1-v5  7:path = 0.0.0.0:192.168.100.131:443 8:path = 0.0.0.0:192.168.100.88:443 9:multipath-mode = failover 
+client mode started (multipath=failover)
+  [rs2_v141-v5_2] [run] steady 10 Mbps rep1  up 0.00800%  dn 0.00000%  cliEAGAIN 56  srvEAGAIN 0
+  [rs2_v141-v5_2] [run] steady 20 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 149  srvEAGAIN 0
+  [rs2_v141-v5_2] [run] steady 30 Mbps rep1  up 0.09547%  dn 0.00000%  cliEAGAIN 258  srvEAGAIN 0
+  [rs2_v141-v5_2] [run] steady 40 Mbps rep1  up 0.84240%  dn 0.00200%  cliEAGAIN 368  srvEAGAIN 0
+  [rs2_v141-v5_2] [run] cut1   15 Mbps rep1  up 1.89653%  dn 0.58027%  cliEAGAIN 103  srvEAGAIN 0
+  [rs2_v141-v5_2] [run] cut0   15 Mbps rep1  up 0.00000%  dn 0.00000%  cliEAGAIN 76  srvEAGAIN 0
+[16:36:04] FAILOVER_DONE
+[16:36:04] ===== 정리 · 원본 conf 복원 · 1.4.0
+4:path = 0.0.0.0:192.168.100.88:443 5:path = 0.0.0.0:192.168.100.131:443   # 2026-10-23 path[1] r .117 → rs2 .131 9:multipath-mode = duplicate 
+8:multipath-mode = duplicate 
+multi-fec-client 3cbf7cb2298b5e7d active inactive inactive 
+multi-fec-relay 3cbf7cb2298b5e7d inactive active inactive 
+rs2 3cbf7cb2298b5e7d inactive active inactive 
+multi-fec-server 3cbf7cb2298b5e7d inactive inactive active 
+rtt min/avg/max/mdev = 53.686/54.865/58.856/2.007 ms
+sv1 운영: MainPID=754  md5 3db3617e

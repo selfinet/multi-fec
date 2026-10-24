@@ -1,5 +1,6 @@
 #!/bin/bash
 # ab_v141.sh — 1.4.1(rate 는 손실 >25% 일 때만 감소) vs 1.4.0 실터널 A/B (2026-10-21, 테스트망 전용)
+# ⚠️ 2026-10-23 이후 사용 금지 — path[1] 이 rs2 로 옮겨져 setver 가 rs2 를 교체하지 않는다(기록용으로 둔다).
 #
 # 회차마다 두 버전을 번갈아 3대에 깔고 tunnel_regress.sh 를 같은 조건으로 돌린다(시간대 편향 제거).
 #   작업: /usr/sbin/multi-fec-dist 를 .v1.4.1 / .v1.4.0 사본으로 install → multi-fec@* 재시작 (server → relay → client)
