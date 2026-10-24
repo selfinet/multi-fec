@@ -90,13 +90,13 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 | 2 | **`--check` 출력의 키 가림** | 포트를 쥔 프로세스 명령줄을 보여 줄 때 `-k`/`--key`/`--route` 값을 가린다 — 1.3.x 프로세스면 키 앞부분이 찍힌다 | 테스트망 `-k a8fec…` 출력 확인. 지금은 `mf-migrate.py` 출력에서만 가린다 |
 | 3 | **호환 회귀 테스트 추가** | 1.3.x 가 받아 주던 입력(줄 끝 주석·뒤쪽 단어·`$VAR` 분리·EnvironmentFile 해석)과 `--config` 파서·path/route 형식을 스위트에 | 1.4.0 의 `#` 호환 결함을 스위트가 잡지 못했다 |
 | 4 | **키 출처 충돌 경고** | `-k` 와 `--key-file`(또는 `MF_KEY`)을 함께 주면 경고 — 지금은 조용히 `-k` 가 이긴다 | 실측 `key kf:… from command line` |
-| 5 | ~~aggregate + 고손실 회귀 원인 분석~~ → **원인 확정·수정 브랜치 `fix/mud-rate-agg`(2026-10-22)**. duplicate 단일 경로 유실도 같은 뿌리로 함께 수정. 실망 확인·비회귀 스위트 후 1.4.1 | v1.3.4 probe 답신 제한(`beat/4`) 전후 A/B, 손실 추정·rate 피드백 경로 계측 | `test_path_failure.py` aggregate·B 손실 60%: v1.3.3 8회 중 7회 <2% → v1.4.0 9회 중 0회. duplicate 무관 |
+| 5 | ~~aggregate + 고손실 회귀 원인 분석~~ → **원인 확정·수정 브랜치 `fix/mud-rate-agg`(2026-10-22)**. duplicate 단일 경로 유실도 같은 뿌리로 함께 수정. 실망 확인·비회귀 스위트 후 1.4.1  **→ 1.4.1 반영(2026-10-24)** | v1.3.4 probe 답신 제한(`beat/4`) 전후 A/B, 손실 추정·rate 피드백 경로 계측 | `test_path_failure.py` aggregate·B 손실 60%: v1.3.3 8회 중 7회 <2% → v1.4.0 9회 중 0회. duplicate 무관 |
 | 6 | 터널 루프 차단 끄기 옵션 | path 가 `wg*`/`tun*` 로 라우팅되면 기동 거부 — tun 을 하부 회선으로 쓰는 환경용 예외 | 설계상 의도, 서비스 무관 |
 | 7 | `via` 같은 목적지 2회선 owd 이상값 | 첫 보고 1회 수십억 ms, 재실행 재현 안 됨 | T5b — 원인 미확인 |
 | 8 | **relay 키 필수** | 키(`key`/`--route`)가 하나도 없는 relay 는 기동 거부. 지금은 투명 중계로 조용히 뜬다 — 운영 방침은 "키는 무조건 있어야 함"(2026-10-19) | `main.cpp:1502` 주석, 도움말 "If omitted, relay forwards all packets transparently" |
 | 9 | **`--upstream`(+`-k`) 와 `--route` 동시 지정 거부** | 지금은 오류·경고 없이 route 만 쓰고 upstream·키를 버린다. 문서·도움말은 "혼용 불가(시작 시 오류)" 라고 적혀 있었다 | 2026-10-19 테스트망 r 실측: `mode=key-routing routes=1`, exit 0 |
-| 10 | **duplicate 하향 경로 태그(`fix/dup-path-tag`)** | 늘 늦는 무손실 경로를 서버가 하향에 쓰지 않던 문제 — 1.4.1 에 `fix/mud-rate-agg` 와 함께 | `test-results/2026-10-23-dup-path-tag/` |
-| 11 | **aggregate 송신 창 하한(`fix/agg-window`)** | aggregate 35~40 Mbps 송신 창 고갈 해소 — 1.4.1 후보에 함께 | `test-results/2026-10-23-agg-window/` |
+| 10 | **duplicate 하향 경로 태그(`fix/dup-path-tag`)**  **→ 1.4.1 반영(2026-10-24)** | 늘 늦는 무손실 경로를 서버가 하향에 쓰지 않던 문제 — 1.4.1 에 `fix/mud-rate-agg` 와 함께 | `test-results/2026-10-23-dup-path-tag/` |
+| 11 | **aggregate 송신 창 하한(`fix/agg-window`)**  **→ 1.4.1 반영(2026-10-24)** | aggregate 35~40 Mbps 송신 창 고갈 해소 — 1.4.1 후보에 함께 | `test-results/2026-10-23-agg-window/` |
 
 - 추가 · 2026-10-19 — **`mf-migrate.py`** — 1.3.x 식 유닛(인자 펼침 + EnvironmentFile)을 1.4.0 `--config` 형식으로 변환. systemd 와 같은
   규칙으로 해석(`${VAR}` 한 단어 · 단독 `$VAR` 분리 · EnvironmentFile 의 줄 끝 주석), relay `--route` 는 원래 주석을 달아 routes 파일로,
@@ -686,6 +686,24 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
   은 60초 중 1초만 표본. sv1 에서 `mpstat -P ALL` 과 교차검증(오차 ≤0.4%p).
 
 ---
+
+## [1.4.1] — 2026-10-24
+
+**와이어 포맷·설정 형식 무변경** — 1.4.0 과 c·relay·s 어느 조합으로 섞어도 동작(테스트망 8조합 × 2회). relay 코드(`mf_relay.cpp`)와 설정 파싱(`main.cpp`·`mf_config`·`mf_netcfg`)은 1.4.0 과 같다.
+1.3.x 형식 유닛(EnvironmentFile + 인자) 그대로 바이너리만 바꾸면 된다. 수정 효과는 1.4.1 을 깐 쪽에만 난다(상향 = client, 하향 = server). 상세 CLAUDE.md §31.
+
+- 수정 · aggregate 가 손실 많은 경로에 몫을 과다 배분(1.3.4~1.4.0) — 배분 가중치 `tx.est × (1−loss/255)²`(`1f74be6`·`00c69eb`).
+  r netns 경로 B 손실 60%: 2% 이내 7/20 → 10/10, `test_path_failure.py` 8/8.
+- 수정 · 경로 하나만 남으면 송신 한도가 실제 송신량 아래로 내려가 EAGAIN → client pending 무음 폐기(1.3.4~1.4.0) — 경로 rate 하한 = 자기 송신량 × 5/4(손실 무관).
+  유실 회차 5/20 → 0/20, 실터널 client EAGAIN 128 → 9. pending 넘침 경고 로그 추가.
+- 수정 · duplicate 에서 늘 늦는 무손실 경로가 서버 하향에서 빠짐 — 늦은 사본으로도 세션 경로 태그(`028dbed`, 서버 단독).
+  실제망 지연 25/50 ms·손실 0 에서 1.4.0 은 새 세션 뒤 수십 초 동안 하향 한 경로 → 1.4.1 은 처음부터 두 경로.
+- 수정 · aggregate 35~40 Mbps 송신 창 고갈 — aggregate 사용 중 창을 실제 전체 송신량 × 5/4 이상으로(`ab165c0`). 0.92/2.11 % → 0.02/0.07 %.
+- 변경 · aggregate 배분 추정(`tx.est`)을 송신 창용 rate 와 분리, 송신 창 상한 rate × 100 ms → 200 ms(`63f4fa4`).
+- 테스트 · `test_agg_unit.c`(`make test-agg-unit` 15/15), `test_dup_path_tag.py`.
+- 검증 — 혼용 8조합(v3·v5), 60분 소크(손실 0.048/0.057 %, 누수 없음), 3모드 계단(duplicate \~30 · aggregate \~40 Mbps), failover 1.4.0 비교(고부하 EAGAIN 1/3~1/6),
+  실제망 지연 duplicate 비교, J1900 실장비. `test-results/2026-10-21-aggregate-regression/` · `2026-10-23-v141-*` · `2026-10-24-failover/` · `2026-10-24-latency-dup/`.
+- 미해결 · 순간 정지로 모든 경로가 동시에 1초 무수신 → 전부 DEGRADED → 송신 정지(기제 2) — 1.4.0 과 같음.
 
 ## [1.4.0] — 2026-10-18
 

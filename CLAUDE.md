@@ -306,13 +306,15 @@ if (path->tx.loss > path->conf.loss_limit) → MUD_LOSSY
 ```c
 // mud_update_rl() branch 1 (rx_dt >= 1s): rate 재계산
 path->tx.rate = max(7/8 × rx_bytes/rx_dt, 1,000,000)  /* min 1MB/s */
+path->tx.rate = max(tx.rate, 5/4 × 자기 송신 bytes/rx_dt)  /* v1.4.1 — 창 고갈 방지, 손실 무관 (§31) */
+path->tx.est  = 7/8 측정 + 10%/probe, 하한 없음        /* v1.4.1 — aggregate 배분 전용 */
 
 // mud_update_rl() branch 2 (rx_dt < 1s): rate 점진 증가
 path->tx.rate += path->tx.rate / 10   // +10% per probe ACK
 
 // mud_update_window() — 1ms마다 실행
 mud->window += mud->rate × elapsed
-window_max  = max(rate × 100ms, 524,288)  /* min 512KB */
+window_max  = max(rate × 200ms, 524,288)  /* min 512KB — v1.4.1: 100→200ms */
 mud->window = min(mud->window, window_max)
 ```
 `mud->window < pkt_size`이면 `mud_send()` → EAGAIN.
@@ -358,7 +360,7 @@ for (unsigned i = 0; i < mud->capacity; i++) {
 **aggregate / aggregate-duplicate 모드** (`mud_send_next`):
 ```c
 // 1. 모든 RUNNING 경로에 tx.rate 비례 크레딧 적립
-for each RUNNING path: path->agg_credit += path->tx.rate;
+for each RUNNING path: path->agg_credit += mud_agg_weight(path);  // v1.4.1: tx.est × (1−loss/255)²
 
 // 2. 크레딧 최대 경로 순으로 dup_count개 선택 후 전송
 for d in 0..dup_count:
@@ -552,7 +554,7 @@ aggregate-duplicate → pref = 0, 0, 0, ...  dup-factor개 경로에 동일 패�
 ```c
 // 매 패킷 전송 시:
 for each RUNNING path:
-    path->agg_credit += path->tx.rate;  // 속도 비례 크레딧 적립
+    path->agg_credit += mud_agg_weight(path);  // v1.4.1: tx.est × (1−loss/255)² (손실 경로 몫 축소)
 
 // 크레딧 최대 경로 선택 (dup_count개):
 best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
@@ -695,9 +697,9 @@ duplicate 2경로, `5:1,20:4`/t10):
 | `MUD_ONE_MSEC` | `1,000 µs` | mud 시간 단위 |
 | `MUD_ONE_SEC` | `1,000,000 µs` | — |
 | 초기 path rate | `10,000,000 B/s` (10 MB/s) | `tx_max_rate` 미설정 시 |
-| rate floor (branch 1) | `1,000,000 B/s` (1 MB/s) | 저트래픽 구간 rate 최솟값 |
+| rate floor (branch 1) | `1,000,000 B/s` (1 MB/s), **v1.4.1: 그리고 자기 송신량 × 5/4 이상** | 저트래픽 구간 rate 최솟값 · 경로 하나 남을 때 창 고갈 방지(§31) |
 | rate ceiling | `125,000,000 B/s` (1 Gbps) | `tx_max_rate` 미설정 시 상한 |
-| window floor | `524,288 bytes` (512 KB) | `rate × 100ms < 512KB`이면 512KB 사용 |
+| window floor | `524,288 bytes` (512 KB) | `rate × 200ms < 512KB`이면 512KB 사용 (v1.4.0 까지 100ms) |
 | window 갱신 주기 | 경과시간 `≥ 1ms` 시 | `mud_update_window()` |
 | `tx.loss` 갱신 주기 | `rx_dt ≥ 1s` 시 (branch 1) | probe 100ms 간격이면 ~1초마다 재계산 |
 | `tx.loss` 공식 | `(tx_acc - rx_acc) × 255 / tx_acc` | 0–255 범위 |
@@ -2600,11 +2602,36 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 
 ---
 
+### 31. 1.3.4 핑퐁 수정이 가리던 약점 — aggregate 배분·송신 창·duplicate 하향 경로 (2026-10-24, v1.4.1)
+
+**파일**: `mud_lite.{c,h}`, `mf_server.cpp`, `mf_client.cpp`. **와이어 무변경**, 1.4.0 혼용 정상. 근거 `test-results/2026-10-21-aggregate-regression/REPORT.md`
+(원인), `2026-10-21-v140-regress/` · `2026-10-23-v141-*` · `2026-10-24-failover/` · `2026-10-24-latency-dup/`(검증).
+
+**공통 뿌리**: 1.3.3 까지 probe 답신이 1/RTT 로 질주(§ probe 핑퐁)하며 `mud_update_rl()` branch 2(+10%)를 초당 수십~수천 번 돌려
+경로 rate 가 상한(125 MB/s)에 붙어 있었다. v1.3.4 가 답신을 `beat/4` 로 제한하자 rate 가 실제 값(측정 × 7/8 + 소폭 상승)으로 내려와 두 약점이 드러났다.
+
+- **aggregate 배분이 손실을 안 봄** → `mud_agg_weight() = tx.est × (1−loss/255)²`. `tx.est` 는 배분 전용 추정(송신 창용 rate 의 하한을 섞지 않음).
+- **송신 창 고갈** — rate 를 매초 `7/8 × 전달량` 으로 다시 잡으면 부하 근처로 내려오고, 경로 하나가 빠지거나 순간 정지로 한 초 전달이 줄면
+  창 보충 < 송신 → `mud_send` EAGAIN → client pending(512) 넘침 → FEC 그룹째 폐기. 실터널 20 Mbps 에서 9회 중 6회 재현(최대 3.26 %).
+  수정: 경로 rate ≥ 자기 송신량 × 5/4(손실과 무관 — 손실 25 % 초과일 때만 줄이는 안은 수신 지연 시 loss 과대측정으로 실패, 하향 악화).
+  aggregate 는 창이 경로 몫만큼만 차서 별도로 전체 송신량 × 5/4 하한(`agg_floor`, aggregate 송신이 2초 안에 있을 때만). 창 상한 rate × 200 ms.
+- **duplicate 하향 경로 누락** — 서버는 데이터가 먼저 도착한 경로만 세션에 태그했다. 늘 늦는 무손실 경로는 사본이 전부 dedup 돼 태그되지 않아
+  하향에서 빠졌다. dedup 항목에 첫 사본 경로의 peer 를 저장하고(`mud_get_last_dup_peer()`), 서버가 늦은 사본 경로도 태그(`session_tag_duplicate()`).
+  실제망 지연(25/50 ms, 손실 0)에서 1.4.0 도 수십 초 뒤엔 느린 경로를 붙였다 — 효과는 **새 세션 직후 하향 이중화 공백 제거**, 평상시 하향 트래픽 증가는 작다.
+
+**검증**: 혼용 8조합 × 2(v3·v5) 정상, 60분 소크 손실 0.048/0.057 % 누수 없음, failover 고부하 EAGAIN 1.4.0 의 1/3~1/6, J1900 CPU 1.4.0 과 같음.
+**미해결 (기제 2)**: VM·호스트 순간 정지로 모든 경로가 동시에 `MUD_PATH_DEAD_TIMEOUT`(1초 무수신) → 전부 DEGRADED → RUNNING 0 → 송신 전부 EAGAIN
++ rate 합 0 으로 창 정지. 1.4.0 과 같다.
+
+---
+
 **테스트 스크립트:**
 - `pendttl_test.sh` (`test-results/2026-09-10-v131/`) — 클라이언트 pending 큐 TTL 검증. 릴레이 2개 동시 정지→복구를 N회 반복해 **일반 소크가 타지 않는 코드 경로**를 실행시킨다. 분석 `analyze_pend.py` 는 `송신 = 수신 − RTT` 로 지연을 상·하향에 귀속시킨다. §29 회귀 방지. **테스트망에서만 실행**
 - `analyze_leak.py` · `cmp_v130.py` (`test-results/2026-09-10-v131/`) — 누수 판정(계단 횟수·마지막 평탄 구간, `nproc` 모드값 필터)과 **직전 버전 런과의 경과시간 정렬 대조**. 램프가 관측 창보다 길 때 기울기 대신 쓰는 방법이다
 - `test_path_slots_unit.c` — mud 경로 슬롯 재사용 유닛 검증. `mud_lite.c` 를 통째로 include 해 `mud_get_path()` 를 직접 구동한다. 32개 확보 → 33번째 NULL → 5분 경과 시뮬 후 전량 회수 확인. §28 근거
 - `test_concurrent_clients.py` — 동시 클라이언트 상한 실측. 1→36 으로 늘리며 각자 왕복을 확인해 33번째 절벽을 재현한다. **sv1 루프백 전용**(테스트망 무관), 클라이언트 36개 ≈ RSS 1.3 GB
+- `test_agg_unit.c` — aggregate 배분 가중치·송신 창 하한 유닛 15개 케이스 (`make test-agg-unit`). §31 회귀 방지
+- `test_dup_path_tag.py` — duplicate 늦은 무손실 경로의 서버 하향 태그 확인(루프백). §31 회귀 방지
 - `test_path_loss_unit.c` — 경로 손실률 계산 유닛 테스트 10개 케이스 (`make test-path-loss`). §24 회귀 방지. **주의**: `mud_update_rl()`만 직접 구동하므로 `mud_recv()`의 dedup 경로(§25)는 커버하지 않는다.
 - `test_fec_decode_bounds.cpp` — FEC(RS) 디코더 경계 검사 7개 케이스 (`make test-fec-bounds`). §22-가 회귀 방지.
 - `test_relay_session_cap.py` — 릴레이 동시 세션 상한·LRU 축출 4개 케이스. §22-나 회귀 방지. `BIN=` 로 A/B 비교 가능.
