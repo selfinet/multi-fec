@@ -7,8 +7,10 @@
 #
 # 시나리오 (각 DUR 초, mfgen 양방향 R Mbps, WG 10.9.20.2 ↔ 10.9.20.1 만 — 규칙 1)
 #   steady  절단 없음
-#   cut1    CUT_AT 초에 multi-fec@relay-b(path[1]) 정지 → UP_AT 초에 시작
-#   cut0    같은 방식으로 multi-fec@relay(path[0])
+#   cut1    CUT_AT 초에 rs2 multi-fec@relay(path[1]) 정지 → UP_AT 초에 시작
+#   cut0    같은 방식으로 r multi-fec@relay(path[0])
+# ⚠️ 2026-10-23 구성 변경: path[1] 이 r .117(relay-b, 같은 VM) → rs2 .131(별도 VM). 그 전 런(r1·ab_*)은
+#    r1·r2 가 같은 VM 이라 r 정지가 두 경로를 함께 끊던 조건이다 — 이후 런과 직접 비교하지 말 것.
 # 산출: raw/<RUNID>/{up,dn}_*.txt(mfgen 초당 손실) · cli_*.log/srv_*.log(구간 저널) · guard.log · hs_*.csv
 #
 #   RUNID=r1 RATES="10 20" REPS=3 ./tunnel_regress.sh
@@ -18,7 +20,7 @@ RUNID=${RUNID:?}; RATES=${RATES:-"10 20"}; REPS=${REPS:-3}
 DUR=${DUR:-90}; CUT_AT=${CUT_AT:-20}; UP_AT=${UP_AT:-60}; GAP=${GAP:-10}
 SCEN=${SCEN:-"steady cut1 cut0"}
 G=../2026-08-02-50mbps-soak/mf_gwguard.sh
-C=root@192.168.100.92; R=root@192.168.100.88; S=root@192.168.100.102
+C=root@192.168.100.92; R=root@192.168.100.88; RS2=root@192.168.100.131; S=root@192.168.100.102
 OUT=raw/$RUNID; mkdir -p "$OUT"
 export GW_NET=new GW_PROFILE=${GW_PROFILE:-vm}
 
@@ -32,26 +34,27 @@ sleep 12
 kill -0 $GP 2>/dev/null && grep -q '감시 시작' "$OUT/guard.log" || { echo "가드 기동 실패"; cat "$OUT/guard.log"; exit 2; }
 echo "[run] 가드 PID $GP 감시 중"
 
-for p in "c $C ens18" "r $R ens18,ens19" "s $S ens18"; do set -- $p
+for p in "c $C ens18" "r $R ens18,ens19" "rs2 $RS2 ens18" "s $S ens18"; do set -- $p
   ssh "$2" "setsid nohup /usr/local/sbin/mf-hostsamp.sh /tmp/hs_$RUNID.csv $3 >/dev/null 2>&1 < /dev/null &"
 done
 
 finish() {
   echo "[$(date +%T)] ===== 정리"
-  ssh "$R" 'systemctl start multi-fec@relay multi-fec@relay-b'    # 절단 중 중단돼도 반드시 되살린다
-  for p in "c $C" "r $R" "s $S"; do set -- $p
+  ssh "$R" 'systemctl start multi-fec@relay'      # 절단 중 중단돼도 반드시 되살린다
+  ssh "$RS2" 'systemctl start multi-fec@relay'
+  for p in "c $C" "r $R" "rs2 $RS2" "s $S"; do set -- $p
     ssh "$2" "kill \$(cat /tmp/hs_$RUNID.csv.pid) 2>/dev/null"; scp -q "$2:/tmp/hs_$RUNID.csv" "$OUT/hs_$1.csv"; done
   kill $GP 2>/dev/null; pkill -P $GP 2>/dev/null
   sleep 5
-  for h in $C $R $S; do
-    ssh "$h" 'echo "$(hostname) $(sha256sum /usr/sbin/multi-fec-dist | cut -c1-16) $(systemctl is-active multi-fec@client multi-fec@relay multi-fec@relay-b multi-fec@server 2>/dev/null | tr "\n" " ")"'
+  for h in $C $R $RS2 $S; do
+    ssh "$h" 'echo "$(hostname) $(sha256sum /usr/sbin/multi-fec-dist | cut -c1-16) $(systemctl is-active multi-fec@client multi-fec@relay multi-fec@server 2>/dev/null | tr "\n" " ")"'
   done | tee -a "$OUT/sv1.txt"
   ssh "$C" 'ping -c 5 -i 0.3 -W 1 -q 10.9.20.1 | tail -1' | tee -a "$OUT/sv1.txt"
   echo "[$(date +%T)] $(sv1)" | tee -a "$OUT/sv1.txt"
 }
 trap finish EXIT
 
-unit_of() { case $1 in cut1) echo multi-fec@relay-b;; cut0) echo multi-fec@relay;; esac; }
+host_of() { case $1 in cut1) echo "$RS2";; cut0) echo "$R";; esac; }   # 둘 다 multi-fec@relay
 
 for rep in $(seq 1 $REPS); do
  for r in $RATES; do
@@ -64,9 +67,9 @@ for rep in $(seq 1 $REPS); do
     ssh "$C" "mfgen tx 10.9.20.1 5301 $r $DUR" > "$OUT/tx_up_$tag.txt" 2>&1 & T1=$!
     ssh "$S" "mfgen tx 10.9.20.2 5302 $r $DUR" > "$OUT/tx_dn_$tag.txt" 2>&1 & T2=$!
     if [ "$sc" != steady ]; then
-      u=$(unit_of $sc)
-      sleep $CUT_AT; ssh "$R" "systemctl stop $u"; echo "$(date +%s) stop $u" >> "$OUT/events_$tag.txt"
-      sleep $((UP_AT-CUT_AT)); ssh "$R" "systemctl start $u"; echo "$(date +%s) start $u" >> "$OUT/events_$tag.txt"
+      h=$(host_of $sc)
+      sleep $CUT_AT; ssh "$h" "systemctl stop multi-fec@relay"; echo "$(date +%s) stop $h multi-fec@relay" >> "$OUT/events_$tag.txt"
+      sleep $((UP_AT-CUT_AT)); ssh "$h" "systemctl start multi-fec@relay"; echo "$(date +%s) start $h multi-fec@relay" >> "$OUT/events_$tag.txt"
     fi
     wait $T1; wait $T2; wait $RS; wait $RC     # 특정 PID 만 기다린다
     scp -q "$S:/tmp/g_up_$tag.txt" "$OUT/up_$tag.txt"; scp -q "$C:/tmp/g_dn_$tag.txt" "$OUT/dn_$tag.txt"

@@ -1,0 +1,44 @@
+1792833417.304590 multi-fec-server multi-fec-dist[142000]: [2026-10-24 09:16:57][INFO]signal 15 received, exiting
+1792833417.304590 multi-fec-server multi-fec-dist[142000]: [2026-10-24 09:16:57][WARN][server] ev_run returned
+1792833417.306559 multi-fec-server multi-fec-dist[142000]: [2026-10-24 09:16:57][INFO]exiting
+1792833417.305114 multi-fec-server systemd[1]: Stopping multi-fec@server.service - multi-fec server...
+1792833417.308115 multi-fec-server multi-fec-dist[142000]: 
+1792833417.310990 multi-fec-server systemd[1]: multi-fec@server.service: Deactivated successfully.
+1792833417.312230 multi-fec-server systemd[1]: Stopped multi-fec@server.service - multi-fec server.
+1792833417.312458 multi-fec-server systemd[1]: multi-fec@server.service: Consumed 20.768s CPU time.
+1792833417.330148 multi-fec-server systemd[1]: Starting multi-fec@server.service - multi-fec server...
+1792833417.369362 multi-fec-server multi-fec-dist[143367]: [2026-10-24 09:16:57][INFO]parsing address: 192.168.100.102:443
+1792833417.370918 multi-fec-server multi-fec-dist[143367]: [2026-10-24 09:16:57][INFO]its an ipv4 adress
+1792833417.370918 multi-fec-server multi-fec-dist[143367]: [2026-10-24 09:16:57][INFO]ip_address is {192.168.100.102}, port is {443}
+1792833417.370918 multi-fec-server multi-fec-dist[143367]: [2026-10-24 09:16:57][INFO]parsing address: 127.0.0.1:51820
+1792833417.370918 multi-fec-server multi-fec-dist[143367]: [2026-10-24 09:16:57][INFO]its an ipv4 adress
+1792833417.370918 multi-fec-server multi-fec-dist[143367]: [2026-10-24 09:16:57][INFO]ip_address is {127.0.0.1}, port is {51820}
+1792833417.370918 multi-fec-server multi-fec-dist[143367]: [2026-10-24 09:16:57][INFO]WireGuard upstream: 127.0.0.1:51820
+1792833417.371885 multi-fec-server multi-fec-dist[143367]: 
+1792833417.376768 multi-fec-server systemd[1]: Started multi-fec@server.service - multi-fec server.
+1792833417.406459 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]parsing address: 192.168.100.102:443
+1792833417.406459 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]its an ipv4 adress
+1792833417.406459 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]ip_address is {192.168.100.102}, port is {443}
+1792833417.406459 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]parsing address: 127.0.0.1:51820
+1792833417.406459 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]its an ipv4 adress
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]ip_address is {127.0.0.1}, port is {51820}
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]WireGuard upstream: 127.0.0.1:51820
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]multi-fec 1.4.0 (git v1.4.0) build 2026-10-19 00:22:33 KST
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]config /etc/multi-fec/instances/server.conf (instance server)
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]key kf:53d21bbd from config
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]jitter_min=0 jitter_max=0 output_interval_min=0 output_interval_max=0 fec_timeout=10 fec_mtu=1350 fec_queue_len=500 fec_mode=1
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]fec_str=5:1,20:4
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]fec_inner_parameter=1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:2,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]obfs: mode=QUIC-ShortHeader + HMAC-auth (interval=60s) + size-norm
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]mud fd=5
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][WARN]warning fifo file /run/multi-fec/server.fifo exist
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]fifo=/run/multi-fec/server.fifo fd=6
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO]server mode started (multipath=duplicate)
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO][server] starting event loop
+1792833417.407925 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:16:57][INFO][server] listening, forwarding to WireGuard at 127.0.0.1:51820
+1792833420.805096 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:17:00][INFO][server] new session 854be60a94ac262a from 192.168.100.88:37496
+1792833420.823198 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:17:00][INFO][server] new client 192.168.100.88:37496
+1792833420.823609 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:17:00][INFO][server][192.168.100.88:37496] new conv 296cce34 fd=7 fd64=4294967395
+1792833420.825503 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:17:00][INFO][report][192.168.100.88:37496]client-->server:(original:1 pkt;132 byte) (fec:2 pkt;284 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+1792833481.206024 multi-fec-server multi-fec-dist[143369]: [2026-10-24 09:18:01][INFO][report][192.168.100.88:37496]client-->server:(original:7791 pkt;9874348 byte) (fec:10681 pkt;13641038 byte)  server-->client:(original:38954 pkt;49390264 byte) (fec:48729 pkt;62268846 byte)

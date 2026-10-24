@@ -191,8 +191,19 @@ struct mud {
     uint64_t           rate;
     uint64_t           window;
     uint64_t           window_time;
+    /* Aggregate send-window floor (see mud_update). win_spent counts what
+     * mud_send_next_peer() takes from the window — one logical packet (pre-obfs
+     * pkt_size) per call, the same amount it deducts, not the per-path encoded
+     * bytes; agg_floor is 5/4 of that rate over the last second;
+     * agg_time is when mud_send_next*() last ran (aggregate modes only). */
+    uint64_t           win_spent;
+    uint64_t           win_spent_snap;
+    uint64_t           win_spent_time;
+    uint64_t           agg_floor;
+    uint64_t           agg_time;
     uint64_t           base_time;
     union mud_sockaddr last_remote;  /* source of the last packet mud_recv() returned */
+    uint64_t           last_dup_peer;/* see mud_get_last_dup_peer() */
 
     /* --accept-local: allowed local (destination) addresses. Empty = accept all. */
     union mud_sockaddr accept_local[MUD_ACCEPT_LOCAL_MAX];
@@ -235,6 +246,7 @@ struct mud {
         uint64_t pkt_time;   /* the packet's sent_time value */
         uint64_t recv_time;  /* receive time (for expiry check) */
         uint64_t hash;       /* payload content hash (see mud_dedup_hash) */
+        uint64_t peer;       /* peer_id of the path the first copy arrived on */
     } dedup[MUD_DEDUP_SIZE];
 };
 
@@ -643,6 +655,7 @@ mud_update_rl(struct mud *mud, struct mud_path *path, uint64_t now,
             uint64_t rx_delta = rx_bytes - path->msg.rx.bytes;
             uint64_t measured = (7 * rx_delta * MUD_ONE_SEC) / (8 * rx_dt);
             path->tx.rate = measured > 1000000ULL ? measured : 1000000ULL;  /* min 1MB/s */
+            path->tx.est  = path->tx.rate;   /* split estimate: delivered-based, no own-sent floor */
         }
         /* Loss is a cross-side measurement: what one end sent versus what the
          * other end reports receiving. Both tx_total and rx_total arrive in the
@@ -679,6 +692,33 @@ mud_update_rl(struct mud *mud, struct mud_path *path, uint64_t now,
             path->rx.loss = own_rx_acc >= peer_tx_acc
                           ? 0 : (peer_tx_acc - own_rx_acc) * 255U / peer_tx_acc;
 
+        /* Rate floor from what we actually sent. tx.rate is 7/8 of what the
+         * peer reports receiving, so on its own it sits below the offered load
+         * and only the +10%-per-probe ramp below lifts it back. Until v1.3.3
+         * the probe ping-pong (fixed in v1.3.4) ramped it many times a second;
+         * with replies capped at beat/4 the ramp is slower, and a path left
+         * alone (the other one cut) drifted under its own offered load: the
+         * send window ran dry, EAGAIN, and the 512-entry pending ring dropped
+         * whole seconds of traffic (2026-10-21 testnet r netns, 25/30 ms paths:
+         * 1.3.1 0/10 runs over 1% loss, 1.4.0 2/10 at 4.8-9.3%). Never set the
+         * rate below 5/4 of what we actually sent in the window.
+         *
+         * Not gated on tx.loss: a first version applied the floor only while
+         * tx.loss <= 10% and still failed the same way — when the receiver falls
+         * behind for a moment its probe under-reports what arrived, tx.loss
+         * reads 30-50% on a lossless path, the floor switched off and the window
+         * throttled again. The window is not congestion control for the tunnel
+         * (TCP inside does that); its job is pacing, and pacing below the
+         * offered load only converts into pending-queue drops. aggregate still
+         * moves traffic off a lossy path through mud_agg_weight(). */
+        if (!path->conf.fixed_rate) {
+            uint64_t sent  = path->tx.bytes - path->msg.own_tx_bytes;
+            uint64_t floor = (5 * sent * MUD_ONE_SEC) / (4 * rx_dt);
+            if (path->tx.rate < floor)
+                path->tx.rate = floor;
+        }
+        path->msg.own_tx_bytes = path->tx.bytes;
+
         path->msg.rx.acc      = rx_total;
         path->msg.tx.acc      = tx_total;
         path->msg.loss_tx_acc = path->tx.total;
@@ -688,14 +728,19 @@ mud_update_rl(struct mud *mud, struct mud_path *path, uint64_t now,
         path->msg.rx.bytes    = rx_bytes;  /* update the delta reference point */
         path->msg.tx.bytes    = tx_bytes;
     } else {
-        if (!path->conf.fixed_rate)
+        if (!path->conf.fixed_rate) {
             path->tx.rate += path->tx.rate / 10;
+            path->tx.est  += path->tx.est  / 10;
+        }
     }
     /* tx_max_rate=0 means unlimited; treat 0 as no cap, not "cap to 0" */
     if (path->conf.tx_max_rate && path->tx.rate > path->conf.tx_max_rate)
         path->tx.rate = path->conf.tx_max_rate;
     else if (!path->conf.tx_max_rate && path->tx.rate > 125000000ULL)
         path->tx.rate = 125000000ULL;  /* 1 Gbps default ceiling */
+    /* est never exceeds the window rate (the floor only ever raises tx.rate) */
+    if (path->conf.fixed_rate || path->tx.est > path->tx.rate)
+        path->tx.est = path->tx.rate;
 
     path->msg.rx.total = rx_total;
     path->msg.tx.total = tx_total;
@@ -773,8 +818,10 @@ mud_recv_msg(struct mud *mud, struct mud_path *path, uint64_t now,
     mud_update_mtu(path, mtu);
 
     uint64_t max_rate = mud_load((const unsigned char *)msg->max_rate, sizeof(uint64_t));
-    if (path->conf.tx_max_rate != max_rate || msg->fixed_rate)
+    if (path->conf.tx_max_rate != max_rate || msg->fixed_rate) {
         path->tx.rate = max_rate;
+        path->tx.est  = max_rate;
+    }
     path->conf.tx_max_rate  = max_rate;
     path->conf.pref         = msg->pref;
     path->conf.fixed_rate   = msg->fixed_rate;
@@ -960,7 +1007,12 @@ mud_update_window(struct mud *mud, uint64_t now)
     mud->window_time = now;
     mud->window += mud->rate * elapsed / MUD_ONE_SEC;
 
-    uint64_t window_max = mud->rate * 100 * MUD_ONE_MSEC / MUD_ONE_SEC;
+    /* Horizon 200 ms, was 100 ms (1.4.1 review, 2026-10-23). The client calls
+     * mud_update() every 100 ms, so a 100 ms cap left no slack at all: a refill
+     * that came 20 ms late was clipped to 100 ms worth and the rest of the
+     * budget was thrown away — any event-loop delay became lost send budget and
+     * then EAGAIN. 200 ms absorbs one late tick. The server ticks every 20 ms. */
+    uint64_t window_max = mud->rate * 200 * MUD_ONE_MSEC / MUD_ONE_SEC;
     if (window_max < 524288) window_max = 524288;  /* minimum 512KB floor */
     if (mud->window > window_max) mud->window = window_max;
 }
@@ -1151,6 +1203,8 @@ mud_set_path(struct mud *mud, struct mud_path_conf *conf)
 
     if (!path->tx.rate)
         path->tx.rate = path->conf.tx_max_rate ? path->conf.tx_max_rate : 10000000ULL;  /* 10MB/s initial */
+    if (!path->tx.est)
+        path->tx.est = path->tx.rate;
 
     /* initialize MTU for the new path */
     if (!path->mtu.min) {
@@ -1201,6 +1255,32 @@ mud_update(struct mud *mud)
         mud->pref = pref;
     }
 
+    /* Aggregate: the window refills at the sum of the per-path rate estimates,
+     * and each estimate only covers the share that path carries. In duplicate
+     * every path carries everything, so the sum is ~2x what the window spends;
+     * in aggregate it is ~1x, and a dip in one estimate starves the window —
+     * measured 2026-10-23 (testnet, 1.4.1): aggregate lost 0.9% upstream at
+     * 35 Mbps and 2.1% at 40 with client EAGAIN 91/242 while CPU had headroom,
+     * per-path estimates swinging 79 -> 14 and 133 -> 25 Mbps against ~25 needed.
+     * So in aggregate the window refills at least at 5/4 of what was actually
+     * taken from it over the last second, whatever the per-path split. */
+    if (!mud->win_spent_time) {
+        mud->win_spent_time = now;
+        mud->win_spent_snap = mud->win_spent;
+    } else {
+        uint64_t dt = MUD_TIME_MASK(now - mud->win_spent_time);
+        if (dt >= MUD_ONE_SEC) {
+            uint64_t spent = mud->win_spent - mud->win_spent_snap;
+            mud->agg_floor      = (5 * spent * MUD_ONE_SEC) / (4 * dt);
+            mud->win_spent_snap = mud->win_spent;
+            mud->win_spent_time = now;
+        }
+    }
+    if (rate && mud->agg_time &&
+        MUD_TIME_MASK(now - mud->agg_time) < 2 * MUD_ONE_SEC &&
+        rate < mud->agg_floor)
+        rate = mud->agg_floor;
+
     mud->rate = rate;
     mud->mtu  = mtu;
     mud_update_window(mud, now);
@@ -1225,6 +1305,12 @@ mud_get_last_remote(struct mud *mud, union mud_sockaddr *out)
         mud->last_remote.sa.sa_family != AF_INET6) { errno = ENOENT; return -1; }
     *out = mud->last_remote;
     return 0;
+}
+
+uint64_t
+mud_get_last_dup_peer(struct mud *mud)
+{
+    return mud ? mud->last_dup_peer : 0;
 }
 
 int
@@ -1331,11 +1417,37 @@ mud_send_all(struct mud *mud, const void *data, size_t size)
     return mud_send_all_peer(mud, 0, data, size);
 }
 
+/* aggregate weight: tx.rate scaled by the square of the delivery ratio
+ * q = 1 - tx.loss/255. tx.rate alone does not tell a good path from a bad one at
+ * application rates near the 1 MB/s floor — both sit near it, and a 60%-loss path
+ * was given about a third of the packets, more than FEC 20:5 can repair
+ * (2026-10-21 testnet r netns: 1.4.0 7/20 runs within 2% loss, this 19/20; loss
+ * sweep 5-80% 22/30 -> 30/30). tx.loss is already measured every second; it was
+ * just not used here. q^2 keeps a 10% path at 81% weight and a 60% path at 16%. */
+static uint64_t
+mud_agg_weight(const struct mud_path *path)
+{
+    /* tx.est, not tx.rate (1.4.1 review, 2026-10-23): tx.rate carries the
+     * own-sent floor (>= 5/4 of what this path was given), so a weight built on
+     * it is proportional to the previous share — no force back toward capacity,
+     * and a path at its line limit is never demoted except through loss.
+     * Measured with 30 Mbps per path: aggregate at 35 Mbps had r 72 vs rs2
+     * 116 Mbps on the relay NICs and leaked before the 2x30 sum. tx.est tracks
+     * what the peer reports delivered, so a saturated path stops gaining. */
+    uint64_t w = path->tx.est ? path->tx.est
+               : path->tx.rate ? path->tx.rate : 1000000ULL;
+    uint64_t q = 255U - (path->tx.loss > 255U ? 255U : path->tx.loss);
+    w = w * q / 255U;
+    w = w * q / 255U;
+    return w ? w : 1;   /* a RUNNING path stays selectable, just rarely */
+}
+
 int
 mud_send_next_peer(struct mud *mud, uint64_t peer, const void *data, size_t size,
                    unsigned dup_count)
 {
     if (!size) return 0;
+    mud->agg_time = mud_now(mud);   /* aggregate in use: enables the window floor in mud_update() */
     if (mud->window < 1500) { errno = EAGAIN; return -1; }
 
     unsigned char packet[MUD_PKT_MAX_SIZE];
@@ -1355,7 +1467,7 @@ mud_send_next_peer(struct mud *mud, uint64_t peer, const void *data, size_t size
         struct mud_path *path = &mud->paths[i];
         if (path->status != MUD_RUNNING) continue;
         if (!mud_peer_match(path, peer)) continue;
-        uint64_t r = path->tx.rate ? path->tx.rate : 1000000ULL;
+        uint64_t r = mud_agg_weight(path);
         path->agg_credit += (int64_t)r;
         total_rate += r;
         n_running++;
@@ -1408,6 +1520,7 @@ mud_send_next_peer(struct mud *mud, uint64_t peer, const void *data, size_t size
         mud->window = saved_window - pkt_size;
     else
         mud->window = 0;
+    mud->win_spent += pkt_size;   /* aggregate window floor (mud_update) */
 
     return (int)size;
 }
@@ -1426,6 +1539,7 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
              unsigned char *raw, ssize_t raw_size,
              union mud_sockaddr *remote, struct msghdr *msg)
 {
+    mud->last_dup_peer = 0;
     mud_unmapv4(remote);
 
     unsigned char decoded[MUD_PKT_MAX_SIZE];
@@ -1575,12 +1689,20 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
         if (mud->dedup[idx].recv_time &&
             MUD_TIME_MASK(now - mud->dedup[idx].recv_time) <= MUD_DEDUP_TTL &&
             mud->dedup[idx].pkt_time == pure_time &&
-            mud->dedup[idx].hash     == hash)
+            mud->dedup[idx].hash     == hash) {
+            /* Tell the caller whose packet this was: the server tags a path
+             * with its client only when data arrives over it, and the later
+             * copy never counts as data. A path that is lossless but always
+             * slower would otherwise stay untagged and never carry downstream
+             * traffic in duplicate mode. */
+            mud->last_dup_peer = mud->dedup[idx].peer;
             return 0;
+        }
 
         mud->dedup[idx].pkt_time  = pure_time;
         mud->dedup[idx].recv_time = now;
         mud->dedup[idx].hash      = hash;
+        mud->dedup[idx].peer      = path->peer_id;
     }
 
     size_t payload = (size_t)decoded_size - MUD_TIME_SIZE;

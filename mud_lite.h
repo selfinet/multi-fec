@@ -93,6 +93,10 @@ struct mud_path {
         uint64_t time;
         uint64_t rate;
         uint64_t loss;
+        /* tx only: capacity estimate for the aggregate split — what the peer
+         * reports delivered (7/8, +10% per probe), WITHOUT the own-sent floor
+         * that tx.rate carries for the send window (see mud_update_rl). */
+        uint64_t est;
     } tx, rx;
     struct {
         struct {
@@ -107,6 +111,7 @@ struct mud_path {
          * so it also needs snapshots of our own counters — these two. */
         uint64_t loss_tx_acc;   /* snapshot of path->tx.total */
         uint64_t loss_rx_acc;   /* snapshot of path->rx.total */
+        uint64_t own_tx_bytes;  /* snapshot of path->tx.bytes — rate floor (see mud_update_rl) */
         uint64_t time;
         uint64_t sent;
         uint64_t set;
@@ -203,6 +208,11 @@ int mud_set_path_peer (struct mud *, union mud_sockaddr *remote, uint64_t peer);
  * peeks the socket to learn the sender can observe a different packet than the
  * one it was handed. Servers must use this instead of a peeked address. */
 int mud_get_last_remote (struct mud *, union mud_sockaddr *out);
+/* When the last mud_recv() returned 0 because the packet was a duplicate, the
+ * peer_id of the path its first copy arrived on (0 otherwise, or if that path
+ * was untagged). Lets the server tag the slower path of a duplicate-mode client,
+ * which would never deliver data of its own. */
+uint64_t mud_get_last_dup_peer (struct mud *);
 
 /* Restrict which *local* address a received packet may have arrived on.
  *
