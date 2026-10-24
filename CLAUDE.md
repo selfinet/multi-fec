@@ -26,7 +26,7 @@
   | ~~relay2 구~~ | `r2.xdn.selfinet.com` | 192.168.100.117 (r 의 ens19) | `multi-fec@relay-b` — **2026-10-23 disabled**(롤백용) |
   | server | `s.xdn.selfinet.com` | **192.168.100.102** | `multi-fec@server` |
 
-  배포 바이너리 `/usr/sbin/multi-fec-dist` = **v1.4.0**(2026-10-19, 버전별 사본 `.v1.3.1`·`.v1.4.0` 등 보관). 구 유닛
+  배포 바이너리 `/usr/sbin/multi-fec-dist` = **v1.4.1**(2026-10-24 태그 빌드 sha256 `0ec4d839…`, 4대. 그 전 v1.4.0 2026-10-19 — 버전별 사본 `.v1.3.1`·`.v1.4.0`·`.v1.4.1` 등 보관). 구 유닛
   `multi-fec-client/-relay/-relay-b/-server` 와 `/etc/multi-fec/*.conf` 는 **disabled 로 남겨 둔 롤백용**이다 — 되돌리기는
   `multi-fec@<이름>` disable --now → 구 유닛 enable --now(+ 필요 시 `.v1.3.1` 복원). 하네스가 구 유닛 이름을 쓰면 고칠 것. **주소는 전부 DHCP** 다 —
   DHCP 서버는 gw(`.1`)가 아니라 별개 VM `.12` 이고 리스 2h.
