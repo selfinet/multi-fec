@@ -19,7 +19,7 @@ SRCS_CXX = main.cpp mf_config.cpp mf_netcfg.cpp obfs.cpp port_hopper.cpp mf_clie
 
 OBJS = $(SRCS_C:.c=.o) $(SRCS_CXX:.cpp=.o)
 
-.PHONY: all static static-strip clean git_version test-rnlc-unit test-fec-bounds test-path-loss asan FORCE
+.PHONY: all static static-strip clean git_version test-rnlc-unit test-fec-bounds test-path-loss test-agg-unit asan FORCE
 
 all: $(NAME)
 
@@ -47,6 +47,11 @@ test-fec-bounds: $(FEC_BOUNDS_TEST_OBJS)
 test-path-loss:
 	$(CC) $(CFLAGS) -o test_path_loss_unit test_path_loss_unit.c -lrt -lpthread
 	./test_path_loss_unit
+
+# aggregate 배분 추정(tx.est)·송신 창 상한·aggregate 창 하한 (1.4.1 검토 수정, 2026-10-23)
+test-agg-unit:
+	$(CC) $(CFLAGS) -o test_agg_unit test_agg_unit.c -lrt -lpthread
+	./test_agg_unit
 
 # ASAN/UBSAN 빌드: 메모리 오류·미정의 동작 검출용 (배포용 아님)
 # 사용: make asan → ./multi-fec-asan  (테스트 스크립트에 BIN=./multi-fec-asan)
@@ -100,4 +105,4 @@ main.o: git_version.h
 
 clean:
 	rm -f $(NAME) $(NAME)-static $(NAME)-dist $(OBJS) test_rnlc_unit \
-	      test_fec_decode_bounds test_path_loss_unit git_version.h
+	      test_fec_decode_bounds test_path_loss_unit test_agg_unit git_version.h

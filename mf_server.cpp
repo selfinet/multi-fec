@@ -248,6 +248,23 @@ static void session_note_path(session_entry_t &e, const address_t &addr)
  * tag on every path it was reaching us over. Without the second part a path
  * kept pointing at a dead peer; harmless in practice (an idle path stops being
  * RUNNING and so is never selected) but it left the tables disagreeing. */
+/* A duplicate copy arrived over `addr`; its first copy came over a path tagged
+ * `peer`. Claim this path for the same session too. Without this a path that is
+ * lossless but always slower than its sibling never delivers data (every copy
+ * it carries is the second one and is dropped by dedup), stays untagged, and is
+ * left out of that client's downstream — duplicate mode then sends downstream
+ * over one path only. Measured on loopback with two equal paths: the second
+ * path's client rx was ~500 probes against ~60,000 on the first. */
+static void session_tag_duplicate(const address_t &addr, uint64_t peer)
+{
+    auto it = g_session_to_addr.find(peer);
+    if (it == g_session_to_addr.end() && peer == 1)
+        it = g_session_to_addr.find(0);          /* peer_of() folds sid 0 onto 1 */
+    if (it == g_session_to_addr.end()) return;
+    session_note_path(it->second, addr);
+    peer_tag_path(addr, peer);
+}
+
 static void session_release(const session_entry_t &e, uint64_t sid)
 {
     peer_unbind(e.addr, peer_of(sid));
@@ -1098,6 +1115,19 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
             break;
         }
         if (n == 0) {
+            uint64_t dup_peer = mud_get_last_dup_peer(g_mud);
+            if (dup_peer) {
+                /* the real source of this copy, not the peeked one (§19-나) */
+                union mud_sockaddr rr;
+                if (mud_get_last_remote(g_mud, &rr) == 0) {
+                    address_t dup_addr;
+                    dup_addr.from_sockaddr((struct sockaddr *)&rr,
+                                           rr.sa.sa_family == AF_INET
+                                               ? sizeof(rr.sin) : sizeof(rr.sin6));
+                    session_tag_duplicate(dup_addr, dup_peer);
+                }
+                continue;
+            }
             struct mud_errors _e1;
             mud_get_errors(g_mud, &_e1);
             bool auth_fail = (_e1.auth.count > _e0.auth.count);
