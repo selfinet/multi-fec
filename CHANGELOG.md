@@ -23,6 +23,11 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 측정·문서·테스트 하네스만(제품 코드 변경은 아래 버전 섹션).
 
+### 2026-10-25 — 운영 도구 2종 리포 편입
+
+- `mf-newkey.sh` — PSK 생성기(32바이트 hex + 지문 `kf:`). 지문은 multi-fec 바이너리로 계산하고(`fp KEY` 로 기존 키 대조), 파서·systemd·셸에서 깨지는 문자는 거부.
+- `tools/mf_exporter.py` — Prometheus exporter(stdlib 전용). journald 로그를 파싱해 경로 상태·report 카운터를 노출, conf(PSK) 는 읽지 않는다.
+
 ### 2026-10-24 — 테스트망 4대 v1.4.1 배포
 
 - 태그 `v1.4.1`(`97ce5f7`) 빌드 sha256 `0ec4d839…` 을 server → r → rs2 → client 순으로 교체(유닛·설정 무변경, `.v1.4.0` 보존).
