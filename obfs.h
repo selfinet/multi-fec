@@ -125,6 +125,13 @@ int obfs_encode_initial(const struct obfs_ctx *ctx,
                         void *out, int out_max,
                         int is_server);
 
+/*
+ * Builtin reply to an unauthenticated sender (active probe): a Server Initial
+ * with the same layout as obfs_encode_initial(), but a random DCID — never
+ * the auth token. Returns QUIC_INITIAL_SIZE or -1.
+ */
+int obfs_encode_probe_reply(void *out, int out_max);
+
 /* Buffer size obfs_key_fingerprint() needs, including the NUL. */
 #define OBFS_KEY_FP_LEN 12      /* "kf:" + 8 hex digits + NUL ("kf:-" when empty) */
 

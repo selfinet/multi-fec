@@ -104,7 +104,9 @@ def is_quic_initial(d):
     return(d and len(d)>=1200 and d[0]==0xC1 and d[1:5]==b'\x00\x00\x00\x01' and d[15]==0xFF)
 
 # 포트 충돌 방지: 테스트 시작 전 기존 프로세스 정리
-subprocess.run(['pkill','-f','multi-fec'], capture_output=True)
+# Only processes whose argv[0] is this binary — a bare 'multi-fec' pattern also
+# matched the invoking shell (repo path in its command line) and killed it.
+subprocess.run(['pkill','-f','^'+BINARY+' '], capture_output=True)
 time.sleep(0.5)
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -270,7 +272,8 @@ p3 = subprocess.Popen([BINARY,'-r','-l','127.0.0.1:29321',
                         '--upstream','127.0.0.1:29320','-k','correct'],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 time.sleep(0.3)
-resp = udp_exchange(29321, make_obfs_quic('wrong',b'bad'))
+# ≥ 1200 B: since 1.4.2 smaller unauthenticated datagrams get no reply (RFC 9000 §14.1)
+resp = udp_exchange(29321, make_obfs_quic('wrong',b'bad'+b'\x00'*1200))
 time.sleep(0.2)
 p3.terminate(); p3.wait(2); up3.stop()
 check('릴레이 잘못된 키 → upstream 미전달', len(up3.pkts)==0)
@@ -327,7 +330,7 @@ p6 = subprocess.Popen([BINARY,'-r','-l','127.0.0.1:29400',
                         '--upstream','127.0.0.1:9999','-k','key','--obfs-mode','quic'],
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 time.sleep(0.3)
-resp6 = udp_exchange(29400, b'\x00'*50)
+resp6 = udp_exchange(29400, b'\x00'*1200)
 p6.terminate(); p6.wait(2)
 check('obfs-mode quic: HMAC 실패 → QUIC Initial', is_quic_initial(resp6))
 
@@ -346,8 +349,8 @@ p8 = subprocess.Popen([BINARY,'-r','-l','127.0.0.1:29402',
                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
 time.sleep(0.3)
 sizes = set()
-for _ in range(8):
-    r = udp_exchange(29402, b'\x00'*50, timeout=0.5)
+for _ in range(5):   # per-source reply limit is a burst of 5 (1.4.2)
+    r = udp_exchange(29402, b'\x00'*1200, timeout=0.5)
     if r: sizes.add(len(r))
     time.sleep(0.05)
 p8.terminate(); p8.wait(2)

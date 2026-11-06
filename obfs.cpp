@@ -164,25 +164,19 @@ static void fill_random(void *buf, int len)
  *   0x00 → Client Initial  → server replies with Server Initial
  *   0xFF → Server Initial  → client silently discards (loop prevention)
  */
-int
-obfs_encode_initial(const struct obfs_ctx *ctx,
-                    void *out, int out_max,
-                    int is_server)
+static int
+build_initial(void *out, int out_max, const uint8_t dcid[8], int is_server)
 {
     if (out_max < QUIC_INITIAL_SIZE) return -1;
 
     uint8_t *p = (uint8_t *)out;
     memset(p, 0, QUIC_INITIAL_SIZE);
 
-    uint64_t slot = current_slot(ctx);
-    uint8_t  token[8];
-    make_token(ctx, slot, token);
-
     p[0] = 0xC1;                              /* LH|Fixed|Initial|PN_LEN=2 */
     p[1] = 0x00; p[2] = 0x00;
     p[3] = 0x00; p[4] = 0x01;                /* QUIC v1 */
     p[5] = 0x08;                              /* DCID length = 8 */
-    memcpy(p + 6, token, 8);                  /* DCID = HMAC token */
+    memcpy(p + 6, dcid, 8);                   /* DCID */
     p[14] = 0x08;                             /* SCID length = 8 */
     fill_random(p + 15, 8);                   /* SCID = random */
     p[15] = (uint8_t)(is_server ? 0xFF : 0x00); /* direction marker */
@@ -195,6 +189,30 @@ obfs_encode_initial(const struct obfs_ctx *ctx,
     /* p[28..1199] = PADDING    (already zeroed) */
 
     return QUIC_INITIAL_SIZE;
+}
+
+int
+obfs_encode_initial(const struct obfs_ctx *ctx,
+                    void *out, int out_max,
+                    int is_server)
+{
+    uint8_t token[8];
+    make_token(ctx, current_slot(ctx), token);
+    return build_initial(out, out_max, token, is_server);   /* DCID = HMAC token */
+}
+
+/* Reply to an unauthenticated sender. The DCID must NOT be the auth token:
+ * the token is not bound to the payload, so handing the current slot's token
+ * to whoever sent garbage let a keyless sender forge packets that pass
+ * obfs_decode() for the rest of the auth window (fixed in 1.4.2). Real QUIC
+ * servers pick a fresh connection ID here anyway, so random is also the more
+ * faithful disguise. */
+int
+obfs_encode_probe_reply(void *out, int out_max)
+{
+    uint8_t dcid[8];
+    fill_random(dcid, 8);
+    return build_initial(out, out_max, dcid, 1);
 }
 
 /* ─── QUIC Long Header Initial decoding ────────────────────────── */

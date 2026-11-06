@@ -18,6 +18,7 @@
 
 #include "tunnel.h"
 #include "mf_common.h"
+#include "mf_probe.h"
 #include "obfs.h"
 
 extern "C" {
@@ -427,6 +428,35 @@ decoy_io_cb(struct ev_loop * /*loop*/, struct ev_io *w, int /*revents*/)
     }
 }
 
+/* Each decoy session holds a socket. Probers' source addresses are free to
+ * spoof, so without a cap a flood of them exhausts FDs (fixed in 1.4.2).
+ * Make room by dropping idle sessions first, then the least recently active. */
+static bool
+decoy_make_room()
+{
+    if (g_decoy_map.size() < (size_t)DECOY_SESSION_MAX) return true;
+    time_t now = time(NULL);
+    auto victim = g_decoy_map.end();
+    for (auto it = g_decoy_map.begin(); it != g_decoy_map.end(); ++it) {
+        if (victim == g_decoy_map.end() ||
+            it->second->last_active < victim->second->last_active)
+            victim = it;
+        if (now - it->second->last_active > 10) { victim = it; break; }
+    }
+    if (victim == g_decoy_map.end()) return false;
+    decoy_sess_t *s = victim->second;
+    ev_io_stop(g_loop, &s->watcher);
+    close(s->decoy_fd);
+    delete s;
+    g_decoy_map.erase(victim);
+    static time_t last_warn = 0;
+    if (now - last_warn >= 60) {
+        last_warn = now;
+        mylog(log_warn, "[decoy] session table full (%d), evicting oldest\n", DECOY_SESSION_MAX);
+    }
+    return true;
+}
+
 static decoy_sess_t *
 decoy_get_or_create(const address_t &prober, int listen_fd)
 {
@@ -437,6 +467,8 @@ decoy_get_or_create(const address_t &prober, int listen_fd)
         s->listen_fd   = listen_fd;
         return s;
     }
+
+    if (!decoy_make_room()) return NULL;
 
     int family = (g_decoy_upstream.get_type() == AF_INET6) ? AF_INET6 : AF_INET;
     int dfd = socket(family, SOCK_DGRAM, IPPROTO_UDP);
@@ -823,32 +855,12 @@ static void conn_timer_cb(struct ev_loop * /*loop*/, struct ev_timer *watcher, i
     data_from_wg_or_fec_timeout_or_conn_timer(conn_info, 0, is_conn_timer);
 }
 
-/* ────────────────────────────────────────────────────────────────
- * Send builtin QUIC Server Initial response (default when --decoy unset)
- *
- * RFC 9000 §17.2.2 Long Header Initial, fixed 1200B.
- * SCID[0]=0xFF → Server Initial marker.
- * Looks like a normal QUIC server response to the prober.
- * ──────────────────────────────────────────────────────────────── */
-static void probe_respond_builtin(int fd, address_t &src)
+/* Builtin reply to an unauthenticated sender (default when --decoy is unset):
+ * QUIC Server Initial with a random DCID, or TLS close_notify. Size floor and
+ * rate limits live in mf_probe.cpp. */
+static void probe_respond_builtin(int fd, address_t &src, int req_len)
 {
-    if (g_obfs && g_obfs->mode == OBFS_MODE_TLS) {
-        static const uint8_t close_notify[] = {
-            0x15, 0x03, 0x03, 0x00, 0x02, 0x01, 0x00
-        };
-        sendto(fd, close_notify, sizeof(close_notify), 0,
-               (struct sockaddr *)&src.inner, src.get_len());
-    } else {
-        static char buf[QUIC_INITIAL_SIZE + 256];
-        int n = obfs_encode_initial(g_obfs, buf, sizeof(buf), 1);
-        if (n <= 0) return;
-        /* Append 0-255 random bytes: QUIC coalesced-packet area, varies size */
-        int extra = rand() % 256;
-        for (int i = n; i < n + extra; i++)
-            buf[i] = (char)(rand() & 0xFF);
-        sendto(fd, buf, (size_t)(n + extra), 0,
-               (struct sockaddr *)&src.inner, src.get_len());
-    }
+    probe_reply(fd, src, req_len, g_obfs ? g_obfs->mode : OBFS_MODE_QUIC);
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -888,7 +900,7 @@ static void server_totp_io_cb(struct ev_loop * /*loop*/, struct ev_io *watcher, 
                     mylog(log_debug, "[server] totp: probe from %s → decoy\n",
                           src.get_str());
                 } else {
-                    probe_respond_builtin(e->fd, src);
+                    probe_respond_builtin(e->fd, src, (int)rn);
                     mylog(log_debug, "[server] totp: probe from %s → builtin-quic\n",
                           src.get_str());
                 }
@@ -1107,7 +1119,7 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
                     mylog(log_debug, "[server] probe from %s (0x%02x) → decoy\n",
                           src_addr.get_str(), (unsigned char)peek_buf[0]);
                 } else {
-                    probe_respond_builtin(mfd, src_addr);
+                    probe_respond_builtin(mfd, src_addr, (int)pn);
                     mylog(log_debug, "[server] probe from %s (0x%02x) → builtin-quic\n",
                           src_addr.get_str(), (unsigned char)peek_buf[0]);
                 }
@@ -1141,7 +1153,7 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
                 if (g_decoy_enabled)
                     decoy_forward(src_addr, mfd, peek_buf, (int)pn);
                 else
-                    probe_respond_builtin(mfd, src_addr);
+                    probe_respond_builtin(mfd, src_addr, (int)pn);
             }
             continue;
         }

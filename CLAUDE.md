@@ -224,6 +224,7 @@ p[28-1199] = PADDING frames
 HMAC 실패 시 동작 (우선순위 순):
 1. `--decoy ip:port` 지정 시: raw 패킷을 decoy 서버(QUIC/HTTPS)로 포워딩 → 응답을 프로버에게 중계
 2. `--decoy` 미지정 시: **내장 QUIC Server Initial** 1200~1455B 응답 (`probe_respond_builtin`)
+   — **v1.4.2: 요청이 1200B 이상일 때만, DCID 는 난수(토큰 아님), 소스 IP 당 2/s·전체 200/s** (§32)
    ```
    0xC1 0x00000001 DCID(8B=HMAC token) SCID(8B, [0]=0xFF) PADDING...
    RFC 9000 §17.2.2 준수, SCID[0]=0xFF → Server Initial 마커
@@ -726,7 +727,7 @@ duplicate 2경로, `5:1,20:4`/t10):
 | HMAC 슬롯 길이 | `30초` | `time(NULL) / 30` |
 | HMAC 허용 오차 | `±1 슬롯` (±30초) | 시계 오차 대응 |
 | 패딩 버킷 | `{300, 500, 700, 900, 1100, 1300, 1400, 1500}` bytes | 패킷 크기 정규화. 1500B 초과 시 상한 클램프. |
-| HMAC 실패 응답 (기본) | QUIC Server Initial **1200~1455B** | `probe_respond_builtin()`: 1200B 기반 + 0~255B 랜덤 추가 |
+| HMAC 실패 응답 (기본) | QUIC Server Initial **1200~1455B** | `probe_reply()`(`mf_probe.cpp`): 1200B 기반 + 0~255B 랜덤 추가. **v1.4.2: 요청 1200B 이상에만, DCID 난수, 소스 IP 당 2/s·전체 200/s** (§32) |
 | HMAC 실패 응답 (decoy) | raw 패킷 → decoy UDP 소켓 전달 | `--decoy` 지정 시. decoy 응답을 프로버에게 중계 |
 
 ---
@@ -2625,7 +2626,33 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 
 ---
 
+### 32. 내장 프로브 응답 강화 · decoy 세션 상한 (2026-11-07, v1.4.2)
+
+**파일**: `obfs.{h,cpp}`(`obfs_encode_probe_reply()`), `mf_probe.{h,cpp}`(신규), `mf_server.cpp`, `mf_relay.cpp`.
+**와이어 무변경** — 인증된 트래픽은 1.4.1 과 같다. 서버·릴레이 단독 수정, client 무관.
+
+인증에 실패한 데이터그램에 대한 내장 응답(§11)을 점검해 세 가지를 고쳤다.
+
+- **응답이 인증 정보를 노출했다.** 응답 Server Initial 이 `obfs_encode_initial()` 을 재사용해 DCID 에 인증 쪽 값이 실렸고,
+  obfs 인증은 패킷 내용과 묶여 있지 않아(§18-다 이후 구조 그대로) 이를 이용하면 키 없이 인증을 통과하는 패킷을 만들 수 있었다.
+  mud 층에는 별도 인증이 없으므로 그 뒤 세션·경로 슬롯(§28)·FEC 디코더까지 도달한다. → 프로브 응답 전용 `obfs_encode_probe_reply()`
+  (DCID 난수). 실제 QUIC 서버도 여기서 새 connection ID 를 고르므로 위장으로도 더 자연스럽다. 인증된 Client Initial 에 대한 mud 의 응답은 그대로다.
+- **증폭.** 1바이트대 요청에도 1200~1455 B 로 답했다 — 응답에 크기·속도 제한이 없어 소스를 위조하면 제3자에게 약 140배로 반사된다.
+  실제 QUIC 서버는 1200 B 미만 Initial 을 버리고 검증 전엔 3배 이상 보내지 않으므로(RFC 9000 §8.1·§14.1) **탐지 지문**이기도 했다.
+  → QUIC 모드 1200 B 미만 무응답, 응답 ≤ 요청 × 3, 토큰 버킷(소스 IP 당 2/s·버스트 5, 전체 200/s·버스트 400, IP 키 4096칸 직접사상).
+  TLS 모드 close_notify(7 B)는 7 B 이상 요청에만. 억제 건수는 60초마다 `[probe] last period: …` info 로그(억제가 있을 때만).
+- **decoy 세션 상한 없음.** `--decoy` 는 프로버 주소마다 소켓을 하나 잡는데 상한이 없었다(§22-나 의 릴레이 세션과 같은 부류) →
+  `DECOY_SESSION_MAX` 256, 넘치면 10초 유휴 세션 → 가장 오래된 세션 순으로 축출.
+
+**동작 변경**: 1200 B 미만 프로브는 무응답이다. 작은 UDP 로 "응답이 오는지" 보는 점검이 있으면 1200 B 이상으로 바꿔야 한다.
+
+**검증**(sv1 루프백): `test_probe_hardening.py` 15/15 — 1.4.1 바이너리로 같은 테스트를 돌리면 5/15(작은 요청 응답·DCID·위조 세션 생성·
+속도 제한·릴레이 decoy FD +400 실패). 기존 스위트는 프로브를 1200 B 로 바꿔 통과(아래 회귀).
+
+---
+
 **테스트 스크립트:**
+- `test_probe_hardening.py` — 내장 프로브 응답(크기 하한·DCID·위조 거부·속도 제한·TLS) + decoy 세션 상한 15개 케이스. `BIN=` 로 A/B. §32 회귀 방지. 루프백 전용, PID 로만 정리
 - `pendttl_test.sh` (`test-results/2026-09-10-v131/`) — 클라이언트 pending 큐 TTL 검증. 릴레이 2개 동시 정지→복구를 N회 반복해 **일반 소크가 타지 않는 코드 경로**를 실행시킨다. 분석 `analyze_pend.py` 는 `송신 = 수신 − RTT` 로 지연을 상·하향에 귀속시킨다. §29 회귀 방지. **테스트망에서만 실행**
 - `analyze_leak.py` · `cmp_v130.py` (`test-results/2026-09-10-v131/`) — 누수 판정(계단 횟수·마지막 평탄 구간, `nproc` 모드값 필터)과 **직전 버전 런과의 경과시간 정렬 대조**. 램프가 관측 창보다 길 때 기울기 대신 쓰는 방법이다
 - `test_path_slots_unit.c` — mud 경로 슬롯 재사용 유닛 검증. `mud_lite.c` 를 통째로 include 해 `mud_get_path()` 를 직접 구동한다. 32개 확보 → 33번째 NULL → 5분 경과 시뮬 후 전량 회수 확인. §28 근거

@@ -17,7 +17,7 @@ multi-fec 기능별 성능 및 안정성 테스트
 import subprocess, socket, time, struct, threading, os, sys, random, statistics
 
 BINARY = os.path.join(os.path.dirname(__file__), 'multi-fec')
-subprocess.run(['pkill','-f','multi-fec'], capture_output=True); time.sleep(0.4)
+subprocess.run(['pkill','-f','^'+BINARY+' '], capture_output=True); time.sleep(0.4)  # argv[0] only
 
 PASS=0; FAIL=0; results=[]
 
