@@ -23,6 +23,7 @@
 
 #include "tunnel.h"
 #include "mf_common.h"
+#include "mf_probe.h"
 #include "obfs.h"
 
 #include <unordered_map>
@@ -108,6 +109,35 @@ decoy_io_cb(struct ev_loop * /*loop*/, struct ev_io *w, int /*revents*/)
     }
 }
 
+/* Each decoy session holds a socket. Probers' source addresses are free to
+ * spoof, so without a cap a flood of them exhausts FDs (fixed in 1.4.2).
+ * Make room by dropping idle sessions first, then the least recently active. */
+static bool
+decoy_make_room()
+{
+    if (g_decoy_map.size() < (size_t)DECOY_SESSION_MAX) return true;
+    time_t now = time(NULL);
+    auto victim = g_decoy_map.end();
+    for (auto it = g_decoy_map.begin(); it != g_decoy_map.end(); ++it) {
+        if (victim == g_decoy_map.end() ||
+            it->second->last_active < victim->second->last_active)
+            victim = it;
+        if (now - it->second->last_active > 10) { victim = it; break; }
+    }
+    if (victim == g_decoy_map.end()) return false;
+    decoy_sess_t *s = victim->second;
+    ev_io_stop(g_loop, &s->watcher);
+    close(s->decoy_fd);
+    delete s;
+    g_decoy_map.erase(victim);
+    static time_t last_warn = 0;
+    if (now - last_warn >= 60) {
+        last_warn = now;
+        mylog(log_warn, "[relay/decoy] session table full (%d), evicting oldest\n", DECOY_SESSION_MAX);
+    }
+    return true;
+}
+
 static decoy_sess_t *
 decoy_get_or_create(const address_t &prober)
 {
@@ -116,6 +146,8 @@ decoy_get_or_create(const address_t &prober)
         it->second->last_active = time(NULL);
         return it->second;
     }
+
+    if (!decoy_make_room()) return NULL;
 
     int family = (g_decoy_addr.get_type() == AF_INET6) ? AF_INET6 : AF_INET;
     int dfd = socket(family, SOCK_DGRAM, IPPROTO_UDP);
@@ -374,29 +406,13 @@ static void upstream_read_cb(struct ev_loop * /*loop*/, struct ev_io *watcher,
 }
 
 /* ────────────────────────────────────────────────────────────────
- * Helper: TLS close_notify alert (7 bytes) → prober
- *   Sent when HMAC verification fails so active probers see a
- *   realistic TLS server response instead of silence.
+ * Builtin reply on HMAC failure (no --decoy): QUIC Server Initial with a
+ * random DCID, or TLS close_notify. Size floor and rate limits: mf_probe.cpp.
  * ──────────────────────────────────────────────────────────────── */
 
-static void probe_respond_builtin(address_t &src)
+static void probe_respond_builtin(address_t &src, int req_len)
 {
-    if (g_builtin_ctx.mode == OBFS_MODE_TLS) {
-        static const uint8_t close_notify[] = {
-            0x15, 0x03, 0x03, 0x00, 0x02, 0x01, 0x00
-        };
-        sendto(g_listen_fd, close_notify, sizeof(close_notify), 0,
-               (struct sockaddr *)&src.inner, src.get_len());
-    } else {
-        static char buf[QUIC_INITIAL_SIZE + 256];
-        int n = obfs_encode_initial(&g_builtin_ctx, buf, sizeof(buf), 1);
-        if (n <= 0) return;
-        int extra = rand() % 256;
-        for (int i = n; i < n + extra; i++)
-            buf[i] = (char)(rand() & 0xFF);
-        sendto(g_listen_fd, buf, (size_t)(n + extra), 0,
-               (struct sockaddr *)&src.inner, src.get_len());
-    }
+    probe_reply(g_listen_fd, src, req_len, g_builtin_ctx.mode);
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -481,7 +497,7 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
                     if (g_decoy_enabled)
                         decoy_forward(src, buf, n);
                     else
-                        probe_respond_builtin(src);
+                        probe_respond_builtin(src, n);
                     mylog(log_debug, "[relay] HMAC fail (existing session) from %s\n",
                           src.get_str());
                     continue;
@@ -498,7 +514,7 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
                 if (g_decoy_enabled)
                     decoy_forward(src, buf, n);
                 else
-                    probe_respond_builtin(src);
+                    probe_respond_builtin(src, n);
                 mylog(log_debug, "[relay] no route matched from %s → %s\n",
                       src.get_str(), g_decoy_enabled ? "decoy" : "builtin-quic");
                 continue;
@@ -508,7 +524,7 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
                 if (g_decoy_enabled)
                     decoy_forward(src, buf, n);
                 else
-                    probe_respond_builtin(src);
+                    probe_respond_builtin(src, n);
                 mylog(log_debug, "[relay] HMAC fail from %s → %s\n",
                       src.get_str(), g_decoy_enabled ? "decoy" : "builtin-quic");
                 continue;

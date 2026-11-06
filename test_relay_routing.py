@@ -222,7 +222,8 @@ def run_tests(relay_proc, log_path):
     rx = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     rx.bind(('127.0.0.1', 0))
     rx.settimeout(1.0)
-    pkt_bad = make_obfs_quic_packet('keyC', b'bad-key-packet')
+    # ≥ 1200 B: since 1.4.2 smaller unauthenticated datagrams get no reply (RFC 9000 §14.1)
+    pkt_bad = make_obfs_quic_packet('keyC', b'bad-key-packet' + b'\x00' * 1200)
     rx.sendto(pkt_bad, RELAY_ADDR)
     resp = udp_recv_once(rx, timeout=1.0)
     check('QUIC Server Initial 수신 (≥1200B)', resp is not None and is_quic_server_initial(resp))
@@ -233,7 +234,7 @@ def run_tests(relay_proc, log_path):
 
     # ── TC4: 투명 raw 패킷 → 내장 QUIC Server Initial ───────────────────────
     print('\n[TC4] raw 패킷(obfs 없음) → 내장 QUIC Server Initial')
-    raw_pkt = b'\x00' * 100
+    raw_pkt = b'\x00' * 1200
     rx.sendto(raw_pkt, RELAY_ADDR)
     resp2 = udp_recv_once(rx, timeout=1.0)
     check('QUIC Server Initial 수신 (≥1200B)', resp2 is not None and is_quic_server_initial(resp2))
