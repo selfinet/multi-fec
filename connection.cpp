@@ -13,6 +13,11 @@ const int disable_conn_clear = 0;  // a raw connection is called conn.
 
 int report_interval = 0;
 
+/* Defined in mf_server.cpp; weak so unit-test link targets without mf_server.o
+ * still resolve (the symbol is then 0 and the call in server_clear_function is
+ * skipped). See the call site below. */
+extern void mf_server_conv_closed(void) __attribute__((weak));
+
 void server_clear_function(u64_t u64)  // used in conv_manager in server mode.for server we have to use one udp fd for one conv(udp connection),
 // so we have to close the fd when conv expires
 {
@@ -27,6 +32,13 @@ void server_clear_function(u64_t u64)  // used in conv_manager in server mode.fo
     ev_io_stop(loop, &watcher);
 
     fd_manager.fd64_close(fd64);
+
+    /* Keep the server's host-wide conv-socket budget exact: every conv fd is
+     * closed here (idle GC, LRU eviction, connection teardown). Defined in
+     * mf_server.cpp, which the full binary always links; weak so unit-test
+     * targets that link connection.o without mf_server.o still build (the
+     * symbol is then 0 and the call is skipped — those tests have no server). */
+    if (mf_server_conv_closed) mf_server_conv_closed();
 }
 
 ////////////////////////////////////////////////////////////////////

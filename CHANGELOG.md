@@ -725,6 +725,18 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
   실시간 IP 는 종전대로 `ss`/`/proc/net/udp`.
 - 테스트 · `test_relay_traffic_log.py`(9/9) — 보고 줄·업다운 집계·지문 사용·`--fingerprint-ip` 일치·레벨4 플러드 안전·probe 집계.
 
+### 2026-11-08 — 서버 conv 소켓 FD 예산 (CWE-400, 와이어·설정 형식 무변경, 서버 단독)
+
+- 수정 · 서버가 conv 마다 WG 소켓을 만드는데 상한이 `max_conv_num`(연결당 10000)뿐이고 프로세스 FD 한도와 무관했다 —
+  conv 는 클라이언트가 보내는 WG 페이로드에서 나오므로, **키를 가진 클라이언트 하나**가 conv 를 바꿔가며 쏘면 FD 가 고갈돼
+  같은 서버 호스트의 **다른 지사**까지 거부됐다(인증된 DoS). `RLIMIT_NOFILE` soft 에서 유도한 호스트 전역 예산(`soft − 64`) +
+  전역 최오래 conv LRU 축출(기존 `server_clear_function` 해제 경로 재사용)로 막는다. 넘치면 신규 conv 드롭(60초 1회 경고).
+- 호환 · 와이어·설정 형식 무변경, **서버 단독** → client/relay 어느 버전과도 호환, 서버만 교체 가능. 평상시(FD 여유)엔 거동 동일.
+  축출은 클라이언트엔 그 conv 소켓이 닫힌 것으로만 보이고 다음 패킷에서 재연결 — 기존 180초 유휴 conv GC 와 같은 거동.
+  상한은 런타임 자동 유도라 **설정 변경 불필요**. 유닛 `LimitNOFILE` 을 올리면 예산도 따라 커진다(선택).
+- 테스트 · `test_server_conv_cap.py`(5/5, `SBIN_OLD` A/B) — 낮춘 RLIMIT 에서 FD 가 예산 근처 평탄(142, soft 200)·소켓 할당 실패 0·
+  예산 초과분 LRU 로 계속 서비스(conv 720 served). 수정 전 바이너리는 FD 가 RLIMIT 도달·`new_connected_socket failed` 526.
+
 ## [1.4.1] — 2026-10-24
 
 **와이어 포맷·설정 형식 무변경** — 1.4.0 과 c·relay·s 어느 조합으로 섞어도 동작(테스트망 8조합 × 2회). relay 코드(`mf_relay.cpp`)와 설정 파싱(`main.cpp`·`mf_config`·`mf_netcfg`)은 1.4.0 과 같다.
