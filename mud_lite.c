@@ -153,6 +153,7 @@ struct mud_lite_msg {
 #define MUD_RECV_QUEUE_CAP  32
 #define MUD_SEND_BUF_MAX    (MUD_PKT_MAX_SIZE + 512)
 #define MUD_RECV_BUF_MAX    (MUD_PKT_MAX_SIZE + 512)
+_Static_assert(MUD_RECV_BUF_MAX == MUD_RAW_RECV_MAX, "keep mud_lite.h MUD_RAW_RECV_MAX in sync");
 
 /*
  * Send/receive slots.
@@ -203,6 +204,9 @@ struct mud {
     uint64_t           agg_time;
     uint64_t           base_time;
     union mud_sockaddr last_remote;  /* source of the last packet mud_recv() returned */
+    union mud_sockaddr last_local;   /* local address it arrived on (family 0 = unknown) */
+    const unsigned char *last_raw;   /* its raw bytes, valid until the next mud_recv() */
+    size_t             last_raw_len;
     uint64_t           last_dup_peer;/* see mud_get_last_dup_peer() */
 
     /* --accept-local: allowed local (destination) addresses. Empty = accept all. */
@@ -467,6 +471,58 @@ int mud_send_flush(struct mud *mud)
                         (unsigned int)mud->sq_len, 0);
     mud->sq_len = 0;
     return sent;
+}
+
+/* One datagram outside the path machinery (probe/Initial replies), sent from
+ * the local address it answers. With a wildcard bind a plain sendto() lets the
+ * kernel pick the source, so a probe sent to one address could be answered from
+ * another — telling the prober both belong to the same service, and on a
+ * multi-homed host possibly leaving on the wrong uplink. local == NULL or an
+ * unset family falls back to sendto(). */
+int
+mud_send_raw(struct mud *mud, const void *data, size_t size,
+             const union mud_sockaddr *remote, const union mud_sockaddr *local)
+{
+    if (!mud || !data || !remote) { errno = EINVAL; return -1; }
+    union mud_sockaddr dst = *remote;
+    struct iovec iov = { (void *)data, size };
+    unsigned char ctrl[MUD_CTRL_SIZE] MUD_CTRL_ALIGNED;
+    struct msghdr msg;
+    memset(&msg, 0, sizeof(msg));
+    memset(ctrl, 0, sizeof(ctrl));
+    msg.msg_iov    = &iov;
+    msg.msg_iovlen = 1;
+    msg.msg_name   = &dst;
+
+    if (dst.sa.sa_family == AF_INET) {
+        msg.msg_namelen = sizeof(struct sockaddr_in);
+        if (local && local->sa.sa_family == AF_INET) {
+            msg.msg_control    = ctrl;
+            msg.msg_controllen = CMSG_SPACE(MUD_PKTINFO_SIZE);
+            struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
+            cmsg->cmsg_level = IPPROTO_IP;
+            cmsg->cmsg_type  = MUD_PKTINFO;
+            cmsg->cmsg_len   = CMSG_LEN(MUD_PKTINFO_SIZE);
+            memcpy(MUD_PKTINFO_DST(CMSG_DATA(cmsg)),
+                   &local->sin.sin_addr, sizeof(struct in_addr));
+        }
+    } else if (dst.sa.sa_family == AF_INET6) {
+        msg.msg_namelen = sizeof(struct sockaddr_in6);
+        if (local && local->sa.sa_family == AF_INET6) {
+            msg.msg_control    = ctrl;
+            msg.msg_controllen = CMSG_SPACE(sizeof(struct in6_pktinfo));
+            struct cmsghdr *cmsg = CMSG_FIRSTHDR(&msg);
+            cmsg->cmsg_level = IPPROTO_IPV6;
+            cmsg->cmsg_type  = IPV6_PKTINFO;
+            cmsg->cmsg_len   = CMSG_LEN(sizeof(struct in6_pktinfo));
+            memcpy(&((struct in6_pktinfo *)CMSG_DATA(cmsg))->ipi6_addr,
+                   &local->sin6.sin6_addr, sizeof(struct in6_addr));
+        }
+    } else {
+        errno = EAFNOSUPPORT;
+        return -1;
+    }
+    return (int)sendmsg(mud->fd, &msg, MSG_DONTWAIT);
 }
 
 static int
@@ -1307,6 +1363,26 @@ mud_get_last_remote(struct mud *mud, union mud_sockaddr *out)
     return 0;
 }
 
+int
+mud_get_last_local(struct mud *mud, union mud_sockaddr *out)
+{
+    if (!mud || !out) { errno = EINVAL; return -1; }
+    if (mud->last_local.sa.sa_family != AF_INET &&
+        mud->last_local.sa.sa_family != AF_INET6) { errno = ENOENT; return -1; }
+    *out = mud->last_local;
+    return 0;
+}
+
+int
+mud_get_last_raw(struct mud *mud, const void **raw, size_t *len)
+{
+    if (!mud || !raw || !len) { errno = EINVAL; return -1; }
+    if (!mud->last_raw) { errno = ENOENT; return -1; }
+    *raw = mud->last_raw;
+    *len = mud->last_raw_len;
+    return 0;
+}
+
 uint64_t
 mud_get_last_dup_peer(struct mud *mud)
 {
@@ -1542,6 +1618,21 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
     mud->last_dup_peer = 0;
     mud_unmapv4(remote);
 
+    /* Local address first, and --accept-local before anything that can answer.
+     * Until 1.4.2 this ran after obfs decoding, so a datagram to an excluded
+     * address still got the Initial reply below or, after an auth failure, the
+     * caller's builtin probe reply — announcing the service on an address that
+     * was deliberately left out. */
+    union mud_sockaddr local;
+    if (mud_localaddr(&local, msg)) return 0;
+    mud->last_local = local;
+    if (!mud_local_accepted(mud, &local)) {
+        mud->err.local.addr = local;
+        mud->err.local.time = mud_now(mud);
+        mud->err.local.count++;
+        return 0;
+    }
+
     unsigned char decoded[MUD_PKT_MAX_SIZE];
     int decoded_size;
 
@@ -1555,13 +1646,8 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
                 int init_len = mud->obfs_init_fn(mud->obfs_ctx,
                                                   init_buf, (int)sizeof(init_buf),
                                                   1);
-                if (init_len > 0) {
-                    socklen_t rlen = (remote->sa.sa_family == AF_INET)
-                        ? (socklen_t)sizeof(struct sockaddr_in)
-                        : (socklen_t)sizeof(struct sockaddr_in6);
-                    sendto(mud->fd, init_buf, (size_t)init_len, MSG_DONTWAIT,
-                           (const struct sockaddr *)remote, rlen);
-                }
+                if (init_len > 0)
+                    mud_send_raw(mud, init_buf, (size_t)init_len, remote, &local);
             }
             return 0;
         }
@@ -1591,26 +1677,6 @@ mud_recv_one(struct mud *mud, void *data, size_t size,
         mud->err.clocksync.time  = now;
         mud->err.clocksync.count++;
         return 0;
-    }
-
-    union mud_sockaddr local;
-    if (mud_localaddr(&local, msg)) return 0;
-
-    /* --accept-local: with a wildcard bind the socket receives on every local
-     * address the host has. Serve only the listed ones and drop the rest
-     * silently — responding (even with the builtin QUIC Initial) would announce
-     * the service on an address deliberately left out. Empty list = accept all. */
-    if (mud->accept_local_count) {
-        unsigned i;
-        for (i = 0; i < mud->accept_local_count; i++) {
-            if (!mud_cmp_addr(&mud->accept_local[i], &local)) break;
-        }
-        if (i == mud->accept_local_count) {
-            mud->err.local.addr = local;
-            mud->err.local.time = now;
-            mud->err.local.count++;
-            return 0;
-        }
     }
 
     struct mud_path *path = mud_get_path(mud, &local, remote, MUD_PASSIVE);
@@ -1731,6 +1797,9 @@ mud_recv(struct mud *mud, void *data, size_t size)
             if (mud->rq_msgs[idx].msg_hdr.msg_flags & (MSG_TRUNC | MSG_CTRUNC))
                 continue;
             ssize_t raw_size = (ssize_t)mud->rq_msgs[idx].msg_len;
+            memset(&mud->last_local, 0, sizeof(mud->last_local));
+            mud->last_raw     = mud->rq[idx].buf;
+            mud->last_raw_len = (size_t)raw_size;
             int ret = mud_recv_one(mud, data, size,
                                    mud->rq[idx].buf, raw_size,
                                    &mud->rq[idx].remote,
@@ -1767,6 +1836,16 @@ int
 mud_get_fd(struct mud *mud)
 {
     return mud ? mud->fd : -1;
+}
+
+int
+mud_local_accepted(struct mud *mud, const union mud_sockaddr *local)
+{
+    if (!mud || !mud->accept_local_count) return 1;
+    if (!local) return 0;   /* list set but arrival address unknown → refuse */
+    for (unsigned i = 0; i < mud->accept_local_count; i++)
+        if (!mud_cmp_addr(&mud->accept_local[i], (union mud_sockaddr *)local)) return 1;
+    return 0;
 }
 
 int

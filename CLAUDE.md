@@ -531,7 +531,7 @@ MTU = 1300
 | `--path L:R:P` | IP:IP:포트 | 필수 | 멀티패스 경로. 반복 가능. L=소스IP(0.0.0.0=자동), R=서버IP, P=포트(1–65535). **v1.4.0: `R:P` 만 써도 된다(소스 자동), 뒤에 `via <if>` `gw <ip>`**. ⚠️ 소스 IP 는 회선을 정하지 않는다(리눅스는 목적지로 라우팅, 2026-10-18 r 실측) — 회선 분리는 `via`(송신 `ipi_ifindex`) 또는 정책 라우팅. 같은 목적지에 `via` 둘이면 소스는 인터페이스 IPv4 로 자동 지정(mud 경로 키 충돌 방지). 기동 시 path 별 송신 NIC 를 로그하고, **터널(`wg*`/`tun*`)로 라우팅되면 기동 거부**(규칙 2 루프). 30초 경로 보고에 `dev=` |
 | `--multipath-mode M` | 아래 참조 | `duplicate` (`failover`) | 멀티패스 동작 모드 선택 |
 | `--dup-factor N` | `1`–`8` | `2` | aggregate-duplicate에서 패킷당 전송 경로 수. 경로 수 초과 시 자동 클램프. |
-| `--port-hop-interval N` | `0`, `30`–∞ (초) | `0` (비활성) | TOTP 포트 호핑 슬롯 길이. 0=비활성. 최소 30초 |
+| `--port-hop-interval N` | `0`, `30`–∞ (초) | `0` (비활성) | TOTP 포트 호핑 슬롯 길이. 0=비활성. 최소 30초. 서버 TOTP 소켓은 **v1.4.3 부터 `-l` 주소에 바인드**(1.4.2 까지 `INADDR_ANY`) |
 
 **multipath-mode 모드별 동작**:
 
@@ -569,7 +569,7 @@ best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
 |------|---------|--------|------|
 | `--wg ip:port` | — | `127.0.0.1:51820` (필수) | WireGuard upstream 주소 |
 | `--decoy ip:port` | — | 없음 | GFW 액티브 프로빙 대응. 지정 시 HMAC 실패 패킷을 로컬 nginx/caddy QUIC 서버로 포워딩. **미지정 시 내장 QUIC Server Initial 1200B로 자동 응답** (nginx 불필요). |
-| `--accept-local ip` | IP (포트 불가), 최대 **16개** | 없음 (전부 수락) | **도착한 로컬 주소**가 목록에 있는 패킷만 서비스. 반복 지정. **`-l 0.0.0.0` 일 때만 의미 있다** — 고정 IP 바인딩은 커널이 이미 제한하므로 불일치 항목은 기동 거부. 미일치 패킷은 **조용히 폐기**(응답하면 서비스 안 하는 주소를 광고하게 된다). §27 |
+| `--accept-local ip` | IP (포트 불가), 최대 **16개** | 없음 (전부 수락) | **도착한 로컬 주소**가 목록에 있는 패킷만 서비스. 반복 지정. **`-l 0.0.0.0` 일 때만 의미 있다** — 고정 IP 바인딩은 커널이 이미 제한하므로 불일치 항목은 기동 거부. 미일치 패킷은 **조용히 폐기**(응답하면 서비스 안 하는 주소를 광고하게 된다). **v1.4.3 부터 인증·응답보다 먼저 검사**하고 TOTP 포트에도 적용(1.4.2 까지는 제외 주소로 온 프로브에 응답했다). §27·§33 |
 
 ### 릴레이 전용
 
@@ -2650,9 +2650,39 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 **검증**(sv1 루프백): `test_probe_hardening.py` 15/15 — 1.4.1 바이너리로 같은 테스트를 돌리면 5/15(작은 요청 응답·DCID·위조 세션 생성·
 속도 제한·릴레이 decoy FD +400 실패). 기존 스위트는 프로브를 1200 B 로 바꿔 통과(아래 회귀).
 
+### 33. 수신 경로 하드닝 — TOTP 크기·통합 FD 예산·accept-local 순서·응답 소스 IP (2026-11-08, v1.4.3)
+
+**파일**: `fec_manager.cpp`, `mud_lite.{c,h}`, `mf_probe.{h,cpp}`, `mf_server.cpp`, `mf_relay.cpp`. **와이어·설정 형식 무변경**, 서버·릴레이 단독.
+
+1.4.2(§32) 이후 재검토에서 확인한 수신 경로 결함들. 전부 sv1 루프백에서 수정 전 바이너리로 재현한 뒤 고쳤다(`test_v143_hardening.py`: 69f7877 3/14 → 14/14).
+
+- **TOTP 포트 → FEC 디코더 abort.** mud 소켓은 2012 B 버퍼로 받고 잘린 데이터그램을 버려 디코드 결과가 1500 B 를 넘지 않지만, 서버 TOTP 수신
+  (`server_totp_io_cb`)은 mud 를 거치지 않고 3800 B 버퍼로 받아 그대로 디코더에 넘겼다. `fec_decode_manager_t::input()` 의
+  `assert(len + 100 < buf_len)`("upper level 이 보장")이 성립하지 않아 인증된 3718 B 이상 데이터그램 하나로 서버가 SIGABRT 로 죽었다
+  (`-UNDEBUG` 빌드라 assert 는 항상 켜져 있다, §22-가). → 디코더 진입에서 길이 위반을 `-1` 로 거부(§22-가 와 같은 원칙: 와이어 길이는 assert 대상이
+  아니다), TOTP 수신은 `recvmsg` + `MUD_RAW_RECV_MAX` 상한·`MSG_TRUNC` 폐기로 mud 와 맞췄다. `--port-hop-interval` 을 쓰지 않으면 해당 없었다.
+- **FD 예산이 종류별로 따로 잡혀 합이 한도를 넘었다.** 서버 conv(`soft−64`, §32 이후 커밋)·릴레이 세션(800)·decoy(256)가 각자 상한이라
+  soft 1024 에서 960+256·800+256. decoy 는 키가 필요 없으므로 **미인증 프로브만으로** 정상 conv 생성이 `new_connected_socket failed` 로 실패했다
+  (soft 200: 60 중 21 실패, soft 1024: 89건). → `mf_fd_budget_init()`: `avail = soft − 기동 시 열린 FD − MF_FD_RESERVE(64)`,
+  decoy `min(256, avail/4)`(`g_decoy_session_max`), 나머지가 conv / 릴레이 세션(`min(800, …)`). 한도가 낮으면 부풀리지 않고 경고.
+  soft 1024 + decoy 이면 conv ~717·decoy ~238(종전 960·256), decoy 없으면 conv ~955.
+- **`--accept-local` 이 응답 뒤에 검사됐다.** `mud_recv_one()` 에서 obfs 디코드 → (Initial 이면 응답) → … → accept-local 순이라, 제외한 주소로 온
+  Initial 에 응답했고 인증 실패는 호출자가 내장 응답을 보냈다. → 로컬 주소 추출과 검사를 맨 앞으로. 같은 이유로 TOTP 소켓도
+  `INADDR_ANY` 대신 `-l` 주소에 바인드하고, 와일드카드면 `IP_PKTINFO` 로 받은 주소에 `mud_local_accepted()` 를 적용한다.
+- **응답 소스 IP.** 내장 프로브 응답·decoy 응답·mud 의 Initial 응답이 `sendto()` 라 와일드카드 바인드에서 커널이 소스를 골랐다 — .3 으로 온 프로브에
+  .1 이 답하는 식으로 같은 서비스의 다른 주소를 드러내고, 다중 회선이면 다른 회선으로 나갈 수 있었다. → `mf_sendto_from()` / `mud_send_raw()`
+  (`ipi_spec_dst`/`ipi6_addr`). 경로 데이터는 원래 `IP_PKTINFO` 로 보냈다(§27) — 응답 경로만 빠져 있었다.
+- **인증 실패 응답이 엉뚱한 송신자에게.** 서버 `mud_io_cb` 는 `MSG_PEEK` 로 본 주소·바이트로 응답·decoy 중계를 했는데, mud 는 recvmmsg 배치(32)에서
+  꺼내므로 peek 이 본 패킷과 실패한 패킷이 다를 수 있다(§19-나 와 같은 구조 — 세션 쪽만 고쳐져 있었다). → `mud_get_last_remote/local/raw()` 로
+  실제 처리한 패킷 기준.
+
+**검증**: `test_v143_hardening.py` 14/14(ASAN+UBSAN 클린), 기존 스위트 전부 통과(RNLC 11/11·FEC 경계 7/7·손실 10/10·agg 15/15·CLI 90/90·
+릴레이 라우팅 9/9·RNLC e2e 9/9·성능 26/26·다운스트림 24/24·세션 상한 4/4·세션 만료·probe 15/15·conv cap 4/4·트래픽 로그 9/9·dup 태그).
+
 ---
 
 **테스트 스크립트:**
+- `test_v143_hardening.py` — TOTP 초과 크기 생존·accept-local 무응답·응답 소스 IP·TOTP 바인드 주소·decoy+conv 통합 FD 예산·릴레이 예산 14개 케이스. `BIN=` 로 A/B(69f7877 은 3/14). §33 회귀 방지. 루프백 전용, PID 로만 정리
 - `test_probe_hardening.py` — 내장 프로브 응답(크기 하한·DCID·위조 거부·속도 제한·TLS) + decoy 세션 상한 15개 케이스. `BIN=` 로 A/B. §32 회귀 방지. 루프백 전용, PID 로만 정리
 - `pendttl_test.sh` (`test-results/2026-09-10-v131/`) — 클라이언트 pending 큐 TTL 검증. 릴레이 2개 동시 정지→복구를 N회 반복해 **일반 소크가 타지 않는 코드 경로**를 실행시킨다. 분석 `analyze_pend.py` 는 `송신 = 수신 − RTT` 로 지연을 상·하향에 귀속시킨다. §29 회귀 방지. **테스트망에서만 실행**
 - `analyze_leak.py` · `cmp_v130.py` (`test-results/2026-09-10-v131/`) — 누수 판정(계단 횟수·마지막 평탄 구간, `nproc` 모드값 필터)과 **직전 버전 런과의 경과시간 정렬 대조**. 램프가 관측 창보다 길 때 기울기 대신 쓰는 방법이다

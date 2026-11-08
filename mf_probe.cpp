@@ -6,6 +6,13 @@
 
 #include <string.h>
 #include <stdlib.h>
+#include <dirent.h>
+#include <stdio.h>
+#include <sys/resource.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+
+int g_decoy_session_max = DECOY_SESSION_MAX;
 
 namespace {
 
@@ -81,7 +88,8 @@ void maybe_log(my_time_t now)
 
 }  // namespace
 
-int probe_reply(int fd, const address_t &src, int req_len, obfs_mode_t mode)
+int probe_reply(int fd, const address_t &src, int req_len, obfs_mode_t mode,
+                const address_t *local)
 {
     my_time_t now = (my_time_t)get_current_time();
     maybe_log(now);
@@ -123,8 +131,7 @@ int probe_reply(int fd, const address_t &src, int req_len, obfs_mode_t mode)
         out_len = n + extra;
     }
 
-    ssize_t r = sendto(fd, out, (size_t)out_len, 0,
-                       (struct sockaddr *)&dst.inner, dst.get_len());
+    ssize_t r = mf_sendto_from(fd, out, (size_t)out_len, dst, local);
     if (r <= 0) return 0;
     g_stats.sent++;
     return (int)r;
@@ -133,4 +140,95 @@ int probe_reply(int fd, const address_t &src, int req_len, obfs_mode_t mode)
 void probe_get_stats(struct probe_stats *out)
 {
     if (out) *out = g_stats;
+}
+
+ssize_t mf_sendto_from(int fd, const void *buf, size_t len,
+                       const address_t &dst_in, const address_t *local_in)
+{
+    address_t dst = dst_in;
+    struct iovec iov = { const_cast<void *>(buf), len };
+    union {
+        char           buf[CMSG_SPACE(sizeof(struct in6_pktinfo))];
+        struct cmsghdr align;
+    } ctrl;
+    memset(&ctrl, 0, sizeof(ctrl));
+    struct msghdr msg;
+    memset(&msg, 0, sizeof(msg));
+    msg.msg_name    = &dst.inner;
+    msg.msg_namelen = dst.get_len();
+    msg.msg_iov     = &iov;
+    msg.msg_iovlen  = 1;
+
+    if (local_in) {
+        address_t local = *local_in;
+        if (dst.get_type() == AF_INET && local.get_type() == AF_INET) {
+            msg.msg_control    = ctrl.buf;
+            msg.msg_controllen = CMSG_SPACE(sizeof(struct in_pktinfo));
+            struct cmsghdr *c = CMSG_FIRSTHDR(&msg);
+            c->cmsg_level = IPPROTO_IP;
+            c->cmsg_type  = IP_PKTINFO;
+            c->cmsg_len   = CMSG_LEN(sizeof(struct in_pktinfo));
+            ((struct in_pktinfo *)CMSG_DATA(c))->ipi_spec_dst = local.inner.ipv4.sin_addr;
+        } else if (dst.get_type() == AF_INET6 && local.get_type() == AF_INET6) {
+            msg.msg_control    = ctrl.buf;
+            msg.msg_controllen = CMSG_SPACE(sizeof(struct in6_pktinfo));
+            struct cmsghdr *c = CMSG_FIRSTHDR(&msg);
+            c->cmsg_level = IPPROTO_IPV6;
+            c->cmsg_type  = IPV6_PKTINFO;
+            c->cmsg_len   = CMSG_LEN(sizeof(struct in6_pktinfo));
+            ((struct in6_pktinfo *)CMSG_DATA(c))->ipi6_addr = local.inner.ipv6.sin6_addr;
+        }
+    }
+    return sendmsg(fd, &msg, MSG_DONTWAIT);
+}
+
+static int open_fd_count(void)
+{
+    DIR *d = opendir("/proc/self/fd");
+    if (!d) return -1;
+    int n = 0;
+    struct dirent *e;
+    while ((e = readdir(d)) != NULL)
+        if (e->d_name[0] != '.') n++;
+    closedir(d);
+    return n - 1;   /* the directory stream's own fd */
+}
+
+int mf_fd_budget_init(const char *who, bool decoy_enabled, int main_cap)
+{
+    struct rlimit rl;
+    long soft = 1024;
+    if (getrlimit(RLIMIT_NOFILE, &rl) == 0)
+        soft = (rl.rlim_cur == RLIM_INFINITY || rl.rlim_cur > (rlim_t)(1 << 20))
+                   ? (1L << 20) : (long)rl.rlim_cur;
+    int open_now = open_fd_count();
+    if (open_now < 0) open_now = 16;
+    long avail = soft - open_now - MF_FD_RESERVE;
+
+    int decoy = 0;
+    if (decoy_enabled && avail > 0) {
+        decoy = (int)(avail / 4);
+        if (decoy > DECOY_SESSION_MAX) decoy = DECOY_SESSION_MAX;
+        if (decoy < 1) decoy = 1;
+    }
+    g_decoy_session_max = decoy_enabled ? decoy : DECOY_SESSION_MAX;
+
+    long main_max = avail - decoy;
+    if (main_cap > 0 && main_max > main_cap) main_max = main_cap;
+    if (main_max < 1) {
+        /* Do not invent headroom the process does not have: a budget above
+         * the real limit just moves the failure to socket(). */
+        mylog(log_warn, "[%s] RLIMIT_NOFILE soft=%ld leaves no FDs for client sockets "
+                        "(%d already open, %d reserved) — raise LimitNOFILE\n",
+              who, soft, open_now, MF_FD_RESERVE);
+        main_max = 1;
+    } else if (main_max < 64) {
+        mylog(log_warn, "[%s] RLIMIT_NOFILE soft=%ld allows only %ld client sockets — raise LimitNOFILE\n",
+              who, soft, main_max);
+    }
+    char extra[32] = "";
+    if (decoy_enabled) snprintf(extra, sizeof(extra), ", decoy %d", decoy);
+    mylog(log_info, "[%s] FD budget: soft=%ld open=%d reserve=%d → client sockets %ld%s\n",
+          who, soft, open_now, MF_FD_RESERVE, main_max, extra);
+    return (int)main_max;
 }
