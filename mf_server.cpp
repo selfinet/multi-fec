@@ -33,6 +33,7 @@ extern "C" {
 #include <stdint.h>
 #include <fcntl.h>
 #include <errno.h>
+#include <sys/resource.h>
 
 /* ────────────────────────────────────────────────────────────────
  * Forward declaration
@@ -709,6 +710,70 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
  * src_addr: client address (from recvfrom peek).
  * ──────────────────────────────────────────────────────────────── */
 
+/* ────────────────────────────────────────────────────────────────
+ * Per-conv WireGuard socket FD budget (CWE-400 guard)
+ *
+ * process_mud_data() creates one connected UDP socket per conv, bounded only by
+ * max_conv_num (10000 per client) — unrelated to the process FD limit (systemd
+ * default RLIMIT_NOFILE 1024). The conv id comes from the client's WG payload,
+ * so a single authenticated client can mint convs until new_connected_socket
+ * fails, denying service to every other branch on the same server host.
+ *
+ * Guard: a host-wide budget derived from the soft FD limit, with global
+ * least-recently-active conv eviction (reusing the existing teardown path
+ * server_clear_function → fd close). Wire format unchanged, server-only; the
+ * client just sees that conv's socket closed and reconnects on the next packet,
+ * exactly as it already does for the 180 s idle conv GC.
+ * ──────────────────────────────────────────────────────────────── */
+static int g_conv_sock_count = 0;   /* open per-conv WG sockets, host-wide */
+static int g_conv_sock_max   = 0;   /* budget, derived from RLIMIT_NOFILE at start */
+
+/* Called from connection.cpp:server_clear_function(), the single place a conv
+ * socket is closed — so the count stays exact across idle GC, LRU eviction and
+ * connection teardown alike. */
+void mf_server_conv_closed(void)
+{
+    if (g_conv_sock_count > 0) g_conv_sock_count--;
+}
+
+static void mf_conv_budget_init(void)
+{
+    struct rlimit rl;
+    int soft = 1024;
+    if (getrlimit(RLIMIT_NOFILE, &rl) == 0 && rl.rlim_cur != RLIM_INFINITY)
+        soft = (int)rl.rlim_cur;
+    const int CONV_FD_RESERVE = 64;   /* listen/mud/timers/totp/decoy/stdio/epoll */
+    g_conv_sock_max = soft - CONV_FD_RESERVE;
+    if (g_conv_sock_max < 64) g_conv_sock_max = 64;
+    mylog(log_info, "[server] conv socket budget=%d (RLIMIT_NOFILE soft=%d)\n",
+          g_conv_sock_max, soft);
+}
+
+/* Evict the globally least-recently-active conv. Returns false if none exists.
+ * Scans at most max_conn_num conns, and only on the budget-full slow path. */
+static bool evict_oldest_conv_global(void)
+{
+    conn_info_t *victim = NULL;
+    u32_t        victim_conv = 0;
+    my_time_t    oldest = 0;
+    bool         found = false;
+
+    for (auto &kv : conn_manager.mp) {
+        conn_info_t *ci = kv.second;
+        if (!ci) continue;
+        conv_manager_t<u64_t> &cm = ci->conv_manager.s;
+        if (cm.lru.empty()) continue;
+        u32_t     conv;
+        my_time_t ts = cm.lru.peek_back(conv);   /* back = oldest */
+        if (!found || ts < oldest) {
+            found = true; oldest = ts; victim = ci; victim_conv = conv;
+        }
+    }
+    if (!found) return false;
+    victim->conv_manager.s.erase_conv(victim_conv);   /* closes fd → mf_server_conv_closed() */
+    return true;
+}
+
 static void process_mud_data(const address_t &src_addr, char *data, int data_len)
 {
     /* Get or create per-client conn_info */
@@ -771,6 +836,27 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
                 continue;
             }
 
+            /* Host-wide FD budget: a single client must not exhaust the server's
+             * FDs and deny other branches. Reclaim timed-out convs first (no live
+             * victim), then evict the globally oldest until under budget; if still
+             * full, drop this conv (warn at most once a minute). */
+            if (g_conv_sock_count >= g_conv_sock_max) {
+                conn_info.conv_manager.s.clear_inactive0(NULL);
+                int guard = 0;
+                while (g_conv_sock_count >= g_conv_sock_max &&
+                       evict_oldest_conv_global() && ++guard < 256) {}
+                if (g_conv_sock_count >= g_conv_sock_max) {
+                    static my_time_t last_warn = 0;
+                    my_time_t now = get_current_time();
+                    if (now - last_warn > 60000) {
+                        last_warn = now;
+                        mylog(log_warn, "[server] conv socket budget %d reached — "
+                              "dropping new conv (raise LimitNOFILE)\n", g_conv_sock_max);
+                    }
+                    continue;
+                }
+            }
+
             /* Create a new connected UDP socket to WireGuard server for this conv */
             int new_udp_fd = -1;
             int ret = new_connected_socket2(new_udp_fd, g_wg_addr,
@@ -801,6 +887,7 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
             }
 
             fd64_t fd64 = fd_manager.create(new_udp_fd);
+            g_conv_sock_count++;   /* decremented in server_clear_function */
 
             conn_info.conv_manager.s.insert_conv(conv, fd64);
             fd_manager.get_info(fd64).addr = src_addr;
@@ -1269,6 +1356,8 @@ void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obfs,
 {
     g_mud  = mud;
     g_obfs = obfs;
+
+    mf_conv_budget_init();
 
     if (decoy_addr.is_vaild()) {
         g_decoy_upstream = decoy_addr;

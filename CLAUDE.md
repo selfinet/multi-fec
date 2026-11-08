@@ -1054,6 +1054,7 @@ aggregate 모드 가중 분배:
   — SipHash 연산 비용이 수십 ns 수준이라 실용적 영향 없음
 - mud_lite는 단일 UDP 소켓 기반으로 커널 멀티큐 미지원
 - WireGuard MTU를 1420으로 두면 IP 단편화 발생 → MTU 1300 권장
+- 서버 conv 소켓 FD 예산(v1.4.2, 2026-11-08): 서버는 conv 마다 WG 소켓을 잡으므로 호스트 전역 상한을 `RLIMIT_NOFILE` soft `− 64` 로 자동 유도한다(기동 로그 `conv socket budget=N`). 넘치면 전역 최오래 conv 를 LRU 축출하고, 그래도 모자라면 신규 conv 드롭(60초 1회 경고). 다지사 서버는 유닛 `LimitNOFILE` 을 올리면 예산이 함께 커진다. 설정키는 없다
 - 릴레이 키별 라우팅: 동일 (src_ip, src_port) 세션은 최초 키로 고정, 재협상 없음
 - 릴레이 키별 라우팅: `--route` 와 `--upstream`/`-k` 혼용 불가 — ⚠️ **오류가 나지 않는다**: 함께 주면 route 만 쓰고 upstream·`-k` 는 조용히 버린다(2026-10-19 v1.4.0 실측, 다음 버전에서 거부 예정)
 - 운영 방침: **relay 에도 키는 무조건 있어야 한다**(2026-10-19). 키 1개·서버 1개면 route 줄 하나 = upstream+`-k` 와 같다. 투명 중계(키 없음)는 쓰지 않는다 — 현재 코드는 이를 막지 않는다
@@ -2662,6 +2663,7 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 - `test_path_loss_unit.c` — 경로 손실률 계산 유닛 테스트 10개 케이스 (`make test-path-loss`). §24 회귀 방지. **주의**: `mud_update_rl()`만 직접 구동하므로 `mud_recv()`의 dedup 경로(§25)는 커버하지 않는다.
 - `test_fec_decode_bounds.cpp` — FEC(RS) 디코더 경계 검사 7개 케이스 (`make test-fec-bounds`). §22-가 회귀 방지.
 - `test_relay_session_cap.py` — 릴레이 동시 세션 상한·LRU 축출 4개 케이스. §22-나 회귀 방지. `BIN=` 로 A/B 비교 가능.
+- `test_server_conv_cap.py` — 서버 conv 소켓 FD 예산·전역 LRU 축출 5개 케이스(낮춘 RLIMIT). FD 예산 평탄·소켓실패 0·초과분 계속 서비스. **sv1 루프백 전용**, `SBIN_OLD=<수정 전 바이너리>` 로 A/B(수정 전은 FD 고갈·`new_connected_socket failed`).
 - `test_path_failure.py` — 경로 절단·열화·지연차 × duplicate/aggregate 8종. §21-가 회귀 방지. **root 필요**(격리 netns 생성, 운영 무영향).
 - `test_relay_session_expiry.py` — 릴레이 idle 세션 만료로 FD가 실제 회수되는지 검증. §20-가 회귀 방지.
 - `test_downstream_multi.py` — 다중 클라이언트 **다운스트림** 전달 검증 (모드 4종 × 세션 1/2/4 × FEC on/off = 24 케이스). 기존 스위트가 업스트림만 보던 공백을 메운다. §19-가 회귀 방지.
