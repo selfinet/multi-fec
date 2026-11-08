@@ -111,6 +111,19 @@ int main() {
         g_fec_par.mode = 0;
     }
 
+    /* 케이스 7 — 디코더 버퍼(buf_len) 에 비해 너무 긴 입력: 1.4.2 까지는
+     * assert(len + 100 < buf_len) 로 프로세스가 죽었다(서버 TOTP 수신 경로로 도달, §33).
+     * 이제 -1 로 거부되어야 한다(생존이 곧 통과). */
+    {
+        fec_decode_manager_t dec;
+        static char big[buf_len];
+        memset(big, 0, sizeof(big));
+        char body[4]; memcpy(body, pl, 4);
+        make_pkt(big, 0x7000, /*type*/0, /*data*/1, /*red*/0, /*inner*/0, body, 4);
+        int r = dec.input(big, buf_len - 50);
+        check("oversized input (len+100 >= buf_len) rejected, no abort", r < 0);
+    }
+
     printf("\n%d passed, %d failed\n", g_pass, g_fail);
     return g_fail ? 1 : 0;
 }

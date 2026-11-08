@@ -3,16 +3,17 @@
 test_v143_hardening.py — 1.4.3 hardening (CLAUDE.md §33). Loopback only; starts
 its own processes on random ports and stops them by PID (never pkill).
 
-  T1  TOTP port: authenticated datagram longer than the mud limit does not
-      abort the server (FEC decoder assert, ≤1.4.2); a normal-size one still
-      opens a session
+  T1  --port-hop-interval is ignored with a warning (it never worked: downstream
+      0% in 1.4.1–1.4.2); a real client↔server round trip with it set delivers
+      both directions and the server opens no TOTP sockets
   T2  --accept-local: a probe to an excluded local address gets no reply
       (mud socket); an accepted address still gets one
   T3  probe reply leaves from the address the probe was sent to (wildcard bind)
-  T4  TOTP sockets bind to the -l address only (≤1.4.2: INADDR_ANY)
   T5  decoy flood + authenticated conv load share one FD budget: no socket
       allocation failure for legitimate convs, FD stays below RLIMIT
   T6  relay: session cap + decoy cap fit the FD budget (start-up log)
+  T7  conv budget is shared fairly: a client minting convs evicts its own,
+      not the live conv of a quieter client
 
 BIN=./multi-fec-old python3 test_v143_hardening.py   → A/B against an older build
 """
@@ -99,22 +100,44 @@ def nfd(pid):
 def totp_ports(logfile):
     return [int(x) for x in re.findall(r'totp: listening port (\d+)', open(logfile).read())]
 
-def t1_totp_oversize():
-    print('\n[T1 TOTP oversize]')
-    lp, wp = free_port(), free_port()
-    p, log = start(['-s', '-l', f'127.0.0.1:{lp}', '--wg', f'127.0.0.1:{wp}', '-k', KEY,
-                    '--port-hop-interval', '30'])
-    ports = totp_ports(log)
-    check('TOTP sockets open', len(ports) >= 1, f'ports={ports}')
-    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-    for port in ports: s.sendto(authed_quic(3790), ('127.0.0.1', port))
-    time.sleep(0.8)
-    check('3790 B authenticated datagram → server alive', p.poll() is None, f'rc={p.poll()}')
-    for port in ports: s.sendto(authed_quic(1400), ('127.0.0.1', port))
-    time.sleep(0.8)
-    txt = open(log).read()
-    check('1400 B authenticated datagram still accepted', 'totp: new session' in txt and p.poll() is None)
-    s.close(); stop(p)
+def roundtrip(extra, seconds=6):
+    """Real client + server, WG side faked by a sink that echoes. Returns (sent, up, down, srv_log)."""
+    SP, WG, CP = free_port(), free_port(), free_port()
+    wg = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); wg.bind(('127.0.0.1', WG)); wg.settimeout(0.01)
+    srv, slog = start(['-s', '-l', f'127.0.0.1:{SP}', '--wg', f'127.0.0.1:{WG}', '-k', KEY] + extra, settle=0.3)
+    cli, _ = start(['-c', '-l', f'127.0.0.1:{CP}', '--path', f'127.0.0.1:127.0.0.1:{SP}', '-k', KEY] + extra,
+                   settle=2.5)
+    app = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); app.bind(('127.0.0.1', 0)); app.settimeout(0.01)
+    up, down, sent = set(), set(), 0
+    t0 = time.time()
+    while time.time() - t0 < seconds:
+        app.sendto(b'UP%05d' % sent + b'.' * 200, ('127.0.0.1', CP)); sent += 1
+        for _ in range(8):
+            try:
+                d, a = wg.recvfrom(4096)
+                if d.startswith(b'UP'): up.add(d[:7]); wg.sendto(b'DN' + d[2:7] + b'.' * 200, a)
+            except socket.timeout: break
+        for _ in range(8):
+            try:
+                d = app.recv(4096)
+                if d.startswith(b'DN'): down.add(d[:7])
+            except socket.timeout: break
+    time.sleep(0.3)
+    try:
+        while True:
+            d = app.recv(4096)
+            if d.startswith(b'DN'): down.add(d[:7])
+    except socket.timeout: pass
+    stop(cli); stop(srv); wg.close(); app.close()
+    return sent, len(up), len(down), open(slog).read()
+
+def t1_port_hop_ignored():
+    print('\n[T1 --port-hop-interval ignored]')
+    sent, up, down, log = roundtrip(['--port-hop-interval', '30'])
+    check('warning logged', '--port-hop-interval 30 ignored' in log)
+    check('server opened no TOTP socket', 'totp: listening' not in log and 'totp: new session' not in log)
+    check('round trip both directions (≥ 98%)', up >= 0.98 * sent and down >= 0.98 * up,
+          f'sent={sent} up={up} down={down}')
 
 def t2_t3_accept_local_and_source():
     print('\n[T2/T3 accept-local · reply source]')
@@ -132,20 +155,6 @@ def t2_t3_accept_local_and_source():
     p, _ = start(['-s', '-l', f'0.0.0.0:{lp}', '--wg', '127.0.0.1:9', '-k', KEY])
     r, a = probe('127.0.0.5', lp, bad_quic(1300))
     check('wildcard, no list: reply source == 127.0.0.5', a is not None and a[0] == '127.0.0.5', f'from={a}')
-    stop(p)
-
-def t4_totp_bind():
-    print('\n[T4 TOTP bind address]')
-    lp, wp = free_port('127.0.0.2'), free_port()
-    p, log = start(['-s', '-l', f'127.0.0.2:{lp}', '--wg', f'127.0.0.1:{wp}', '-k', KEY,
-                    '--port-hop-interval', '30'])
-    ports = totp_ports(log)
-    other = [probe('127.0.0.3', port, bad_quic(1300))[0] for port in ports]
-    check('TOTP port on 127.0.0.3 (not -l) → no reply', ports and all(r is None for r in other))
-    time.sleep(1.2)
-    own = [probe('127.0.0.2', port, bad_quic(1300)) for port in ports[:1]]
-    check('TOTP port on 127.0.0.2 (-l) → reply from 127.0.0.2',
-          own and own[0][0] is not None and own[0][1][0] == '127.0.0.2', f'{own[0][1] if own else None}')
     stop(p)
 
 def t5_fd_mix():
@@ -194,12 +203,46 @@ def t6_relay_budget():
     check('relay sessions + decoy + open + reserve ≤ soft', ok, m.group(0) if m else 'no budget line')
     stop(p)
 
+def t7_fair_eviction():
+    print('\n[T7 fair conv eviction]')
+    SOFT = 200
+    SP, WG, CA, CB = free_port(), free_port(), free_port(), free_port()
+    wg = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); wg.bind(('127.0.0.1', WG)); wg.settimeout(0.01)
+    srv, slog = start(['-s', '-l', f'127.0.0.1:{SP}', '--wg', f'127.0.0.1:{WG}', '-k', 'convcap'],
+                      soft=SOFT, settle=0.3)
+    ca, _ = start(['-c', '-l', f'127.0.0.1:{CA}', '--path', f'127.0.0.1:127.0.0.1:{SP}', '-k', 'convcap'], settle=0.1)
+    cb, _ = start(['-c', '-l', f'127.0.0.1:{CB}', '--path', f'127.0.0.1:127.0.0.1:{SP}', '-k', 'convcap'], settle=2.0)
+    a = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); a.bind(('127.0.0.1', 0))
+    aports, asent, arecv, socks = set(), 0, 0, []
+    def drain():
+        nonlocal arecv
+        try:
+            while True:
+                d, addr = wg.recvfrom(4096)
+                if d.startswith(b'AAAA'): aports.add(addr[1]); arecv += 1
+        except socket.timeout: pass
+    t0 = time.time()
+    while time.time() - t0 < 8:
+        a.sendto(b'AAAA%04d' % asent + b'.' * 100, ('127.0.0.1', CA)); asent += 1
+        if 1.0 < time.time() - t0 < 6.0:            # B mints ~200 convs/s
+            for _ in range(200):
+                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM); s.bind(('127.0.0.1', 0))
+                s.sendto(b'B' * 100, ('127.0.0.1', CB)); socks.append(s)
+        drain(); time.sleep(1.0)
+    time.sleep(0.5); drain()
+    txt = open(slog).read()
+    check('B minted far more convs than the budget', txt.count('new conv') > 400, f"new conv={txt.count('new conv')}")
+    check("A's conv kept (one WG-side source port)", len(aports) == 1, f'ports={len(aports)} A {arecv}/{asent}')
+    check('A delivered every packet', arecv == asent, f'{arecv}/{asent}')
+    for s in socks: s.close()
+    stop(ca); stop(cb); stop(srv); a.close(); wg.close()
+
 try:
-    t1_totp_oversize()
+    t1_port_hop_ignored()
     t2_t3_accept_local_and_source()
-    t4_totp_bind()
     t5_fd_mix()
     t6_relay_budget()
+    t7_fair_eviction()
 finally:
     stop_all()
 print(f'\n{passed}/{passed + failed} passed')

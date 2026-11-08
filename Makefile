@@ -53,6 +53,11 @@ test-agg-unit:
 	$(CC) $(CFLAGS) -o test_agg_unit test_agg_unit.c -lrt -lpthread
 	./test_agg_unit
 
+# mud_send_flush() 부분 송신 보존 (1.4.3, CLAUDE.md §33) — sendmmsg 를 가짜로 바꿔 include
+test-send-flush:
+	$(CC) $(CFLAGS) -o test_send_flush_unit test_send_flush_unit.c -lrt -lpthread
+	./test_send_flush_unit
+
 # ASAN/UBSAN 빌드: 메모리 오류·미정의 동작 검출용 (배포용 아님)
 # 사용: make asan → ./multi-fec-asan  (테스트 스크립트에 BIN=./multi-fec-asan)
 asan:

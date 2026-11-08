@@ -531,7 +531,7 @@ MTU = 1300
 | `--path L:R:P` | IP:IP:포트 | 필수 | 멀티패스 경로. 반복 가능. L=소스IP(0.0.0.0=자동), R=서버IP, P=포트(1–65535). **v1.4.0: `R:P` 만 써도 된다(소스 자동), 뒤에 `via <if>` `gw <ip>`**. ⚠️ 소스 IP 는 회선을 정하지 않는다(리눅스는 목적지로 라우팅, 2026-10-18 r 실측) — 회선 분리는 `via`(송신 `ipi_ifindex`) 또는 정책 라우팅. 같은 목적지에 `via` 둘이면 소스는 인터페이스 IPv4 로 자동 지정(mud 경로 키 충돌 방지). 기동 시 path 별 송신 NIC 를 로그하고, **터널(`wg*`/`tun*`)로 라우팅되면 기동 거부**(규칙 2 루프). 30초 경로 보고에 `dev=` |
 | `--multipath-mode M` | 아래 참조 | `duplicate` (`failover`) | 멀티패스 동작 모드 선택 |
 | `--dup-factor N` | `1`–`8` | `2` | aggregate-duplicate에서 패킷당 전송 경로 수. 경로 수 초과 시 자동 클램프. |
-| `--port-hop-interval N` | `0`, `30`–∞ (초) | `0` (비활성) | TOTP 포트 호핑 슬롯 길이. 0=비활성. 최소 30초. 서버 TOTP 소켓은 **v1.4.3 부터 `-l` 주소에 바인드**(1.4.2 까지 `INADDR_ANY`) |
+| `--port-hop-interval N` | `0`, `30`–∞ (초) | `0` (비활성) | **v1.4.3 부터 경고 후 무시** — 최초 커밋부터 하향이 전부 유실되는 상태였다(§33). 설정에서 지울 것 |
 
 **multipath-mode 모드별 동작**:
 
@@ -2676,13 +2676,33 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
   꺼내므로 peek 이 본 패킷과 실패한 패킷이 다를 수 있다(§19-나 와 같은 구조 — 세션 쪽만 고쳐져 있었다). → `mud_get_last_remote/local/raw()` 로
   실제 처리한 패킷 기준.
 
+**2차 (같은 날, 같은 1.4.3)** — 재검토 남은 항목과 포트 호핑.
+
+- **포트 호핑은 동작한 적이 없다 → 무시.** client `PortHopper` 는 hop 포트를 **mud 경로**로 추가해 `[mud 시각 6B][sid][FEC]` 를 보내는데,
+  서버 `server_totp_io_cb` 는 obfs 만 풀고 앞 8B 를 sid 로 읽었다(시각 바이트 → 패킷마다 새 sid, 로그의 `00005fc1…`·`012c5fc1…`).
+  하향은 `g_addr_to_totp_fd` 로 TOTP 소켓에서 mud 프레이밍 없이 나가 client mud 가 버렸다. 실측(루프백, 실제 client+server 왕복):
+  끄면 100%, 켜면 **하향 0/176**(1.4.1·1.4.2·1.4.3-0fa443c 동일), 9초에 가짜 세션 60~179. 릴레이엔 hop 코드가 없어 릴레이 구성에선 원리적으로 불가.
+  → `main.cpp` 가 경고 후 0 으로 둔다(기동 거부는 기존 설정을 못 뜨게 하므로 피함). TOTP·PortHopper 코드는 남아 있으나 도달하지 않는다.
+  위 1차의 TOTP 크기 상한·바인드 수정은 그 코드 안의 방어로 남는다. 다시 필요하면 서버 TOTP 수신을 mud 로 넘기고 릴레이까지 설계해야 한다.
+- **mud 송신 큐 소실.** `mud_send_flush()` 가 `sendmmsg()` 반환과 무관하게 `sq_len = 0` — 일부만 나가거나 실패하면 나머지는 창·`tx.total` 만
+  차감된 채 사라졌다(이것이 손실률 계산에도 섞인다). → 남은 항목을 앞으로 당기고(`mud_sq_relink()` 로 iov/name/control 포인터 재연결)
+  EAGAIN/ENOBUFS 면 다음 flush 로, 그 외 오류면 그 하나만 건너뛴다. `mud_send_path()` 는 flush 후에도 큐가 차 있으면 `EAGAIN`(종전엔 보내지 못한 큐를
+  통째로 버리고 새 것을 넣었다). `test_send_flush_unit.c` 7/7, 수정 전 코드 1/7.
+- **서버 대기 큐 HOL.** `flush_server_pending()` 이 첫 실패에서 `break` — 경로 없는 클라이언트 하나가 뒤의 모두를 TTL 까지 붙잡았다.
+  → 실패 시 `mud_send_wait()`(공유 송신 창 고갈)일 때만 멈추고, 아니면 그 peer 를 막힘 목록(32)에 넣고 계속. 남는 항목은 순서 유지 압축.
+  라이브 송신은 큐를 거치지 않아 e2e 로는 재현 조건을 만들 수 없었다 — 코드 수정·회귀만.
+- **conv 축출 공정성.** 전역 최오래 conv 축출은 conv 를 마구 만드는 클라이언트가 조용한 클라이언트의 살아 있는 conv 를 밀어내게 했다
+  (1초 간격 클라이언트 A, B 가 ~200 conv/s → A 의 WG 쪽 소스 포트 6개). → `evict_oldest_conv(requester)`: 몫 = 예산 ÷ conv 보유 클라이언트 수,
+  요청자가 몫 이상이면 자기 것, 아니면 몫 초과 클라이언트의 최오래, 없으면 전역 최오래. 같은 조건에서 A 포트 1개·8/8.
+
 **검증**: `test_v143_hardening.py` 14/14(ASAN+UBSAN 클린), 기존 스위트 전부 통과(RNLC 11/11·FEC 경계 7/7·손실 10/10·agg 15/15·CLI 90/90·
 릴레이 라우팅 9/9·RNLC e2e 9/9·성능 26/26·다운스트림 24/24·세션 상한 4/4·세션 만료·probe 15/15·conv cap 4/4·트래픽 로그 9/9·dup 태그).
 
 ---
 
 **테스트 스크립트:**
-- `test_v143_hardening.py` — TOTP 초과 크기 생존·accept-local 무응답·응답 소스 IP·TOTP 바인드 주소·decoy+conv 통합 FD 예산·릴레이 예산 14개 케이스. `BIN=` 로 A/B(69f7877 은 3/14). §33 회귀 방지. 루프백 전용, PID 로만 정리
+- `test_v143_hardening.py` — 포트 호핑 무시(실제 client↔server 왕복)·accept-local 무응답·응답 소스 IP·decoy+conv 통합 FD 예산·릴레이 예산·conv 공정 축출 15개 케이스. `BIN=` 로 A/B(0fa443c 11/15). §33 회귀 방지. 루프백 전용, PID 로만 정리
+- `test_send_flush_unit.c` — `mud_send_flush()` 부분 송신 보존 7개 케이스 (`make test-send-flush`, sendmmsg 가짜로 대체). 수정 전 1/7. §33 회귀 방지
 - `test_probe_hardening.py` — 내장 프로브 응답(크기 하한·DCID·위조 거부·속도 제한·TLS) + decoy 세션 상한 15개 케이스. `BIN=` 로 A/B. §32 회귀 방지. 루프백 전용, PID 로만 정리
 - `pendttl_test.sh` (`test-results/2026-09-10-v131/`) — 클라이언트 pending 큐 TTL 검증. 릴레이 2개 동시 정지→복구를 N회 반복해 **일반 소크가 타지 않는 코드 경로**를 실행시킨다. 분석 `analyze_pend.py` 는 `송신 = 수신 − RTT` 로 지연을 상·하향에 귀속시킨다. §29 회귀 방지. **테스트망에서만 실행**
 - `analyze_leak.py` · `cmp_v130.py` (`test-results/2026-09-10-v131/`) — 누수 판정(계단 횟수·마지막 평탄 구간, `nproc` 모드값 필터)과 **직전 버전 런과의 경과시간 정렬 대조**. 램프가 관측 창보다 길 때 기울기 대신 쓰는 방법이다
