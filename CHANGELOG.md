@@ -712,6 +712,19 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 - 테스트 · `test_probe_hardening.py`(15/15, 1.4.1 은 5/15). `test_all_options.py`·`test_relay_routing.py` 프로브 크기 1200 B 로,
   `test_all_options.py`·`test_perf_stability.py` 의 `pkill -f multi-fec` 를 바이너리 경로로 좁힘(호출한 셸까지 죽이던 문제).
 
+### 2026-11-08 — 릴레이 트래픽 로깅 + 로그 지문 (와이어·설정 형식 무변경, 릴레이 단독)
+
+- 추가 · 릴레이가 `--report` 를 지키고(종전엔 무시) 주기마다 `[relay][report]` 한 줄을 info 로 남긴다 — 업/다운 바이트·패킷, Mbps,
+  활성 세션(`live`/`uniq`), 세션 증감(`new`/`expired`/`evicted`), 프로브 수, decoy 바이트, 상한 드롭(`drop(full)`). 세션별 상세는 debug
+  (바이트 상위 20개, 나머지는 생략 표기). `--report` 기본 60초이므로 **기존 설정 그대로 바이너리만 바꾸면** 동작한다.
+- 보안 · 로그 폭주 차단 — 건별 로그(`new session`/`session removed`/세션 상한 드롭)를 debug·카운터로 내려, 기본 로그레벨(4)에서는
+  주기 보고 한 줄만 남는다(위조 플러드 600패킷 → 신규 로그 2줄 실측).
+- 보안 · 로그의 클라이언트 식별은 생 IP 가 아니라 단방향 지문(`cf:xxxxxxxx`)이다 — 내보낸 로그(중앙 수집·백업·티켓)에 클라 주소가 안 남는다.
+  **고정 솔트** `/etc/multi-fec/log-salt`(0600, 없으면 자동 생성, 프로세스/호스트 공유는 파일 복사)로 키잉하므로, 솔트 보유 운영자는
+  아는 IP 를 정방향 해시해 매핑할 수 있다 — 신규 `multi-fec --fingerprint-ip <ip>`. 솔트 없으면 지문은 불투명. 신규 `mf_logfp.{h,cpp}`,
+  실시간 IP 는 종전대로 `ss`/`/proc/net/udp`.
+- 테스트 · `test_relay_traffic_log.py`(9/9) — 보고 줄·업다운 집계·지문 사용·`--fingerprint-ip` 일치·레벨4 플러드 안전·probe 집계.
+
 ## [1.4.1] — 2026-10-24
 
 **와이어 포맷·설정 형식 무변경** — 1.4.0 과 c·relay·s 어느 조합으로 섞어도 동작(테스트망 8조합 × 2회). relay 코드(`mf_relay.cpp`)와 설정 파싱(`main.cpp`·`mf_config`·`mf_netcfg`)은 1.4.0 과 같다.

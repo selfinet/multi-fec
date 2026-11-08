@@ -519,7 +519,7 @@ MTU = 1300
 | `--obfs-mode M` | `quic` \| `tls` | `quic` | 패킷 위장 모드 |
 | `--disable-obfs` | — | 비활성 | obfs 완전 비활성화 (테스트용) |
 | `--fifo PATH` | 파일경로 | 없음 (`--config` 시 `/run/multi-fec/<인스턴스>.fifo`, 디렉터리 없으면 경고 후 생략) | 런타임 커맨드 FIFO. **client/server 전용 — relay 모드에서는 오류 없이 무시된다**(relay 분기가 FIFO 설정보다 앞에서 `return` 한다, `main.cpp`) |
-| `--report N` | `1`–∞ (초) | `60` (`0` off) | 통계 리포트 주기 |
+| `--report N` | `1`–∞ (초) | `60` (`0` off) | 통계 리포트 주기. **v1.4.2(2026-11-08): 릴레이도 지킨다**(종전엔 무시) → `[relay][report]` info 한 줄/주기(업·다운 바이트·패킷·Mbps, `live`/`uniq`/`new`/`expired`/`evicted`, `probe`, `decoy`, `drop(full)`). 세션별 상세는 debug(상위 20개). 클라 식별은 생 IP 가 아니라 지문 `cf:xxxxxxxx`(고정 솔트 `/etc/multi-fec/log-salt` 0600 자동생성, 매핑은 `multi-fec --fingerprint-ip <ip>`). 건별 세션 로그는 debug 로 내려 기본레벨 플러드 없음. `mf_logfp.{h,cpp}` |
 | `--log-level N` | `0`–`6` | `4` | 0=fatal 1=error 2=warn 3=info 4=info+ 5=debug 6=trace |
 | `--sock-buf N` | `10`–`10240` (kB) | `4096` (OS 기본값) | UDP SO_SNDBUF/SO_RCVBUF 크기. client/server 는 mud 소켓, **relay 는 v1.3.5 부터** 리슨 + 세션별 upstream 소켓에 적용한다 — **v1.3.4 이하 relay 는 오류 없이 무시했다**(2026-10-05 발견, 문서 예시에는 처음부터 relay 에도 들어 있었다). v1.3.5 부터 `*FORCE` 를 먼저 시도해 root 면 `rmem_max` 를 넘어 적용되고, 잘리면 경고한다(v1.3.4 이하는 잘린 값을 요청값으로 로그). **v1.3.6 부터 c·s 의 WireGuard 쪽 소켓**(클라 로컬 리슨, 서버 세션별 `--wg` 소켓)에도 적용 — 그 전엔 하드코딩 1 MB 가 `rmem_max` 에 잘려 416 KB 였다 |
 | `--auth-interval N` | `30`–∞ (초) | `60` (`30`; `0` = 30) | HMAC 토큰 슬롯 길이. 클라이언트·relay·서버 동일 설정 필수 — **옵션을 생략한 1.3.x 상대와는 어긋난다**(전 패킷 무음 폐기). 길수록 슬롯 경계 탐지 어려움 |
@@ -2666,6 +2666,7 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 - `test_relay_session_expiry.py` — 릴레이 idle 세션 만료로 FD가 실제 회수되는지 검증. §20-가 회귀 방지.
 - `test_downstream_multi.py` — 다중 클라이언트 **다운스트림** 전달 검증 (모드 4종 × 세션 1/2/4 × FEC on/off = 24 케이스). 기존 스위트가 업스트림만 보던 공백을 메운다. §19-가 회귀 방지.
 - `test_relay_routing.py` — 릴레이 키별 라우팅 9개 케이스 (TC6 = 로그에 PSK 평문 없음, §23 회귀 방지)
+- `test_relay_traffic_log.py` — 릴레이 트래픽 로깅 9개 케이스 (주기 보고·업다운 집계·지문 사용·`--fingerprint-ip` 일치·레벨4 플러드 안전·probe 집계). **sv1 루프백 전용**, `MF_LOG_SALT_FILE=` 로 솔트 격리
 - `mf_ladder2.sh` (`test-results/2026-08-01-fec-tuning/`) — 테스트망 부하 계단 하네스 v2. TCP 는 `--fq-rate` 커널 페이싱, 워치독 트립 시 캡 절반 자동 재시도. **테스트망에서만 실행**
 - `mf_ladder_udp.sh` (`test-results/2026-08-06-postmove-loadtest/`) — 앱 레이트 계단으로 무릎점을 찾는다. **가드를 먼저 띄우고 실행한다**(스크립트가 가드를 띄우지 않고, 가드가 없으면 중단). UDP 고정 레이트라 손실이 그대로 보인다. ⚠️ iperf3 요약 줄은 `NF=13` 이고 실효는 `$7` 이다 — `$(NF-4)` 같은 상대 인덱스를 쓰면 지터를 실효로 읽는다. CPU 는 1초 창 편차가 ±5~9p 라 3회 평균한다. **테스트망에서만 실행**
 - `rps_ab.sh` (`test-results/2026-08-06-postmove-loadtest/`) — `rps_cpus` A/B 하네스. **결과는 개선 없음**(2026-08-06). 하네스 교훈 두 개가 코드에 박혀 있다 — 가드 생존은 **argv[1]** 로 판정하고(`pgrep -f mf_gwguard` 는 호출 셸을 잡는다), `wait` 는 **반드시 특정 PID** 로 한다(인자 없는 `wait` 는 같은 셸의 가드까지 기다려 멈춘다). **테스트망에서만 실행**

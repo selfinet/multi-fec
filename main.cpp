@@ -19,6 +19,7 @@ extern "C" {
 #include "git_version.h"
 #include "mf_config.h"
 #include "mf_netcfg.h"
+#include "mf_logfp.h"
 
 #include <getopt.h>
 #include <signal.h>
@@ -320,6 +321,7 @@ static void print_help(const char *prog)
         "  --enable-color        Enable log color output (default)\n"
         "  -h / --help           Show this help\n"
         "  --version             Show version and build date\n"
+        "  --fingerprint-ip IP   Print the relay log fingerprint (cf:...) for IP and exit\n"
         "\n",
         prog, prog, prog);
 }
@@ -455,6 +457,7 @@ enum {
     OPT_CHECK,
     OPT_APPLY_ROUTES,
     OPT_REMOVE_ROUTES,
+    OPT_FINGERPRINT_IP,
 };
 
 static const struct option long_opts[] = {
@@ -496,6 +499,7 @@ static const struct option long_opts[] = {
     { "check",              no_argument,       NULL, OPT_CHECK               },
     { "apply-routes",       no_argument,       NULL, OPT_APPLY_ROUTES        },
     { "remove-routes",      no_argument,       NULL, OPT_REMOVE_ROUTES       },
+    { "fingerprint-ip",     required_argument, NULL, OPT_FINGERPRINT_IP      },
     { "help",               no_argument,       NULL, 'h'                     },
     { NULL,               0,                 NULL, 0                   },
 };
@@ -833,6 +837,24 @@ static void parse_args(int argc, char *argv[])
                    "build: %s\n",
                    MULTI_FEC_VERSION, gitversion, build_date);
             exit(0);
+
+        case OPT_FINGERPRINT_IP: {
+            /* Map a known IP to its relay log fingerprint, using the same salt
+             * the relay uses. For reversing "cf:xxxxxxxx" lines back to a branch:
+             * hash your known IP list forward and match. */
+            char ipbuf[128];
+            snprintf(ipbuf, sizeof(ipbuf), "%s", optarg);
+            address_t a;
+            if (a.from_str_ip_only(ipbuf) != 0) {
+                fprintf(stderr, "error: --fingerprint-ip: invalid IP '%s'\n", optarg);
+                exit(1);
+            }
+            mf_log_salt_init();
+            char fp[MF_LOG_FP_LEN];
+            mf_client_fp(a, fp, sizeof(fp));
+            printf("%s  %s\n", fp, optarg);
+            exit(0);
+        }
 
         case 'h':
             print_help(argv[0]);

@@ -24,9 +24,12 @@
 #include "tunnel.h"
 #include "mf_common.h"
 #include "mf_probe.h"
+#include "mf_logfp.h"
 #include "obfs.h"
 
 #include <unordered_map>
+#include <unordered_set>
+#include <algorithm>
 #include <string>
 #include <vector>
 #include <sys/socket.h>
@@ -68,6 +71,30 @@ static struct obfs_ctx        g_builtin_ctx;        /* for builtin QUIC Initial 
  * 값은 서버 SESSION_MAX(max_conn_num*4) 와 같게 맞췄다. 기본 max_conn_num=200 이면
  * 800 세션 = 800 FD 로, 기본 RLIMIT_NOFILE(1024) 안에 리슨/타이머/decoy 몫을 남긴다. */
 #define RELAY_SESSION_MAX  (max_conn_num * 4)
+
+extern int report_interval;   /* connection.cpp — --report seconds (0 = off) */
+
+/* ────────────────────────────────────────────────────────────────
+ * Traffic accounting
+ *
+ * The relay had no traffic counters (--report was ignored). These feed a
+ * periodic report so operators and a journald exporter can see throughput and
+ * session churn without tcpdump/nft. Only the two forwarding choke points and
+ * the session-lifecycle sites touch them; the periodic timer is the only place
+ * that logs, so an attack cannot flood the log (per-event logs are debug).
+ *
+ * Clients are identified in logs by a one-way fingerprint (mf_logfp), never a
+ * raw IP, so logs shipped off-host carry no client addresses.
+ * ──────────────────────────────────────────────────────────────── */
+struct relay_traffic_t {
+    uint64_t up_bytes,   up_pkts;     /* client → server */
+    uint64_t down_bytes, down_pkts;   /* server → client */
+    uint64_t sess_new, sess_expired, sess_evicted, sess_fulldrop;
+    uint64_t probe, decoy_bytes;      /* HMAC-failed (prober) packets / bytes to decoy */
+};
+static struct relay_traffic_t g_tr;        /* cumulative since start */
+static struct relay_traffic_t g_tr_logged; /* snapshot at last report */
+static my_time_t              g_report_last_ms = 0;
 
 /* ────────────────────────────────────────────────────────────────
  * Decoy session management (--decoy ip:port)
@@ -186,6 +213,8 @@ decoy_get_or_create(const address_t &prober)
 static void
 decoy_forward(const address_t &prober, const void *pkt, int pkt_len)
 {
+    g_tr.probe++;
+    g_tr.decoy_bytes += (uint64_t)pkt_len;
     decoy_sess_t *s = decoy_get_or_create(prober);
     if (!s) return;
     ssize_t n = send(s->decoy_fd, pkt, (size_t)pkt_len, 0);
@@ -225,6 +254,8 @@ struct relay_session_t {
     ev_io                  upstream_watcher;
     my_time_t              last_active;
     const struct obfs_ctx *route_obfs;  /* obfs of the key matched for this session. NULL=transparent */
+    uint64_t               up_bytes, up_pkts;     /* per-session, client → server */
+    uint64_t               down_bytes, down_pkts; /* per-session, server → client */
 };
 
 /* Two lookup tables — O(1) in both directions */
@@ -242,8 +273,13 @@ static void delete_session(relay_session_t *sess)
     g_fd_to_sess.erase(sess->upstream_fd);
     g_addr_to_sess.erase(sess->client_addr);
 
-    mylog(log_info, "[relay] session removed: client=%s fd=%d\n",
-          sess->client_addr.get_str(), sess->upstream_fd);
+    if (log_level >= log_debug) {
+        char fp[MF_LOG_FP_LEN];
+        mf_client_fp(sess->client_addr, fp, sizeof(fp));
+        mylog(log_debug, "[relay] session removed: client=%s fd=%d up=%lluB down=%lluB\n",
+              fp, sess->upstream_fd,
+              (unsigned long long)sess->up_bytes, (unsigned long long)sess->down_bytes);
+    }
     delete sess;
 }
 
@@ -268,6 +304,7 @@ static size_t session_sweep(my_time_t now)
     for (relay_session_t *s : to_del)
         delete_session(s);
 
+    g_tr.sess_expired += to_del.size();
     return to_del.size();
 }
 
@@ -294,7 +331,8 @@ static bool session_reserve_slot(my_time_t now)
     }
     if (lru == NULL) return false;
 
-    mylog(log_info, "[relay] session table full (%zu), evicting LRU\n",
+    g_tr.sess_evicted++;
+    mylog(log_debug, "[relay] session table full (%zu), evicting LRU\n",
           g_addr_to_sess.size());
     delete_session(lru);
     return true;
@@ -400,6 +438,9 @@ static void upstream_read_cb(struct ev_loop * /*loop*/, struct ev_io *watcher,
                (struct sockaddr *)&sess->client_addr.inner,
                sess->client_addr.get_len());
 
+        sess->down_bytes += (uint64_t)n; sess->down_pkts++;
+        g_tr.down_bytes  += (uint64_t)n; g_tr.down_pkts++;
+
         mylog(log_trace, "[relay] ← upstream %d bytes to %s\n",
               n, sess->client_addr.get_str());
     }
@@ -412,6 +453,7 @@ static void upstream_read_cb(struct ev_loop * /*loop*/, struct ev_io *watcher,
 
 static void probe_respond_builtin(address_t &src, int req_len)
 {
+    g_tr.probe++;
     probe_reply(g_listen_fd, src, req_len, g_builtin_ctx.mode);
 }
 
@@ -533,8 +575,7 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
             /* Cap the table before allocating the socket, not after: the point
              * of the limit is to never hold more than RELAY_SESSION_MAX FDs. */
             if (!session_reserve_slot(get_current_time())) {
-                mylog(log_warn, "[relay] session table full, dropping %s\n",
-                      src.get_str());
+                g_tr.sess_fulldrop++;   /* surfaced in the periodic report, not per-drop (flood-safe) */
                 continue;
             }
 
@@ -546,6 +587,7 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
             sess->upstream_fd  = ufd;
             sess->last_active  = get_current_time();
             sess->route_obfs   = matched_obfs;
+            sess->up_bytes = sess->up_pkts = sess->down_bytes = sess->down_pkts = 0;
 
             sess->upstream_watcher.data = sess;
             ev_io_init(&sess->upstream_watcher, upstream_read_cb, ufd, EV_READ);
@@ -554,12 +596,20 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
             g_addr_to_sess[src] = sess;
             g_fd_to_sess[ufd]   = sess;
 
-            mylog(log_info, "[relay] new session: client=%s upstream=%s fd=%d\n",
-                  src.get_str(), upstream.get_str(), ufd);
+            g_tr.sess_new++;
+            if (log_level >= log_debug) {
+                char fp[MF_LOG_FP_LEN];
+                mf_client_fp(src, fp, sizeof(fp));
+                mylog(log_debug, "[relay] new session: client=%s upstream=%s fd=%d\n",
+                      fp, upstream.get_str(), ufd);
+            }
         }
 
         sess->last_active = get_current_time();
         send(sess->upstream_fd, buf, n, 0);
+
+        sess->up_bytes += (uint64_t)n; sess->up_pkts++;
+        g_tr.up_bytes  += (uint64_t)n; g_tr.up_pkts++;
 
         mylog(log_trace, "[relay] → upstream %d bytes from %s\n",
               n, src.get_str());
@@ -580,6 +630,91 @@ static void cleanup_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/,
 }
 
 /* ────────────────────────────────────────────────────────────────
+ * Periodic traffic report (driven by --report; relay used to ignore it)
+ *
+ * This is the ONLY place traffic is logged. Aggregate totals (no IP) go at
+ * info; per-session detail (fingerprint, capped at top-N by bytes) goes at
+ * debug. Per-event logs were demoted to debug/counters, so no attack pattern
+ * can flood the log.
+ * ──────────────────────────────────────────────────────────────── */
+
+static void human_bytes(uint64_t b, char *out, size_t n)
+{
+    static const char *u[] = { "B", "KB", "MB", "GB", "TB" };
+    double v = (double)b; int i = 0;
+    while (v >= 1024.0 && i < 4) { v /= 1024.0; i++; }
+    snprintf(out, n, "%.1f%s", v, u[i]);
+}
+
+static void report_cb(struct ev_loop * /*loop*/, struct ev_timer * /*w*/, int /*revents*/)
+{
+    if (report_interval <= 0) return;
+
+    my_time_t now = get_current_time();
+    double period_s = g_report_last_ms ? (double)(now - g_report_last_ms) / 1000.0
+                                       : (double)report_interval;
+    if (period_s < 0.001) period_s = report_interval;
+    g_report_last_ms = now;
+
+    uint64_t up_b  = g_tr.up_bytes   - g_tr_logged.up_bytes;
+    uint64_t up_p  = g_tr.up_pkts    - g_tr_logged.up_pkts;
+    uint64_t dn_b  = g_tr.down_bytes - g_tr_logged.down_bytes;
+    uint64_t dn_p  = g_tr.down_pkts  - g_tr_logged.down_pkts;
+    uint64_t s_new = g_tr.sess_new      - g_tr_logged.sess_new;
+    uint64_t s_exp = g_tr.sess_expired  - g_tr_logged.sess_expired;
+    uint64_t s_evi = g_tr.sess_evicted  - g_tr_logged.sess_evicted;
+    uint64_t s_drp = g_tr.sess_fulldrop - g_tr_logged.sess_fulldrop;
+    uint64_t prb   = g_tr.probe       - g_tr_logged.probe;
+    uint64_t dcy   = g_tr.decoy_bytes - g_tr_logged.decoy_bytes;
+    g_tr_logged = g_tr;
+
+    /* distinct clients this instant, by fingerprint (non-identifying count) */
+    std::unordered_set<std::string> uniq;
+    for (auto &kv : g_addr_to_sess) {
+        char fp[MF_LOG_FP_LEN];
+        mf_client_fp(kv.second->client_addr, fp, sizeof(fp));
+        uniq.insert(fp);
+    }
+
+    char ub[24], db[24], yb[24];
+    human_bytes(up_b, ub, sizeof(ub));
+    human_bytes(dn_b, db, sizeof(db));
+    human_bytes(dcy, yb, sizeof(yb));
+
+    mylog(log_info, "[relay][report] period=%.0fs up=%s/%llu down=%s/%llu "
+                    "rate up=%.1f down=%.1f Mbps live=%zu uniq=%zu "
+                    "new=%llu expired=%llu evicted=%llu probe=%llu decoy=%s drop(full)=%llu\n",
+          period_s, ub, (unsigned long long)up_p, db, (unsigned long long)dn_p,
+          up_b * 8.0 / period_s / 1e6, dn_b * 8.0 / period_s / 1e6,
+          g_addr_to_sess.size(), uniq.size(),
+          (unsigned long long)s_new, (unsigned long long)s_exp,
+          (unsigned long long)s_evi, (unsigned long long)prb, yb,
+          (unsigned long long)s_drp);
+
+    if (log_level >= log_debug && !g_addr_to_sess.empty()) {
+        std::vector<relay_session_t *> v;
+        v.reserve(g_addr_to_sess.size());
+        for (auto &kv : g_addr_to_sess) v.push_back(kv.second);
+        std::sort(v.begin(), v.end(), [](relay_session_t *a, relay_session_t *b) {
+            return (a->up_bytes + a->down_bytes) > (b->up_bytes + b->down_bytes);
+        });
+        const size_t TOPN = 20;
+        size_t shown = v.size() < TOPN ? v.size() : TOPN;
+        for (size_t i = 0; i < shown; i++) {
+            char fp[MF_LOG_FP_LEN], a[24], c[24];
+            mf_client_fp(v[i]->client_addr, fp, sizeof(fp));
+            human_bytes(v[i]->up_bytes, a, sizeof(a));
+            human_bytes(v[i]->down_bytes, c, sizeof(c));
+            mylog(log_debug, "[relay][report] sess %s up=%s/%llu down=%s/%llu\n",
+                  fp, a, (unsigned long long)v[i]->up_pkts,
+                  c, (unsigned long long)v[i]->down_pkts);
+        }
+        if (v.size() > shown)
+            mylog(log_debug, "[relay][report] (+%zu sessions omitted)\n", v.size() - shown);
+    }
+}
+
+/* ────────────────────────────────────────────────────────────────
  * mf_relay_event_loop()
  * ──────────────────────────────────────────────────────────────── */
 
@@ -588,6 +723,9 @@ void mf_relay_event_loop(address_t &listen_addr, address_t &upstream_addr,
 {
     g_upstream = upstream_addr;
     g_obfs     = obfs;
+
+    /* Client-IP log fingerprint salt (0600, auto-created). See mf_logfp. */
+    mf_log_salt_init();
 
     if (decoy_addr.is_vaild()) {
         g_decoy_addr    = decoy_addr;
@@ -666,6 +804,16 @@ void mf_relay_event_loop(address_t &listen_addr, address_t &upstream_addr,
     if (g_decoy_enabled) {
         ev_timer_init(&decoy_timer, decoy_cleanup_cb, 10.0, 10.0);
         ev_timer_start(loop, &decoy_timer);
+    }
+
+    /* Periodic traffic report (--report seconds; 0 = off) */
+    struct ev_timer report_timer;
+    if (report_interval > 0) {
+        g_report_last_ms = get_current_time();
+        ev_timer_init(&report_timer, report_cb,
+                      (double)report_interval, (double)report_interval);
+        ev_timer_start(loop, &report_timer);
+        mylog(log_info, "[relay] traffic report every %ds\n", report_interval);
     }
 
     if (!g_routes.empty())
