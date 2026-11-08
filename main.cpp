@@ -286,11 +286,8 @@ static void print_help(const char *prog)
         "                          ip:port = local nginx/caddy HTTP/3(QUIC) listen address.\n"
         "                          Example: --decoy 127.0.0.1:8443\n"
         "  --disable-obfs        Disable obfuscation entirely (for testing)\n"
-        "  --port-hop-interval N [Client/Server] TOTP port-hopping slot length (seconds).\n"
-        "                          0=disabled (default). Minimum 30.\n"
-        "                          Port computed from PSK + slot number; client and server\n"
-        "                          share the same sequence. Auto-switches every N seconds.\n"
-        "                          Example: --port-hop-interval 60\n"
+        "  --port-hop-interval N [Deprecated] Ignored since 1.4.3 with a warning — port hopping\n"
+        "                          never delivered downstream traffic. Remove it from configs.\n"
         "  --auth-interval N     [All] HMAC token slot length (seconds)  [default: 60; 0 = 30]\n"
         "                          Must be set identically on client, relay and server.\n"
         "                          1.3.x defaulted to 30: a 1.3.x peer without the option needs 30 here.\n"
@@ -1605,6 +1602,19 @@ int main(int argc, char *argv[])
     print_parameter();
 
     /* obfs initialization */
+    /* --port-hop-interval is accepted but ignored since 1.4.3. It never worked:
+     * the client sends ordinary mud packets to the hop ports, while the server's
+     * TOTP sockets bypassed mud and read the mud timestamp as the session id —
+     * every packet became a new session and all downstream traffic was lost
+     * (measured 1.4.1–1.4.3: downstream 0%). Relays never listened on hop ports
+     * either. Ignoring rather than refusing keeps existing configs starting. */
+    if (g_hop_interval > 0) {
+        mylog(log_warn, "--port-hop-interval %u ignored: port hopping is disabled since 1.4.3 "
+                        "(it never delivered downstream traffic). Remove it from the config.\n",
+              g_hop_interval);
+        g_hop_interval = 0;
+    }
+
     static struct obfs_ctx obfs;
     obfs_init(&obfs, g_key_string, g_obfs_mode);
     if (!g_disable_obfs) {

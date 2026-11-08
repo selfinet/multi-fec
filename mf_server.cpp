@@ -124,12 +124,30 @@ static void enqueue_server_pending(const char *data, int len, uint64_t peer)
     s_srv_pending_count++;
 }
 
+static bool peer_in(const uint64_t *set, int n, uint64_t peer)
+{
+    for (int i = 0; i < n; i++) if (set[i] == peer) return true;
+    return false;
+}
+
 static void flush_server_pending()
 {
     int stale = 0;
     my_time_t now = (my_time_t)get_current_time();
-    while (s_srv_pending_count > 0) {
-        server_pending_pkt_t &p = s_srv_pending_q[s_srv_pending_head];
+    /* One pass over the whole queue, keeping order. Until 1.4.3 the first send
+     * failure ended the flush, so a client whose paths were all down held back
+     * every client queued behind it until its packets aged out (up to the TTL).
+     * Now a failure only stops the flush when the send window — shared by all
+     * clients — is exhausted; otherwise that client's packets are kept for the
+     * next tick and the others go out. Entries are compacted in place. */
+    uint64_t blocked[32];
+    int      nblocked   = 0;
+    bool     window_out = false;
+    int      n = s_srv_pending_count;
+    int      r = s_srv_pending_head, w = s_srv_pending_head, kept = 0;
+    for (int i = 0; i < n; i++, r = (r + 1) % SERVER_PENDING_Q_CAP) {
+        server_pending_pkt_t &p = s_srv_pending_q[r];
+        bool keep = false;
         /* Age out before sending, not only when the send fails. The TTL used to
          * be consulted on the failure path alone, which never fired for the case
          * that matters: while the paths are down every send fails and the check
@@ -141,16 +159,29 @@ static void flush_server_pending()
          * long since retransmitted, so they land as duplicates that trigger
          * dup-ACKs and reordering, and fresh packets queue up behind them. */
         if (now - p.ts > (my_time_t)SERVER_PENDING_TTL_MS) {
-            s_srv_pending_head = (s_srv_pending_head + 1) % SERVER_PENDING_Q_CAP;
-            s_srv_pending_count--;
             stale++;
-            continue;
+        } else if (window_out || peer_in(blocked, nblocked, p.peer)) {
+            keep = true;
+        } else if (mud_send_mp(g_mud, p.data, p.len, p.peer) < 0) {
+            keep = true;
+            if (mud_send_wait(g_mud) || nblocked >= (int)(sizeof(blocked) / sizeof(blocked[0])))
+                window_out = true;               /* shared window ran dry */
+            else
+                blocked[nblocked++] = p.peer;    /* only this client is stuck */
         }
-        if (mud_send_mp(g_mud, p.data, p.len, p.peer) < 0)
-            break;   /* window still short → retry on the next tick */
-        s_srv_pending_head = (s_srv_pending_head + 1) % SERVER_PENDING_Q_CAP;
-        s_srv_pending_count--;
+        if (!keep) continue;
+        if (w != r) {
+            server_pending_pkt_t &d = s_srv_pending_q[w];
+            memcpy(d.data, p.data, (size_t)p.len);
+            d.len  = p.len;
+            d.peer = p.peer;
+            d.ts   = p.ts;
+        }
+        w = (w + 1) % SERVER_PENDING_Q_CAP;
+        kept++;
     }
+    s_srv_pending_count = kept;
+    s_srv_pending_tail  = w;
     if (stale > 0)
         mylog(log_info, "[server] dropped %d stale pending packet(s) (>%d ms)\n",
               stale, SERVER_PENDING_TTL_MS);
@@ -753,25 +784,56 @@ static void mf_conv_budget_init(void)
 
 /* Evict the globally least-recently-active conv. Returns false if none exists.
  * Scans at most max_conn_num conns, and only on the budget-full slow path. */
-static bool evict_oldest_conv_global(void)
+/* Pick the conv to evict when the budget is full. Until 1.4.3 this was the
+ * globally oldest conv, whoever owned it, so one authenticated client minting
+ * convs evicted the live but less chatty convs of every other client (measured:
+ * a client sending once a second lost its conv 5 times in 5 s). Now the budget
+ * is shared fairly: fair = budget / clients holding convs (the requester
+ * included). A requester at or above its share evicts its own oldest conv;
+ * otherwise the oldest conv of a client above its share goes; only if no
+ * client is above its share does the globally oldest go. */
+static bool evict_oldest_conv(conn_info_t *requester)
 {
-    conn_info_t *victim = NULL;
-    u32_t        victim_conv = 0;
-    my_time_t    oldest = 0;
-    bool         found = false;
-
+    int nclients = 0;
+    bool requester_counted = false;
     for (auto &kv : conn_manager.mp) {
         conn_info_t *ci = kv.second;
         if (!ci) continue;
-        conv_manager_t<u64_t> &cm = ci->conv_manager.s;
-        if (cm.lru.empty()) continue;
-        u32_t     conv;
-        my_time_t ts = cm.lru.peek_back(conv);   /* back = oldest */
-        if (!found || ts < oldest) {
-            found = true; oldest = ts; victim = ci; victim_conv = conv;
+        if (!ci->conv_manager.s.lru.empty()) {
+            nclients++;
+            if (ci == requester) requester_counted = true;
         }
     }
-    if (!found) return false;
+    if (requester && !requester_counted) nclients++;
+    if (nclients < 1) nclients = 1;
+    size_t fair = (size_t)g_conv_sock_max / (size_t)nclients;
+    if (fair < 1) fair = 1;
+
+    conn_info_t *victim = NULL;
+    u32_t        victim_conv = 0;
+    if (requester && !requester->conv_manager.s.lru.empty() &&
+        (size_t)requester->conv_manager.s.lru.size() >= fair) {
+        requester->conv_manager.s.lru.peek_back(victim_conv);
+        victim = requester;
+    } else {
+        my_time_t oldest = 0, oldest_any = 0;
+        conn_info_t *any = NULL;
+        u32_t        any_conv = 0;
+        for (auto &kv : conn_manager.mp) {
+            conn_info_t *ci = kv.second;
+            if (!ci) continue;
+            conv_manager_t<u64_t> &cm = ci->conv_manager.s;
+            if (cm.lru.empty()) continue;
+            u32_t     conv;
+            my_time_t ts = cm.lru.peek_back(conv);   /* back = oldest */
+            if (!any || ts < oldest_any) { any = ci; any_conv = conv; oldest_any = ts; }
+            if ((size_t)cm.lru.size() > fair && (!victim || ts < oldest)) {
+                victim = ci; victim_conv = conv; oldest = ts;
+            }
+        }
+        if (!victim) { victim = any; victim_conv = any_conv; }
+    }
+    if (!victim) return false;
     victim->conv_manager.s.erase_conv(victim_conv);   /* closes fd → mf_server_conv_closed() */
     return true;
 }
@@ -846,7 +908,7 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
                 conn_info.conv_manager.s.clear_inactive0(NULL);
                 int guard = 0;
                 while (g_conv_sock_count >= g_conv_sock_max &&
-                       evict_oldest_conv_global() && ++guard < 256) {}
+                       evict_oldest_conv(&conn_info) && ++guard < 256) {}
                 if (g_conv_sock_count >= g_conv_sock_max) {
                     static my_time_t last_warn = 0;
                     my_time_t now = get_current_time();

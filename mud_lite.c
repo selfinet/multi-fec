@@ -463,13 +463,46 @@ mud_get_path(struct mud *mud,
 
 /* ─── sendmmsg batch flush ───────────────────────────────────── */
 
+/* Re-point a queue entry's msghdr at its own slot after the slot moved. */
+static void
+mud_sq_relink(struct mud *mud, int i)
+{
+    struct mud_send_slot *slot = &mud->sq[i];
+    struct msghdr        *msg  = &mud->sq_msgs[i].msg_hdr;
+    slot->iov.iov_base = slot->buf;
+    msg->msg_iov       = &slot->iov;
+    msg->msg_name      = &slot->remote;
+    msg->msg_control   = slot->ctrl;
+}
+
+/* Until 1.4.3 the queue was emptied whatever sendmmsg() returned, so when it
+ * sent only part of the batch (socket buffer full) or failed outright, the rest
+ * was lost although the window and path counters had already been charged for
+ * it. Now: datagrams the kernel did not take stay queued for the next flush
+ * (send buffer full: EAGAIN/ENOBUFS), and only a datagram the kernel rejects
+ * for itself (EMSGSIZE, unreachable, …) is dropped so it cannot block the rest.
+ * Returns the number of datagrams handed to the kernel. */
 int mud_send_flush(struct mud *mud)
 {
-    if (!mud->sq_len) return 0;
-    /* sq_msgs[] is a contiguous array pointing at sq[]'s iov/ctrl/remote */
-    int sent = sendmmsg(mud->fd, mud->sq_msgs,
-                        (unsigned int)mud->sq_len, 0);
-    mud->sq_len = 0;
+    int len = mud->sq_len;
+    if (!len) return 0;
+    int off = 0, sent = 0;
+    while (off < len) {
+        /* sq_msgs[] is a contiguous array pointing at sq[]'s iov/ctrl/remote */
+        int n = sendmmsg(mud->fd, mud->sq_msgs + off, (unsigned int)(len - off), 0);
+        if (n > 0) { off += n; sent += n; continue; }
+        if (n < 0 && errno == EINTR) continue;
+        if (n == 0 || errno == EAGAIN || errno == EWOULDBLOCK || errno == ENOBUFS)
+            break;      /* keep the rest for the next flush */
+        off++;          /* this datagram is rejected on its own: skip it */
+    }
+    int rest = len - off;
+    if (rest > 0 && off > 0) {
+        memmove(&mud->sq[0], &mud->sq[off], (size_t)rest * sizeof(mud->sq[0]));
+        memmove(&mud->sq_msgs[0], &mud->sq_msgs[off], (size_t)rest * sizeof(mud->sq_msgs[0]));
+        for (int i = 0; i < rest; i++) mud_sq_relink(mud, i);
+    }
+    mud->sq_len = rest;
     return sent;
 }
 
@@ -531,9 +564,13 @@ mud_send_path(struct mud *mud, struct mud_path *path, uint64_t now,
 {
     if (!size || !path) return 0;
 
-    /* flush immediately if the queue is full */
-    if (mud->sq_len >= MUD_SEND_QUEUE_CAP)
+    /* flush immediately if the queue is full; if the kernel still has no room,
+     * report EAGAIN instead of overwriting queued datagrams (callers then use
+     * their pending queues, exactly as for an exhausted send window) */
+    if (mud->sq_len >= MUD_SEND_QUEUE_CAP) {
         mud_send_flush(mud);
+        if (mud->sq_len >= MUD_SEND_QUEUE_CAP) { errno = EAGAIN; return -1; }
+    }
 
     int idx = mud->sq_len;
     struct mud_send_slot *slot = &mud->sq[idx];
