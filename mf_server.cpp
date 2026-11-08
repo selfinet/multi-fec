@@ -398,6 +398,8 @@ struct decoy_sess_t {
     address_t prober_addr;
     int       listen_fd;    /* mud fd or TOTP fd: response is sendto'd on this fd */
     int       decoy_fd;     /* UDP socket connect()ed to the decoy server */
+    address_t local;        /* address the prober sent to — replies leave from it */
+    bool      has_local;
     ev_io     watcher;
     time_t    last_active;
 };
@@ -422,8 +424,8 @@ decoy_io_cb(struct ev_loop * /*loop*/, struct ev_io *w, int /*revents*/)
         }
         if (n == 0) break;
         s->last_active = time(NULL);
-        sendto(s->listen_fd, buf, (size_t)n, 0,
-               (struct sockaddr *)&s->prober_addr.inner, s->prober_addr.get_len());
+        mf_sendto_from(s->listen_fd, buf, (size_t)n, s->prober_addr,
+                       s->has_local ? &s->local : NULL);
         mylog(log_debug, "[decoy] → %s %zd bytes\n",
               const_cast<address_t &>(s->prober_addr).get_str(), n);
     }
@@ -435,7 +437,7 @@ decoy_io_cb(struct ev_loop * /*loop*/, struct ev_io *w, int /*revents*/)
 static bool
 decoy_make_room()
 {
-    if (g_decoy_map.size() < (size_t)DECOY_SESSION_MAX) return true;
+    if (g_decoy_map.size() < (size_t)g_decoy_session_max) return true;
     time_t now = time(NULL);
     auto victim = g_decoy_map.end();
     for (auto it = g_decoy_map.begin(); it != g_decoy_map.end(); ++it) {
@@ -453,19 +455,21 @@ decoy_make_room()
     static time_t last_warn = 0;
     if (now - last_warn >= 60) {
         last_warn = now;
-        mylog(log_warn, "[decoy] session table full (%d), evicting oldest\n", DECOY_SESSION_MAX);
+        mylog(log_warn, "[decoy] session table full (%d), evicting oldest\n", g_decoy_session_max);
     }
     return true;
 }
 
 static decoy_sess_t *
-decoy_get_or_create(const address_t &prober, int listen_fd)
+decoy_get_or_create(const address_t &prober, int listen_fd, const address_t *local)
 {
     auto it = g_decoy_map.find(const_cast<address_t &>(prober));
     if (it != g_decoy_map.end()) {
         decoy_sess_t *s = it->second;
         s->last_active = time(NULL);
         s->listen_fd   = listen_fd;
+        s->has_local   = local != NULL;
+        if (local) s->local = *local;
         return s;
     }
 
@@ -495,6 +499,8 @@ decoy_get_or_create(const address_t &prober, int listen_fd)
     s->prober_addr  = prober;
     s->listen_fd    = listen_fd;
     s->decoy_fd     = dfd;
+    s->has_local    = local != NULL;
+    if (local) s->local = *local;
     s->last_active  = time(NULL);
     s->watcher.data = s;
     ev_io_init(&s->watcher, decoy_io_cb, dfd, EV_READ);
@@ -507,9 +513,10 @@ decoy_get_or_create(const address_t &prober, int listen_fd)
 }
 
 static void
-decoy_forward(const address_t &prober, int listen_fd, const void *pkt, int pkt_len)
+decoy_forward(const address_t &prober, int listen_fd, const void *pkt, int pkt_len,
+              const address_t *local = NULL)
 {
-    decoy_sess_t *s = decoy_get_or_create(prober, listen_fd);
+    decoy_sess_t *s = decoy_get_or_create(prober, listen_fd, local);
     if (!s) return;
     ssize_t n = send(s->decoy_fd, pkt, (size_t)pkt_len, 0);
     if (n < 0)
@@ -736,17 +743,12 @@ void mf_server_conv_closed(void)
     if (g_conv_sock_count > 0) g_conv_sock_count--;
 }
 
+/* Shared with decoy sockets since 1.4.3 — see mf_fd_budget_init(). Must run
+ * after g_decoy_enabled is known. */
 static void mf_conv_budget_init(void)
 {
-    struct rlimit rl;
-    int soft = 1024;
-    if (getrlimit(RLIMIT_NOFILE, &rl) == 0 && rl.rlim_cur != RLIM_INFINITY)
-        soft = (int)rl.rlim_cur;
-    const int CONV_FD_RESERVE = 64;   /* listen/mud/timers/totp/decoy/stdio/epoll */
-    g_conv_sock_max = soft - CONV_FD_RESERVE;
-    if (g_conv_sock_max < 64) g_conv_sock_max = 64;
-    mylog(log_info, "[server] conv socket budget=%d (RLIMIT_NOFILE soft=%d)\n",
-          g_conv_sock_max, soft);
+    g_conv_sock_max = mf_fd_budget_init("server", g_decoy_enabled, 0);
+    mylog(log_info, "[server] conv socket budget=%d\n", g_conv_sock_max);
 }
 
 /* Evict the globally least-recently-active conv. Returns false if none exists.
@@ -945,9 +947,18 @@ static void conn_timer_cb(struct ev_loop * /*loop*/, struct ev_timer *watcher, i
 /* Builtin reply to an unauthenticated sender (default when --decoy is unset):
  * QUIC Server Initial with a random DCID, or TLS close_notify. Size floor and
  * rate limits live in mf_probe.cpp. */
-static void probe_respond_builtin(int fd, address_t &src, int req_len)
+static void probe_respond_builtin(int fd, address_t &src, int req_len,
+                                  const address_t *local = NULL)
 {
-    probe_reply(fd, src, req_len, g_obfs ? g_obfs->mode : OBFS_MODE_QUIC);
+    probe_reply(fd, src, req_len, g_obfs ? g_obfs->mode : OBFS_MODE_QUIC, local);
+}
+
+static address_t addr_of(const union mud_sockaddr &a)
+{
+    address_t r;
+    r.from_sockaddr((struct sockaddr *)&a,
+                    a.sa.sa_family == AF_INET ? sizeof(a.sin) : sizeof(a.sin6));
+    return r;
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -964,14 +975,54 @@ static void server_totp_io_cb(struct ev_loop * /*loop*/, struct ev_io *watcher, 
 
     for (;;) {
         struct sockaddr_storage ss;
-        socklen_t ssl = sizeof(ss);
-        ssize_t rn = recvfrom(e->fd, raw_buf, sizeof(raw_buf), MSG_DONTWAIT,
-                              (struct sockaddr *)&ss, &ssl);
+        union {
+            char           buf[CMSG_SPACE(sizeof(struct in6_pktinfo))];
+            struct cmsghdr align;
+        } ctrl;
+        struct iovec iov = { raw_buf, sizeof(raw_buf) };
+        struct msghdr mh;
+        memset(&mh, 0, sizeof(mh));
+        mh.msg_name       = &ss;
+        mh.msg_namelen    = sizeof(ss);
+        mh.msg_iov        = &iov;
+        mh.msg_iovlen     = 1;
+        mh.msg_control    = ctrl.buf;
+        mh.msg_controllen = sizeof(ctrl.buf);
+        ssize_t rn = recvmsg(e->fd, &mh, MSG_DONTWAIT);
         if (rn < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) break;
-            mylog(log_warn, "[server] totp recvfrom: %s\n", strerror(errno));
+            mylog(log_warn, "[server] totp recvmsg: %s\n", strerror(errno));
             break;
         }
+        socklen_t ssl = mh.msg_namelen;
+
+        /* Same size limit as the mud socket (MUD_RAW_RECV_MAX, truncated
+         * datagrams dropped). This path skips mud, and its 3.8 KB buffer let
+         * an authenticated datagram reach the FEC decoder longer than the
+         * decoder accepts — which aborted the process before 1.4.3. */
+        if ((mh.msg_flags & (MSG_TRUNC | MSG_CTRUNC)) || rn > (ssize_t)MUD_RAW_RECV_MAX)
+            continue;
+
+        /* Local address the datagram arrived on: --accept-local applies here
+         * exactly as on the mud socket, before anything can answer. */
+        union mud_sockaddr lsa;
+        memset(&lsa, 0, sizeof(lsa));
+        for (struct cmsghdr *c = CMSG_FIRSTHDR(&mh); c; c = CMSG_NXTHDR(&mh, c)) {
+            if (c->cmsg_level == IPPROTO_IP && c->cmsg_type == IP_PKTINFO) {
+                lsa.sin.sin_family = AF_INET;
+                lsa.sin.sin_addr   = ((struct in_pktinfo *)CMSG_DATA(c))->ipi_addr;
+            } else if (c->cmsg_level == IPPROTO_IPV6 && c->cmsg_type == IPV6_PKTINFO) {
+                lsa.sin6.sin6_family = AF_INET6;
+                lsa.sin6.sin6_addr   = ((struct in6_pktinfo *)CMSG_DATA(c))->ipi6_addr;
+            }
+        }
+        bool have_local = lsa.sa.sa_family == AF_INET || lsa.sa.sa_family == AF_INET6;
+        if (!have_local ? !mud_local_accepted(g_mud, NULL)
+                        : !mud_local_accepted(g_mud, &lsa))
+            continue;
+        address_t laddr;
+        if (have_local) laddr = addr_of(lsa);
+        const address_t *lp = have_local ? &laddr : NULL;
 
         if (!g_obfs) continue;
 
@@ -983,11 +1034,11 @@ static void server_totp_io_cb(struct ev_loop * /*loop*/, struct ev_io *watcher, 
                 address_t src;
                 src.from_sockaddr((struct sockaddr *)&ss, ssl);
                 if (g_decoy_enabled) {
-                    decoy_forward(src, e->fd, raw_buf, (int)rn);
+                    decoy_forward(src, e->fd, raw_buf, (int)rn, lp);
                     mylog(log_debug, "[server] totp: probe from %s → decoy\n",
                           src.get_str());
                 } else {
-                    probe_respond_builtin(e->fd, src, (int)rn);
+                    probe_respond_builtin(e->fd, src, (int)rn, lp);
                     mylog(log_debug, "[server] totp: probe from %s → builtin-quic\n",
                           src.get_str());
                 }
@@ -1066,17 +1117,23 @@ static void server_add_totp_socket(struct ev_loop *loop, uint64_t slot)
     setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &yes, sizeof(yes));
 
     int ret;
+    /* Bind to the -l address, not INADDR_ANY. Until 1.4.2 the TOTP sockets
+     * listened on every local address even when -l named one, so the service
+     * answered on addresses it was never configured for. With a wildcard -l,
+     * --accept-local is applied per packet (IP_PKTINFO) in server_totp_io_cb. */
     if (family == AF_INET) {
         struct sockaddr_in sin = {};
-        sin.sin_family      = AF_INET;
-        sin.sin_addr.s_addr = htonl(INADDR_ANY);
-        sin.sin_port        = htons(port);
+        sin.sin_family = AF_INET;
+        sin.sin_addr   = local_addr.inner.ipv4.sin_addr;
+        sin.sin_port   = htons(port);
+        setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &yes, sizeof(yes));
         ret = bind(fd, (struct sockaddr *)&sin, sizeof(sin));
     } else {
         struct sockaddr_in6 sin6 = {};
         sin6.sin6_family = AF_INET6;
-        sin6.sin6_addr   = in6addr_any;
+        sin6.sin6_addr   = local_addr.inner.ipv6.sin6_addr;
         sin6.sin6_port   = htons(port);
+        setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO, &yes, sizeof(yes));
         ret = bind(fd, (struct sockaddr *)&sin6, sizeof(sin6));
     }
     if (ret < 0) {
@@ -1236,11 +1293,29 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
                 "probe";
             mylog(log_trace, "[server] mud_recv=0 from %s: %s\n",
                   src_addr.get_str(), _why);
-            if (auth_fail && pn >= 1) {
-                if (g_decoy_enabled)
-                    decoy_forward(src_addr, mfd, peek_buf, (int)pn);
-                else
-                    probe_respond_builtin(mfd, src_addr, (int)pn);
+            if (auth_fail) {
+                /* Answer the packet that failed, not the peeked one: mud_recv()
+                 * works from a recvmmsg batch, so peek_buf/src_addr can belong
+                 * to another sender (§19-나) — before 1.4.3 a reply could go to
+                 * a legitimate client, and decoy got the wrong bytes. Reply from
+                 * the local address the probe was sent to. */
+                union mud_sockaddr pr_remote, pr_local;
+                const void *raw = NULL;
+                size_t raw_len = 0;
+                if (mud_get_last_remote(g_mud, &pr_remote) == 0 &&
+                    mud_get_last_raw(g_mud, &raw, &raw_len) == 0 && raw_len >= 1) {
+                    address_t pr_addr = addr_of(pr_remote);
+                    address_t pr_laddr;
+                    const address_t *lp = NULL;
+                    if (mud_get_last_local(g_mud, &pr_local) == 0) {
+                        pr_laddr = addr_of(pr_local);
+                        lp = &pr_laddr;
+                    }
+                    if (g_decoy_enabled)
+                        decoy_forward(pr_addr, mfd, raw, (int)raw_len, lp);
+                    else
+                        probe_respond_builtin(mfd, pr_addr, (int)raw_len, lp);
+                }
             }
             continue;
         }
@@ -1357,7 +1432,6 @@ void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obfs,
     g_mud  = mud;
     g_obfs = obfs;
 
-    mf_conv_budget_init();
 
     if (decoy_addr.is_vaild()) {
         g_decoy_upstream = decoy_addr;
@@ -1365,6 +1439,7 @@ void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obfs,
         mylog(log_info, "[server] decoy: forwarding probes to %s\n",
               decoy_addr.get_str());
     }
+    mf_conv_budget_init();
 
     mylog(log_info, "[server] starting event loop\n");
 

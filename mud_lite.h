@@ -214,6 +214,27 @@ int mud_get_last_remote (struct mud *, union mud_sockaddr *out);
  * which would never deliver data of its own. */
 uint64_t mud_get_last_dup_peer (struct mud *);
 
+/* Local address the last mud_recv()'d packet arrived on, and its raw (still
+ * obfuscated) bytes. Both describe the same packet as mud_get_last_remote(),
+ * including one that failed authentication — so a probe reply or decoy forward
+ * answers the packet that actually failed, from the address it was sent to,
+ * rather than whatever a separate MSG_PEEK happens to see. The raw pointer is
+ * valid until the next mud_recv(). */
+int mud_get_last_local (struct mud *, union mud_sockaddr *out);
+int mud_get_last_raw   (struct mud *, const void **raw, size_t *len);
+
+/* Send one datagram on the mud socket from a given local address (IP_PKTINFO /
+ * IPV6_PKTINFO). local NULL → kernel chooses. For replies outside the paths. */
+int mud_send_raw (struct mud *, const void *data, size_t size,
+                  const union mud_sockaddr *remote, const union mud_sockaddr *local);
+
+/* 1 if a packet arriving on local would pass --accept-local (always 1 when the
+ * list is empty). For sockets outside mud that serve the same addresses (TOTP). */
+int mud_local_accepted (struct mud *, const union mud_sockaddr *local);
+
+/* Largest datagram mud_recv() accepts; anything larger is dropped as truncated. */
+#define MUD_RAW_RECV_MAX (1500U + 512U)
+
 /* Restrict which *local* address a received packet may have arrived on.
  *
  * Only meaningful with a wildcard bind (-l 0.0.0.0 / [::]): a socket bound to a

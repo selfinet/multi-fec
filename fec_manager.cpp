@@ -475,7 +475,14 @@ int fec_decode_manager_t::re_init()
 
 int fec_decode_manager_t::input(char *s, int len) {
     assert(s != 0);
-    assert(len + 100 < buf_len);  // guarenteed by upper level
+    /* Was assert(len + 100 < buf_len) "guaranteed by upper level". It is not:
+     * the length comes off the wire, and the server's TOTP receive path handed
+     * up to ~3.8 KB to this function, so an oversized authenticated datagram
+     * aborted the whole process. Reject it like any other malformed packet. */
+    if (len <= 0 || len + 100 >= buf_len) {
+        mylog(log_debug, "fec decode: bad input length %d\n", len);
+        return -1;
+    }
 
     int tmp_idx = 0;
     int tmp_header_len = sizeof(u32_t) + sizeof(char) * 4;
@@ -629,7 +636,7 @@ int fec_decode_manager_t::input(char *s, int len) {
     fec_data[index].idx = inner_index;
     fec_data[index].len = len;
     assert(0 <= index && index < (int)fec_buff_num);
-    assert(len + 100 < buf_len);
+    assert(len + 100 < buf_len);   /* holds: the entry check rejects longer input */
     memcpy(fec_data[index].buf, s + tmp_idx, len);
     mp[seq].group_mp[inner_index] = index;
     // index++ at end of function

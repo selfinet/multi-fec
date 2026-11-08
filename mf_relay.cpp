@@ -71,6 +71,10 @@ static struct obfs_ctx        g_builtin_ctx;        /* for builtin QUIC Initial 
  * 값은 서버 SESSION_MAX(max_conn_num*4) 와 같게 맞췄다. 기본 max_conn_num=200 이면
  * 800 세션 = 800 FD 로, 기본 RLIMIT_NOFILE(1024) 안에 리슨/타이머/decoy 몫을 남긴다. */
 #define RELAY_SESSION_MAX  (max_conn_num * 4)
+/* Effective cap: RELAY_SESSION_MAX, lowered at start-up so sessions and --decoy
+ * sockets together fit the process FD budget (1.4.3, mf_fd_budget_init). 800 +
+ * 256 decoy used to exceed the default soft limit of 1024. */
+static int g_relay_session_max = 0;
 
 extern int report_interval;   /* connection.cpp — --report seconds (0 = off) */
 
@@ -142,7 +146,7 @@ decoy_io_cb(struct ev_loop * /*loop*/, struct ev_io *w, int /*revents*/)
 static bool
 decoy_make_room()
 {
-    if (g_decoy_map.size() < (size_t)DECOY_SESSION_MAX) return true;
+    if (g_decoy_map.size() < (size_t)g_decoy_session_max) return true;
     time_t now = time(NULL);
     auto victim = g_decoy_map.end();
     for (auto it = g_decoy_map.begin(); it != g_decoy_map.end(); ++it) {
@@ -160,7 +164,7 @@ decoy_make_room()
     static time_t last_warn = 0;
     if (now - last_warn >= 60) {
         last_warn = now;
-        mylog(log_warn, "[relay/decoy] session table full (%d), evicting oldest\n", DECOY_SESSION_MAX);
+        mylog(log_warn, "[relay/decoy] session table full (%d), evicting oldest\n", g_decoy_session_max);
     }
     return true;
 }
@@ -319,10 +323,10 @@ static size_t session_sweep(my_time_t now)
 
 static bool session_reserve_slot(my_time_t now)
 {
-    if (g_addr_to_sess.size() < (size_t)RELAY_SESSION_MAX) return true;
+    if (g_addr_to_sess.size() < (size_t)g_relay_session_max) return true;
 
     session_sweep(now);
-    if (g_addr_to_sess.size() < (size_t)RELAY_SESSION_MAX) return true;
+    if (g_addr_to_sess.size() < (size_t)g_relay_session_max) return true;
 
     relay_session_t *lru = NULL;
     for (auto &kv : g_fd_to_sess) {
@@ -733,6 +737,7 @@ void mf_relay_event_loop(address_t &listen_addr, address_t &upstream_addr,
         mylog(log_info, "[relay] decoy: forwarding probes to %s\n",
               decoy_addr.get_str());
     }
+    g_relay_session_max = mf_fd_budget_init("relay", g_decoy_enabled, RELAY_SESSION_MAX);
 
     /* g_builtin_ctx: obfs context used for the builtin QUIC Initial response on HMAC failure.
      * The PSK is used only to generate the response's DCID token, which the prober

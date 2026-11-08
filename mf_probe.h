@@ -27,8 +27,28 @@
 #define PROBE_GLOBAL_BURST 400
 #define PROBE_TABLE_SIZE   4096   /* per-IP buckets, direct-mapped    */
 
-/* --decoy: concurrent prober sessions (one socket each), server and relay. */
+/* --decoy: concurrent prober sessions (one socket each), server and relay.
+ * The effective cap is g_decoy_session_max: this value, lowered at start-up so
+ * decoy sockets fit in the process FD budget (mf_fd_budget_init). */
 #define DECOY_SESSION_MAX  256
+extern int g_decoy_session_max;
+
+/* FDs kept free for everything that is not a per-peer socket: listen/mud/TOTP
+ * sockets, timers, epoll, stdio, log, /proc reads. */
+#define MF_FD_RESERVE      64
+
+/* Process FD budget for per-peer sockets (server: WG conv sockets, relay:
+ * upstream session sockets) and decoy sockets, taken together.
+ *
+ * Until 1.4.2 each kind was capped on its own — server conv at soft−64, relay
+ * sessions at 800, decoy at 256 — so with the default soft limit of 1024 the
+ * caps summed past the limit, and a decoy flood, which needs no key, could
+ * take the FDs authenticated clients were budgeted for. Now:
+ *   avail = soft RLIMIT_NOFILE − FDs already open − MF_FD_RESERVE
+ *   decoy = min(DECOY_SESSION_MAX, avail / 4)   (0 without --decoy)
+ *   main  = min(main_cap, avail − decoy)        (main_cap 0 = no own cap)
+ * Returns main (at least 1) and sets g_decoy_session_max. */
+int mf_fd_budget_init(const char *who, bool decoy_enabled, int main_cap);
 
 struct probe_stats {
     uint64_t sent;      /* replies sent                          */
@@ -38,7 +58,14 @@ struct probe_stats {
 
 /* Reply to an unauthenticated datagram of req_len bytes from src on fd.
  * Returns the number of bytes sent, or 0 when the reply was suppressed. */
-int  probe_reply(int fd, const address_t &src, int req_len, obfs_mode_t mode);
+int  probe_reply(int fd, const address_t &src, int req_len, obfs_mode_t mode,
+                 const address_t *local = NULL);
+
+/* sendto() from a chosen local address (IP_PKTINFO / IPV6_PKTINFO), so a reply
+ * leaves from the address the request was sent to even on a wildcard-bound
+ * socket. local NULL → plain sendto(). */
+ssize_t mf_sendto_from(int fd, const void *buf, size_t len,
+                       const address_t &dst, const address_t *local);
 void probe_get_stats(struct probe_stats *out);
 
 #endif
