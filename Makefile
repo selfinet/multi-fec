@@ -19,7 +19,7 @@ SRCS_CXX = main.cpp mf_config.cpp mf_netcfg.cpp mf_logfp.cpp obfs.cpp mf_probe.c
 
 OBJS = $(SRCS_C:.c=.o) $(SRCS_CXX:.cpp=.o)
 
-.PHONY: all static static-strip clean git_version test-rnlc-unit test-fec-bounds test-path-loss test-agg-unit asan FORCE
+.PHONY: all static static-strip clean git_version test-rnlc-unit test-fec-bounds test-path-loss test-agg-unit test-send-flush test-select-path asan FORCE
 
 all: $(NAME)
 
@@ -57,6 +57,11 @@ test-agg-unit:
 test-send-flush:
 	$(CC) $(CFLAGS) -o test_send_flush_unit test_send_flush_unit.c -lrt -lpthread
 	./test_send_flush_unit
+
+# 경로 선택이 묵은 rate 스냅샷으로 EAGAIN 을 내지 않는지 (1.4.3, CLAUDE.md §33-다)
+test-select-path:
+	$(CC) $(CFLAGS) -o test_select_path_unit test_select_path_unit.c -lrt -lpthread
+	./test_select_path_unit
 
 # ASAN/UBSAN 빌드: 메모리 오류·미정의 동작 검출용 (배포용 아님)
 # 사용: make asan → ./multi-fec-asan  (테스트 스크립트에 BIN=./multi-fec-asan)
