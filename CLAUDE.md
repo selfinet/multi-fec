@@ -2695,6 +2695,21 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
   (1초 간격 클라이언트 A, B 가 ~200 conv/s → A 의 WG 쪽 소스 포트 6개). → `evict_oldest_conv(requester)`: 몫 = 예산 ÷ conv 보유 클라이언트 수,
   요청자가 몫 이상이면 자기 것, 아니면 몫 초과 클라이언트의 최오래, 없으면 전역 최오래. 같은 조건에서 A 포트 1개·8/8.
 
+**3차 (2026-11-11, 같은 1.4.3 · 태그 이동)** — 6시간·4시간 에이징 뒤 1.4.3 태그 테스트에서 재현된 3건.
+
+- **블로킹 로그 → 포워딩 정지 (§33-가).** `log.cpp` 가 `printf`+`fflush(stdout)` 를 이벤트 루프에서 했다. systemd 에선 stdout 이 journald 로 가는
+  스트림 소켓이라, journald 가 멈추면(디스크 I/O 정지·재시작·rate limit) 소켓 버퍼가 차고 write 가 막혀 **모든 송수신이 멈췄다**.
+  sv1(KVM) 6시간 에이징에서 >0.5초 I/O 정지 145회, 로그 많은 체인이 10초 단절. 결정적 재현: stdout pipe 를 안 읽는 릴레이에
+  `--log-level 5` + 미인증 프로브 → 왕복 50/50 → 0/50. → 줄을 4 KB 버퍼에 포맷해 한 번에 비차단 송신: 소켓은 `send(MSG_DONTWAIT)`,
+  pipe·tty 는 `/proc/self/fd/1` 을 `O_NONBLOCK` 으로 다시 연 **별도 open file description**(fd 1 자체에 O_NONBLOCK 을 걸면 그 설명자를 공유하는
+  셸 등에도 퍼진다), 일반 파일은 그대로 write. 못 쓴 줄은 버리고 세어 다음 줄 앞에 `[log] N line(s) dropped` 를 남긴다. stdio 로 쓴 출력과의 순서는
+  `__fpending(stdout)` 이 있으면 먼저 flush 해 유지. errno 보존. **대가: 로그 리더가 막힌 동안의 줄은 사라진다** — 포워딩이 멈추는 것보다 낫다.
+- **decoy 세션 로그 (§33-나).** `new session prober=` 가 info 라 미인증 프로브가 로그량을 정했다(위 결함의 촉발 요인). → debug + 60초 이상 간격 info 요약.
+- **failover 경로 선택 EAGAIN (§33-다).** `mud_peer_rate()` 가 peer 0 에 `mud->rate`(mud_update 의 100 ms 스냅샷, aggregate 창 하한까지 섞인 값)를 돌려줬다.
+  §19-가 가 "peer 0 선택을 이전과 bit-identical 로" 하려고 남긴 것인데, 스냅샷 사이 `mud_update_rl()` branch 1 이 경로 tx.rate 를 낮추면
+  `k = cursor × 스냅샷 >> 16` 이 현재 합을 넘어 NULL → `mud_send()` EAGAIN(유닛: 스냅샷 1.5배면 cursor 의 33%, 2.6배면 61.5%).
+  → 항상 현재 합, 끝까지 못 고르면 마지막 RUNNING 경로. duplicate(`mud_send_all`)·aggregate(`mud_send_next`)는 이 함수를 쓰지 않아 무관.
+
 **검증**: `test_v143_hardening.py` 14/14(ASAN+UBSAN 클린), 기존 스위트 전부 통과(RNLC 11/11·FEC 경계 7/7·손실 10/10·agg 15/15·CLI 90/90·
 릴레이 라우팅 9/9·RNLC e2e 9/9·성능 26/26·다운스트림 24/24·세션 상한 4/4·세션 만료·probe 15/15·conv cap 4/4·트래픽 로그 9/9·dup 태그).
 
@@ -2702,6 +2717,8 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 
 **테스트 스크립트:**
 - `test_v143_hardening.py` — 포트 호핑 무시(실제 client↔server 왕복)·accept-local 무응답·응답 소스 IP·decoy+conv 통합 FD 예산·릴레이 예산·conv 공정 축출 15개 케이스. `BIN=` 로 A/B(0fa443c 11/15). §33 회귀 방지. 루프백 전용, PID 로만 정리
+- `test_log_nonblock.py` — 로그 리더가 막혀도(stdout = pipe / 스트림 소켓, 안 읽음) 릴레이가 포워딩하는지 + `[log] N line(s) dropped` 기록. 태그 빌드 4/8 → 8/8. §33-가 회귀 방지. 루프백 전용, PID 로만 정리
+- `test_select_path_unit.c` — 경로 선택이 묵은 rate 스냅샷으로 NULL/EAGAIN 을 내지 않는지 7개 케이스 (`make test-select-path`). 수정 전 3/7. §33-다 회귀 방지
 - `test_send_flush_unit.c` — `mud_send_flush()` 부분 송신 보존 7개 케이스 (`make test-send-flush`, sendmmsg 가짜로 대체). 수정 전 1/7. §33 회귀 방지
 - `test_probe_hardening.py` — 내장 프로브 응답(크기 하한·DCID·위조 거부·속도 제한·TLS) + decoy 세션 상한 15개 케이스. `BIN=` 로 A/B. §32 회귀 방지. 루프백 전용, PID 로만 정리
 - `pendttl_test.sh` (`test-results/2026-09-10-v131/`) — 클라이언트 pending 큐 TTL 검증. 릴레이 2개 동시 정지→복구를 N회 반복해 **일반 소크가 타지 않는 코드 경로**를 실행시킨다. 분석 `analyze_pend.py` 는 `송신 = 수신 − RTT` 로 지연을 상·하향에 귀속시킨다. §29 회귀 방지. **테스트망에서만 실행**

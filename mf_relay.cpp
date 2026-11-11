@@ -169,6 +169,8 @@ decoy_make_room()
     return true;
 }
 
+static uint64_t g_decoy_new_sessions = 0;  /* new decoy sessions since last summary */
+
 static decoy_sess_t *
 decoy_get_or_create(const address_t &prober)
 {
@@ -209,7 +211,11 @@ decoy_get_or_create(const address_t &prober)
     ev_io_start(g_loop, &s->watcher);
 
     g_decoy_map[const_cast<address_t &>(prober)] = s;
-    mylog(log_info, "[relay/decoy] new session prober=%s\n",
+    /* debug, not info: every unauthenticated prober made one line, so a probe
+     * flood turned into unbounded log output — and a blocked log write stalls
+     * the event loop (2026-11-09 aging). Counted and summarised instead. */
+    g_decoy_new_sessions++;
+    mylog(log_debug, "[relay/decoy] new session prober=%s\n",
           const_cast<address_t &>(prober).get_str());
     return s;
 }
@@ -233,6 +239,17 @@ static void
 decoy_cleanup_cb(struct ev_loop *loop, struct ev_timer * /*w*/, int /*revents*/)
 {
     time_t now = time(NULL);
+    static time_t last_summary = 0;
+    if (!last_summary) last_summary = now;
+    if (g_decoy_new_sessions && now - last_summary >= 60) {
+        mylog(log_info, "[relay/decoy] %llu new prober session(s) in last %lds, active %zu\n",
+              (unsigned long long)g_decoy_new_sessions, (long)(now - last_summary),
+              g_decoy_map.size());
+        g_decoy_new_sessions = 0;
+        last_summary = now;
+    } else if (!g_decoy_new_sessions) {
+        last_summary = now;
+    }
     for (auto it = g_decoy_map.begin(); it != g_decoy_map.end(); ) {
         decoy_sess_t *s = it->second;
         if (now - s->last_active > 10) {

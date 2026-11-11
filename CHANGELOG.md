@@ -699,7 +699,8 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 ## [1.4.3] — 2026-11-08
 
-**와이어 포맷·설정 형식 무변경** — 서버·릴레이 단독 수정, client 는 그대로 둬도 된다(1.4.x 혼용 가능). 상세 CLAUDE.md §33.
+**와이어 포맷·설정 형식 무변경** — 1.4.x 혼용 가능. 1·2차는 대부분 서버·릴레이 수정이고, 3차(2026-11-11, 태그 이동)의 로그 비차단·failover 경로 선택은
+client 에도 해당하므로 **client 도 올려야 효과가 있다**. 상세 CLAUDE.md §33.
 1.4.2 태그(`1150acc`) 이후 dev 에 들어간 두 변경(아래 "1.4.2 태그 이후")도 이 버전으로 처음 릴리스된다.
 
 - 수정 · 서버 TOTP 포트(`--port-hop-interval` 사용 시)로 들어온 인증된 데이터그램이 mud 상한(2012 B)보다 길면 FEC(RS) 디코더의
@@ -731,6 +732,21 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 - 테스트 · `test_v143_hardening.py` 15/15(0fa443c 빌드 11/15, 69f7877 은 위 1차 항목도 실패), `test_send_flush_unit.c`
   (`make test-send-flush`) 7/7(수정 전 1/7), `test_fec_decode_bounds` 긴 입력 케이스 추가 8/8. 기존 스위트 전부 통과, ASAN+UBSAN 클린
   (ASAN 빌드 `test_downstream_multi.py` 4회 중 1회 1건 실패 — 재실행 24/24, 산이타이저 오류 없음, 느린 빌드의 타이밍으로 판단).
+
+### 3차 — 2026-11-11 (같은 1.4.3, 태그 이동)
+
+6시간 에이징·mini 망 4시간 에이징 후 1.4.3 태그(`2563f2a`) 테스트에서 재현된 결함 3건.
+
+- 수정 · **로그 쓰기가 막히면 포워딩이 멈췄다.** 로그가 이벤트 루프 스레드에서 `printf`+`fflush(stdout)`(블로킹)라, journald 정지·디스크 I/O 정지로
+  stdout 이 차면 송수신·타이머가 전부 멈췄다(실측: stdout 을 안 읽는 릴레이가 로그 수 KB 후 왕복 50/50 → 0/50, KVM I/O 정지 때 10초 단절).
+  → 한 줄을 버퍼에 만든 뒤 비차단으로 쓴다(소켓 `send(MSG_DONTWAIT)`, pipe·tty 는 `/proc/self/fd/1` 로 연 별도 O_NONBLOCK 설명자, 일반 파일은 그대로).
+  못 쓴 줄은 버리고 세며, 다음에 써지는 줄 앞에 `[log] N line(s) dropped: log output blocked` 를 남긴다. client·server·relay 공통.
+- 변경 · decoy `new session prober=…` 를 info → **debug**. 미인증 프로브마다 한 줄이라 로그를 무제한으로 만들었다 —
+  대신 60초 이상 간격으로 `[decoy] N new prober session(s) in last Ns, active M` 요약을 info 로. 서버·릴레이.
+- 수정 · **failover 에서 간헐 EAGAIN·지연 상승.** `mud_select_path()` 가 client(peer 0)일 때 경로 rate 합을 100 ms 스냅샷(`mud->rate`)에서 가져와,
+  그 사이 경로 rate 가 내려가면 어느 경로도 고르지 못하고 `EAGAIN` → 대기 큐 100 ms flush 대기. 실측(60초, 경로 2개 손실 2%·10%) 태그 빌드 9회 중 2회 EAGAIN 14줄·RTT p99 85~97 ms(정상 6.7 ms) → 수정 후 12회 모두 EAGAIN 0.
+  → 현재 합으로 고르고, 그래도 못 고르면 마지막 RUNNING 경로. RUNNING 경로가 없을 때만 실패. failover(기본 아님) client 해당, duplicate 무관.
+- 테스트 · `test_log_nonblock.py` 8/8(태그 빌드 4/8), `test_select_path_unit.c`(`make test-select-path`) 7/7(수정 전 3/7).
 
 ### 1.4.2 태그 이후 (dev 69f7877 까지, 이 버전에 포함)
 

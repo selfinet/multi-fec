@@ -1051,14 +1051,21 @@ mud_peer_match(const struct mud_path *path, uint64_t peer)
     return !peer || path->peer_id == peer;
 }
 
-/* Sum of tx.rate over the sendable paths of `peer`.
- * For peer 0 this is mud->rate, which mud_update_all() already maintains — use
- * it verbatim so the untagged selection stays bit-identical to before. */
+/* Sum of tx.rate over the sendable paths of `peer`, computed now.
+ *
+ * Peer 0 used to return mud->rate, a snapshot taken by mud_update() every
+ * 100 ms (client). Between snapshots mud_update_rl() can lower a path's
+ * tx.rate on a probe answer, so the snapshot exceeded the live sum and the
+ * cursor walked off the end of the path list: mud_select_path() returned NULL
+ * and mud_send() failed with EAGAIN although a RUNNING path existed. Measured
+ * 2026-11-08~10 (failover, sv1 loopback): 1 run in 3 had EAGAIN bursts and
+ * RTT p99 85 ms instead of 6.7 ms. mud->rate also carries the aggregate
+ * window floor, which is not a path rate at all. The live sum keeps
+ * k = cursor * sum >> 16 strictly below sum, so selection only fails when no
+ * path is RUNNING. */
 static uint64_t
 mud_peer_rate(struct mud *mud, uint64_t peer)
 {
-    if (!peer) return mud->rate;
-
     uint64_t rate = 0;
     for (unsigned i = 0; i < mud->capacity; i++) {
         struct mud_path *path = &mud->paths[i];
@@ -1073,6 +1080,7 @@ static struct mud_path *
 mud_select_path(struct mud *mud, uint16_t cursor, uint64_t peer)
 {
     uint64_t k = ((uint64_t)cursor * mud_peer_rate(mud, peer)) >> 16;
+    struct mud_path *last = NULL;
 
     for (unsigned i = 0; i < mud->capacity; i++) {
         struct mud_path *path = &mud->paths[i];
@@ -1080,8 +1088,11 @@ mud_select_path(struct mud *mud, uint16_t cursor, uint64_t peer)
         if (!mud_peer_match(path, peer)) continue;
         if (k < path->tx.rate) return path;
         k -= path->tx.rate;
+        last = path;
     }
-    return NULL;
+    /* Unreachable with a live sum (all rates 0 is the only way here); never
+     * turn a RUNNING path into EAGAIN. */
+    return last;
 }
 
 /* ─── Window update ──────────────────────────────────────────── */
