@@ -1,0 +1,10 @@
+12:27:55 == phase postup
+12:28:00 RESULT {"kind": "postup_check", "after": "restart 1", "ok": true, "qdisc": ["qdisc cake 8053: root refcnt 2 bandwidth 5785Kbit besteffort dual-srchost nonat nowash no-ack-filter split-gso rtt 100ms raw overhead 0", "qdisc cake 8001: root refcnt 2 bandwidth 5785Kbit besteffort dual-dsthost nonat nowash no-ack-filter split-gso rtt 100ms raw overhead 0"], "t": 1794540480.0015202}
+12:28:04 RESULT {"kind": "postup_check", "after": "restart 2", "ok": true, "qdisc": ["qdisc cake 8054: root refcnt 2 bandwidth 5785Kbit besteffort dual-srchost nonat nowash no-ack-filter split-gso rtt 100ms raw overhead 0", "qdisc cake 8002: root refcnt 2 bandwidth 5785Kbit besteffort dual-dsthost nonat nowash no-ack-filter split-gso rtt 100ms raw overhead 0"], "t": 1794540484.213008}
+12:28:10 wg after restart 5 packets transmitted, 0 received, 100% packet loss, time 4095ms
+12:28:14 ERROR RuntimeError('PC 10.9.31.11 cannot reach 10.9.30.1: 3 packets transmitted, 0 received, 100% packet loss, time 2049ms\n\n')
+12:28:14 == emergency cleanup
+12:28:19 final 192.168.2.90 ['0', '0', 'wg-test', 'UNKNOWN', '10.9.30.2/24', '0', 'active']
+12:28:19 final 192.168.2.91 ['0', '0', 'wg-test', 'UNKNOWN', '10.9.30.1/24', '0', 'active']
+12:28:25 wg ping 5 packets transmitted, 0 received, 100% packet loss, time 4099ms
+12:28:25 multi-fec active ['active', 'active']

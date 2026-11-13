@@ -23,6 +23,18 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 측정·문서·테스트 하네스만(제품 코드 변경은 아래 버전 섹션).
 
+### 2026-11-13 — mini 테스트망 CAKE(wg-quick PostUp) PC별 공평 분배
+
+- `test-results/2026-11-13-m2-cake/` — 경로당 10 Mbit 병목, 터널 안 PC 2개(8연결 포화 vs ping+1연결), CAKE 5785kbit besteffort
+  (client dual-srchost · server dual-dsthost). CAKE 없음: 다른 PC ping p50 108~114 ms·대역 11~17 % → 있음: **3.1~3.2 ms·45~47 %**, 2회 재현.
+  합계 처리량 7.4→5.7 Mbps(rate = 실측 85 %). PostUp 은 재시작마다 재적용되나 **wg-quick 재시작 시 터널 16초 단절**(원인 미조사).
+  하네스 `caketest.py`. multi-fec 코드 변경 없음.
+
+### 2026-11-13 — mini 테스트망 aggregate 경로 차단·복구 초 단위 재시험 (1.4.3b)
+
+- `test-results/2026-11-13-m2-aggcut-persec/` — 6 Mbps(경로 하나로 감당) aggregate 3회: 차단 손실 회당 136~161 패킷(상향만, 1~2초 검출),
+  복구 후 path0 1~2초 안에 재합류·손실 0~8 패킷, duplicate 차단 손실 0. 11-12 복구 직후 2~3 % 손실은 재합류 지연 동안의 path1 용량 초과로 설명.
+
 ### 2026-11-12 — mini 테스트망 경로별 속도 제한(10 Mbit) duplicate vs aggregate (1.4.3b · 1.4.1)
 
 - `test-results/2026-11-12-m2-agg-ratelimit/` — 손실 1 % 기준 duplicate ~8 · aggregate ~12 Mbps(약 1.5배, 10-23 VM 시험과 같은 비율).
