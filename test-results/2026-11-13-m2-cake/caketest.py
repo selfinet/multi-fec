@@ -236,6 +236,21 @@ def phase_runs():
                 time.sleep(5)
     cake_set(True, rate)   # leave as PostUp left it until cleanup
 
+def phase_sweep():
+    """CAKE rate as % of each direction's own calibrated goodput — where does the protection stop?"""
+    cal = state()['calib']
+    pcts = [int(x) for x in os.environ.get('SWEEP', '85,90,95,100,105').split(',')]
+    for d in ('up', 'dn'):
+        cake_set(False)
+        m = load(d, tag='sweep_off'); result(kind='sweep', pct=None, rate=None, calib=cal[d], **m); time.sleep(5)
+        for pct in pcts:
+            rate = f'{int(cal[d] * pct * 10)}kbit'
+            cake_set(True, rate)
+            m = load(d, tag=f'sweep{pct}')
+            result(kind='sweep', pct=pct, rate=rate, calib=cal[d], **m)
+            time.sleep(5)
+    cake_set(False)
+
 def phase_cleanup():
     for h in (C, S): ssh(h, 'touch /root/mft/guard.stop; pkill -x iperf3; pkill -f "^ping -D -n -I"; true')
     for h in (C, S):
