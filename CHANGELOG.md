@@ -27,8 +27,9 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 - `test-results/2026-11-13-m2-cake/` — 경로당 10 Mbit 병목, 터널 안 PC 2개(8연결 포화 vs ping+1연결), CAKE 5785kbit besteffort
   (client dual-srchost · server dual-dsthost). CAKE 없음: 다른 PC ping p50 108~114 ms·대역 11~17 % → 있음: **3.1~3.2 ms·45~47 %**, 2회 재현.
-  합계 처리량 7.4→5.7 Mbps(rate = 실측 85 %). PostUp 은 재시작마다 재적용되나 **wg-quick 재시작 시 터널 16초 단절**(원인 미조사).
-  하네스 `caketest.py`. multi-fec 코드 변경 없음.
+  합계 처리량 7.4→5.7 Mbps(rate = 실측 85 %). PostUp 은 재시작마다 재적용. 하네스 `caketest.py`. multi-fec 코드 변경 없음.
+- 후속: wg-quick 재시작 16초 단절은 **WireGuard 재핸드셰이크 타이머**(server 재시작 시 client 가 10+5 s 뒤 재시도, client 만 재시작은 1 s,
+  lo 캡처상 multi-fec 지연 없음, `restart.py`). CAKE rate 경계는 실측 처리량의 95~100 %(상향)·100~105 %(하향) — 넘으면 지연 보호 소멸(~115 ms), **권장 90 %**.
 
 ### 2026-11-13 — mini 테스트망 aggregate 경로 차단·복구 초 단위 재시험 (1.4.3b)
 
