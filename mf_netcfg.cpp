@@ -154,11 +154,43 @@ int mf_parse_path_spec(const char *spec, PathSpec &ps, std::string &err)
     return 0;
 }
 
+/* "20017,20004" or "20000-20009" (mixable). Rejects 0, >65535, duplicates and more
+ * than MF_ROUTE_PORTS_MAX — a typo like 20000-29999 must not start silently. */
+static int parse_port_list(const std::string &v, route_entry_t &re, std::string &err)
+{
+    if (re.nports) { err = "route: ports given twice"; return -1; }
+    size_t pos = 0;
+    while (pos <= v.size()) {
+        size_t c = v.find(',', pos);
+        std::string part = v.substr(pos, c == std::string::npos ? std::string::npos : c - pos);
+        pos = c == std::string::npos ? v.size() + 1 : c + 1;
+        if (part.empty()) { err = "route: empty entry in ports '" + v + "'"; return -1; }
+        size_t dash = part.find('-');
+        std::string a = part.substr(0, dash), b = dash == std::string::npos ? a : part.substr(dash + 1);
+        char *e1 = NULL, *e2 = NULL;
+        long lo = strtol(a.c_str(), &e1, 10), hi = strtol(b.c_str(), &e2, 10);
+        if (a.empty() || b.empty() || *e1 || *e2 || lo < 1 || hi > 65535 || lo > hi) {
+            err = "route: bad ports entry '" + part + "' (1-65535, lo-hi)";
+            return -1;
+        }
+        for (long p = lo; p <= hi; p++) {
+            for (unsigned k = 0; k < re.nports; k++)
+                if (re.ports[k] == p) { err = "route: port " + std::to_string(p) + " listed twice"; return -1; }
+            if (re.nports >= MF_ROUTE_PORTS_MAX) {
+                err = "route: more than " + std::to_string(MF_ROUTE_PORTS_MAX) + " ports (2-3 are enough)";
+                return -1;
+            }
+            re.ports[re.nports++] = (uint16_t)p;
+        }
+    }
+    return 0;
+}
+
 int mf_parse_route_spec(const char *spec, route_entry_t &re, std::string &err)
 {
     memset(&re, 0, sizeof(re));
     std::vector<std::string> t = split_spec(spec, "--route");
-    if (t.size() < 2) { err = "route is \"<key> <ip:port> [via if] [gw ip] [local ip]\""; return -1; }
+    if (t.size() < 2) { err = "route is \"<key> <ip:port> [via if] [gw ip] [local ip] [ports p1,p2,lo-hi]\""; return -1; }
     if (t[0].size() > sizeof(re.key_str) - 1) { err = "route key longer than 999 characters"; return -1; }
     strcpy(re.key_str, t[0].c_str());
     if (safe_addr(t[1], re.upstream_addr, true) != 0) {
@@ -181,8 +213,10 @@ int mf_parse_route_spec(const char *spec, route_entry_t &re, std::string &err)
                 err = "route: local must be a bare IP: '" + t[i + 1] + "'";
                 return -1;
             }
+        } else if (t[i] == "ports") {
+            if (parse_port_list(t[i + 1], re, err) != 0) return -1;
         } else {
-            err = "route: unknown word '" + t[i] + "' (expected via / gw / local)";
+            err = "route: unknown word '" + t[i] + "' (expected via / gw / local / ports)";
             return -1;
         }
     }
@@ -760,4 +794,45 @@ int mf_udp_port_owners(address_t &addr, std::vector<mf_port_owner> &out)
         out.push_back(o);
     }
     return 0;
+}
+
+/* ─── route source-port pool helpers ─────────────────────────────── */
+
+static bool port_in_list_file(const char *path, uint16_t port, bool range_pair)
+{
+    FILE *f = fopen(path, "r");
+    if (!f) return false;
+    char buf[4096];
+    size_t n = fread(buf, 1, sizeof(buf) - 1, f);
+    fclose(f);
+    buf[n] = 0;
+    if (range_pair) {                       /* ip_local_port_range: "lo hi" */
+        long lo = 0, hi = 0;
+        return sscanf(buf, "%ld %ld", &lo, &hi) == 2 && port >= lo && port <= hi;
+    }
+    /* ip_local_reserved_ports: "8080,9000-9010" */
+    char *save = NULL;
+    for (char *tok = strtok_r(buf, ",\n ", &save); tok; tok = strtok_r(NULL, ",\n ", &save)) {
+        long lo = 0, hi = 0;
+        int k = sscanf(tok, "%ld-%ld", &lo, &hi);
+        if (k == 1) hi = lo;
+        if (k >= 1 && port >= lo && port <= hi) return true;
+    }
+    return false;
+}
+
+bool mf_port_kernel_may_take(uint16_t port)
+{
+    return port_in_list_file("/proc/sys/net/ipv4/ip_local_port_range", port, true) &&
+           !port_in_list_file("/proc/sys/net/ipv4/ip_local_reserved_ports", port, false);
+}
+
+std::string mf_route_ports_str(const route_entry_t &r)
+{
+    std::string s;
+    for (unsigned i = 0; i < r.nports; i++) {
+        if (i) s += ",";
+        s += std::to_string(r.ports[i]);
+    }
+    return s;
 }

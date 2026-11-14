@@ -45,6 +45,8 @@ enum multipath_mode_t {
  * Registered via the --route "keystring ip:port" option.
  * If g_routes is empty, operates in the legacy single --upstream mode.
  */
+#define MF_ROUTE_PORTS_MAX 64   /* per route; real use is 2-3 */
+
 struct route_entry_t {
     char            key_str[1000];
     address_t       upstream_addr;
@@ -54,6 +56,12 @@ struct route_entry_t {
     address_t       local;         /* invalid = --upstream-local (or kernel) */
     char            ifname[16];    /* "" = not pinned (SO_BINDTODEVICE) */
     address_t       gw;            /* for --apply-routes; invalid = interface default */
+    /* "ports a,b,c-d": source-port pool for this route's upstream sockets. ECMP hashes
+     * the 5-tuple, so a kernel-chosen port re-draws the carrier path on every relay
+     * restart (2026-10-24 ch3->kt 44/63 ms). A new session takes the first free port;
+     * nports == 0 keeps the kernel choice (port 0). */
+    uint16_t        ports[MF_ROUTE_PORTS_MAX];
+    unsigned        nports;
 };
 
 /* Defined in main.cpp, referenced from other modules via extern */

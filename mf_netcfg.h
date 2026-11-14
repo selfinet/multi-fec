@@ -105,3 +105,10 @@ int mf_udp_port_owners(address_t &addr, std::vector<mf_port_owner> &out);
 
 /* Human-readable "a.b.c.d" (static buffer per call site is the caller's problem). */
 std::string mf_ip4_str(struct in_addr a);
+/* Route "ports" pool: true when the kernel may hand this port out as an ephemeral
+ * port (inside ip_local_port_range and not in ip_local_reserved_ports) — a pinned
+ * port there can be taken by some other socket before the relay needs it. */
+bool mf_port_kernel_may_take(uint16_t port);
+std::string mf_route_ports_str(const route_entry_t &r);   /* "20017,20004" */
+
+
