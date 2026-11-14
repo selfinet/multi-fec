@@ -2716,6 +2716,7 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 ---
 
 **테스트 스크립트:**
+- `tools/mf-portprobe.py` — **출발 포트별 UDP 왕복 지연**(ECMP 갈래 찾기). relay 호스트에서 다음 홉 `ip:443` 으로 미인증 1200 B 를 보내 내장 프로브 응답(`mf_probe.cpp`)으로 잰다 — ICMP 미사용·대상 슬롯 무소모. `--local` 은 route 의 local 과 같게. v1.4.2+ 대상은 소스 IP 당 2회/s 라 50포트×10회 ≈ 4분. 서비스망 실행은 사용자가
 - `test_v143_hardening.py` — 포트 호핑 무시(실제 client↔server 왕복)·accept-local 무응답·응답 소스 IP·decoy+conv 통합 FD 예산·릴레이 예산·conv 공정 축출 15개 케이스. `BIN=` 로 A/B(0fa443c 11/15). §33 회귀 방지. 루프백 전용, PID 로만 정리
 - `test_log_nonblock.py` — 로그 리더가 막혀도(stdout = pipe / 스트림 소켓, 안 읽음) 릴레이가 포워딩하는지 + `[log] N line(s) dropped` 기록. 태그 빌드 4/8 → 8/8. §33-가 회귀 방지. 루프백 전용, PID 로만 정리
 - `test_select_path_unit.c` — 경로 선택이 묵은 rate 스냅샷으로 NULL/EAGAIN 을 내지 않는지 7개 케이스 (`make test-select-path`). 수정 전 3/7. §33-다 회귀 방지
