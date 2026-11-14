@@ -577,7 +577,7 @@ best->agg_credit -= total_rate;  // 차감으로 다음 기회 균등화
 |------|---------|--------|------|
 | `--upstream ip:port` | — | — | 단일 upstream 서버 주소 (단일 모드 필수) |
 | `--upstream-local ip` | IP (포트 불가) | 없음 | upstream(릴레이→서버) 소켓의 **소스 IP** 고정. 미지정 시 커널이 라우팅 preferred source 를 고른다. **`-l` 리슨 주소는 여기 상속되지 않는다** — 별개 소켓이다(§26). 한 호스트의 릴레이 인스턴스들을 upstream 에서 소스 IP 로 구분해야 할 때 쓴다 |
-| `--route "key ip:port"` | — | — | 키별 upstream 라우팅. 반복 가능. `--upstream` 대신 사용. **v1.4.0: 뒤에 `via <if>` `gw <ip>` `local <ip>`** — 그 키 세션의 upstream 소켓에 `SO_BINDTODEVICE`·`bind` (`local` 이 `--upstream-local` 보다 우선). 같은 키 두 줄은 경고(첫 줄만 쓰임) |
+| `--route "key ip:port"` | — | — | 키별 upstream 라우팅. 반복 가능. `--upstream` 대신 사용. **v1.4.0: 뒤에 `via <if>` `gw <ip>` `local <ip>`** — 그 키 세션의 upstream 소켓에 `SO_BINDTODEVICE`·`bind` (`local` 이 `--upstream-local` 보다 우선). 같은 키 두 줄은 경고(첫 줄만 쓰임). **`ports 20017,20004`(범위 `lo-hi`, 최대 64) — upstream 출발 포트 풀**(§34): 새 세션이 빈 포트를 앞에서부터, 모두 사용 중이면 client 무수신 3 s 세션의 포트 회수, 그래도 없으면 경고 후 커널 포트. 두 route 같은 포트는 기동 거부. ⚠️ 1.4.3 이하는 이 단어를 기동 거부 |
 | `--route-file FILE` | 파일 | 없음 | `--route` 와 같은 문법을 한 줄에 하나, `#` 주석. 지사 추가 = 한 줄 + 재시작(유닛 수정 불필요). 키가 들어 있으므로 600 |
 | `--decoy ip:port` | — | 없음 | GFW 액티브 프로빙 대응. 서버와 동일 동작. HMAC 실패 패킷을 decoy로 포워딩. |
 
@@ -2715,7 +2715,30 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 
 ---
 
+### 34. relay upstream 출발 포트 풀 — route `ports` (2026-11-15, 버전 미정)
+
+**파일**: `mf_common.h`(`route_entry_t.ports/nports`), `mf_netcfg.{h,cpp}`(파싱·`mf_port_kernel_may_take`), `mf_relay.cpp`(`open_upstream`, `g_port_owner`, `last_up`), `main.cpp`(`--check`·help).
+**와이어 무변경, relay 단독** — 2단 relay·server·client 는 어느 버전이든 그대로(mini: server 1.4.1 확인). **설정은 비호환**: 1.4.3 이하는 route 의 `ports` 를 `unknown word` 로 기동 거부(되돌릴 땐 설정도 복원).
+
+**배경**: relay 는 세션마다 upstream 소켓을 port 0 으로 열어 커널이 출발 포트를 고른다. 통신사 ECMP 는 5-tuple 로 갈래를 정하므로 **relay 재시작 = 국경 구간 갈래 재추첨**이었다(2026-10-24 ch3→kt 44 / 63 ms, Zabbix +52%). 빠른 갈래의 포트를 `tools/mf-portprobe.py` 로 찾아 고정한다.
+
+**동작**:
+- `route = <키> <ip:port> [local <ip>] ports 20017,20004` — 새 세션은 다른 세션이 쓰지 않는 포트를 **앞에서부터** bind(`local`/`--upstream-local` IP, 없으면 와일드카드). 포트 하나를 세션 하나가 쓰므로 route 당 2개 이상(client 재시작 시 옛 세션이 남아 있다).
+- 모두 사용 중이면 **client → relay 수신이 3 s 넘게 없는 세션**(`RELAY_PORT_RECLAIM_MS`)을 지우고 그 포트를 준다. 살아 있는 client 는 경로마다 80~120 ms beat 로 probe 를 보내므로 3 s 무수신 = 사라진 client.
+  `last_active`(양방향)가 아니라 `last_up` 으로 판단해야 한다 — server 는 사라진 client 의 옛 경로로 5분 동안 probe 를 계속 보낸다(mini 1차 빌드: 재시작 8회 중 회수 0).
+- 그래도 없으면(또는 다른 프로세스가 점유) 경고(60 s 1회) 후 커널 포트 — 서비스는 유지, 그 세션은 새 ECMP 추첨. 이미 커널 포트로 간 세션은 옮기지 않는다.
+- relay 재시작 때는 소켓이 즉시 닫히므로 대기 없이 첫 포트.
+- 로그: 기동 `route[i] source ports …`(커널 임의 범위 안이고 미예약이면 경고), 회수 `source port N reclaimed …`, 주기 `[relay][report] ports reclaimed=… fallback(kernel port)=…`(본 report 줄 형식은 그대로).
+- `--check`: ports 표시, route 간 중복(오류), 커널 임의 범위(`ip_local_port_range` 안·`ip_local_reserved_ports` 밖 = 경고), 다른 프로세스 점유(경고, 자기 인스턴스는 NOTE).
+- 파싱 거부: 0·65535 초과·중복·`ports` 두 번·65개 이상·빈 항목·숫자 아님.
+
+**검증**: `test_relay_ports.py` 29/29(ASAN+UBSAN 클린, sink 가 server 처럼 스스로 probe → 수정 전 27/29 A/B), relay 라우팅 9/9·세션 상한 4/4·만료·옵션 90/90·다운스트림 24/24·유닛 전부. mini 실장비 M1~M6 — `test-results/2026-11-15-m2-relay-ports/REPORT.md`.
+**미해결**: 1 s 간격처럼 3 s 안에 연속 재시작하면 마지막 세션이 커널 포트로 남을 수 있다(다음 새 세션까지). 60 s 세션 만료도 양방향 `last_active` 라 사라진 client 의 세션이 server probe 동안(~5분) 남는다(이전부터의 동작, 미변경).
+
+---
+
 **테스트 스크립트:**
+- `test_relay_ports.py` — relay route `ports` 29개 케이스(파싱 거부·첫 포트·둘째 포트·풀 소진 대체·**client 무수신 3 s 회수(sink 가 server 처럼 probe 를 계속 보냄)**·재시작·타 프로세스 점유·ports 없음·`--check`). sv1 루프백. §34 회귀 방지
 - `tools/mf-portprobe.py` — **출발 포트별 UDP 왕복 지연**(ECMP 갈래 찾기). relay 호스트에서 다음 홉 `ip:443` 으로 미인증 1200 B 를 보내 내장 프로브 응답(`mf_probe.cpp`)으로 잰다 — ICMP 미사용·대상 슬롯 무소모. `--local` 은 route 의 local 과 같게. v1.4.2+ 대상은 소스 IP 당 2회/s 라 50포트×10회 ≈ 4분. 서비스망 실행은 사용자가
 - `test_v143_hardening.py` — 포트 호핑 무시(실제 client↔server 왕복)·accept-local 무응답·응답 소스 IP·decoy+conv 통합 FD 예산·릴레이 예산·conv 공정 축출 15개 케이스. `BIN=` 로 A/B(0fa443c 11/15). §33 회귀 방지. 루프백 전용, PID 로만 정리
 - `test_log_nonblock.py` — 로그 리더가 막혀도(stdout = pipe / 스트림 소켓, 안 읽음) 릴레이가 포워딩하는지 + `[log] N line(s) dropped` 기록. 태그 빌드 4/8 → 8/8. §33-가 회귀 방지. 루프백 전용, PID 로만 정리

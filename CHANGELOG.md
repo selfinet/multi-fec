@@ -23,6 +23,14 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 측정·문서·테스트 하네스만(제품 코드 변경은 아래 버전 섹션).
 
+### 2026-11-15 — 추가: relay route `ports` (upstream 출발 포트 풀) — ⚠️ 제품 코드, 버전 미정
+
+- 추가 · route 줄 끝 `ports 20017,20004`(범위 `lo-hi`, 최대 64) — relay upstream 출발 포트를 고정해 ECMP 갈래가 재시작마다 바뀌지 않게 한다.
+  빈 포트를 앞에서부터, 모두 사용 중이면 client 무수신 3 s 세션 회수, 그래도 없으면 경고 후 커널 포트. 두 route 같은 포트 기동 거부, `--check` 점검.
+  와이어 무변경·relay 단독(다른 홉 1.4.1 그대로 OK), **설정은 1.4.3 이하에서 기동 거부**. `2b6a311` + 수정 `0d28263`(회수 판단을 client 방향 수신으로). CLAUDE.md §34.
+- 문서/테스트 · `test_relay_ports.py` 29/29, mini 실장비 `test-results/2026-11-15-m2-relay-ports/REPORT.md`(server 1.4.1 혼용 포함).
+- 버전: 규칙상 MINOR(1.5.0) 대상이나 사용자 결정 전이라 `MULTI_FEC_VERSION` 은 1.4.3 그대로 — 릴리스 시 섹션을 옮길 것.
+
 ### 2026-11-14 — 도구: 출발 포트별 UDP 왕복 지연 측정 `tools/mf-portprobe.py`
 
 - 통신사 ECMP 가 5-tuple 로 갈래를 정해 relay 재시작마다 국경 구간 지연이 바뀌는 문제(2026-10-24 ch3→kt 44/63 ms)용. 후보 출발 포트마다
