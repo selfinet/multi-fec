@@ -26,6 +26,7 @@
 #include "mf_probe.h"
 #include "mf_logfp.h"
 #include "obfs.h"
+#include "mf_netcfg.h"
 
 #include <unordered_map>
 #include <unordered_set>
@@ -95,6 +96,7 @@ struct relay_traffic_t {
     uint64_t down_bytes, down_pkts;   /* server → client */
     uint64_t sess_new, sess_expired, sess_evicted, sess_fulldrop;
     uint64_t probe, decoy_bytes;      /* HMAC-failed (prober) packets / bytes to decoy */
+    uint64_t port_reclaim, port_fallback; /* route "ports": idle owner reclaimed / pool exhausted */
 };
 static struct relay_traffic_t g_tr;        /* cumulative since start */
 static struct relay_traffic_t g_tr_logged; /* snapshot at last report */
@@ -277,11 +279,29 @@ struct relay_session_t {
     const struct obfs_ctx *route_obfs;  /* obfs of the key matched for this session. NULL=transparent */
     uint64_t               up_bytes, up_pkts;     /* per-session, client → server */
     uint64_t               down_bytes, down_pkts; /* per-session, server → client */
+    uint16_t               src_port;              /* pinned source port from route "ports", 0 = kernel */
+    my_time_t              last_up;               /* last client → relay packet (last_active also counts
+                                                     server → client, and the server keeps probing a dead
+                                                     client's path for minutes) */
+    const route_entry_t   *route;                 /* matched route (NULL in --upstream mode) */
 };
 
 /* Two lookup tables — O(1) in both directions */
 static unordered_map<address_t, relay_session_t *> g_addr_to_sess;
 static unordered_map<int,       relay_session_t *> g_fd_to_sess;
+/* route "ports": which session holds each pinned source port. Ports are unique
+ * across the routes of one instance (checked at start-up), so the port alone is
+ * the key. */
+static unordered_map<uint16_t,  relay_session_t *> g_port_owner;
+
+/* A session whose CLIENT sent nothing for this long is dead: a live mud peer
+ * probes every path every 80-120 ms (beat), and mud itself calls a path dead after
+ * 1 s of silence. Judged on last_up only — the server keeps probing the old path
+ * of a restarted client until mud drops it (5 min), so last_active stays fresh
+ * (2026-11-15 mini: 0 reclaims out of 8 restarts before this). Only used to hand a pinned port to a new session when the pool
+ * is full — a client restarted several times within the 60 s idle timeout would
+ * otherwise fall back to kernel ports (= a fresh ECMP draw). */
+#define RELAY_PORT_RECLAIM_MS  3000
 
 /* ────────────────────────────────────────────────────────────────
  * Helper: destroy a session and free resources
@@ -293,6 +313,10 @@ static void delete_session(relay_session_t *sess)
     close(sess->upstream_fd);
     g_fd_to_sess.erase(sess->upstream_fd);
     g_addr_to_sess.erase(sess->client_addr);
+    if (sess->src_port) {
+        auto it = g_port_owner.find(sess->src_port);
+        if (it != g_port_owner.end() && it->second == sess) g_port_owner.erase(it);
+    }
 
     if (log_level >= log_debug) {
         char fp[MF_LOG_FP_LEN];
@@ -363,7 +387,7 @@ static bool session_reserve_slot(my_time_t now)
  * Helper: create a non-blocking UDP socket connected to upstream
  * ──────────────────────────────────────────────────────────────── */
 
-static int new_upstream_fd(address_t &remote, const route_entry_t *route)
+static int new_upstream_fd(address_t &remote, const route_entry_t *route, uint16_t port)
 {
     int fd = socket(remote.get_type(), SOCK_DGRAM, 0);
     if (fd < 0) {
@@ -382,7 +406,23 @@ static int new_upstream_fd(address_t &remote, const route_entry_t *route)
         address_t rl = route->local;   /* address_t methods are not const-qualified */
         if (rl.is_vaild()) src = rl;
     }
-    if (src.is_vaild()) {
+    if (port) {
+        /* route "ports": bind the pinned source port, on the pinned source IP
+         * if there is one, else the wildcard of the upstream's family. */
+        if (!src.is_vaild() || src.get_type() != remote.get_type()) {
+            memset(&src.inner, 0, sizeof(src.inner));
+            if (remote.get_type() == AF_INET6) src.inner.ipv6.sin6_family = AF_INET6;
+            else                               src.inner.ipv4.sin_family  = AF_INET;
+        }
+        if (src.get_type() == AF_INET6) src.inner.ipv6.sin6_port = htons(port);
+        else                            src.inner.ipv4.sin_port  = htons(port);
+        if (bind(fd, (struct sockaddr *)&src.inner, src.get_len()) < 0) {
+            int e = errno;          /* EADDRINUSE: caller tries the next port */
+            close(fd);
+            errno = e;
+            return -1;
+        }
+    } else if (src.is_vaild()) {
         if (src.get_type() != remote.get_type()) {
             mylog(log_warn, "[relay] upstream source %s family differs from upstream %s — not bound\n",
                   src.get_str(), remote.get_str());
@@ -431,6 +471,63 @@ static int new_upstream_fd(address_t &remote, const route_entry_t *route)
     }
     setnonblocking(fd);
     return fd;
+}
+
+/* ────────────────────────────────────────────────────────────────
+ * Helper: upstream socket for a new session, honouring route "ports"
+ *
+ * Takes the first pool port no session holds. If every port is held, the owner
+ * idle longest (≥ RELAY_PORT_RECLAIM_MS) is dropped and its port reused. If none
+ * is idle enough, or every free port is taken by another process, falls back to
+ * a kernel port so the session still works — with a rate-limited warning, since
+ * that port is a fresh ECMP draw. *port_out = pinned port or 0.
+ * ──────────────────────────────────────────────────────────────── */
+
+static int open_upstream(address_t &remote, const route_entry_t *route, my_time_t now,
+                         uint16_t *port_out)
+{
+    *port_out = 0;
+    if (!route || !route->nports) return new_upstream_fd(remote, route, 0);
+
+    int busy_other = 0;
+    for (int pass = 0; pass < 2; pass++) {
+        for (unsigned i = 0; i < route->nports; i++) {
+            uint16_t p = route->ports[i];
+            if (g_port_owner.count(p)) continue;
+            int fd = new_upstream_fd(remote, route, p);
+            if (fd >= 0) { *port_out = p; return fd; }
+            if (errno == EADDRINUSE) { busy_other++; continue; }   /* another process holds it */
+            mylog(log_warn, "[relay] bind upstream source port %u: %s\n", (unsigned)p, strerror(errno));
+            return -1;   /* e.g. local IP gone — same as an unpinned bind failure */
+        }
+        if (pass) break;
+
+        /* every pool port is held by one of our sessions: reclaim a dead one */
+        relay_session_t *victim = NULL;
+        for (unsigned i = 0; i < route->nports; i++) {
+            auto it = g_port_owner.find(route->ports[i]);
+            if (it == g_port_owner.end()) continue;
+            relay_session_t *o = it->second;
+            if (now - o->last_up < (my_time_t)RELAY_PORT_RECLAIM_MS) continue;
+            if (!victim || o->last_up < victim->last_up) victim = o;
+        }
+        if (!victim) break;
+        mylog(log_info, "[relay] source port %u reclaimed from a session whose client was silent %lld ms (client restarted?)\n",
+              (unsigned)victim->src_port, (long long)(now - victim->last_up));
+        g_tr.port_reclaim++;
+        delete_session(victim);
+    }
+
+    g_tr.port_fallback++;
+    static my_time_t last_warn = 0;
+    if (last_warn == 0 || now - last_warn >= 60000) {
+        last_warn = now;
+        mylog(log_warn, "[relay] route ports %s all in use%s — this session uses a kernel port "
+                        "(new ECMP draw). Add ports or free them\n",
+              mf_route_ports_str(*route).c_str(),
+              busy_other ? " (some held by another process)" : "");
+    }
+    return new_upstream_fd(remote, route, 0);
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -600,7 +697,8 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
                 continue;
             }
 
-            int ufd = new_upstream_fd(upstream, matched_route);
+            uint16_t sport = 0;
+            int ufd = open_upstream(upstream, matched_route, get_current_time(), &sport);
             if (ufd < 0) continue;
 
             sess               = new relay_session_t;
@@ -609,6 +707,10 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
             sess->last_active  = get_current_time();
             sess->route_obfs   = matched_obfs;
             sess->up_bytes = sess->up_pkts = sess->down_bytes = sess->down_pkts = 0;
+            sess->src_port     = sport;
+            sess->last_up      = get_current_time();
+            sess->route        = matched_route;
+            if (sport) g_port_owner[sport] = sess;
 
             sess->upstream_watcher.data = sess;
             ev_io_init(&sess->upstream_watcher, upstream_read_cb, ufd, EV_READ);
@@ -621,12 +723,12 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
             if (log_level >= log_debug) {
                 char fp[MF_LOG_FP_LEN];
                 mf_client_fp(src, fp, sizeof(fp));
-                mylog(log_debug, "[relay] new session: client=%s upstream=%s fd=%d\n",
-                      fp, upstream.get_str(), ufd);
+                mylog(log_debug, "[relay] new session: client=%s upstream=%s fd=%d sport=%u\n",
+                      fp, upstream.get_str(), ufd, (unsigned)sport);
             }
         }
 
-        sess->last_active = get_current_time();
+        sess->last_active = sess->last_up = get_current_time();
         send(sess->upstream_fd, buf, n, 0);
 
         sess->up_bytes += (uint64_t)n; sess->up_pkts++;
@@ -687,6 +789,8 @@ static void report_cb(struct ev_loop * /*loop*/, struct ev_timer * /*w*/, int /*
     uint64_t s_drp = g_tr.sess_fulldrop - g_tr_logged.sess_fulldrop;
     uint64_t prb   = g_tr.probe       - g_tr_logged.probe;
     uint64_t dcy   = g_tr.decoy_bytes - g_tr_logged.decoy_bytes;
+    uint64_t p_rc  = g_tr.port_reclaim  - g_tr_logged.port_reclaim;
+    uint64_t p_fb  = g_tr.port_fallback - g_tr_logged.port_fallback;
     g_tr_logged = g_tr;
 
     /* distinct clients this instant, by fingerprint (non-identifying count) */
@@ -711,6 +815,10 @@ static void report_cb(struct ev_loop * /*loop*/, struct ev_timer * /*w*/, int /*
           (unsigned long long)s_new, (unsigned long long)s_exp,
           (unsigned long long)s_evi, (unsigned long long)prb, yb,
           (unsigned long long)s_drp);
+    /* separate line so the main one keeps its format (parsed by tools) */
+    if (p_rc || p_fb)
+        mylog(log_info, "[relay][report] ports reclaimed=%llu fallback(kernel port)=%llu\n",
+              (unsigned long long)p_rc, (unsigned long long)p_fb);
 
     if (log_level >= log_debug && !g_addr_to_sess.empty()) {
         std::vector<relay_session_t *> v;
@@ -783,7 +891,32 @@ void mf_relay_event_loop(address_t &listen_addr, address_t &upstream_addr,
                   g_routes[i].ifname[0] ? " via " : "", g_routes[i].ifname,
                   g_routes[i].local.is_vaild() ? " local " : "",
                   g_routes[i].local.is_vaild() ? g_routes[i].local.get_str() : "");
+            if (g_routes[i].nports) {
+                std::string kt;
+                for (unsigned k = 0; k < g_routes[i].nports; k++)
+                    if (mf_port_kernel_may_take(g_routes[i].ports[k]))
+                        kt += (kt.empty() ? "" : ",") + std::to_string(g_routes[i].ports[k]);
+                mylog(log_info, "[relay]   route[%zu] source ports %s\n",
+                      i, mf_route_ports_str(g_routes[i]).c_str());
+                if (!kt.empty())
+                    mylog(log_warn, "[relay]   route[%zu] ports %s are in the kernel ephemeral range "
+                          "(ip_local_port_range) and not reserved — another socket may take them first; "
+                          "pick ports outside it or add them to net.ipv4.ip_local_reserved_ports\n",
+                          i, kt.c_str());
+            }
         }
+        /* one source port can be bound once per IP: a port in two routes would make
+         * the second route's sessions fall back silently — refuse to start */
+        for (size_t i = 0; i < g_routes.size(); i++)
+            for (unsigned a = 0; a < g_routes[i].nports; a++)
+                for (size_t j = i + 1; j < g_routes.size(); j++)
+                    for (unsigned b = 0; b < g_routes[j].nports; b++)
+                        if (g_routes[i].ports[a] == g_routes[j].ports[b]) {
+                            mylog(log_fatal, "[relay] source port %u is in route[%zu] and route[%zu] — "
+                                  "each port may belong to one route\n",
+                                  (unsigned)g_routes[i].ports[a], i, j);
+                            myexit(1);
+                        }
     } else {
         mylog(log_info, "[relay] listen=%s  upstream=%s  hmac=%s\n",
               listen_addr.get_str(),

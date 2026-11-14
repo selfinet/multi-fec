@@ -245,9 +245,11 @@ static void print_help(const char *prog)
         "                          relay instances on one host must be distinguishable\n"
         "                          by source IP upstream.\n"
         "                          (e.g. --upstream-local 192.168.100.86)\n"
-        "  --route \"key ip:port [via IF] [gw IP] [local IP]\"\n"
+        "  --route \"key ip:port [via IF] [gw IP] [local IP] [ports P1,P2,LO-HI]\"\n"
         "                        [Relay]  Key-based upstream routing. Repeatable.\n"
         "                          via/local pin this key's upstream interface/source IP.\n"
+        "                          ports pins the upstream source port (first free one per\n"
+        "                          session; ECMP picks the carrier path by port). Max 64.\n"
         "  --route-file FILE     [Relay]  One route per line (same syntax), '#' comments.\n"
         "                          HMAC of each key tried in order; first match routes\n"
         "                          the session to that upstream. Mutually exclusive with\n"
@@ -634,7 +636,7 @@ static void parse_args(int argc, char *argv[])
         }
 
         case OPT_ROUTE: {
-            /* --route "keystring ip:port [via if] [gw ip] [local ip]" */
+            /* --route "keystring ip:port [via if] [gw ip] [local ip] [ports ...]" */
             route_entry_t entry;
             std::string err;
             if (mf_parse_route_spec(optarg, entry, err) != 0) {
@@ -1104,9 +1106,11 @@ static int run_check()
         for (route_entry_t &r : g_routes) {
             char fp[OBFS_KEY_FP_LEN];
             obfs_key_fingerprint(r.key_str, fp, sizeof(fp));
-            snprintf(b, sizeof(b), "%s -> %s%s%s%s%s", fp, r.upstream_addr.get_str(),
+            std::string up = r.upstream_addr.get_str();   /* get_str() is one static buffer */
+            snprintf(b, sizeof(b), "%s -> %s%s%s%s%s%s%s", fp, up.c_str(),
                      r.ifname[0] ? " via " : "", r.ifname,
-                     r.local.is_vaild() ? " local " : "", r.local.is_vaild() ? r.local.get_str() : "");
+                     r.local.is_vaild() ? " local " : "", r.local.is_vaild() ? r.local.get_str() : "",
+                     r.nports ? " ports " : "", r.nports ? mf_route_ports_str(r).c_str() : "");
             printf("  %-16s %-34s %s\n", "route", b, g_route_file[0] ? "route-file" : src_of("route"));
         }
     }
@@ -1198,6 +1202,51 @@ static int run_check()
                 is_tunnel_dev(ri.dev))
                 bad(std::string("route ") + fp + ": upstream routed into tunnel " + ri.dev);
         }
+    }
+
+    /* route "ports": one port per route, outside the kernel's ephemeral range,
+     * not held by another process */
+    for (size_t i = 0; i < g_routes.size(); i++) {
+        route_entry_t &r = g_routes[i];
+        if (!r.nports) continue;
+        char fp[OBFS_KEY_FP_LEN];
+        obfs_key_fingerprint(r.key_str, fp, sizeof(fp));
+        std::string tag = std::string("route ") + fp + " port ";
+        int problems = 0;
+        for (unsigned a = 0; a < r.nports; a++) {
+            uint16_t p = r.ports[a];
+            std::string ps = std::to_string(p);
+            for (size_t j = i + 1; j < g_routes.size(); j++)
+                for (unsigned c = 0; c < g_routes[j].nports; c++)
+                    if (g_routes[j].ports[c] == p) {
+                        char fp2[OBFS_KEY_FP_LEN];
+                        obfs_key_fingerprint(g_routes[j].key_str, fp2, sizeof(fp2));
+                        bad(tag + ps + " is also in route " + fp2 + " — the relay refuses to start");
+                        problems++;
+                    }
+            if (mf_port_kernel_may_take(p)) {
+                warn(tag + ps + " is in the kernel ephemeral range and not reserved — "
+                     "another socket may take it (net.ipv4.ip_local_reserved_ports)");
+                problems++;
+            }
+            address_t pa;
+            if (r.local.is_vaild()) pa = r.local;
+            else if (g_upstream_local.is_vaild()) pa = g_upstream_local;
+            else { struct in_addr any; any.s_addr = 0; pa.from_ip_port_new(AF_INET, &any, 0); }
+            if (pa.get_type() == AF_INET6) pa.inner.ipv6.sin6_port = htons(p);
+            else                           pa.inner.ipv4.sin_port  = htons(p);
+            std::vector<mf_port_owner> owners;
+            mf_udp_port_owners(pa, owners);
+            for (mf_port_owner &o : owners) {
+                bool self = g_have_cfg && o.cmdline.find(g_cfg.path) != std::string::npos;
+                if (self) { printf("  [NOTE] %s%s is held by this instance (pid %d, running)\n", tag.c_str(), ps.c_str(), o.pid); continue; }
+                char ob[160];
+                snprintf(ob, sizeof(ob), "held by pid %d: %.80s", o.pid, o.cmdline.c_str());
+                warn(tag + ps + " " + ob + " — sessions will skip it");
+                problems++;
+            }
+        }
+        if (!problems) ok(tag.substr(0, tag.size() - 6) + " ports " + mf_route_ports_str(r) + " usable");
     }
 
     /* what --apply-routes would do */
