@@ -8,7 +8,7 @@ upstream 자리에 UDP 에코 sink 를 두고, sink 가 보는 relay 의 출발 
   T2 첫 세션 = 목록 첫 포트, 왕복 정상
   T3 첫 세션이 살아 있을 때 둘째 세션 = 둘째 포트
   T4 두 포트 모두 살아 있는 세션 → 커널 포트로 대체 + 경고
-  T5 3초 넘게 조용한 세션의 포트 회수 → 새 세션이 그 포트
+  T5 client 가 3초 넘게 조용한 세션의 포트 회수 → 새 세션이 그 포트 (server probe 가 계속 와도)
   T6 relay 재시작 → 즉시 첫 포트
   T7 다른 프로세스가 첫 포트를 잡고 있으면 둘째 포트
   T8 ports 없음 → 커널 포트(기존 동작)
@@ -53,6 +53,20 @@ class Sink:
         self.stop = False
         self.t = threading.Thread(target=self.run, daemon=True)
         self.t.start()
+        # server 처럼 아는 상대에게 스스로 probe 를 계속 보낸다 — client 가 사라져도
+        # relay 세션에 하향 패킷이 계속 온다(2026-11-15 mini 에서 회수 0회로 드러난 조건)
+        self.peers = set()
+        self.pt = threading.Thread(target=self.probe, daemon=True)
+        self.pt.start()
+
+    def probe(self):
+        while not self.stop:
+            for a in list(self.peers):
+                try:
+                    self.s.sendto(b'probe-from-server', a)
+                except OSError:
+                    pass
+            time.sleep(0.1)
 
     def run(self):
         while not self.stop:
@@ -63,6 +77,7 @@ class Sink:
             except OSError:
                 return
             self.seen.append((time.time(), a[1], d))
+            self.peers.add(a)
             try:
                 self.s.sendto(d, a)
             except OSError:
@@ -74,6 +89,7 @@ class Sink:
     def close(self):
         self.stop = True
         self.t.join(1)
+        self.pt.join(1)
         self.s.close()
 
 

@@ -280,6 +280,9 @@ struct relay_session_t {
     uint64_t               up_bytes, up_pkts;     /* per-session, client → server */
     uint64_t               down_bytes, down_pkts; /* per-session, server → client */
     uint16_t               src_port;              /* pinned source port from route "ports", 0 = kernel */
+    my_time_t              last_up;               /* last client → relay packet (last_active also counts
+                                                     server → client, and the server keeps probing a dead
+                                                     client's path for minutes) */
     const route_entry_t   *route;                 /* matched route (NULL in --upstream mode) */
 };
 
@@ -291,9 +294,11 @@ static unordered_map<int,       relay_session_t *> g_fd_to_sess;
  * the key. */
 static unordered_map<uint16_t,  relay_session_t *> g_port_owner;
 
-/* A session whose client sent nothing for this long is dead: a live mud peer
+/* A session whose CLIENT sent nothing for this long is dead: a live mud peer
  * probes every path every 80-120 ms (beat), and mud itself calls a path dead after
- * 1 s of silence. Only used to hand a pinned port to a new session when the pool
+ * 1 s of silence. Judged on last_up only — the server keeps probing the old path
+ * of a restarted client until mud drops it (5 min), so last_active stays fresh
+ * (2026-11-15 mini: 0 reclaims out of 8 restarts before this). Only used to hand a pinned port to a new session when the pool
  * is full — a client restarted several times within the 60 s idle timeout would
  * otherwise fall back to kernel ports (= a fresh ECMP draw). */
 #define RELAY_PORT_RECLAIM_MS  3000
@@ -503,12 +508,12 @@ static int open_upstream(address_t &remote, const route_entry_t *route, my_time_
             auto it = g_port_owner.find(route->ports[i]);
             if (it == g_port_owner.end()) continue;
             relay_session_t *o = it->second;
-            if (now - o->last_active < (my_time_t)RELAY_PORT_RECLAIM_MS) continue;
-            if (!victim || o->last_active < victim->last_active) victim = o;
+            if (now - o->last_up < (my_time_t)RELAY_PORT_RECLAIM_MS) continue;
+            if (!victim || o->last_up < victim->last_up) victim = o;
         }
         if (!victim) break;
-        mylog(log_info, "[relay] source port %u reclaimed from a session idle %lld ms (client restarted?)\n",
-              (unsigned)victim->src_port, (long long)(now - victim->last_active));
+        mylog(log_info, "[relay] source port %u reclaimed from a session whose client was silent %lld ms (client restarted?)\n",
+              (unsigned)victim->src_port, (long long)(now - victim->last_up));
         g_tr.port_reclaim++;
         delete_session(victim);
     }
@@ -703,6 +708,7 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
             sess->route_obfs   = matched_obfs;
             sess->up_bytes = sess->up_pkts = sess->down_bytes = sess->down_pkts = 0;
             sess->src_port     = sport;
+            sess->last_up      = get_current_time();
             sess->route        = matched_route;
             if (sport) g_port_owner[sport] = sess;
 
@@ -722,7 +728,7 @@ static void listen_read_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/
             }
         }
 
-        sess->last_active = get_current_time();
+        sess->last_active = sess->last_up = get_current_time();
         send(sess->upstream_fd, buf, n, 0);
 
         sess->up_bytes += (uint64_t)n; sess->up_pkts++;
