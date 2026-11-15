@@ -2695,7 +2695,7 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
   (1초 간격 클라이언트 A, B 가 ~200 conv/s → A 의 WG 쪽 소스 포트 6개). → `evict_oldest_conv(requester)`: 몫 = 예산 ÷ conv 보유 클라이언트 수,
   요청자가 몫 이상이면 자기 것, 아니면 몫 초과 클라이언트의 최오래, 없으면 전역 최오래. 같은 조건에서 A 포트 1개·8/8.
 
-**3차 (2026-11-11, 같은 1.4.3 · 태그 이동)** — 6시간·4시간 에이징 뒤 1.4.3 태그 테스트에서 재현된 3건.
+**3차 (2026-11-11, v1.4.4 로 릴리스 — 1.4.3 태그는 `2563f2a` 그대로)** — 6시간·4시간 에이징 뒤 1.4.3 태그 테스트에서 재현된 3건.
 
 - **블로킹 로그 → 포워딩 정지 (§33-가).** `log.cpp` 가 `printf`+`fflush(stdout)` 를 이벤트 루프에서 했다. systemd 에선 stdout 이 journald 로 가는
   스트림 소켓이라, journald 가 멈추면(디스크 I/O 정지·재시작·rate limit) 소켓 버퍼가 차고 write 가 막혀 **모든 송수신이 멈췄다**.
@@ -2715,7 +2715,7 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 
 ---
 
-### 34. relay upstream 출발 포트 풀 — route `ports` (2026-11-15, 버전 미정)
+### 34. relay upstream 출발 포트 풀 — route `ports` (2026-11-15, v1.4.4)
 
 **파일**: `mf_common.h`(`route_entry_t.ports/nports`), `mf_netcfg.{h,cpp}`(파싱·`mf_port_kernel_may_take`), `mf_relay.cpp`(`open_upstream`, `g_port_owner`, `last_up`), `main.cpp`(`--check`·help).
 **와이어 무변경, relay 단독** — 2단 relay·server·client 는 어느 버전이든 그대로(mini: server 1.4.1 확인). **설정은 비호환**: 1.4.3 이하는 route 의 `ports` 를 `unknown word` 로 기동 거부(되돌릴 땐 설정도 복원).
