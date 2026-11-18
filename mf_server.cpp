@@ -1288,7 +1288,7 @@ static void server_totp_timer_cb(struct ev_loop *loop, struct ev_timer * /*w*/, 
     server_update_totp_ports(loop);
 }
 
-static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int revents)
+static void mud_io_cb_peek(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int revents)
 {
     assert(!(revents & EV_ERROR));
 
@@ -1478,6 +1478,95 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
                          recv_buf + SESSION_ID_LEN,
                          n2 - SESSION_ID_LEN);
     }
+}
+
+/* MSG_PEEK 없는 수신 루프 (시험). mud_recv() 가 EAGAIN 을 줄 때까지(소켓·recvmmsg 묶음 모두 비었을 때) 돈다.
+ * 출처는 언제나 mud_get_last_remote() — mud_recv() 가 0 이상을 돌려주면 항상 채워져 있다.
+ * 기존 루프와 달리 묶음에 남은 패킷도 새 세션·경로 태그·duplicate 태그·인증 실패 응답을 모두 받는다. */
+static void mud_io_cb_nopeek(int revents)
+{
+    assert(!(revents & EV_ERROR));
+    int mfd = mud_get_fd(g_mud);
+    static char recv_buf[buf_len];
+
+    for (;;) {
+        struct mud_errors _e0;
+        mud_get_errors(g_mud, &_e0);
+        int n = mud_recv(g_mud, recv_buf, sizeof(recv_buf));
+        if (n < 0) break;               /* EAGAIN: 소켓과 묶음이 모두 비었다 */
+
+        union mud_sockaddr real_remote;
+        if (mud_get_last_remote(g_mud, &real_remote) != 0) continue;
+        address_t data_addr = addr_of(real_remote);
+
+        if (n == 0) {
+            uint64_t dup_peer = mud_get_last_dup_peer(g_mud);
+            if (dup_peer) { session_tag_duplicate(data_addr, dup_peer); continue; }
+            struct mud_errors _e1;
+            mud_get_errors(g_mud, &_e1);
+            bool auth_fail = (_e1.auth.count > _e0.auth.count);
+            mylog(log_trace, "[server] mud_recv=0 from %s: %s\n", data_addr.get_str(),
+                  auth_fail ? "auth-fail" :
+                  (_e1.clocksync.count > _e0.clocksync.count) ? "clocksync" : "probe");
+            if (auth_fail) {
+                union mud_sockaddr pr_local;
+                const void *raw = NULL;
+                size_t raw_len = 0;
+                if (mud_get_last_raw(g_mud, &raw, &raw_len) == 0 && raw_len >= 1) {
+                    address_t pr_laddr;
+                    const address_t *lp = NULL;
+                    if (mud_get_last_local(g_mud, &pr_local) == 0) {
+                        pr_laddr = addr_of(pr_local);
+                        lp = &pr_laddr;
+                    }
+                    if (g_decoy_enabled)
+                        decoy_forward(data_addr, mfd, raw, (int)raw_len, lp);
+                    else
+                        probe_respond_builtin(mfd, data_addr, (int)raw_len, lp);
+                }
+            }
+            continue;
+        }
+
+        if (n < (int)SESSION_ID_LEN) {
+            mylog(log_debug, "[server] packet too short for session_id (%d)\n", n);
+            continue;
+        }
+        uint64_t sid = 0;
+        memcpy(&sid, recv_buf, SESSION_ID_LEN);
+
+        address_t routing_addr;
+        my_time_t now_ms = (my_time_t)get_current_time();
+        auto sit = g_session_to_addr.find(sid);
+        if (sit == g_session_to_addr.end()) {
+            if (!session_insert(sid, data_addr, now_ms)) continue;
+            routing_addr = data_addr;
+            mylog(log_info, "[server] new session %016llx from %s\n",
+                  (unsigned long long)sid, data_addr.get_str());
+        } else {
+            sit->second.last_seen = now_ms;
+            routing_addr = sit->second.addr;
+            if (!(routing_addr == data_addr))
+                mylog(log_debug, "[server] session %016llx: alt path %s\n",
+                      (unsigned long long)sid, data_addr.get_str());
+            session_note_path(sit->second, data_addr);
+            if (peer_for_addr(routing_addr) == 0)
+                peer_bind(routing_addr, peer_of(sid));
+        }
+        peer_tag_path(data_addr, peer_of(sid));
+        process_mud_data(routing_addr, recv_buf + SESSION_ID_LEN, n - SESSION_ID_LEN);
+    }
+}
+
+static void mud_io_cb(struct ev_loop *loop, struct ev_io *watcher, int revents)
+{
+    static int use_peek = -1;
+    if (use_peek < 0) {
+        use_peek = getenv("MF_PEEK") != NULL;
+        mylog(log_info, "[server] mud receive loop: %s\n", use_peek ? "MSG_PEEK (old)" : "no-peek");
+    }
+    if (use_peek) mud_io_cb_peek(loop, watcher, revents);
+    else          mud_io_cb_nopeek(revents);
 }
 
 static void mud_update_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/, int /*revents*/)
