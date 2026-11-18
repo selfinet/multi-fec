@@ -338,7 +338,7 @@ generate_gf(void)
 
 #define UNROLL 16 /* 1, 4, 8, 16 */
 static void
-addmul1(gf *dst1, gf *src1, gf c, int sz)
+addmul1_scalar(gf *dst1, gf *src1, gf c, int sz)
 {
     USE_GF_MULC ;
     gf *dst = dst1, *src = src1 ;
@@ -374,6 +374,41 @@ addmul1(gf *dst1, gf *src1, gf c, int sz)
     for (; dst < lim; dst++, src++ )		/* final components */
 	GF_ADDMULC( *dst , *src );
 }
+
+/* ── addmul1 SSSE3 (1.4.5): 같은 GF(2^8)/0x11D 곱셈을 pshufb 두 번(하위·상위 4비트 표)으로 16바이트씩 계산한다.
+ *    행렬·순서는 그대로라 결과 바이트가 스칼라와 같다(2만 그룹 인코드 해시·디코드 대조, tools/bench/mf_bench).
+ *    CPU 가 SSSE3 를 지원하지 않거나 환경변수 MF_NO_SIMD 가 있으면 스칼라. x86 이 아니면 스칼라만 빌드된다.
+ *    upstream(lib/fec) 수정 예외 — 패킷당 CPU 의 ~20 %(J1900 client)였고 출력이 바이트 단위로 같다. */
+#if defined(__x86_64__) || defined(__i386__)
+#include <immintrin.h>
+__attribute__((target("ssse3")))
+static void
+addmul1_ssse3(gf *dst, gf *src, gf c, int sz)
+{
+    unsigned char lo[16], hi[16];
+    for (int x = 0; x < 16; x++) { lo[x] = gf_mul(c, x); hi[x] = gf_mul(c, x << 4); }
+    __m128i tlo = _mm_loadu_si128((const __m128i *)lo), thi = _mm_loadu_si128((const __m128i *)hi);
+    __m128i m = _mm_set1_epi8(0x0f);
+    int i = 0;
+    for (; i + 16 <= sz; i += 16) {
+        __m128i s = _mm_loadu_si128((const __m128i *)(src + i));
+        __m128i l = _mm_and_si128(s, m), h = _mm_and_si128(_mm_srli_epi64(s, 4), m);
+        __m128i p = _mm_xor_si128(_mm_shuffle_epi8(tlo, l), _mm_shuffle_epi8(thi, h));
+        __m128i d = _mm_loadu_si128((const __m128i *)(dst + i));
+        _mm_storeu_si128((__m128i *)(dst + i), _mm_xor_si128(d, p));
+    }
+    for (; i < sz; i++) dst[i] ^= gf_mul(c, src[i]);
+}
+static int use_ssse3 = -1;
+static void
+addmul1(gf *dst1, gf *src1, gf c, int sz)
+{
+    if (use_ssse3 < 0) use_ssse3 = __builtin_cpu_supports("ssse3") && !getenv("MF_NO_SIMD");
+    if (use_ssse3) addmul1_ssse3(dst1, src1, c, sz); else addmul1_scalar(dst1, src1, c, sz);
+}
+#else
+#define addmul1 addmul1_scalar
+#endif
 
 /*
  * computes C = AB where A is n*k, B is k*m, C is n*m

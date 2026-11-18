@@ -729,6 +729,25 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 ---
 
+## [1.4.5] — 2026-11-19
+
+**와이어 포맷·설정 형식 무변경** — 1.4.x 와 임의 조합 혼용 가능(새 옵션 `pin-cpu` 를 설정에 쓰면 1.4.4 이하는 모르는 이름으로 기동 거부).
+CPU 절감 3건과 코어 고정 옵션. 효과는 올린 쪽에만 난다 — RS 인코드·로그는 양쪽, no-peek 는 server 만. 상세 CLAUDE.md §35.
+버전: `--pin-cpu` 는 기능 추가라 규칙상 MINOR 이지만 사용자 결정으로 1.4.5.
+
+- 변경 · RS(FEC) `addmul1` 을 **SSSE3** 로(pshufb 4비트 표). 출력 바이트 동일(무작위 2만 그룹 인코드 해시·디코드 대조), CPU 미지원·x86 외·
+  환경변수 `MF_NO_SIMD` 설정 시 기존 스칼라. J1900 RS 인코드 95 → 371 MB/s, client perf 비중 20.0 → 6.3 %. (`7584b2a`)
+- 변경 · server 수신 루프에서 패킷마다 하던 `recvfrom(MSG_PEEK)` 제거 — 반복은 `mud_recv()` EAGAIN 으로 끝내고 출처는 `mud_get_last_remote()`.
+  recvmmsg 묶음에 남은 패킷이 새 세션·경로/duplicate 태그·인증 실패 응답을 건너뛰던 축약 경로도 없앴다(모든 패킷 전체 처리). (`7584b2a`, 정리 이 릴리스)
+- 변경 · `mylog` 가 레벨을 먼저 확인 — 걸러지는 로그의 인자(주소 문자열 등)를 패킷마다 만들지 않는다(J1900 server perf printf+log0 5.7 % → 0).
+  인자 부작용 0건 전수 확인, `-DMF_LOG_EAGER` 빌드 시 예전 동작. (`7584b2a`)
+- 추가 · `--pin-cpu N` / `pin-cpu = N` — 프로세스를 코어 N 에 고정(모드 분기 전 `sched_setaffinity`). 현재 CPU 친화도 밖의 코어(없는 코어 포함)면 기동·`--check` 거부.
+  `lo` RPS 를 나머지 코어에 걸 때 함께 쓴다. (`e875d23`)
+- 실측 · J1900(.92↔.93, 터널 1개 aggregate 30/54 ms, 손실 0) UDP 상향 처리 상한 136 → 174~189 Mbps. TCP -P 8 은 RPS e + `--pin-cpu 0`
+  에서 85/86 → 112/109 Mbps(상/하향, 3회 평균), 고정만은 +2~6 %. 근거 `test-results/2026-11-18-m2-aggwindow/REPORT.md` run16~23.
+- 테스트 · sv1 루프백 downstream_multi 24/24 · dup_path_tag · probe_hardening 15/15 · v143_hardening 15/15 · server_conv_cap 4/4 ·
+  log_nonblock 8/8 · relay_session_cap 4/4 · relay_routing 9/9 · relay_ports · 유닛(fec-bounds·rnlc·path-loss·agg·select-path).
+
 ## [1.4.4] — 2026-11-16
 
 **와이어 포맷 무변경** — 1.4.x 와 임의 조합 혼용 가능(mini 실장비 1.4.1 혼용 8조합 손실 0). **설정은 `ports` 를 쓸 때만 비호환**(1.4.3 이하 relay 가 기동 거부).

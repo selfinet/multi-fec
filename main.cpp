@@ -37,6 +37,7 @@ extern "C" {
 #include <string>
 #include <fstream>
 #include <dirent.h>
+#include <sched.h>
 
 /* ─── Event loop entry points ─────────────────────────────────── */
 
@@ -81,6 +82,7 @@ static int         g_fec_timeout_ms   = 10;               /* was 8 */
 static int         g_fec_mode         = 1;                /* was 0 */
 static int         g_mtu              = 1350;             /* was default_mtu (1250) */
 static int         g_queue_len        = 500;              /* was 200 */
+int                g_pin_cpu          = -1;               /* --pin-cpu: CPU core to pin the process to, -1 = off */
 int                g_sock_buf         = 4096;             /* --sock-buf kB (was 0 = OS default; read by mf_relay.cpp) */
 static address_t   g_upstream_addr;                       /* relay: --upstream */
 address_t          g_upstream_local;                      /* relay: --upstream-local (read by mf_relay.cpp) */
@@ -277,6 +279,9 @@ static void print_help(const char *prog)
         "\n"
         "Network options:\n"
         "  --sock-buf N          UDP socket send/recv buffer size kB (10-10240)  [default: 4096]\n"
+        "  --pin-cpu N           Pin the process to CPU core N (0-based). Keeps it off the cores\n"
+        "                        that run loopback/WireGuard receive work (pair with lo RPS on the\n"
+        "                        other cores). Refused if N is outside the current CPU affinity  [default: off]\n"
         "\n"
         "Obfuscation:\n"
         "  --obfs-mode M         Protocol mimicry mode  [default: quic]\n"
@@ -431,6 +436,7 @@ enum {
     OPT_DECODE_BUF,
     OPT_DISABLE_FEC,
     OPT_SOCK_BUF,
+    OPT_PIN_CPU,
     OPT_JITTER,
     OPT_RANDOM_DROP,
     OPT_DISABLE_CHECKSUM,
@@ -473,6 +479,7 @@ static const struct option long_opts[] = {
     { "decode-buf",       required_argument, NULL, OPT_DECODE_BUF      },
     { "disable-fec",      no_argument,       NULL, OPT_DISABLE_FEC     },
     { "sock-buf",         required_argument, NULL, OPT_SOCK_BUF        },
+    { "pin-cpu",          required_argument, NULL, OPT_PIN_CPU         },
     { "jitter",           required_argument, NULL, OPT_JITTER          },
     { "random-drop",      required_argument, NULL, OPT_RANDOM_DROP     },
     { "disable-checksum", no_argument,       NULL, OPT_DISABLE_CHECKSUM},
@@ -720,6 +727,18 @@ static void parse_args(int argc, char *argv[])
         case OPT_DISABLE_FEC:
             disable_fec = 1;
             break;
+
+        case OPT_PIN_CPU: {
+            char *end = NULL;
+            errno = 0;
+            long v = strtol(optarg, &end, 10);
+            if (errno || end == optarg || *end || v < 0 || v >= CPU_SETSIZE) {
+                fprintf(stderr, "error: --pin-cpu must be a CPU core number 0-%d\n", CPU_SETSIZE - 1);
+                exit(1);
+            }
+            g_pin_cpu = (int)v;
+            break;
+        }
 
         case OPT_SOCK_BUF:
             g_sock_buf = atoi(optarg);
@@ -1002,6 +1021,29 @@ static std::string defaults_in_effect()
     return out;
 }
 
+/* --pin-cpu: is `cpu` in this process's current CPU affinity? That set is what
+ * the process was started with (taskset, systemd CPUAffinity=, cgroup cpuset).
+ * The kernel would let us widen an inherited affinity (only a cpuset is a hard
+ * limit), but a core outside it means someone narrowed it on purpose, so refuse
+ * rather than override. Fills `allowed` with the set as a list for messages. */
+static bool pin_cpu_allowed(int cpu, std::string &allowed)
+{
+    cpu_set_t s;
+    CPU_ZERO(&s);
+    allowed.clear();
+    if (sched_getaffinity(0, sizeof(s), &s) != 0) { allowed = "?"; return false; }
+    for (int i = 0; i < CPU_SETSIZE; i++) {
+        if (!CPU_ISSET(i, &s)) continue;
+        int j = i;
+        while (j + 1 < CPU_SETSIZE && CPU_ISSET(j + 1, &s)) j++;
+        if (!allowed.empty()) allowed += ",";
+        allowed += std::to_string(i);
+        if (j > i) allowed += "-" + std::to_string(j);
+        i = j;
+    }
+    return CPU_ISSET(cpu, &s);
+}
+
 static bool is_tunnel_dev(const char *dev)
 {
     return !strncmp(dev, "wg", 2) || !strncmp(dev, "tun", 3);
@@ -1129,10 +1171,18 @@ static int run_check()
         row("fifo", fifo_file[0] ? fifo_file : "(none)");
     }
     snprintf(b, sizeof(b), "%d", g_sock_buf);            row("sock-buf", b);
+    if (g_pin_cpu >= 0) snprintf(b, sizeof(b), "%d", g_pin_cpu);
+    else                snprintf(b, sizeof(b), "(off)");
+    row("pin-cpu", b);
     snprintf(b, sizeof(b), "%d", log_level);             row("log-level", b);
 
     printf("\nchecks:\n");
     if (program_mode == unset_mode) bad("no mode (mode = client|server|relay, or -c/-s/-r)");
+    if (g_pin_cpu >= 0) {
+        std::string allowed;
+        if (!pin_cpu_allowed(g_pin_cpu, allowed))
+            bad("pin-cpu " + std::to_string(g_pin_cpu) + ": core is outside this process's CPU affinity (" + allowed + ")");
+    }
     if (g_have_cfg) {
         if (mf_file_too_open(g_cfg.path.c_str())) warn(g_cfg.path + " is readable by group/other — chmod 600 (it holds the key)");
         else ok(g_cfg.path + " permissions");
@@ -1543,6 +1593,25 @@ int main(int argc, char *argv[])
         fprintf(stderr, "error: --upstream-local is valid only in relay mode (-r)\n");
         fprintf(stderr, "  client: use --path <local_ip>:<remote_ip>:<port> to set the source IP\n");
         return 1;
+    }
+
+    /* --pin-cpu: before any mode starts, so every later thread/child inherits it.
+     * A core we cannot use is a config error, not something to ignore. */
+    if (g_pin_cpu >= 0) {
+        std::string allowed;
+        if (!pin_cpu_allowed(g_pin_cpu, allowed)) {
+            fprintf(stderr, "error: --pin-cpu %d: core is outside this process's CPU affinity (%s) — check taskset/CPUAffinity=/cpuset\n",
+                    g_pin_cpu, allowed.c_str());
+            return 1;
+        }
+        cpu_set_t s;
+        CPU_ZERO(&s);
+        CPU_SET(g_pin_cpu, &s);
+        if (sched_setaffinity(0, sizeof(s), &s) != 0) {
+            fprintf(stderr, "error: --pin-cpu %d: sched_setaffinity: %s\n", g_pin_cpu, strerror(errno));
+            return 1;
+        }
+        mylog(log_info, "pinned to CPU %d (was allowed: %s)\n", g_pin_cpu, allowed.c_str());
     }
 
     if (program_mode == relay_mode) {

@@ -43,7 +43,13 @@ extern int enable_log_color;
 #define mylog(__first_argu__dummy_abcde__, ...) printf(__VA_ARGS__)
 
 #else
+/* 레벨을 호출 전에 확인한다 — 걸러지는 로그의 인자(get_str() 주소 문자열 등)를 패킷마다 만들지 않게 (2026-11-18 J1900 서버 perf: printf+log0 ~4 %).
+ * 인자에 부작용이 있는 호출은 없다(전수 확인). MF_LOG_EAGER 로 빌드하면 예전처럼 항상 평가. */
+#ifdef MF_LOG_EAGER
 #define mylog(...) log0(__FILE__, __FUNCTION__, __LINE__, __VA_ARGS__)
+#else
+#define mylog(lvl_, ...) do { if ((lvl_) <= log_level) log0(__FILE__, __FUNCTION__, __LINE__, (lvl_), __VA_ARGS__); } while (0)
+#endif
 #endif
 
 //#define mylog(__first_argu__dummy_abcde__,...) {;}
