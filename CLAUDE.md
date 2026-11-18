@@ -522,6 +522,7 @@ MTU = 1300
 | `--report N` | `1`–∞ (초) | `60` (`0` off) | 통계 리포트 주기. **v1.4.2(2026-11-08): 릴레이도 지킨다**(종전엔 무시) → `[relay][report]` info 한 줄/주기(업·다운 바이트·패킷·Mbps, `live`/`uniq`/`new`/`expired`/`evicted`, `probe`, `decoy`, `drop(full)`). 세션별 상세는 debug(상위 20개). 클라 식별은 생 IP 가 아니라 지문 `cf:xxxxxxxx`(고정 솔트 `/etc/multi-fec/log-salt` 0600 자동생성, 매핑은 `multi-fec --fingerprint-ip <ip>`). 건별 세션 로그는 debug 로 내려 기본레벨 플러드 없음. `mf_logfp.{h,cpp}` |
 | `--log-level N` | `0`–`6` | `4` | 0=fatal 1=error 2=warn 3=info 4=info+ 5=debug 6=trace |
 | `--sock-buf N` | `10`–`10240` (kB) | `4096` (OS 기본값) | UDP SO_SNDBUF/SO_RCVBUF 크기. client/server 는 mud 소켓, **relay 는 v1.3.5 부터** 리슨 + 세션별 upstream 소켓에 적용한다 — **v1.3.4 이하 relay 는 오류 없이 무시했다**(2026-10-05 발견, 문서 예시에는 처음부터 relay 에도 들어 있었다). v1.3.5 부터 `*FORCE` 를 먼저 시도해 root 면 `rmem_max` 를 넘어 적용되고, 잘리면 경고한다(v1.3.4 이하는 잘린 값을 요청값으로 로그). **v1.3.6 부터 c·s 의 WireGuard 쪽 소켓**(클라 로컬 리슨, 서버 세션별 `--wg` 소켓)에도 적용 — 그 전엔 하드코딩 1 MB 가 `rmem_max` 에 잘려 416 KB 였다 |
+| `--pin-cpu N` | `0`–`1023` | 없음 (고정 안 함) | **v1.4.5.** 프로세스를 코어 N 에 고정(`sched_setaffinity`, 모드 분기 전). 현재 CPU 친화도 밖(없는 코어, taskset·systemd `CPUAffinity=`·cpuset 으로 좁혀 둔 범위 밖)이면 기동·`--check` 거부 — taskset 과 달리 상속 친화도를 넓히지 않는다. **고정만으로는 효과가 작다**(+2~6 %) — 루프백 `sendto` 의 수신 처리(WG 수신)가 여전히 같은 코어에서 돈다. `lo` RPS 를 나머지 코어에 걸 때 함께 쓴다(§35) |
 | `--auth-interval N` | `30`–∞ (초) | `60` (`30`; `0` = 30) | HMAC 토큰 슬롯 길이. 클라이언트·relay·서버 동일 설정 필수 — **옵션을 생략한 1.3.x 상대와는 어긋난다**(전 패킷 무음 폐기). 길수록 슬롯 경계 탐지 어려움 |
 
 ### 클라이언트 전용
@@ -2735,6 +2736,32 @@ int ret = mud_send_mp(g_mud, pkt.data, pkt.len);
 **검증**: `test_relay_ports.py` 29/29(ASAN+UBSAN 클린, sink 가 server 처럼 스스로 probe → 수정 전 27/29 A/B), relay 라우팅 9/9·세션 상한 4/4·만료·옵션 90/90·다운스트림 24/24·유닛 전부. mini 실장비 M1~M6 — `test-results/2026-11-15-m2-relay-ports/REPORT.md`.
 **미해결**: 1 s 간격처럼 3 s 안에 연속 재시작하면 마지막 세션이 커널 포트로 남을 수 있다(다음 새 세션까지). 60 s 세션 만료도 양방향 `last_active` 라 사라진 client 의 세션이 server probe 동안(~5분) 남는다(이전부터의 동작, 미변경).
 
+
+### 35. J1900 CPU 절감 — SSSE3 RS · server no-peek · 로그 인자 지연 평가 · `--pin-cpu` (2026-11-19, v1.4.5)
+
+**파일**: `lib/fec.cpp`, `mf_server.cpp`, `log.h`, `main.cpp`, `mf_config.cpp`. **와이어 무변경.** 측정 `test-results/2026-11-18-m2-aggwindow/REPORT.md` run16~23
+(J1900 .92 client ↔ .93 server, 터널 1개 aggregate, netem 30/54 ms, 손실 0).
+
+**배경**: 단일 스레드 한 개의 상한이 TCP 70~90 · UDP 상향 ~133 Mbps 였다. perf 로 보면 커널(패킷당 시스템콜) 62 %, 사용자 38 % 중 RS `addmul1` 21 %(client).
+NIC 은 병목이 아니었다(같은 장비 WG 단독 860~1230 Mbps).
+
+| 변경 | 내용 | J1900 효과 |
+|---|---|---|
+| SSSE3 RS | `addmul1` 을 pshufb 하위·상위 4비트 표로 16바이트씩. **upstream(lib/fec) 수정 예외** — 출력 바이트 동일 | RS 인코드 95 → 371 MB/s. UDP 상향 136 → 147~151, TCP 상향 67 → 81 |
+| server no-peek | 패킷마다 `recvfrom(MSG_PEEK)` 1회 + 최대 1350 B 복사 제거. 묶음 잔여분 축약 경로 제거 | UDP 상향 147~150 → 164~174 (server CPU 같음) |
+| 로그 지연 평가 | `mylog` 매크로가 레벨 선확인 → 걸러지는 로그의 `get_str()` 등을 안 만든다 | UDP 상향 165~171 → 174~189, server printf+log0 5.7 % → 0 |
+| `--pin-cpu` + lo RPS | 코어 고정 + `lo` `rps_cpus` 를 나머지 코어로(장비 설정) | TCP 상향 85 → 112, 하향 86 → 109 (UDP 불변) |
+
+- **no-peek 근거**: peek 가 실제로 하던 일은 "소켓이 비었는지" 판정뿐이었다 — 출처는 v1.0.2(§19-나)부터 `mud_get_last_remote()` 를 썼다.
+  `n<0` 프로브 분기(peek 버퍼 사용)는 `mud_recv()` 가 EAGAIN 에만 -1 을 돌려줘 도달 불가였다. 인증 실패 응답은 `last_raw` 경로가 처리한다.
+- **로그 매크로**: `mylog` 가 `do { if (lvl <= log_level) log0(...); } while (0)` — 식으로 쓰는 곳은 없다(빌드 확인). 인자 부작용 전수 0건.
+  ⚠️ **Makefile 에 헤더 의존성이 없다** — 헤더(`log.h` 등)를 바꾸면 `make clean` 후 빌드(안 하면 main.o 만 다시 컴파일돼 섞인다, 실제로 겪음).
+- **TCP 의 남은 병목은 루프백**: client CPU 의 33~41 % 가 mf→WG `sendto` 이고, 그 안에서 WG 쪽 UDP 수신 softirq 가 **mf 스레드에서 동기 실행**된다(run19).
+  sendmmsg 로 묶어도 패킷당 수신 처리는 그대로라 효과가 없다. `lo` RPS 로 다른 코어에 넘기면 줄어든다. RPS 는 **흐름(4-tuple) 해시**로 코어 하나를 고르므로
+  client 의 mf↔WG 처럼 흐름이 하나면 마스크 코어가 많아도 방향별 1코어다(커널 동작 근거, 직접 분리 측정은 못 함 — NIC softirq 가 섞인다).
+  UDP 상향 상한(~185)은 회선 송신 `sendmmsg`(append·skb 할당·라우팅 조회)라 RPS 와 무관.
+- **배포**: `rps_cpus` 는 장비 설정(sysfs, 재부팅 시 0) — multi-fec 은 걸지 않는다. 기동 스크립트에서 코어 수에 맞게 건다(예: 4코어 → `--pin-cpu 0` + `e`, 2코어 → `0` + `2`).
+- **혼용**: 와이어 무변경이라 1.4.x 어느 조합도 동작. 효과는 올린 쪽만.
 ---
 
 **테스트 스크립트:**

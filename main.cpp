@@ -281,7 +281,7 @@ static void print_help(const char *prog)
         "  --sock-buf N          UDP socket send/recv buffer size kB (10-10240)  [default: 4096]\n"
         "  --pin-cpu N           Pin the process to CPU core N (0-based). Keeps it off the cores\n"
         "                        that run loopback/WireGuard receive work (pair with lo RPS on the\n"
-        "                        other cores). Refused if core N is not available  [default: off]\n"
+        "                        other cores). Refused if N is outside the current CPU affinity  [default: off]\n"
         "\n"
         "Obfuscation:\n"
         "  --obfs-mode M         Protocol mimicry mode  [default: quic]\n"
@@ -1021,8 +1021,11 @@ static std::string defaults_in_effect()
     return out;
 }
 
-/* --pin-cpu: is `cpu` in this process's allowed set (cgroup cpuset / inherited
- * affinity)? Fills `allowed` with the set as a list for messages. */
+/* --pin-cpu: is `cpu` in this process's current CPU affinity? That set is what
+ * the process was started with (taskset, systemd CPUAffinity=, cgroup cpuset).
+ * The kernel would let us widen an inherited affinity (only a cpuset is a hard
+ * limit), but a core outside it means someone narrowed it on purpose, so refuse
+ * rather than override. Fills `allowed` with the set as a list for messages. */
 static bool pin_cpu_allowed(int cpu, std::string &allowed)
 {
     cpu_set_t s;
@@ -1178,7 +1181,7 @@ static int run_check()
     if (g_pin_cpu >= 0) {
         std::string allowed;
         if (!pin_cpu_allowed(g_pin_cpu, allowed))
-            bad("pin-cpu " + std::to_string(g_pin_cpu) + ": core not available to this process (allowed: " + allowed + ")");
+            bad("pin-cpu " + std::to_string(g_pin_cpu) + ": core is outside this process's CPU affinity (" + allowed + ")");
     }
     if (g_have_cfg) {
         if (mf_file_too_open(g_cfg.path.c_str())) warn(g_cfg.path + " is readable by group/other — chmod 600 (it holds the key)");
@@ -1597,7 +1600,7 @@ int main(int argc, char *argv[])
     if (g_pin_cpu >= 0) {
         std::string allowed;
         if (!pin_cpu_allowed(g_pin_cpu, allowed)) {
-            fprintf(stderr, "error: --pin-cpu %d: core not available to this process (allowed: %s)\n",
+            fprintf(stderr, "error: --pin-cpu %d: core is outside this process's CPU affinity (%s) — check taskset/CPUAffinity=/cpuset\n",
                     g_pin_cpu, allowed.c_str());
             return 1;
         }

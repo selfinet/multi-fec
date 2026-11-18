@@ -375,8 +375,11 @@ addmul1_scalar(gf *dst1, gf *src1, gf c, int sz)
 	GF_ADDMULC( *dst , *src );
 }
 
-/* ── 벤치마크 시제품(A 방식): addmul1 만 SSSE3 로. 같은 GF(2^8)/0x11D 곱셈을 pshufb 두 번(하위·상위 4비트 표)으로
- *    16바이트씩 계산한다 — 행렬·순서는 그대로라 결과 바이트가 기존과 같아야 한다(mf_bench 가 해시로 대조). */
+/* ── addmul1 SSSE3 (1.4.5): 같은 GF(2^8)/0x11D 곱셈을 pshufb 두 번(하위·상위 4비트 표)으로 16바이트씩 계산한다.
+ *    행렬·순서는 그대로라 결과 바이트가 스칼라와 같다(2만 그룹 인코드 해시·디코드 대조, tools/bench/mf_bench).
+ *    CPU 가 SSSE3 를 지원하지 않거나 환경변수 MF_NO_SIMD 가 있으면 스칼라. x86 이 아니면 스칼라만 빌드된다.
+ *    upstream(lib/fec) 수정 예외 — 패킷당 CPU 의 ~20 %(J1900 client)였고 출력이 바이트 단위로 같다. */
+#if defined(__x86_64__) || defined(__i386__)
 #include <immintrin.h>
 __attribute__((target("ssse3")))
 static void
@@ -403,6 +406,9 @@ addmul1(gf *dst1, gf *src1, gf c, int sz)
     if (use_ssse3 < 0) use_ssse3 = __builtin_cpu_supports("ssse3") && !getenv("MF_NO_SIMD");
     if (use_ssse3) addmul1_ssse3(dst1, src1, c, sz); else addmul1_scalar(dst1, src1, c, sz);
 }
+#else
+#define addmul1 addmul1_scalar
+#endif
 
 /*
  * computes C = AB where A is n*k, B is k*m, C is n*m
