@@ -42,6 +42,7 @@ const opt_t k_opts[] = {
     { "decode-buf",        "--decode-buf",        K_VALUE  },
     { "disable-fec",       "--disable-fec",       K_FLAG   },
     { "sock-buf",          "--sock-buf",          K_VALUE  },
+    { "pin-cpu",           "--pin-cpu",           K_VALUE  },
     { "jitter",            "--jitter",            K_VALUE  },
     { "random-drop",       "--random-drop",       K_VALUE  },
     { "disable-checksum",  "--disable-checksum",  K_FLAG   },
