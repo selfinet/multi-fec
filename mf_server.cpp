@@ -19,6 +19,7 @@
 #include "tunnel.h"
 #include "mf_common.h"
 #include "mf_probe.h"
+#include "wg_batch.h"
 #include "obfs.h"
 
 extern "C" {
@@ -992,7 +993,7 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
         dest.type       = type_fd64;
         dest.inner.fd64 = fd64;
 
-        delay_send(out_delay[i], dest, new_data, new_len);
+        wg_batch_send(out_delay[i], dest, new_data, new_len);
     }
 }
 
@@ -1367,6 +1368,7 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
         peer_tag_path(data_addr, peer_of(sid));
         process_mud_data(routing_addr, recv_buf + SESSION_ID_LEN, n - SESSION_ID_LEN);
     }
+    wg_batch_flush();   /* 이번 수신 묶음을 WG 로 한 번에 — conv 소켓 fd 가 정리되기 전에 (wg_batch.h) */
 }
 
 static void mud_update_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/, int /*revents*/)
@@ -1387,6 +1389,7 @@ static void delay_manager_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watc
 
 static void prepare_cb(struct ev_loop * /*loop*/, struct ev_prepare * /*watcher*/, int /*revents*/)
 {
+    wg_batch_flush();   /* 잠들기 전에 WG 쪽 묶음을 내보낸다 (wg_batch.h) */
     delay_manager.check();
 }
 

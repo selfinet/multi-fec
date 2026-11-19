@@ -13,6 +13,7 @@
 #include "mf_netcfg.h"
 #include "tunnel.h"
 #include "mf_common.h"
+#include "wg_batch.h"
 
 extern "C" {
 #include "mud_lite.h"
@@ -354,7 +355,7 @@ static void mud_recv_and_forward(conn_info_t &conn_info)
             dest.inner.fd_addr.addr = addr;
             dest.type               = type_fd_addr;
 
-            delay_send(out_delay[i], dest, new_data, new_len);
+            wg_batch_send(out_delay[i], dest, new_data, new_len);
         }
     }
 }
@@ -375,6 +376,7 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io *watcher, int reve
     assert(!(revents & EV_ERROR));
     conn_info_t &ci = *static_cast<conn_info_t *>(watcher->data);
     mud_recv_and_forward(ci);
+    wg_batch_flush();   /* 이번 수신 묶음을 WG 로 한 번에 (wg_batch.h) */
 }
 
 static void fec_encode_cb(struct ev_loop * /*loop*/, struct ev_timer *watcher, int revents)
@@ -459,6 +461,7 @@ static void delay_manager_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watc
 
 static void prepare_cb(struct ev_loop * /*loop*/, struct ev_prepare * /*watcher*/, int /*revents*/)
 {
+    wg_batch_flush();   /* 잠들기 전에 WG 쪽 묶음을 내보낸다 (wg_batch.h) */
     delay_manager.check();
 }
 

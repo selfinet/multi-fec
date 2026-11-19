@@ -729,6 +729,18 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 ---
 
+## [1.4.5-speed.1] — 2026-11-19 (속도 특별 버전, 브랜치 `speed/main`)
+
+**속도 특별 버전 라인** — v1.4.5 에서 갈라졌다. 정규 dev/태그와 섞지 않는다. 이 라인은 와이어 호환을 깰 수 있다고 정했지만(2026-11-19 사용자 결정)
+이번 변경은 **와이어·설정 형식 무변경**이다.
+
+- 변경 · WG 쪽 송신 묶음(`wg_batch.cpp`) — FEC 디코드 출력을 패킷마다 `sendto` 하던 것을 모아 소켓별 `sendmmsg`(최대 64)로 보낸다.
+  mud 수신 콜백 끝과 `ev_prepare` 에서 내보낸다. 소켓별 순서 유지. `-j`·`--random-drop` 사용 시 기존 경로. 10-22 프로토타입(`perf/syscall-batch` 0a0ccf5) 이식.
+- 실측 · J1900(.92↔.93, 터널 1개, aggregate 30/54 ms, 손실 0, 각 2회) TCP -P 8 RPS 0: 상 83→135 · 하 89→120.
+  RPS e + `--pin-cpu 0`: 상 122→143 · 하 118→**185**. UDP 상한(~185) 불변, WG 쪽 호스트 UdpRcvbufErrors 1/14~1/50.
+  `test-results/2026-11-18-m2-aggwindow/REPORT.md` run25.
+- 테스트 · sv1 루프백 downstream_multi 24/24 · dup_path_tag · rnlc 9/9 · probe_hardening 15/15 · v143_hardening 15/15 · server_conv_cap 4/4 · log_nonblock 8/8.
+
 ## [1.4.5] — 2026-11-19
 
 **와이어 포맷·설정 형식 무변경** — 1.4.x 와 임의 조합 혼용 가능(새 옵션 `pin-cpu` 를 설정에 쓰면 1.4.4 이하는 모르는 이름으로 기동 거부).
