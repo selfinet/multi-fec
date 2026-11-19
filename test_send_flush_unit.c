@@ -6,6 +6,7 @@
  *   3. EINTR → 재시도해 전부 보낸다
  *   4. 큐가 꽉 찼는데 커널이 계속 EAGAIN → mud_send_path() 가 EAGAIN 을 돌려주고 큐를 덮어쓰지 않는다
  *   5. 정상 → 전부 보내고 큐가 빈다
+ *   6~8. UDP GSO 경로(speed.2): 같은 목적지·같은 크기 묶음, 묶음 단위 부분 송신 보존, 커널 GSO 거부 시 끄고 개별 송신
  *
  * sendmmsg 를 가짜로 바꾸려고 mud_lite.c 를 통째로 include 한다 (test_agg_unit.c 와 같은 방식).
  */
@@ -30,7 +31,7 @@ static void check(const char *name, int cond, const char *fmt, ...)
 /* script: each call consumes one action. >=0: accept that many (capped), -1: fail with err */
 static int  g_act[16], g_err[16], g_nact, g_iact;
 static char g_sent[256]; static int g_nsent;
-static int  g_bad_ptr;
+static int  g_bad_ptr, g_gso_msgs;
 
 int mock_sendmmsg(int fd, struct mmsghdr *v, unsigned int n, int flags)
 {
@@ -42,10 +43,14 @@ int mock_sendmmsg(int fd, struct mmsghdr *v, unsigned int n, int flags)
     if (a > (int)n) a = (int)n;
     for (int i = 0; i < a; i++) {
         struct msghdr *m = &v[i].msg_hdr;
-        const unsigned char *b = (const unsigned char *)m->msg_iov->iov_base;
         struct sockaddr_in *sin = (struct sockaddr_in *)m->msg_name;
-        if (m->msg_iov->iov_len < 2 || b[0] != b[1] || ntohs(sin->sin_port) != 4433) g_bad_ptr++;
-        g_sent[g_nsent++] = (char)b[0];
+        if (ntohs(sin->sin_port) != 4433) g_bad_ptr++;
+        if (m->msg_iovlen > 1) g_gso_msgs++;
+        for (size_t k = 0; k < m->msg_iovlen; k++) {   /* GSO: one message carries several packets */
+            const unsigned char *b = (const unsigned char *)m->msg_iov[k].iov_base;
+            if (m->msg_iov[k].iov_len < 2 || b[0] != b[1]) g_bad_ptr++;
+            g_sent[g_nsent++] = (char)b[0];
+        }
     }
     return a;
 }
@@ -65,7 +70,19 @@ static void reset(void)
     g_path.conf.remote.sin.sin_port   = htons(4433);
     g_path.conf.remote.sin.sin_addr.s_addr = htonl(0x7f000001);
     g_path.conf.local.sin.sin_family  = AF_INET;
-    g_nact = g_iact = g_nsent = g_bad_ptr = 0;
+    g_nact = g_iact = g_nsent = g_bad_ptr = g_gso_msgs = 0;
+}
+static void gso_on(void)
+{
+    static struct mmsghdr gq[MUD_SEND_QUEUE_CAP];
+    static struct iovec   gi[MUD_SEND_QUEUE_CAP];
+    static unsigned char  gc[MUD_SEND_QUEUE_CAP * MUD_GSO_CTRL_SIZE];
+    g_mud.gso = 1; g_mud.gq_msgs = gq; g_mud.gq_iov = gi; g_mud.gq_ctrl = gc;
+}
+static int enqueue_n(char id, int len)
+{
+    unsigned char pkt[64]; memset(pkt, id, sizeof(pkt));
+    return mud_send_path(&g_mud, &g_path, 1, pkt, (size_t)len, 0);
 }
 static int enqueue(char id)
 {
@@ -116,6 +133,30 @@ int main(void)
     reset(); enqueue('A'); enqueue('B'); enqueue('C');
     r = mud_send_flush(&g_mud); g_sent[g_nsent] = 0;
     check("5. 정상 → 전부 송신, 큐 비움", r == 3 && g_mud.sq_len == 0 && strcmp(g_sent, "ABC") == 0, "r=%d sent=%s", r, g_sent);
+
+    reset(); gso_on(); enqueue('A'); enqueue('B'); enqueue('C');
+    r = mud_send_flush(&g_mud); g_sent[g_nsent] = 0;
+    check("6. GSO: 같은 목적지·크기 3개 → 메시지 1개로 전부, 큐 비움",
+          r == 3 && g_mud.sq_len == 0 && strcmp(g_sent, "ABC") == 0 && g_gso_msgs == 1 && g_iact == 1 && g_bad_ptr == 0,
+          "r=%d sent=%s gso_msgs=%d calls=%d", r, g_sent, g_gso_msgs, g_iact);
+
+    reset(); gso_on(); enqueue('A'); enqueue('B'); enqueue_n('C', 32); enqueue('D');
+    { int a[] = {1, -1}, e[] = {0, EAGAIN}; script(2, a, e); }
+    r = mud_send_flush(&g_mud); g_sent[g_nsent] = 0;
+    check("7. GSO 묶음 [A,B,C(짧음)] 송신 후 EAGAIN → 반환 3, D 만 남음",
+          r == 3 && g_mud.sq_len == 1 && g_mud.sq[0].buf[0] == 'D' && strcmp(g_sent, "ABC") == 0,
+          "r=%d sq_len=%d sent=%s", r, g_mud.sq_len, g_sent);
+    g_nact = 0; g_iact = 0;
+    mud_send_flush(&g_mud); g_sent[g_nsent] = 0;
+    check("7. 다음 flush 에 D 가 내용 그대로", strcmp(g_sent, "ABCD") == 0 && g_mud.sq_len == 0 && g_bad_ptr == 0,
+          "sent=%s bad=%d", g_sent, g_bad_ptr);
+
+    reset(); gso_on(); enqueue('A'); enqueue('B'); enqueue('C');
+    { int a[] = {-1}, e[] = {EIO}; script(1, a, e); }
+    r = mud_send_flush(&g_mud); g_sent[g_nsent] = 0;
+    check("8. 커널이 GSO 거부(EIO) → GSO 끄고 개별 송신으로 전부",
+          r == 3 && g_mud.sq_len == 0 && strcmp(g_sent, "ABC") == 0 && g_mud.gso == 0 && g_mud.bstat.gso_fallback == 1,
+          "r=%d sent=%s gso=%d fb=%llu", r, g_sent, g_mud.gso, (unsigned long long)g_mud.bstat.gso_fallback);
 
     printf("==============================================================\n");
     printf("%d/%d 통과\n", g_pass, g_pass + g_fail);
