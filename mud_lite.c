@@ -596,15 +596,18 @@ mud_send_flush_gso(struct mud *mud, int n)
         if (r < 0 && errno == EINTR) continue;
         if (r == 0 || errno == EAGAIN || errno == EWOULDBLOCK || errno == ENOBUFS)
             break;                       /* keep the rest for the next flush */
-        if (gcnt[done] > 1) {
-            /* The kernel refuses GSO for some routes/devices (e.g. EIO via xfrm).
-             * Turn it off for good; the rest goes out on the plain path below. */
+        if (gcnt[done] > 1 && (errno == EIO || errno == EINVAL || errno == EOPNOTSUPP || errno == EMSGSIZE)) {
+            /* The kernel refuses GSO for this route/device (e.g. EIO via xfrm,
+             * no checksum offload). Turn it off for good; the rest goes out on
+             * the plain path below. Other errors (ENETUNREACH, EPERM from a
+             * firewall, …) are about the destination, not GSO: drop that group
+             * like a single datagram and keep GSO. */
             mud->gso = 0;
             mud->bstat.gso_fallback++;
             refused = 1;
             break;
         }
-        done++;                          /* a single datagram rejected on its own: drop it */
+        done++;                          /* rejected on its own (one datagram or one group): drop it */
     }
     /* Drop what was sent (or rejected) and keep the rest in queue order. */
     unsigned char gone[MUD_SEND_QUEUE_CAP];
@@ -1390,7 +1393,11 @@ mud_create(union mud_sockaddr *addr)
     {
         const char *e;
         e = getenv("MF_UDP_GSO");
-        mud->gso = !(e && *e == '0');
+        /* Only where the kernel knows UDP_SEGMENT (4.18+). Older kernels skip the
+         * SOL_UDP cmsg silently and would send a whole GSO batch as ONE datagram,
+         * with no error to fall back on. Probing with 0 leaves the socket's
+         * default segment size off. */
+        mud->gso = !(e && *e == '0') && mud_sso_int(fd, SOL_UDP, UDP_SEGMENT, 0) == 0;
         e = getenv("MF_UDP_GRO");
         if (!(e && *e == '0') && mud_sso_int(fd, SOL_UDP, UDP_GRO, 1) == 0) {
             /* A GRO entry can hold up to 64 KB; a smaller buffer would truncate

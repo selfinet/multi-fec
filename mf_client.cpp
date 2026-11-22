@@ -491,15 +491,9 @@ static struct ev_loop *s_loop          = NULL;
 static void shared_wg_gate()
 {
     if (g_shared_wg_fd < 0 || !s_local_watcher) return;
-    static int state = -1;   /* -1 unknown, 0 paused, 1 reading */
-    bool run = mud_any_running(g_mud);
+    bool run = wg_gate_update("client", g_shared_wg_fd, mud_any_running(g_mud));
     if (run && !ev_is_active(s_local_watcher)) ev_io_start(s_loop, s_local_watcher);
     if (!run && ev_is_active(s_local_watcher)) ev_io_stop(s_loop, s_local_watcher);
-    if (state != (int)run) {
-        mylog(run ? log_info : log_warn, run ? "[client] path RUNNING — reading the shared WG socket\n"
-                                             : "[client] no RUNNING path — not reading the shared WG socket\n");
-        state = run;
-    }
 }
 
 static void mud_update_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/, int /*revents*/)

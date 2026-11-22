@@ -645,6 +645,8 @@ static void wg_remote_cb(struct ev_loop *loop, struct ev_io *watcher, int revent
  * socket race for every datagram and the stale one wins most of them. */
 static bool   s_shared_conv_set = false;
 static fd64_t s_shared_conv_fd64;
+static my_time_t s_shared_conv_up = 0;   /* last uplink (mud-side) packet for the shared conv, ms */
+#define SHARED_CONV_REPLACE_IDLE_MS 5000  /* replace the shared conv only after this long without uplink */
 
 /* ────────────────────────────────────────────────────────────────
  * Modes for the combined server handler (mirrors speeder's enum)
@@ -962,6 +964,31 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
         }
 
         if (!conn_info.conv_manager.s.is_conv_used(conv)) {
+            /* mmulti-fec --workers: one conv per worker on the shared WG socket.
+             * A second live session (another client process, or a NAT/relay that
+             * folds client worker ports onto one server port) would otherwise
+             * replace the conv on every packet. Keep the current one while it
+             * still gets uplink; replace it only after it has been quiet for
+             * SHARED_CONV_REPLACE_IDLE_MS (client restart). Uplink, not any
+             * activity: downlink from WG keeps a dead client's conv "active". */
+            if (g_shared_wg_fd >= 0 && s_shared_conv_set && fd_manager.exist(s_shared_conv_fd64) &&
+                get_current_time() - s_shared_conv_up < SHARED_CONV_REPLACE_IDLE_MS) {
+                static my_time_t last_warn = 0;
+                static unsigned long long refused = 0;
+                refused++;
+                my_time_t now = get_current_time();
+                if (now - last_warn >= 60000) {
+                    last_warn = now;
+                    mylog(log_warn, "[server][%s] shared WG socket: conv %x refused while the current conv is live "
+                          "(%llu so far) — one client per server instance with --workers; client and server "
+                          "--workers must match and each worker port must reach its own server port\n",
+                          const_cast<address_t&>(src_addr).get_str(), conv, refused);
+                }
+                continue;
+            }
+            /* Convs may be closed below (budget eviction, shared replacement):
+             * send what is batched first — the batch holds raw fd numbers. */
+            wg_batch_flush();
             if (conn_info.conv_manager.s.get_size() >= max_conv_num) {
                 mylog(log_warn, "[server] max_conv_num exceeded\n");
                 continue;
@@ -1059,6 +1086,8 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
 
         conn_info.conv_manager.s.update_active_time(conv);
         fd64_t fd64 = conn_info.conv_manager.s.find_data_by_conv(conv);
+        if (g_shared_wg_fd >= 0 && s_shared_conv_set && fd64 == s_shared_conv_fd64)
+            s_shared_conv_up = get_current_time();
 
         dest_t dest;
         dest.type       = type_fd64;
@@ -1459,18 +1488,10 @@ static bool mud_any_running(struct mud *m)
 static void shared_wg_gate()
 {
     if (g_shared_wg_fd < 0 || !s_shared_conv_set || !fd_manager.exist(s_shared_conv_fd64)) return;
-    static bool paused = false;
-    bool run = mud_any_running(g_mud);
+    bool run = wg_gate_update("server", g_shared_wg_fd, mud_any_running(g_mud));
     ev_io &w = fd_manager.get_info(s_shared_conv_fd64).io_watcher;
-    if (!run && ev_is_active(&w)) {
-        ev_io_stop(g_loop, &w);
-        if (!paused) mylog(log_warn, "[server] no RUNNING path — not reading the shared WG socket\n");
-        paused = true;
-    } else if (run && !ev_is_active(&w)) {
-        ev_io_start(g_loop, &w);
-        if (paused) mylog(log_info, "[server] path RUNNING again — reading the shared WG socket\n");
-        paused = false;
-    }
+    if (!run && ev_is_active(&w)) ev_io_stop(g_loop, &w);
+    else if (run && !ev_is_active(&w)) ev_io_start(g_loop, &w);
 }
 
 static void mud_update_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/, int /*revents*/)

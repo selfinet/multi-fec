@@ -158,6 +158,14 @@ int main(void)
           r == 3 && g_mud.sq_len == 0 && strcmp(g_sent, "ABC") == 0 && g_mud.gso == 0 && g_mud.bstat.gso_fallback == 1,
           "r=%d sent=%s gso=%d fb=%llu", r, g_sent, g_mud.gso, (unsigned long long)g_mud.bstat.gso_fallback);
 
+    /* 2026-11-23: 목적지 문제(ENETUNREACH·EPERM 등)는 GSO 탓이 아니다 — 그 묶음만 버리고 GSO 는 유지 */
+    reset(); gso_on(); enqueue('A'); enqueue('B'); enqueue_n('C', 32); enqueue('D'); enqueue('E');
+    { int a[] = {-1}, e[] = {ENETUNREACH}; script(1, a, e); }
+    r = mud_send_flush(&g_mud); g_sent[g_nsent] = 0;
+    check("9. GSO 묶음 ENETUNREACH → 그 묶음[A,B,C]만 버리고 GSO 유지, D,E 는 다음 묶음으로 송신",
+          strcmp(g_sent, "DE") == 0 && g_mud.sq_len == 0 && g_mud.gso == 1 && g_mud.bstat.gso_fallback == 0,
+          "r=%d sent=%s gso=%d fb=%llu", r, g_sent, g_mud.gso, (unsigned long long)g_mud.bstat.gso_fallback);
+
     printf("==============================================================\n");
     printf("%d/%d 통과\n", g_pass, g_pass + g_fail);
     return g_fail ? 1 : 0;

@@ -18,4 +18,11 @@ int wg_batch_flush();
 extern bool g_reorder_shm;
 void wg_reorder_worker_init();   /* in each worker after fork */
 void wg_reorder_tick();          /* every ~2 ms: release gaps that waited long enough */
+/* mmulti-fec --workers: the shared WG socket while a worker has no RUNNING path.
+ * wg_gate_update() is called every ~100 ms with whether a path runs; it returns
+ * true when the worker should read the socket. Coming back after a pause of
+ * 1 s or more, it first throws away what queued up meanwhile — when every
+ * worker was paused nobody read, and those datagrams are stale (the 1 s TTL
+ * of 1.4.5's pending queue, §29). While paused it warns again every 60 s. */
+bool wg_gate_update(const char *who, int fd, bool running);
 #endif

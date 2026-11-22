@@ -205,3 +205,45 @@ void wg_reorder_tick()
     mt_ro_timer(ro_now_us());
     ro_release_and_send();
 }
+
+/* ── mmulti-fec shared WG socket gate ─────────────────────────── */
+static my_time_t s_gate_paused_at = 0;    /* 0 = reading */
+static my_time_t s_gate_last_warn = 0;
+static int       s_gate_state = -1;       /* -1 unknown, 0 paused, 1 reading */
+static bool      s_gate_drain = false;    /* paused after having run: what queues meanwhile is stale */
+
+bool wg_gate_update(const char *who, int fd, bool running)
+{
+    my_time_t now = get_current_time();   /* ms */
+    if (!running) {
+        if (s_gate_state != 0) {
+            s_gate_drain = s_gate_state == 1;   /* not at start-up: keep the first WG handshake */
+            s_gate_paused_at = now; s_gate_last_warn = now; s_gate_state = 0;
+            mylog(log_warn, "[%s] no RUNNING path — not reading the shared WG socket\n", who);
+        } else if (now - s_gate_last_warn >= 60000) {
+            s_gate_last_warn = now;
+            mylog(log_warn, "[%s] still no RUNNING path after %lld s — this worker carries no traffic. "
+                  "Check that the peer (or each relay) listens on this worker's port (base + worker number)\n",
+                  who, (long long)((now - s_gate_paused_at) / 1000));
+        }
+        return false;
+    }
+    if (s_gate_state == 0) {
+        long long dropped = 0;
+        if (s_gate_drain && now - s_gate_paused_at >= 1000) {
+            char b[2048];
+            /* cap: never spin here — the other workers keep the queue short */
+            for (int i = 0; i < 100000; i++) {
+                ssize_t r = recv(fd, b, sizeof(b), MSG_DONTWAIT);
+                if (r < 0) break;
+                dropped++;
+            }
+        }
+        mylog(log_info, "[%s] path RUNNING again after %lld ms — reading the shared WG socket "
+              "(dropped %lld stale datagrams)\n", who, (long long)(now - s_gate_paused_at), dropped);
+    } else if (s_gate_state < 0) {
+        mylog(log_info, "[%s] path RUNNING — reading the shared WG socket\n", who);
+    }
+    s_gate_state = 1;
+    return true;
+}

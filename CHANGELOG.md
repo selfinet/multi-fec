@@ -729,6 +729,29 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 ---
 
+## [1.4.5-mt.2] — 2026-11-23 (속도 특별 버전, 브랜치 `mmulti-fec/main`) — 배포 전 코드 점검 수정
+
+**와이어 무변경**(mt.1 과 혼용 가능). 독립 검토 + 직접 확인으로 찾은 7건을 고쳤다. A/B 는 sv2 루프백(mt.1 dist 3c965d14 대비).
+
+- 수정 · **GSO 를 커널이 `UDP_SEGMENT` 를 알 때만 켠다**(`setsockopt(SOL_UDP, UDP_SEGMENT, 0)` 성공 시). 4.18 미만 커널은 SOL_UDP cmsg 를 조용히 건너뛰어
+  묶음 전체(최대 60 KB)를 데이터그램 하나로 보냈고 오류가 없어 폴백도 안 됐다.
+- 수정 · GSO 묶음 송신 오류 중 **EIO·EINVAL·EOPNOTSUPP·EMSGSIZE 만** GSO 를 영구히 끈다. ENETUNREACH·EPERM 등 목적지 문제는 그 묶음만 버리고 GSO 유지
+  (전에는 일시적 라우트 소실 한 번에 GSO 가 재시작 전까지 꺼졌다). `test_send_flush_unit` 9번 추가(12/12).
+- 수정 · **모든 worker 의 경로가 죽었다 살아날 때 묵은 패킷이 한꺼번에 나가던 문제**(§29 회귀). 공유 WG 소켓 읽기를 멈췄던 worker 는, 한 번 RUNNING 이었다가
+  1초 넘게 멈춘 경우 다시 읽기 전에 쌓인 데이터그램을 버린다(`dropped N stale datagrams` 로그). 기동 직후(첫 WG 핸드셰이크)는 버리지 않는다.
+  루프백 두 경로 5초 단절: mt.1 은 단절 중 보낸 패킷 209개가 최대 5.19초 늦게 배달 → mt.2 는 0개(서버 worker 가 묵은 하향 182·151개 버림).
+- 수정 · **서버 worker 하나에 세션이 둘 이상 오면 conv 가 패킷마다 교체되던 문제.** 현재 conv 가 5초 안에 상향을 받았으면 새 conv 를 거부(경고 1분 1회),
+  5초 넘게 상향이 없을 때만 교체(client 재시작). 기준은 상향만 — 하향은 죽은 client 의 conv 도 계속 살려 둔다. 루프백 client 2개: 교체 2,293회 → 0회.
+- 수정 · 새 conv 를 만들기 전에(예산 축출·교체로 conv 가 닫힐 수 있다) WG 쪽 송신 묶음을 먼저 비운다 — 묶음이 닫힌 fd 번호로 나가던 가능성 제거.
+- 수정 · 경로가 RUNNING 이 아닌 worker 는 60초마다 다시 경고(포트 base + worker 번호를 상대·relay 가 받는지 확인하라는 안내) — relay 포트 대응 오류가 조용히 처리량 1/N 이 되던 것.
+- 수정 · `systemctl stop`(cgroup 전체 SIGTERM)에서 worker 가 먼저 끝나도 supervisor 가 exit 0, 로그도 info. worker 가 혼자 죽으면 지금처럼 exit 1(systemd 재시작).
+- 확인 · 루프백 회귀: relay 경유 w3(경로 2 × relay 3) 6000/6000, 경로 하나 절단 5994/6000, `test_downstream_multi`·`test_dup_path_tag`·ASAN(아래 커밋 메시지 참조).
+- **배포 조건(코드로 강제되지 않는 것)**: ① client·server `--workers` 같게 ② 서버 인스턴스 하나에 client 하나(공유 WG 소켓이라 둘이면 하향이 섞인다 — mt.2 는 교체 폭주만 막는다)
+  ③ relay 는 경로마다 worker 수만큼(`-l relay:P+k --upstream server:Q+k`), relay 에 `--workers` 금지, 방화벽 P..P+N-1·Q..Q+N-1 ④ client·server 커널 4.18+ 가 아니면 GSO 는 자동으로 꺼진다
+  ⑤ `--reorder-ms` 는 실험 기능(1600 B 초과 데이터그램 절단, 락 보유 worker 사망 시 정지 가능) — 배포에 쓰지 말 것.
+- 미확인(기록만) · GSO 덩어리가 송신 호스트 qdisc·셰이퍼에서 통째로 버려지면 한 경로 연속 손실이 커질 수 있다 — 의심되면 `MF_UDP_GSO=0` A/B.
+  server/client conv 만료 시점 차이로 유휴 직후 하향 일부가 잠깐 버려질 수 있다(부하 있으면 즉시 회복).
+
 ## [1.4.5-mt.1] — 2026-11-22 (속도 특별 버전 시제품, 브랜치 `mmulti-fec/main` ← speed.2 `19a9f27`)
 
 **`--workers N` 을 쓰면 양끝 N 이 같아야 한다**(worker k 는 원격/리슨 포트 base+k). 서버당 WG peer 1개, relay·FIFO 미지원.

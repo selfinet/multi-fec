@@ -1242,7 +1242,7 @@ static int spawn_workers(int n)
     if (sfd < 0) { mylog(log_fatal, "signalfd: %s\n", strerror(errno)); for (pid_t q : pids) kill(q, SIGTERM); exit(1); }
     uint64_t next_report = mono_us() + (uint64_t)(report_interval > 0 ? report_interval : 60) * 1000000ull;
     int code = 0;
-    bool stop = false;
+    bool stop = false, term = false;   /* term: SIGTERM/SIGINT seen = asked to stop, not a failure */
     while (!stop) {
         struct pollfd pf[1];
         pf[0].fd = sfd; pf[0].events = POLLIN;
@@ -1265,17 +1265,35 @@ static int spawn_workers(int n)
                     int st = 0;
                     pid_t q;
                     while ((q = waitpid(-1, &st, WNOHANG)) > 0) {
-                        mylog(log_error, "worker pid %d exited (status 0x%x) — stopping all workers\n", (int)q, st);
+                        bool asked = (WIFEXITED(st) && WEXITSTATUS(st) == 0) ||
+                                     (WIFSIGNALED(st) && (WTERMSIG(st) == SIGTERM || WTERMSIG(st) == SIGINT));
+                        mylog(asked ? log_info : log_error, "worker pid %d exited (status 0x%x)%s — stopping all workers\n",
+                              (int)q, st, asked ? " on a stop request" : "");
                         for (size_t i = 0; i < pids.size(); i++) if (pids[i] == q) { pids.erase(pids.begin() + i); break; }
                         code = 1;
                         stop = true;
                     }
                 } else {
+                    term = true;
                     stop = true;
                 }
             }
         }
     }
+    /* `systemctl stop` signals the whole cgroup at once: a worker may exit
+     * before we read our own SIGTERM. Give that SIGTERM a moment to show up so
+     * a normal stop does not end in exit 1 (unit "failed"). */
+    if (code != 0 && !term) {
+        for (int i = 0; i < 3 && !term; i++) {
+            struct pollfd pf[1];
+            pf[0].fd = sfd; pf[0].events = POLLIN;
+            if (poll(pf, 1, 100) <= 0) continue;
+            struct signalfd_siginfo si;
+            while (read(sfd, &si, sizeof(si)) == (ssize_t)sizeof(si))
+                if (si.ssi_signo == SIGTERM || si.ssi_signo == SIGINT) term = true;
+        }
+    }
+    if (term) code = 0;
     /* Signal only pids we have not reaped yet: a reaped pid may already belong
      * to some other process. */
     for (pid_t q : pids) kill(q, SIGTERM);
