@@ -1123,10 +1123,17 @@ run57 에서 고른 C(`--workers 3 --worker-cpus 0,1,2 --pend-fifo --win-unlimit
 
 - **누수 없음.** RSS 는 처음 10분 버퍼가 차며 +5.5 MB 오른 뒤 평탄(마지막 1시간 0.1 % 미만), FD 불변.
 - **처리량 열화 없음.** 시간대별 합이 266~268 Mbps 로 같다. 상·하향을 동시에 돌려 run57(한 방향씩) 값보다 방향별로 낮다.
-- **유일한 이상: 05:24:27 client worker 2(w2) 의 두 경로가 함께 1초 무수신** → `no RUNNING path` 경고, EAGAIN 1, 3.44초 뒤
-  `path RUNNING again ... (dropped 0 stale datagrams)`, pending 묵은 패킷 1개 폐기. 다른 worker(w0·w1)와 server 로그는 정상이었고 ping 도 끊기지 않았다
-  (ping 흐름은 다른 worker 에 실린다). 원인은 확인하지 못했다 — 모든 경로 1초 무수신 = §31 "기제 2"(순간 정지) 모양이고, client CPU 가 87 % 로 포화에 가까웠다.
-  mt.2 의 WG 게이트 수정(재개 시 묵은 데이터그램 폐기, 경고)이 설계대로 동작한 것을 실부하에서 처음 확인했다.
+- **경로 정지 3회(모두 저절로 복구).** 한 worker 의 모든 경로가 약 1초 무수신 → `no RUNNING path` 경고 → `path RUNNING again`:
+  | 시각 | 쪽·worker | 정지 | 함께 남은 기록 |
+  |---|---|---|---|
+  | 03:10:14 | server w1 | 943 ms | 03:10:19 pending 4개 대기 평균 923 ms |
+  | 05:09:37 | server w1 | 1,188 ms | 묵은 pending 2개 폐기(>1000 ms) |
+  | 05:24:27 | client w2 | 3,440 ms | EAGAIN 1, 묵은 pending 1개 폐기 |
+
+  셋 다 `dropped 0 stale datagrams`, 같은 때 다른 worker 는 정상이었고 ping 은 끊기지 않았다(ping 흐름은 다른 worker 에 실린다).
+  원인은 확인하지 못했다 — 모든 경로 1초 무수신 = §31 "기제 2"(순간 정지) 모양이고, 호스트 CPU 가 84~87 % 로 포화에 가까웠다.
+  mt.2 의 WG 게이트 수정(경고, 재개 시 묵은 데이터그램 폐기)이 실부하에서 설계대로 동작했다.
+  (02:42:44 client w0~2 의 같은 경고는 기동 직후 경로가 아직 RUNNING 이 아닐 때로, 부하 시작 전이다.)
 - rcvbuf 오류는 run57 C 와 같은 경향이다(호스트 전체 카운터라 어느 소켓인지는 구분하지 못했다). 3시간 손실 대비 비중은 작지만 무제한 창(C)의 대가로 본다.
 - 종료: SIGTERM 으로 worker 3개 모두 `signal 15 received, exiting`, 정리 후 rps 0 · IFB 제거 · netem 복원 일치 · 프로세스 0.
 
