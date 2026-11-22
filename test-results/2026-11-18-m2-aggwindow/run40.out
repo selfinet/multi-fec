@@ -1,0 +1,91 @@
+== setup 12:28:14
+client92 spd2 e324110ee508 qdisc noqueue/noqueue/noqueue
+server93 spd2 e324110ee508 qdisc noqueue/noqueue/noqueue
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.152/60.186/60.238/0.039 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.153/108.181/108.209/0.022 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.155/108.180/108.208/0.022 ms
+rtt min/avg/max/mdev = 61.055/90.913/150.572/42.185 ms
+P0 0 rtt min/avg/max/mdev = 71.779/80.468/89.158/8.689 ms
+P1 1 rtt min/avg/max/mdev = 60.971/61.017/61.063/0.046 ms
+P2 2 rtt min/avg/max/mdev = 81.549/126.811/172.073/45.262 ms
+8
+== 보정 (CAKE 없음, 터널 직접 동시 -P 8) 12:28:57
+  cal1 up 83.0 96.7 64.2 | dn 88.7 100 69.2
+  cal2 up 90.2 84.6 77.6 | dn 74.8 85.6 63.8
+  CAKE rate kbit 상향(.92) 77940 81585 63810 / 하향(.93) 73575 83520 59850
+== nocake_1 12:30:57
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  nocake_1_p24_up recv 237 | retr 6677 | share 33/43/24 | ping  | idle c/s 47 47 47 55 / 39 38 39 45 / | rcvbuf c/s 1071/0/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  nocake_1_p24_dn recv 241 | retr 2885 | share 32/38/31 | ping  | idle c/s 39 40 35 45 / 55 55 53 61 / | rcvbuf c/s 0/568/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  nocake_1_p8_up recv 281 | retr 3109 | share 33/24/43 | ping  | idle c/s 40 37 36 45 / 29 29 22 37 / | rcvbuf c/s 0/10/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  nocake_1_p8_dn recv 297 | retr 1713 | share 11/46/43 | ping  | idle c/s 27 21 19 31 / 49 48 44 54 / | rcvbuf c/s 0/0/
+  nocake_1_dir_up 터널별 90.3 110 64.9 합 265 | idle c/s 40 40 36 43 / 29 29 29 37 / 
+  90.3 터널별 75.0 91.3 66.4 합 233 | idle c/s 45 46 38 48 / 35 36 32 41 / 
+== cake_1 12:35:55
+  client92 bandwidth 77940Kbit bandwidth 81585Kbit bandwidth 63810Kbit
+  server93 bandwidth 73575Kbit bandwidth 83520Kbit bandwidth 59850Kbit
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  cake_1_p24_up recv 198 | retr 3028 | share 34/37/29 | ping  | idle c/s 24 23 20 30 / 21 22 20 32 / | rcvbuf c/s 0/0/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  cake_1_p24_dn recv 193 | retr 1894 | share 34/39/28 | ping  | idle c/s 22 22 20 31 / 25 23 19 33 / | rcvbuf c/s 0/0/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  cake_1_p8_up recv 184 | retr 2392 | share 33/38/29 | ping  | idle c/s 24 21 16 30 / 21 22 16 32 / | rcvbuf c/s 0/0/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  cake_1_p8_dn recv 129 | retr 470 | share 0/58/42 | ping  | idle c/s 45 32 22 44 / 51 36 18 42 / | rcvbuf c/s 0/0/
+  cake_1_dir_up 터널별 70.1 73.5 56.6 합 200 | idle c/s 22 19 16 26 / 18 21 21 28 / 
+  70.1 터널별 72.3 75.2 55.6 합 203 | idle c/s 21 17 16 26 / 17 19 21 25 / 
+== cake_2 12:40:52
+  client92 bandwidth 77940Kbit bandwidth 81585Kbit bandwidth 63810Kbit
+  server93 bandwidth 73575Kbit bandwidth 83520Kbit bandwidth 59850Kbit
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  cake_2_p24_up recv 193 | retr 2784 | share 36/39/25 | ping  | idle c/s 28 22 20 32 / 22 21 19 30 / | rcvbuf c/s 0/0/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  cake_2_p24_dn recv 192 | retr 1387 | share 32/40/28 | ping  | idle c/s 22 23 20 29 / 25 23 19 32 / | rcvbuf c/s 0/0/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  cake_2_p8_up recv 162 | retr 2779 | share 38/44/18 | ping  | idle c/s 22 26 23 35 / 21 25 24 32 / | rcvbuf c/s 0/0/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  cake_2_p8_dn recv 178 | retr 537 | share 32/44/24 | ping  | idle c/s 23 23 23 37 / 30 22 24 38 / | rcvbuf c/s 0/0/
+  cake_2_dir_up 터널별 72.1 75.2 54.6 합 202 | idle c/s 27 24 22 32 / 16 19 20 26 / 
+  72.1 터널별 72.0 73.0 56.4 합 201 | idle c/s 22 18 17 26 / 18 21 21 27 / 
+== nocake_2 12:45:54
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  nocake_2_p24_up recv 261 | retr 4307 | share 29/41/30 | ping  | idle c/s 47 47 44 53 / 38 38 35 44 / | rcvbuf c/s 693/0/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  nocake_2_p24_dn recv 231 | retr 5837 | share 36/31/32 | ping  | idle c/s 42 48 44 51 / 58 56 56 64 / | rcvbuf c/s 0/802/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  nocake_2_p8_up recv 238 | retr 2272 | share 42/39/19 | ping  | idle c/s 47 46 50 56 / 35 36 37 44 / | rcvbuf c/s 0/0/
+awk: cmd. line:1: {v[NR]=$1} END{if(NR) printf "p50 %.0f p99 %.0f n=%d", v[int(NR*0.5)+1], v[int(NR*0.99)>0?int(NR*0.99):1], NR}
+awk: cmd. line:1:                                                                                        ^ syntax error
+  nocake_2_p8_dn recv 274 | retr 1789 | share 30/22/48 | ping  | idle c/s 25 26 15 32 / 47 43 42 50 / | rcvbuf c/s 33/0/
+  nocake_2_dir_up 터널별 78.8 99.2 62.5 합 240 | idle c/s 50 51 45 54 / 39 40 37 44 / 
+  78.8 터널별 84.9 97.6 70.3 합 253 | idle c/s 43 44 37 46 / 32 33 29 39 / 
+  P0 EAGAIN=1457 pin=0   P1 EAGAIN=1842 pin=1   P2 EAGAIN=1231 pin=2 
+done 12:51:17
+== restore 12:51:17
+client92 rps=0 4/1 mf=0 iperf=0 qdisc=noqueue/noqueue/noqueue
+server93 rps=0 1/4 mf=0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

@@ -1,0 +1,67 @@
+== setup 23:16:32
+cbeb61371a4a
+cbeb61371a4a
+== rps0_1 (rps=0 no-pin) 23:16:39
+client92 lo rps_cpus=0
+server93 lo rps_cpus=0
+rtt min/avg/max/mdev = 60.864/68.902/84.880/11.297 ms
+pid 74258's current affinity list: 0-3
+  rps0_1_tcp_up recv 82.8 Mbits/sec | retr 2231 | mfCPU c/s 56/54/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  rps0_1_tcp_down recv 88.2 Mbits/sec | retr 1234 | mfCPU c/s 53/50/ | rcvbufErr c/s 0/371/ | softnetDrop c/s 0/0
+  rps0_1_udp_up recv 182 Mbits/sec loss (7.9%) | mfCPU c/s 77/77/ | rcvbufErr c/s 9591/685/ | softnetDrop c/s 0/0
+  rps0_1_udp_down recv 184 Mbits/sec loss (7.7%) | mfCPU c/s 78/78/ | rcvbufErr c/s 19673/1333/ | softnetDrop c/s 0/0
+  client EAGAIN=879 total 29000
+== rpsf_1 (rps=f no-pin) 23:20:09
+client92 lo rps_cpus=f
+server93 lo rps_cpus=f
+rtt min/avg/max/mdev = 71.809/79.620/85.103/5.671 ms
+pid 75078's current affinity list: 0-3
+  rpsf_1_tcp_up recv 88.9 Mbits/sec | retr 712 | mfCPU c/s 57/53/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  rpsf_1_tcp_down recv 87.1 Mbits/sec | retr 335 | mfCPU c/s 52/48/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  rpsf_1_udp_up recv 188 Mbits/sec loss (5.6%) | mfCPU c/s 78/76/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  rpsf_1_udp_down recv 185 Mbits/sec loss (7.5%) | mfCPU c/s 76/77/ | rcvbufErr c/s 8795/834/ | softnetDrop c/s 0/0
+  client EAGAIN=833 total 28000
+== rpse_1 (rps=e taskset -c 0) 23:23:36
+client92 lo rps_cpus=e
+server93 lo rps_cpus=e
+rtt min/avg/max/mdev = 71.129/80.225/97.739/12.387 ms
+pid 75894's current affinity list: 0
+  rpse_1_tcp_up recv 97.8 Mbits/sec | retr 1500 | mfCPU c/s 61/58/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  rpse_1_tcp_down recv 106 Mbits/sec | retr 785 | mfCPU c/s 57/53/ | rcvbufErr c/s 0/92/ | softnetDrop c/s 0/0
+  rpse_1_udp_up recv 187 Mbits/sec loss (5.7%) | mfCPU c/s 76/69/ | rcvbufErr c/s 1862/0/ | softnetDrop c/s 0/0
+  rpse_1_udp_down recv 192 Mbits/sec loss (4.3%) | mfCPU c/s 73/79/ | rcvbufErr c/s 1444/0/ | softnetDrop c/s 0/0
+  client EAGAIN=837 total 27000
+== rps0_2 (rps=0 no-pin) 23:27:04
+client92 lo rps_cpus=0
+server93 lo rps_cpus=0
+rtt min/avg/max/mdev = 60.849/77.164/85.756/11.542 ms
+pid 76715's current affinity list: 0-3
+  rps0_2_tcp_up recv 93.7 Mbits/sec | retr 1589 | mfCPU c/s 53/51/ | rcvbufErr c/s 582/0/ | softnetDrop c/s 0/0
+  rps0_2_tcp_down recv 92.3 Mbits/sec | retr 1159 | mfCPU c/s 52/50/ | rcvbufErr c/s 0/797/ | softnetDrop c/s 0/0
+  rps0_2_udp_up recv 188 Mbits/sec loss (5.2%) | mfCPU c/s 77/77/ | rcvbufErr c/s 0/375/ | softnetDrop c/s 0/0
+  rps0_2_udp_down recv 178 Mbits/sec loss (11%) | mfCPU c/s 76/74/ | rcvbufErr c/s 63041/0/ | softnetDrop c/s 0/0
+  client EAGAIN=817 total 26000
+== rpsf_2 (rps=f no-pin) 23:30:34
+client92 lo rps_cpus=f
+server93 lo rps_cpus=f
+rtt min/avg/max/mdev = 60.922/72.465/85.375/10.029 ms
+pid 77531's current affinity list: 0-3
+  rpsf_2_tcp_up recv 91.8 Mbits/sec | retr 737 | mfCPU c/s 52/49/ | rcvbufErr c/s 68/0/ | softnetDrop c/s 0/0
+  rpsf_2_tcp_down recv 88.4 Mbits/sec | retr 465 | mfCPU c/s 52/49/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  rpsf_2_udp_up recv 187 Mbits/sec loss (5.9%) | mfCPU c/s 77/75/ | rcvbufErr c/s 346/9/ | softnetDrop c/s 0/0
+  rpsf_2_udp_down recv 191 Mbits/sec loss (4.4%) | mfCPU c/s 75/79/ | rcvbufErr c/s 12012/0/ | softnetDrop c/s 0/0
+  client EAGAIN=858 total 28000
+== rpse_2 (rps=e taskset -c 0) 23:34:03
+client92 lo rps_cpus=e
+server93 lo rps_cpus=e
+rtt min/avg/max/mdev = 71.359/80.552/85.462/6.505 ms
+pid 78349's current affinity list: 0
+  rpse_2_tcp_up recv 117 Mbits/sec | retr 1148 | mfCPU c/s 62/56/ | rcvbufErr c/s 688/0/ | softnetDrop c/s 0/0
+  rpse_2_tcp_down recv 112 Mbits/sec | retr 499 | mfCPU c/s 55/53/ | rcvbufErr c/s 0/348/ | softnetDrop c/s 0/0
+  rpse_2_udp_up recv 185 Mbits/sec loss (7.4%) | mfCPU c/s 76/66/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  rpse_2_udp_down recv 187 Mbits/sec loss (6.5%) | mfCPU c/s 70/78/ | rcvbufErr c/s 1323/37/ | softnetDrop c/s 0/0
+  client EAGAIN=1054 total 36000
+done 23:37:45
+== restore 23:37:45
+client92 lo rps_cpus=0
+server93 lo rps_cpus=0

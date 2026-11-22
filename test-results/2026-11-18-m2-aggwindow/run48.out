@@ -1,0 +1,180 @@
+== setup 23:57:51
+client92 spd2 e324110ee508 mt 74faf00e367b multi-fec 1.4.5-mt.1
+server93 spd2 e324110ee508 mt 74faf00e367b multi-fec 1.4.5-mt.1
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.152/60.176/60.234/0.029 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.163/108.182/108.204/0.015 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.145/108.173/108.211/0.028 ms
+client92 spd2 e324110ee508 mt e96cc63366bd multi-fec 1.4.5-mt.1
+server93 spd2 e324110ee508 mt e96cc63366bd multi-fec 1.4.5-mt.1
+  client92 loss /
+  server93 loss /
+== nl_base_1 (mtbase) 23:58:18
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 71.545/88.104/107.544/14.836 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nl_base_1_p1_up recv 223 | retr 2243 | ping p50 83 p99 122 n=150 | idle c/s 60 57 56 63 / 46 47 42 54 / | rcvbuf c/s 0/0/
+  nl_base_1_p1_dn recv 203 | retr 3059 | ping p50 77 p99 277 n=150 | idle c/s 43 43 39 50 / 59 57 56 65 / | rcvbuf c/s 0/0/
+  nl_base_1_p8_up recv 292 | retr 9550 | ping p50 86 p99 192 n=150 | idle c/s 37 32 34 42 / 24 24 22 35 / | rcvbuf c/s 0/0/
+  nl_base_1_p8_dn recv 261 | retr 15060 | ping p50 84 p99 173 n=150 | idle c/s 27 24 22 35 / 41 36 40 50 / | rcvbuf c/s 0/0/
+  server93 [INFO][w1][server] pending enq 719 sent 719 wait avg 18.8 max 53 ms hist(<10/<20/<50/<100/100+) 145/304/266/4/0 queued 0
+  server93 [INFO][w2][server] pending enq 7611 sent 7611 wait avg 151.0 max 285 ms hist(<10/<20/<50/<100/100+) 131/520/712/1404/4844 queued 0
+  server93 [INFO][w0][server] pending enq 7013 sent 7013 wait avg 145.7 max 350 ms hist(<10/<20/<50/<100/100+) 492/938/1242/629/3712 queued 0
+  client EAGAIN 336 pendfull 6 err 0
+== nl_fifo_1 (mtfifo) 00:02:06
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 60.998/69.093/84.989/11.240 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nl_fifo_1_p1_up recv 211 | retr 2475 | ping p50 87 p99 131 n=150 | idle c/s 54 53 50 59 / 43 42 41 46 / | rcvbuf c/s 0/0/
+  nl_fifo_1_p1_dn recv 214 | retr 1316 | ping p50 86 p99 149 n=150 | idle c/s 45 47 43 50 / 62 61 58 66 / | rcvbuf c/s 0/0/
+  nl_fifo_1_p8_up recv 269 | retr 8428 | ping p50 90 p99 168 n=149 | idle c/s 32 28 29 38 / 22 19 19 30 / | rcvbuf c/s 0/0/
+  nl_fifo_1_p8_dn recv 270 | retr 8269 | ping p50 103 p99 234 n=150 | idle c/s 31 32 30 39 / 43 38 40 52 / | rcvbuf c/s 0/641/
+  server93 [INFO][w1][server] pending enq 15054 sent 15054 wait avg 94.7 max 232 ms hist(<10/<20/<50/<100/100+) 922/1212/3505/3695/5720 queued 0
+  server93 [INFO][w0][server] pending enq 24552 sent 24552 wait avg 67.8 max 294 ms hist(<10/<20/<50/<100/100+) 2584/5232/5636/4326/6774 queued 0
+  server93 [INFO][w2][server] pending enq 23959 sent 23959 wait avg 50.2 max 175 ms hist(<10/<20/<50/<100/100+) 1883/4639/9671/3572/4194 queued 0
+  client EAGAIN 3 pendfull 7 err 0
+== nl_fifo_w2_1 (mtfifo_w2) 00:05:57
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.229/72.500/85.048/9.765 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nl_fifo_w2_1_p1_up recv 230 | retr 2630 | ping p50 85 p99 128 n=149 | idle c/s 52 52 49 57 / 40 39 36 48 / | rcvbuf c/s 0/0/
+  nl_fifo_w2_1_p1_dn recv 193 | retr 1616 | ping p50 79 p99 109 n=150 | idle c/s 46 46 41 53 / 59 56 53 65 / | rcvbuf c/s 0/0/
+  nl_fifo_w2_1_p8_up recv 286 | retr 27164 | ping p50 86 p99 201 n=149 | idle c/s 38 31 39 46 / 27 24 22 38 / | rcvbuf c/s 0/0/
+  nl_fifo_w2_1_p8_dn recv 308 | retr 19631 | ping p50 114 p99 277 n=150 | idle c/s 23 25 20 33 / 43 37 41 52 / | rcvbuf c/s 17/382/
+  server93 [INFO][w2][server] pending enq 21660 sent 21660 wait avg 73.5 max 249 ms hist(<10/<20/<50/<100/100+) 714/3345/9385/2218/5998 queued 0
+  server93 [INFO][w1][server] pending enq 16549 sent 16549 wait avg 93.5 max 273 ms hist(<10/<20/<50/<100/100+) 366/1110/6676/2874/5523 queued 0
+  server93 [INFO][w0][server] pending enq 19811 sent 19811 wait avg 114.8 max 302 ms hist(<10/<20/<50/<100/100+) 1378/380/2952/6985/8116 queued 0
+  client EAGAIN 4 pendfull 5 err 0
+== nl_fifo_unl_1 (mtfifo_unl) 00:09:46
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.046/85.672/110.531/20.202 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nl_fifo_unl_1_p1_up recv 287 | retr 219 | ping p50 76 p99 115 n=150 | idle c/s 58 54 55 62 / 39 40 34 48 / | rcvbuf c/s 0/0/
+  nl_fifo_unl_1_p1_dn recv 224 | retr 7 | ping p50 81 p99 133 n=150 | idle c/s 48 50 44 53 / 64 62 62 69 / | rcvbuf c/s 0/0/
+  nl_fifo_unl_1_p8_up recv 313 | retr 22525 | ping p50 86 p99 179 n=150 | idle c/s 36 31 34 44 / 24 23 17 35 / | rcvbuf c/s 0/0/
+  nl_fifo_unl_1_p8_dn recv 323 | retr 23546 | ping p50 92 p99 203 n=150 | idle c/s 17 17 15 26 / 37 29 35 45 / | rcvbuf c/s 0/0/
+  client EAGAIN 0 pendfull 0 err 0
+== nl_base_2 (mtbase) 00:13:36
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 71.230/84.528/97.321/10.657 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nl_base_2_p1_up recv 186 | retr 1943 | ping p50 86 p99 124 n=150 | idle c/s 48 48 44 54 / 35 35 34 45 / | rcvbuf c/s 0/0/
+  nl_base_2_p1_dn recv 205 | retr 3528 | ping p50 85 p99 267 n=150 | idle c/s 40 42 39 47 / 56 56 53 62 / | rcvbuf c/s 0/0/
+  nl_base_2_p8_up recv 256 | retr 6112 | ping p50 88 p99 174 n=149 | idle c/s 37 35 33 44 / 27 26 25 36 / | rcvbuf c/s 319/0/
+  nl_base_2_p8_dn recv 307 | retr 8861 | ping p50 101 p99 275 n=150 | idle c/s 19 21 20 27 / 37 32 33 45 / | rcvbuf c/s 0/41/
+  server93 [INFO][w1][server] pending enq 11623 sent 11623 wait avg 121.1 max 258 ms hist(<10/<20/<50/<100/100+) 854/750/1200/1834/6985 queued 0
+  server93 [INFO][w0][server] pending enq 9415 sent 9415 wait avg 125.7 max 251 ms hist(<10/<20/<50/<100/100+) 780/410/562/1977/5686 queued 0
+  server93 [INFO][w2][server] pending enq 18014 sent 18014 wait avg 166.1 max 393 ms hist(<10/<20/<50/<100/100+) 977/613/1686/3872/10866 queued 0
+  client EAGAIN 265 pendfull 4 err 0
+== nl_fifo_2 (mtfifo) 00:17:24
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 71.496/84.430/96.873/10.365 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nl_fifo_2_p1_up recv 176 | retr 2673 | ping p50 86 p99 160 n=149 | idle c/s 55 55 51 61 / 43 44 43 50 / | rcvbuf c/s 0/0/
+  nl_fifo_2_p1_dn recv 236 | retr 1011 | ping p50 85 p99 142 n=150 | idle c/s 43 44 38 50 / 59 58 57 65 / | rcvbuf c/s 0/0/
+  nl_fifo_2_p8_up recv 316 | retr 11893 | ping p50 90 p99 199 n=150 | idle c/s 39 33 38 46 / 22 24 20 34 / | rcvbuf c/s 1288/0/
+  nl_fifo_2_p8_dn recv 317 | retr 24569 | ping p50 90 p99 385 n=150 | idle c/s 19 19 15 29 / 35 31 37 46 / | rcvbuf c/s 0/0/
+  server93 [INFO][w1][server] pending enq 19476 sent 19476 wait avg 125.2 max 389 ms hist(<10/<20/<50/<100/100+) 2530/1244/3179/3876/8647 queued 0
+  server93 [INFO][w2][server] pending enq 21462 sent 21462 wait avg 91.7 max 286 ms hist(<10/<20/<50/<100/100+) 851/2012/6530/5093/6976 queued 0
+  server93 [INFO][w0][server] pending enq 22338 sent 22338 wait avg 121.9 max 387 ms hist(<10/<20/<50/<100/100+) 1731/2302/3550/5573/9182 queued 0
+  client EAGAIN 5 pendfull 4 err 0
+== nl_fifo_w2_2 (mtfifo_w2) 00:21:14
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 71.377/76.132/85.031/6.297 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nl_fifo_w2_2_p1_up recv 277 | retr 1977 | ping p50 71 p99 111 n=149 | idle c/s 49 47 45 55 / 32 32 26 43 / | rcvbuf c/s 0/0/
+  nl_fifo_w2_2_p1_dn recv 240 | retr 1805 | ping p50 82 p99 170 n=150 | idle c/s 43 45 40 49 / 62 59 59 67 / | rcvbuf c/s 0/0/
+  nl_fifo_w2_2_p8_up recv 275 | retr 9144 | ping p50 87 p99 235 n=150 | idle c/s 45 38 42 52 / 33 31 28 42 / | rcvbuf c/s 753/0/
+  nl_fifo_w2_2_p8_dn recv 317 | retr 6663 | ping p50 91 p99 280 n=150 | idle c/s 18 20 16 27 / 35 29 34 45 / | rcvbuf c/s 0/0/
+  server93 [INFO][w1][server] pending enq 14438 sent 14438 wait avg 120.8 max 309 ms hist(<10/<20/<50/<100/100+) 1499/1122/1797/2930/7090 queued 0
+  server93 [INFO][w2][server] pending enq 13614 sent 13614 wait avg 84.4 max 227 ms hist(<10/<20/<50/<100/100+) 1696/1230/2131/3139/5418 queued 0
+  server93 [INFO][w0][server] pending enq 15357 sent 15357 wait avg 108.8 max 294 ms hist(<10/<20/<50/<100/100+) 2238/1460/1822/2625/7212 queued 0
+  client EAGAIN 3 pendfull 5 err 0
+== nl_fifo_unl_2 (mtfifo_unl) 00:25:02
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 71.667/83.613/96.787/10.291 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nl_fifo_unl_2_p1_up recv 212 | retr 235 | ping p50 83 p99 121 n=150 | idle c/s 60 61 56 64 / 49 49 46 52 / | rcvbuf c/s 0/0/
+  nl_fifo_unl_2_p1_dn recv 198 | retr 79 | ping p50 86 p99 136 n=150 | idle c/s 49 50 47 52 / 64 63 61 68 / | rcvbuf c/s 0/0/
+  nl_fifo_unl_2_p8_up recv 314 | retr 11980 | ping p50 95 p99 189 n=150 | idle c/s 32 30 33 39 / 20 19 17 29 / | rcvbuf c/s 2904/0/
+  nl_fifo_unl_2_p8_dn recv 315 | retr 8670 | ping p50 93 p99 163 n=150 | idle c/s 25 22 24 32 / 38 32 36 46 / | rcvbuf c/s 0/0/
+  client EAGAIN 0 pendfull 0 err 0
+  client92 loss loss 1%,loss 1%/loss 1%
+  server93 loss loss 1%,loss 1%/loss 1%
+== l1_base_1 (mtbase) 00:28:54
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.215/84.534/96.309/16.489 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  l1_base_1_p1_up recv 11.7 | retr 3784 | ping p50 81 p99 109 n=149 | idle c/s 92 90 88 93 / 92 89 88 92 / | rcvbuf c/s 0/0/
+  l1_base_1_p1_dn recv 9.79 | retr 2534 | ping p50 79 p99 119 n=150 | idle c/s 93 92 89 93 / 94 93 91 95 / | rcvbuf c/s 0/0/
+  l1_base_1_p8_up recv 50.2 | retr 2864 | ping p50 83 p99 110 n=150 | idle c/s 73 68 66 78 / 71 66 62 77 / | rcvbuf c/s 0/0/
+  l1_base_1_p8_dn recv 50.9 | retr 4265 | ping p50 81 p99 156 n=150 | idle c/s 70 66 61 75 / 75 69 66 79 / | rcvbuf c/s 0/0/
+  server93 [INFO][w1][server] pending enq 2288 sent 2288 wait avg 54.9 max 107 ms hist(<10/<20/<50/<100/100+) 147/171/458/1510/2 queued 0
+  server93 [INFO][w0][server] pending enq 4631 sent 4631 wait avg 147.5 max 314 ms hist(<10/<20/<50/<100/100+) 242/201/687/932/2569 queued 0
+  server93 [INFO][w2][server] pending enq 6347 sent 6347 wait avg 107.6 max 275 ms hist(<10/<20/<50/<100/100+) 259/235/890/2449/2514 queued 0
+  client EAGAIN 212 pendfull 4 err 0
+== l1_fifo_1 (mtfifo) 00:32:49
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.111/85.517/134.213/34.433 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  l1_fifo_1_p1_up recv 7.43 | retr 302 | ping p50 75 p99 109 n=150 | idle c/s 93 94 91 95 / 93 93 91 94 / | rcvbuf c/s 0/0/
+  l1_fifo_1_p1_dn recv 6.22 | retr 1808 | ping p50 81 p99 109 n=150 | idle c/s 92 94 91 94 / 94 95 93 95 / | rcvbuf c/s 0/0/
+  l1_fifo_1_p8_up recv 50.1 | retr 3793 | ping p50 81 p99 109 n=148 | idle c/s 69 67 66 78 / 70 69 63 77 / | rcvbuf c/s 0/0/
+  l1_fifo_1_p8_dn recv 54.6 | retr 2620 | ping p50 83 p99 110 n=150 | idle c/s 65 67 60 73 / 71 69 66 78 / | rcvbuf c/s 0/0/
+  server93 [INFO][w1][server] pending enq 1495 sent 1495 wait avg 43.0 max 111 ms hist(<10/<20/<50/<100/100+) 499/86/324/418/168 queued 0
+  server93 [INFO][w0][server] pending enq 4158 sent 4158 wait avg 131.2 max 269 ms hist(<10/<20/<50/<100/100+) 333/175/433/662/2555 queued 0
+  server93 [INFO][w2][server] pending enq 3039 sent 3039 wait avg 104.0 max 254 ms hist(<10/<20/<50/<100/100+) 159/152/590/619/1519 queued 0
+  client EAGAIN 3 pendfull 2 err 0
+== l1_fifo_w2_1 (mtfifo_w2) 00:36:37
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.069/80.464/108.836/20.507 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  l1_fifo_w2_1_p1_up recv 16.5 | retr 1183 | ping p50 84 p99 109 n=150 | idle c/s 87 87 86 90 / 87 86 85 89 / | rcvbuf c/s 0/0/
+  l1_fifo_w2_1_p1_dn recv 11.3 | retr 1447 | ping p50 85 p99 109 n=150 | idle c/s 90 91 89 92 / 92 93 92 94 / | rcvbuf c/s 0/0/
+  l1_fifo_w2_1_p8_up recv 74.2 | retr 3491 | ping p50 85 p99 110 n=150 | idle c/s 61 57 59 64 / 57 53 55 64 / | rcvbuf c/s 0/0/
+  l1_fifo_w2_1_p8_dn recv 63.0 | retr 5017 | ping p50 85 p99 224 n=150 | idle c/s 61 60 58 68 / 65 64 63 73 / | rcvbuf c/s 0/0/
+  server93 [INFO][w0][server] pending enq 5776 sent 5776 wait avg 140.9 max 262 ms hist(<10/<20/<50/<100/100+) 220/132/487/993/3944 queued 0
+  server93 [INFO][w1][server] pending enq 4481 sent 4481 wait avg 154.6 max 295 ms hist(<10/<20/<50/<100/100+) 198/191/579/585/2928 queued 0
+  server93 [INFO][w2][server] pending enq 5256 sent 5256 wait avg 79.3 max 153 ms hist(<10/<20/<50/<100/100+) 470/230/856/1756/1944 queued 0
+  client EAGAIN 3 pendfull 2 err 0
+== l1_fifo_unl_1 (mtfifo_unl) 00:40:27
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.045/77.281/109.593/22.848 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  l1_fifo_unl_1_p1_up recv 26.5 | retr 1202 | ping p50 85 p99 109 n=150 | idle c/s 84 81 77 86 / 81 79 77 84 / | rcvbuf c/s 0/0/
+  l1_fifo_unl_1_p1_dn recv 12.7 | retr 967 | ping p50 79 p99 109 n=150 | idle c/s 92 91 89 92 / 94 92 92 94 / | rcvbuf c/s 0/0/
+  l1_fifo_unl_1_p8_up recv 65.2 | retr 2603 | ping p50 85 p99 110 n=150 | idle c/s 66 58 58 70 / 63 56 56 64 / | rcvbuf c/s 0/0/
+  l1_fifo_unl_1_p8_dn recv 61.9 | retr 5847 | ping p50 83 p99 109 n=150 | idle c/s 69 64 60 72 / 71 66 67 75 / | rcvbuf c/s 0/0/
+  client EAGAIN 0 pendfull 0 err 0
+  client92 loss /
+  server93 loss /
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+done 00:44:45
+== restore 00:44:45
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+client92 rps=0 4/1 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+server93 rps=0 1/4 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

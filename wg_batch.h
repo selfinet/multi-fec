@@ -14,4 +14,8 @@
 int wg_batch_send(my_time_t delay, const dest_t &dest, char *data, int len);
 /* 모인 것을 보낸다. ev_prepare 콜백에서 부른다. 반환: 보낸 패킷 수 */
 int wg_batch_flush();
+/* mmulti-fec --reorder-ms */
+extern bool g_reorder_shm;
+void wg_reorder_worker_init();   /* in each worker after fork */
+void wg_reorder_tick();          /* every ~2 ms: release gaps that waited long enough */
 #endif

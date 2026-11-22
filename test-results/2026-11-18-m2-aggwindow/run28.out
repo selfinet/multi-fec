@@ -1,0 +1,15 @@
+== setup 16:02:34
+client92 16ccbf77f62d
+server93 16ccbf77f62d
+== start 16:02:45
+rtt min/avg/max/mdev = 71.181/71.358/71.660/0.214 ms
+P0 0 
+e
+  proc_up recv 115 Mbits/sec
+  proc_dn recv 89.6 Mbits/sec
+  sys_up recv 95.9 Mbits/sec
+  sys_dn recv 126 Mbits/sec
+done 16:07:42
+== restore 16:07:42
+client92 rps=0 4/1 mf=0
+server93 rps=0 1/4 mf=0

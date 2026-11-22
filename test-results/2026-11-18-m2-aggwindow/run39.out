@@ -1,0 +1,139 @@
+Connection timed out during banner exchange
+Connection to UNKNOWN port 65535 timed out
+== setup 22:17:03
+client92 spd2i 6a223cfb multi-fec 1.4.5-speed.2
+server93 spd2i 6a223cfb multi-fec 1.4.5-speed.2
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.153/60.178/60.234/0.031 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.150/108.170/108.205/0.018 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.152/108.177/108.205/0.021 ms
+== on_1 (spd2i ) 22:17:21
+  server93 running multi-fec 1.4.5-speed.2 env=0
+  client92 running multi-fec 1.4.5-speed.2 env=0
+rtt min/avg/max/mdev = 71.110/79.146/85.073/5.892 ms
+  on_1_p8_up start 1795180660167
+  on_1_p8_up end   1795180692809 118 Mbits/sec
+  on_1_p8_dn start 1795180703713
+  on_1_p8_dn end   1795180736489 117 Mbits/sec
+  on_1_p1_up start 1795180744874
+  on_1_p1_up end   1795180776653 129 Mbits/sec
+  on_1_p1_dn start 1795180787533
+  on_1_p1_dn end   1795180819317 122 Mbits/sec
+== off_1 (spd2i MF_UDP_GSO=0) 22:20:25
+  server93 running multi-fec 1.4.5-speed.2 env=1
+  client92 running multi-fec 1.4.5-speed.2 env=1
+rtt min/avg/max/mdev = 71.250/92.343/134.499/29.808 ms
+  off_1_p8_up start 1795180844190
+  off_1_p8_up end   1795180878107 99.2 Mbits/sec
+  off_1_p8_dn start 1795180887720
+  off_1_p8_dn end   1795180920755 111 Mbits/sec
+  off_1_p1_up start 1795180930396
+  off_1_p1_up end   1795180962794 100 Mbits/sec
+  off_1_p1_dn start 1795180972359
+  off_1_p1_dn end   1795181004248 83.6 Mbits/sec
+== off_2 (spd2i MF_UDP_GSO=0) 22:23:30
+  server93 running multi-fec 1.4.5-speed.2 env=1
+  client92 running multi-fec 1.4.5-speed.2 env=1
+rtt min/avg/max/mdev = 60.870/68.947/85.051/11.386 ms
+  off_2_p8_up start 1795181030319
+  off_2_p8_up end   1795181062747 119 Mbits/sec
+  off_2_p8_dn start 1795181072331
+  off_2_p8_dn end   1795181104975 117 Mbits/sec
+  off_2_p1_up start 1795181114560
+  off_2_p1_up end   1795181146375 98.2 Mbits/sec
+  off_2_p1_dn start 1795181155965
+  off_2_p1_dn end   1795181187750 120 Mbits/sec
+== on_2 (spd2i ) 22:26:33
+  server93 running multi-fec 1.4.5-speed.2 env=0
+  client92 running multi-fec 1.4.5-speed.2 env=0
+rtt min/avg/max/mdev = 71.101/75.955/85.075/6.453 ms
+  on_2_p8_up start 1795181213906
+  on_2_p8_up end   1795181246417 109 Mbits/sec
+  on_2_p8_dn start 1795181256042
+  on_2_p8_dn end   1795181288892 131 Mbits/sec
+  on_2_p1_up start 1795181298487
+  on_2_p1_up end   1795181330215 92.5 Mbits/sec
+  on_2_p1_dn start 1795181339848
+  on_2_p1_dn end   1795181371617 118 Mbits/sec
+== on_3 (spd2i ) 22:29:37
+  server93 running multi-fec 1.4.5-speed.2 env=0
+  client92 running multi-fec 1.4.5-speed.2 env=0
+rtt min/avg/max/mdev = 71.356/79.936/96.573/11.765 ms
+  on_3_p8_up start 1795181397911
+  on_3_p8_up end   1795181430584 126 Mbits/sec
+  on_3_p8_dn start 1795181440199
+  on_3_p8_dn end   1795181473194 119 Mbits/sec
+  on_3_p1_up start 1795181482801
+  on_3_p1_up end   1795181514532 119 Mbits/sec
+  on_3_p1_dn start 1795181524127
+  on_3_p1_dn end   1795181555862 130 Mbits/sec
+== off_3 (spd2i MF_UDP_GSO=0) 22:32:41
+  server93 running multi-fec 1.4.5-speed.2 env=1
+  client92 running multi-fec 1.4.5-speed.2 env=1
+rtt min/avg/max/mdev = 60.980/88.579/133.179/31.832 ms
+  off_3_p8_up start 1795181582088
+  off_3_p8_up end   1795181614700 98.4 Mbits/sec
+  off_3_p8_dn start 1795181624306
+  off_3_p8_dn end   1795181657361 103 Mbits/sec
+  off_3_p1_up start 1795181667037
+  off_3_p1_up end   1795181698902 78.5 Mbits/sec
+  off_3_p1_dn start 1795181708540
+  off_3_p1_dn end   1795181740295 137 Mbits/sec
+== off_4 (spd2i MF_UDP_GSO=0) 22:35:46
+  server93 running multi-fec 1.4.5-speed.2 env=1
+  client92 running multi-fec 1.4.5-speed.2 env=1
+rtt min/avg/max/mdev = 60.920/60.975/61.060/0.060 ms
+  off_4_p8_up start 1795181766402
+  off_4_p8_up end   1795181798903 126 Mbits/sec
+  off_4_p8_dn start 1795181808497
+  off_4_p8_dn end   1795181841336 112 Mbits/sec
+  off_4_p1_up start 1795181850928
+  off_4_p1_up end   1795181882692 104 Mbits/sec
+  off_4_p1_dn start 1795181892394
+  off_4_p1_dn end   1795181924875 107 Mbits/sec
+== on_4 (spd2i ) 22:38:50
+  server93 running multi-fec 1.4.5-speed.2 env=0
+  client92 running multi-fec 1.4.5-speed.2 env=0
+rtt min/avg/max/mdev = 60.851/83.081/107.046/18.898 ms
+  on_4_p8_up start 1795181950955
+  on_4_p8_up end   1795181983482 119 Mbits/sec
+  on_4_p8_dn start 1795181993048
+  on_4_p8_dn end   1795182025870 127 Mbits/sec
+  on_4_p1_up start 1795182035464
+  on_4_p1_up end   1795182067154 123 Mbits/sec
+  on_4_p1_dn start 1795182076751
+  on_4_p1_dn end   1795182108545 122 Mbits/sec
+== on_5 (spd2i ) 22:41:54
+  server93 running multi-fec 1.4.5-speed.2 env=0
+  client92 running multi-fec 1.4.5-speed.2 env=0
+rtt min/avg/max/mdev = 71.887/86.783/106.291/14.418 ms
+  on_5_p8_up start 1795182134698
+  on_5_p8_up end   1795182167372 117 Mbits/sec
+  on_5_p8_dn start 1795182176926
+  on_5_p8_dn end   1795182209623 132 Mbits/sec
+  on_5_p1_up start 1795182219233
+  on_5_p1_up end   1795182251010 106 Mbits/sec
+  on_5_p1_dn start 1795182260598
+  on_5_p1_dn end   1795182292335 123 Mbits/sec
+== off_5 (spd2i MF_UDP_GSO=0) 22:44:58
+  server93 running multi-fec 1.4.5-speed.2 env=1
+  client92 running multi-fec 1.4.5-speed.2 env=1
+rtt min/avg/max/mdev = 60.924/76.151/96.434/14.931 ms
+  off_5_p8_up start 1795182318505
+  off_5_p8_up end   1795182351121 126 Mbits/sec
+  off_5_p8_dn start 1795182360737
+  off_5_p8_dn end   1795182393789 111 Mbits/sec
+  off_5_p1_up start 1795182403376
+  off_5_p1_up end   1795182435088 120 Mbits/sec
+  off_5_p1_dn start 1795182444670
+  off_5_p1_dn end   1795182476431 138 Mbits/sec
+done 22:48:17
+== restore 22:48:17
+client92 rps=0 mf=0 iperf=0 samp=0
+server93 rps=0 mf=0 iperf=0 samp=0
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

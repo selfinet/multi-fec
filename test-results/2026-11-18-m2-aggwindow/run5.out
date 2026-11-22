@@ -1,0 +1,14 @@
+rtt min/avg/max/mdev = 71.069/83.470/108.833/15.733 ms
+== up1 07:56:32
+[SUM]   0.00-30.00  sec   253 MBytes  70.8 Mbits/sec  1001             sender
+[SUM]   0.00-30.11  sec   247 MBytes  68.9 Mbits/sec                  receiver
+== down1 07:57:16
+[SUM]   0.00-30.07  sec   243 MBytes  67.7 Mbits/sec  216             sender
+[SUM]   0.00-30.00  sec   234 MBytes  65.4 Mbits/sec                  receiver
+== up2 07:58:02
+[SUM]   0.00-30.00  sec   250 MBytes  69.8 Mbits/sec  2000             sender
+[SUM]   0.00-30.11  sec   242 MBytes  67.3 Mbits/sec                  receiver
+== down2 07:58:48
+[SUM]   0.00-30.07  sec   264 MBytes  73.5 Mbits/sec  808             sender
+[SUM]   0.00-30.00  sec   250 MBytes  69.8 Mbits/sec                  receiver
+done

@@ -1,0 +1,51 @@
+#### base ()
+rtt min/avg/max/mdev = 60.910/87.650/149.837/32.679 ms
+== base_up1 07:12:57
+[SUM]   0.00-30.10  sec   264 MBytes  73.6 Mbits/sec                  receiver
+== base_down1 07:13:40
+[SUM]   0.00-30.00  sec   264 MBytes  73.8 Mbits/sec                  receiver
+== base_up2 07:14:27
+[SUM]   0.00-30.16  sec   265 MBytes  73.6 Mbits/sec                  receiver
+== base_down2 07:15:13
+[SUM]   0.00-30.00  sec   277 MBytes  77.4 Mbits/sec                  receiver
+#### nofec (--disable-fec)
+rtt min/avg/max/mdev = 60.834/84.871/108.889/15.196 ms
+== nofec_up1 07:16:15
+[SUM]   0.00-30.31  sec   311 MBytes  86.1 Mbits/sec                  receiver
+== nofec_down1 07:17:00
+[SUM]   0.00-30.00  sec   376 MBytes   105 Mbits/sec                  receiver
+== nofec_up2 07:17:46
+[SUM]   0.00-30.10  sec   319 MBytes  88.8 Mbits/sec                  receiver
+== nofec_down2 07:18:30
+[SUM]   0.00-30.00  sec   314 MBytes  87.9 Mbits/sec                  receiver
+#### noobfs (--disable-obfs)
+rtt min/avg/max/mdev = 71.074/77.175/86.964/7.167 ms
+== noobfs_up1 07:19:31
+[SUM]   0.00-30.19  sec   290 MBytes  80.4 Mbits/sec                  receiver
+== noobfs_down1 07:20:14
+[SUM]   0.00-30.00  sec   308 MBytes  86.1 Mbits/sec                  receiver
+== noobfs_up2 07:21:01
+[SUM]   0.00-30.28  sec   295 MBytes  81.8 Mbits/sec                  receiver
+== noobfs_down2 07:21:47
+[SUM]   0.00-30.00  sec   312 MBytes  87.2 Mbits/sec                  receiver
+#### f202 (-f 20:2)
+rtt min/avg/max/mdev = 71.508/78.734/106.298/13.782 ms
+== f202_up1 07:22:46
+[SUM]   0.00-30.27  sec   304 MBytes  84.2 Mbits/sec                  receiver
+== f202_down1 07:23:32
+[SUM]   0.00-30.00  sec   315 MBytes  88.0 Mbits/sec                  receiver
+== f202_up2 07:24:18
+[SUM]   0.00-30.07  sec   290 MBytes  80.8 Mbits/sec                  receiver
+== f202_down2 07:25:01
+[SUM]   0.00-30.00  sec   280 MBytes  78.4 Mbits/sec                  receiver
+#### bare (--disable-fec --disable-obfs)
+rtt min/avg/max/mdev = 60.763/84.898/108.895/15.221 ms
+== bare_up1 07:26:03
+[SUM]   0.00-30.13  sec   385 MBytes   107 Mbits/sec                  receiver
+== bare_down1 07:26:46
+[SUM]   0.00-30.00  sec   431 MBytes   120 Mbits/sec                  receiver
+== bare_up2 07:27:33
+[SUM]   0.00-30.11  sec   389 MBytes   108 Mbits/sec                  receiver
+== bare_down2 07:28:19
+[SUM]   0.00-30.00  sec   414 MBytes   116 Mbits/sec                  receiver
+done

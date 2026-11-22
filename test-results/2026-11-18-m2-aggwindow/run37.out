@@ -1,0 +1,20 @@
+== setup 20:41:46
+client92 dc4e17d3 git:   v1.4.5-dirty
+server93 dc4e17d3 git:   v1.4.5-dirty
+rtt min/avg/max/mdev = 60.910/80.552/108.867/20.516 ms
+  p8_up_1 start 1795174934787
+  p8_up_1 end   1795174967426 92.2 Mbits/sec
+  p8_dn_1 start 1795174978315
+  p8_dn_1 end   1795175011714 90.2 Mbits/sec
+  p8_up_2 start 1795175020026
+  p8_up_2 end   1795175052683 77.1 Mbits/sec
+  p8_dn_2 start 1795175063602
+  p8_dn_2 end   1795175096624 85.7 Mbits/sec
+  p1_up start 1795175104971
+  p1_up end   1795175136754 66.1 Mbits/sec
+  p1_dn start 1795175147644
+  p1_dn end   1795175179457 89.3 Mbits/sec
+done 20:46:34
+== restore 20:46:34
+client92 rps=0 mf=0 iperf=0 samp=0
+server93 rps=0 mf=0 iperf=0 samp=0

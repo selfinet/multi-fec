@@ -72,6 +72,7 @@ static inline int mud_send_mp(struct mud *mud, const void *data, size_t size,
     }
 }
 static struct ev_loop        *g_loop = NULL;
+extern bool                   g_pend_fifo;   /* main.cpp, mmulti-fec experiment */
 
 /* ────────────────────────────────────────────────────────────────
  * Pending packet queue — buffers packets on mud EAGAIN.
@@ -102,8 +103,15 @@ static int                  s_srv_pending_head  = 0;
 static int                  s_srv_pending_tail  = 0;
 static int                  s_srv_pending_count = 0;
 
+/* mmulti-fec diagnostics (2026-11-21): how often the downlink waits in this
+ * queue and for how long — suspected source of downstream packets arriving
+ * >30 ms late at the client's reorder buffer (run46). */
+static unsigned long long s_pend_enq = 0, s_pend_sent = 0, s_pend_wait_ms_sum = 0, s_pend_wait_max = 0;
+static unsigned long long s_pend_wait_hist[5] = {0};   /* <10 <20 <50 <100 >=100 ms */
+
 static void enqueue_server_pending(const char *data, int len, uint64_t peer)
 {
+    s_pend_enq++;
     /* Bound the copy: p.data is buf_len bytes and a negative len would become a
      * huge size_t. Callers only pass FEC encoder output today, so this is a
      * guard rather than a live fix. */
@@ -169,6 +177,12 @@ static void flush_server_pending()
                 window_out = true;               /* shared window ran dry */
             else
                 blocked[nblocked++] = p.peer;    /* only this client is stuck */
+        } else {
+            unsigned long long wms = (unsigned long long)(now - p.ts);
+            s_pend_sent++;
+            s_pend_wait_ms_sum += wms;
+            if (wms > s_pend_wait_max) s_pend_wait_max = wms;
+            s_pend_wait_hist[wms < 10 ? 0 : wms < 20 ? 1 : wms < 50 ? 2 : wms < 100 ? 3 : 4]++;
         }
         if (!keep) continue;
         if (w != r) {
@@ -626,6 +640,12 @@ static void conn_timer_cb(struct ev_loop *loop, struct ev_timer *watcher, int re
 static void fec_encode_cb(struct ev_loop *loop, struct ev_timer *watcher, int revents);
 static void wg_remote_cb(struct ev_loop *loop, struct ev_io *watcher, int revents);
 
+/* mmulti-fec --workers: the conv that currently owns this worker's view of the
+ * shared WG socket. Only one may exist per worker — two watchers on dups of one
+ * socket race for every datagram and the stale one wins most of them. */
+static bool   s_shared_conv_set = false;
+static fd64_t s_shared_conv_fd64;
+
 /* ────────────────────────────────────────────────────────────────
  * Modes for the combined server handler (mirrors speeder's enum)
  * ──────────────────────────────────────────────────────────────── */
@@ -677,8 +697,6 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
         assert(conn_info.conv_manager.s.is_data_used(fd64));
 
         conv = conn_info.conv_manager.s.find_conv_by_data(fd64);
-        conn_info.conv_manager.s.update_active_time(conv);
-        conn_info.update_active_time();
 
         int fd = fd_manager.to_fd(fd64);
 
@@ -706,6 +724,11 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
 
         int nrecv = recvmmsg(fd, srv_wg_msgs, SRV_WG_BATCH, MSG_DONTWAIT, NULL);
         if (nrecv <= 0) return;
+        /* Refresh activity only for data actually read. With --workers several
+         * readers share one socket, so a wakeup can find it already drained; touching
+         * the conv anyway kept a dead conv alive forever. */
+        conn_info.conv_manager.s.update_active_time(conv);
+        conn_info.update_active_time();
 
         for (int bi = 0; bi < nrecv; bi++) {
             int pkt_len = (int)srv_wg_msgs[bi].msg_len;
@@ -736,6 +759,10 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
                                conn_info.addr.get_len());
                 } else {
                     uint64_t peer = peer_for_addr(conn_info.addr);
+                    if (g_pend_fifo && s_srv_pending_count > 0) {   /* keep order: behind the queue */
+                        enqueue_server_pending(pkt_out_arr[i], pkt_out_len[i], peer);
+                        continue;
+                    }
                     int r2 = mud_send_mp(g_mud, pkt_out_arr[i], pkt_out_len[i], peer);
                     if (r2 < 0 && errno == EAGAIN)
                         enqueue_server_pending(pkt_out_arr[i], pkt_out_len[i], peer);
@@ -765,6 +792,10 @@ static void data_from_wg_or_fec_timeout_or_conn_timer(conn_info_t &conn_info,
             }
         } else {
             uint64_t peer = peer_for_addr(addr);
+            if (g_pend_fifo && s_srv_pending_count > 0) {   /* mmulti-fec --pend-fifo: no overtaking the queue */
+                enqueue_server_pending(out_arr[i], out_len[i], peer);
+                continue;
+            }
             int ret2 = mud_send_mp(g_mud, out_arr[i], out_len[i], peer);
             if (ret2 < 0) {
                 if (errno == EAGAIN)
@@ -959,8 +990,29 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
 
             /* Create a new connected UDP socket to WireGuard server for this conv */
             int new_udp_fd = -1;
-            int ret = new_connected_socket2(new_udp_fd, g_wg_addr,
+            int ret;
+            if (g_shared_wg_fd >= 0) {
+                /* mmulti-fec --workers: all workers talk to WireGuard through one
+                 * socket opened before the fork (same source port, so WG keeps one
+                 * endpoint). dup() so closing the conv leaves the socket open.
+                 * One conv per worker: a new conv (client restart, WG port change,
+                 * client-side conv expiry) replaces the old one instead of competing
+                 * with it. Limit: one WG peer per server instance. */
+                if (s_shared_conv_set && fd_manager.exist(s_shared_conv_fd64)) {
+                    conn_info_t *oci = (conn_info_t *)fd_manager.get_info(s_shared_conv_fd64).io_watcher.data;
+                    if (oci && oci->conv_manager.s.is_data_used(s_shared_conv_fd64)) {
+                        u32_t oc = oci->conv_manager.s.find_conv_by_data(s_shared_conv_fd64);
+                        mylog(log_info, "[server] shared WG socket: conv %x replaced by %x\n", oc, conv);
+                        oci->conv_manager.s.erase_conv(oc);   /* closes the dup, stops its watcher */
+                    }
+                }
+                s_shared_conv_set = false;
+                new_udp_fd = dup(g_shared_wg_fd);
+                ret = new_udp_fd >= 0 ? 0 : -1;
+            } else {
+                ret = new_connected_socket2(new_udp_fd, g_wg_addr,
                                             out_addr, out_interface);
+            }
             if (ret != 0) {
                 mylog(log_warn, "[server][%s] new_connected_socket failed\n",
                       const_cast<address_t&>(src_addr).get_str());
@@ -971,7 +1023,7 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
              * wg-side socket for why). This one sits on the downlink path: WG hands
              * the server everything bound for the branch through it. Created per conv,
              * so report a cap or failure only once. */
-            if (g_sock_buf > 0) {
+            if (g_sock_buf > 0 && g_shared_wg_fd < 0) {
                 static bool warned = false;
                 int rcv_kb = 0, snd_kb = 0;
                 int r = mf_set_sock_buf(new_udp_fd, g_sock_buf, &rcv_kb, &snd_kb);
@@ -999,6 +1051,7 @@ static void process_mud_data(const address_t &src_addr, char *data, int data_len
             ev_init(&io_watcher, wg_remote_cb);
             ev_io_set(&io_watcher, new_udp_fd, EV_READ);
             ev_io_start(conn_info.loop, &io_watcher);
+            if (g_shared_wg_fd >= 0) { s_shared_conv_set = true; s_shared_conv_fd64 = fd64; }
 
             mylog(log_info, "[server][%s] new conv %x fd=%d fd64=%llu\n",
                   const_cast<address_t&>(src_addr).get_str(), conv, new_udp_fd, fd64);
@@ -1389,10 +1442,51 @@ static void mud_io_cb(struct ev_loop * /*loop*/, struct ev_io * /*watcher*/, int
     wg_batch_flush();   /* 이번 수신 묶음을 WG 로 한 번에 — conv 소켓 fd 가 정리되기 전에 (wg_batch.h) */
 }
 
+
+/* mmulti-fec --workers: does this worker have a path that can carry data? */
+static bool mud_any_running(struct mud *m)
+{
+    static struct mud_paths paths;
+    if (!m || mud_get_paths(m, &paths, NULL, NULL) != 0) return false;
+    for (unsigned i = 0; i < paths.count; i++)
+        if (paths.path[i].status == MUD_RUNNING) return true;
+    return false;
+}
+
+/* With --workers, a worker whose paths are all down must not keep taking its
+ * share of WG datagrams from the shared socket (they would only die in the
+ * pending queue — a silent 1/N loss). Pause its watcher until a path runs. */
+static void shared_wg_gate()
+{
+    if (g_shared_wg_fd < 0 || !s_shared_conv_set || !fd_manager.exist(s_shared_conv_fd64)) return;
+    static bool paused = false;
+    bool run = mud_any_running(g_mud);
+    ev_io &w = fd_manager.get_info(s_shared_conv_fd64).io_watcher;
+    if (!run && ev_is_active(&w)) {
+        ev_io_stop(g_loop, &w);
+        if (!paused) mylog(log_warn, "[server] no RUNNING path — not reading the shared WG socket\n");
+        paused = true;
+    } else if (run && !ev_is_active(&w)) {
+        ev_io_start(g_loop, &w);
+        if (paused) mylog(log_info, "[server] path RUNNING again — reading the shared WG socket\n");
+        paused = false;
+    }
+}
+
 static void mud_update_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/, int /*revents*/)
 {
     mud_update(g_mud);
     flush_server_pending();
+    static unsigned ticks = 0;
+    if (++ticks % 5 == 0) shared_wg_gate();   /* timer is 20 ms → every 100 ms */
+    static unsigned long long last_enq = 0;
+    if (ticks % 250 == 0 && s_pend_enq != last_enq) {   /* every 5 s while the queue is in use */
+        last_enq = s_pend_enq;
+        mylog(log_info, "[server] pending enq %llu sent %llu wait avg %.1f max %llu ms hist(<10/<20/<50/<100/100+) %llu/%llu/%llu/%llu/%llu queued %d\n",
+              s_pend_enq, s_pend_sent, s_pend_sent ? (double)s_pend_wait_ms_sum / s_pend_sent : 0.0, s_pend_wait_max,
+              s_pend_wait_hist[0], s_pend_wait_hist[1], s_pend_wait_hist[2], s_pend_wait_hist[3], s_pend_wait_hist[4],
+              s_srv_pending_count);
+    }
 }
 
 static void global_timer_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/, int /*revents*/)
@@ -1409,11 +1503,20 @@ static void prepare_cb(struct ev_loop * /*loop*/, struct ev_prepare * /*watcher*
 {
     wg_batch_flush();   /* 잠들기 전에 WG 쪽 묶음을 내보낸다 (wg_batch.h) */
     delay_manager.check();
+    if (g_pend_fifo && s_srv_pending_count > 0) {   /* drain as soon as the window has room, not every 20 ms */
+        mud_refill_window(g_mud);
+        flush_server_pending();
+    }
 }
 
 /* ────────────────────────────────────────────────────────────────
  * mf_server_event_loop()
  * ──────────────────────────────────────────────────────────────── */
+
+static void reorder_tick_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/, int /*revents*/)
+{
+    wg_reorder_tick();   /* mmulti-fec --reorder-ms: release gaps that waited long enough */
+}
 
 void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obfs,
                           int /*unused*/, address_t decoy_addr)
@@ -1446,6 +1549,9 @@ void mf_server_event_loop(struct mud *mud, const struct obfs_ctx *obfs,
     struct ev_timer mud_timer;
     ev_timer_init(&mud_timer, mud_update_cb, 0.02, 0.02);
     ev_timer_start(loop, &mud_timer);
+    struct ev_timer reorder_timer;   /* mmulti-fec --reorder-ms: release gaps that waited long enough */
+    ev_timer_init(&reorder_timer, reorder_tick_cb, 0.002, 0.002);
+    if (g_reorder_shm) ev_timer_start(loop, &reorder_timer);
 
     /* ev_timer: global connection cleanup */
     struct ev_timer global_timer;

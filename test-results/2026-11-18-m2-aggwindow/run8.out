@@ -1,0 +1,37 @@
+== setup 11:33:42
+bash: line 13: iptables: command not found
+S: 1 fwd=1 FORWARD=
+10.88.1.0/24 
+	nexthop dev rq-wg weight 1 
+	nexthop dev rq-wg2 weight 1 
+	nexthop dev rq-wg3 weight 1 
+C: hash=1 FORWARD=-P FORWARD ACCEPT
+10.90.0.0/24 
+	nexthop dev rq-wg weight 1 
+	nexthop dev rq-wg2 weight 1 
+	nexthop dev rq-wg3 weight 1 
+172.31.10.1 dev enp4s0 src 172.31.10.2 uid 0 
+172.31.20.1 dev enp1s0 src 172.31.20.2 uid 0 
+5 packets transmitted, 5 received, 0% packet loss, time 1203ms
+rtt min/avg/max/mdev = 61.301/76.876/95.246/11.865 ms
+== base8_up (P8 ) 11:34:07
+  tunnel share(pkts) A 100% B 0% C 0%  | recv 74.2 Mbits/sec | retr 1109
+== base8_down (P8 -R) 11:34:55
+  tunnel share(pkts) A 100% B 0% C 0%  | recv 81.4 Mbits/sec | retr 691
+== ecmp24_up1 (P24 ) 11:35:47
+  tunnel share(pkts) A 28% B 45% C 27%  | recv 152 Mbits/sec | retr 2879
+== ecmp24_down1 (P24 -R) 11:36:38
+  tunnel share(pkts) A 39% B 42% C 19%  | recv 171 Mbits/sec | retr 2472
+== ecmp24_up2 (P24 ) 11:37:27
+  tunnel share(pkts) A 21% B 47% C 33%  | recv 160 Mbits/sec | retr 4106
+== ecmp24_down2 (P24 -R) 11:38:16
+  tunnel share(pkts) A 47% B 22% C 31%  | recv 156 Mbits/sec | retr 2720
+== ecmp8_up (P8 ) 11:39:06
+  tunnel share(pkts) A 6% B 47% C 47%  | recv 172 Mbits/sec | retr 2262
+== ecmp8_down (P8 -R) 11:39:55
+  tunnel share(pkts) A 63% B 0% C 37%  | recv 189 Mbits/sec | retr 1108
+== ecmp1_up (P1 ) 11:40:43
+  tunnel share(pkts) A 0% B 0% C 100%  | recv 103 Mbits/sec | retr 904
+== ecmp1_down (P1 -R) 11:41:32
+  tunnel share(pkts) A 100% B 0% C 0%  | recv 110 Mbits/sec | retr 45
+done 11:42:30

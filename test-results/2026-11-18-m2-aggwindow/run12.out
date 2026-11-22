@@ -1,0 +1,63 @@
+== setup 13:21:51
+client92: netem 8003: dev enp1s0 root refcnt 9 limit 20000 delay 54ms netem 10: dev enp4s0 parent 1:1 limit 20000 delay 30ms netem 20: dev enp4s0 parent 1:2 limit 20000 delay 54ms
+server93: netem 8003: dev enp1s0 root refcnt 9 limit 20000 delay 54ms netem 10: dev enp4s0 parent 1:1 limit 20000 delay 30ms netem 20: dev enp4s0 parent 1:2 limit 20000 delay 54ms
+client92 client_P0.pid pid=37265 cpus=1
+client92 client_P1.pid pid=37266 cpus=2
+client92 client_P2.pid pid=37267 cpus=3
+server93 server_P0.pid pid=19198 cpus=1
+server93 server_P1.pid pid=19199 cpus=2
+server93 server_P2.pid pid=19200 cpus=3
+pair0 rtt min/avg/max/mdev = 60.866/74.771/85.020/9.560 ms
+pair1 rtt min/avg/max/mdev = 60.920/66.065/81.383/8.843 ms
+pair2 rtt min/avg/max/mdev = 60.904/78.451/95.880/13.216 ms
+path1 rtt min/avg/max/mdev = 60.140/60.143/60.149/0.004 ms
+path2 rtt min/avg/max/mdev = 108.136/108.143/108.147/0.005 ms
+== n1_up1 13:22:20
+  pair0 61.1 Mbps
+  TOTAL 61.1 Mbps
+== n1_down1 13:23:10
+  pair0 65.1 Mbps
+  TOTAL 65.1 Mbps
+== n1_up2 13:23:57
+  pair0 64.3 Mbps
+  TOTAL 64.3 Mbps
+== n1_down2 13:24:46
+  pair0 66.4 Mbps
+  TOTAL 66.4 Mbps
+== n2_up1 13:25:35
+  pair0 57.3 Mbps
+  pair1 48.6 Mbps
+  TOTAL 105.9 Mbps
+== n2_down1 13:26:25
+  pair0 61.0 Mbps
+  pair1 53.9 Mbps
+  TOTAL 114.9 Mbps
+== n2_up2 13:27:14
+  pair0 55.5 Mbps
+  pair1 48.7 Mbps
+  TOTAL 104.2 Mbps
+== n2_down2 13:28:05
+  pair0 57.5 Mbps
+  pair1 52.4 Mbps
+  TOTAL 109.9 Mbps
+== n3_up1 13:28:53
+  pair0 53.8 Mbps
+  pair1 42.7 Mbps
+  pair2 43.9 Mbps
+  TOTAL 140.4 Mbps
+== n3_down1 13:29:46
+  pair0 57.6 Mbps
+  pair1 47.5 Mbps
+  pair2 43.7 Mbps
+  TOTAL 148.8 Mbps
+== n3_up2 13:30:36
+  pair0 51.1 Mbps
+  pair1 38.6 Mbps
+  pair2 42.1 Mbps
+  TOTAL 131.8 Mbps
+== n3_down2 13:31:28
+  pair0 58.8 Mbps
+  pair1 45.6 Mbps
+  pair2 46.1 Mbps
+  TOTAL 150.5 Mbps
+done 13:32:32

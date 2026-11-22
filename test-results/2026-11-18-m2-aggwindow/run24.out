@@ -1,0 +1,79 @@
+== setup 13:08:45
+client92 e9ae9a5849af git:   v1.4.5
+server93 e9ae9a5849af git:   v1.4.5
+== n1pin_1 (터널 1, pin '0', rps e) 13:08:58
+rtt min/avg/max/mdev = 71.387/71.675/72.033/0.268 ms
+P0 0 
+e
+  n1pin_1_p24_up recv 102 Mbits/sec | retr 4482 | share 100/0/0 | idle c/s 35 79 72 76 / 37 69 67 63 / 
+  n1pin_1_p24_dn recv 108 Mbits/sec | retr 3781 | share 100/0/0 | idle c/s 42 71 63 72 / 46 82 80 78 / 
+  n1pin_1_p8_up recv 109 Mbits/sec | retr 2847 | share 100/0/0 | idle c/s 34 78 69 76 / 36 70 67 62 / 
+  n1pin_1_p8_dn recv 105 Mbits/sec | retr 2375 | share 100/0/0 | idle c/s 38 71 63 72 / 43 81 80 77 / 
+  P0 EAGAIN=196 pin=0 
+== n2pin_1 (터널 2, pin '0 1', rps c) 13:12:36
+rtt min/avg/max/mdev = 81.766/90.446/107.155/11.818 ms
+P0 0 P1 1 
+c
+  n2pin_1_p24_up recv 155 Mbits/sec | retr 3219 | share 52/48/0 | idle c/s 40 38 65 65 / 34 33 49 53 / 
+  n2pin_1_p24_dn recv 152 Mbits/sec | retr 1971 | share 49/51/0 | idle c/s 35 36 51 53 / 42 41 67 69 / 
+  n2pin_1_p8_up recv 164 Mbits/sec | retr 3590 | share 55/45/0 | idle c/s 31 40 64 64 / 32 34 49 53 / 
+  n2pin_1_p8_dn recv 164 Mbits/sec | retr 478 | share 49/51/0 | idle c/s 39 39 53 55 / 45 46 72 73 / 
+  P0 EAGAIN=168 pin=0   P1 EAGAIN=245 pin=1 
+== n3pin_1 (터널 3, pin '0 1 2', rps 8) 13:16:16
+
+P0 0 P1 1 P2 2 
+8
+  n3pin_1_p24_up recv 214 Mbits/sec | retr 7921 | share 45/19/36 | idle c/s 31 30 30 46 / 24 23 20 32 / 
+  n3pin_1_p24_dn recv 189 Mbits/sec | retr 3018 | share 33/44/23 | idle c/s 32 29 34 41 / 42 36 43 56 / 
+  n3pin_1_p8_up recv 221 Mbits/sec | retr 2671 | share 20/58/22 | idle c/s 40 21 33 49 / 23 17 19 28 / 
+  n3pin_1_p8_dn recv 195 Mbits/sec | retr 2768 | share 39/24/36 | idle c/s 27 28 26 38 / 39 43 40 55 / 
+  P0 EAGAIN=172 pin=0   P1 EAGAIN=192 pin=1   P2 EAGAIN=170 pin=2 
+== n3free_1 (터널 3, pin '없음', rps 0) 13:20:01
+
+P0 0-3 P1 0-3 P2 0-3 
+0
+  n3free_1_p24_up recv 169 Mbits/sec | retr 2298 | share 33/29/38 | idle c/s 47 47 47 47 / 33 33 36 33 / 
+  n3free_1_p24_dn recv 167 Mbits/sec | retr 1694 | share 30/35/35 | idle c/s 39 36 41 41 / 49 49 52 50 / 
+  n3free_1_p8_up recv 181 Mbits/sec | retr 2745 | share 33/47/20 | idle c/s 44 47 42 43 / 29 28 30 28 / 
+  n3free_1_p8_dn recv 199 Mbits/sec | retr 1011 | share 38/45/16 | idle c/s 27 28 28 30 / 43 44 44 40 / 
+  P0 EAGAIN=85 pin=   P1 EAGAIN=176 pin=   P2 EAGAIN=113 pin= 
+== n1pin_2 (터널 1, pin '0', rps e) 13:23:50
+rtt min/avg/max/mdev = 81.473/87.462/95.346/5.819 ms
+P0 0 
+e
+  n1pin_2_p24_up recv 125 Mbits/sec | retr 3976 | share 100/0/0 | idle c/s 27 77 68 74 / 28 57 62 67 / 
+  n1pin_2_p24_dn recv 97.5 Mbits/sec | retr 3786 | share 100/0/0 | idle c/s 37 72 64 70 / 43 75 78 78 / 
+  n1pin_2_p8_up recv 100 Mbits/sec | retr 2331 | share 100/0/0 | idle c/s 30 76 68 73 / 33 61 66 68 / 
+  n1pin_2_p8_dn recv 98.9 Mbits/sec | retr 2171 | share 100/0/0 | idle c/s 33 70 62 70 / 39 71 77 77 / 
+  P0 EAGAIN=208 pin=0 
+== n2pin_2 (터널 2, pin '0 1', rps c) 13:27:28
+rtt min/avg/max/mdev = 60.931/76.970/85.033/11.341 ms
+P0 0 P1 1 
+c
+  n2pin_2_p24_up recv 166 Mbits/sec | retr 3937 | share 56/44/0 | idle c/s 41 32 61 65 / 35 25 48 47 / 
+  n2pin_2_p24_dn recv 150 Mbits/sec | retr 2715 | share 50/50/0 | idle c/s 36 36 53 55 / 43 42 69 67 / 
+  n2pin_2_p8_up recv 164 Mbits/sec | retr 1973 | share 44/56/0 | idle c/s 36 44 66 65 / 33 41 53 53 / 
+  n2pin_2_p8_dn recv 178 Mbits/sec | retr 808 | share 53/47/0 | idle c/s 29 30 46 48 / 37 39 67 63 / 
+  P0 EAGAIN=162 pin=0   P1 EAGAIN=198 pin=1 
+== n3pin_2 (터널 3, pin '0 1 2', rps 8) 13:31:05
+
+P0 0 P1 1 P2 2 
+8
+  n3pin_2_p24_up recv 190 Mbits/sec | retr 6497 | share 42/24/34 | idle c/s 40 42 46 58 / 30 30 31 40 / 
+  n3pin_2_p24_dn recv 191 Mbits/sec | retr 3145 | share 27/42/32 | idle c/s 28 29 32 40 / 44 39 43 58 / 
+  n3pin_2_p8_up recv 220 Mbits/sec | retr 4067 | share 40/50/10 | idle c/s 36 21 32 46 / 23 14 18 27 / 
+  n3pin_2_p8_dn recv 221 Mbits/sec | retr 1567 | share 29/29/43 | idle c/s 19 19 16 28 / 39 35 31 51 / 
+  P0 EAGAIN=194 pin=0   P1 EAGAIN=238 pin=1   P2 EAGAIN=217 pin=2 
+== n3free_2 (터널 3, pin '없음', rps 0) 13:34:52
+
+P0 0-3 P1 0-3 P2 0-3 
+0
+  n3free_2_p24_up recv 159 Mbits/sec | retr 3036 | share 32/36/32 | idle c/s 44 46 46 46 / 37 37 38 37 / 
+  n3free_2_p24_dn recv 162 Mbits/sec | retr 2844 | share 32/29/39 | idle c/s 37 36 40 39 / 43 42 45 47 / 
+  n3free_2_p8_up recv 157 Mbits/sec | retr 3802 | share 31/24/45 | idle c/s 43 43 42 43 / 36 36 34 32 / 
+  n3free_2_p8_dn recv 198 Mbits/sec | retr 2775 | share 50/34/16 | idle c/s 20 19 24 25 / 37 39 36 34 / 
+  P0 EAGAIN=229 pin=   P1 EAGAIN=158 pin=   P2 EAGAIN=155 pin= 
+done 13:38:54
+== restore 13:38:54
+client92 rps=0 4/1 mf=0
+server93 rps=0 1/4 mf=0

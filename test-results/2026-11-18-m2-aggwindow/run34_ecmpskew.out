@@ -1,0 +1,22 @@
+== setup 23:19:38
+client92 aedd5cf5ce25 e324110ee508
+server93 aedd5cf5ce25 e324110ee508
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms, run30 전 egress 와 같아야 함)
+172.31.10.1 rtt min/avg/max/mdev = 60.149/60.179/60.231/0.032 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.155/108.187/108.207/0.019 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.146/108.172/108.239/0.035 ms
+== g11u3_1 (spd2 env없음, 터널 3, pin '0 1 2', rps 8) 23:19:57
+
+P0 0 P1 1 P2 2 
+8
+  g11u3_1_u198_up recv 185 Mbits/sec | lost 24157/412524 (5.9%) | share 17/83/0 | idle c/s 43 21 39 39 / 46 27 44 42 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g11u3_1_u198_dn recv 195 Mbits/sec | lost 5719/412481 (1.4%) | share 66/0/34 | idle c/s 25 55 28 42 / 20 40 27 35 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+== restore 23:22:04
+client92 rps=0 4/1 mf=0
+server93 rps=0 1/4 mf=0
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

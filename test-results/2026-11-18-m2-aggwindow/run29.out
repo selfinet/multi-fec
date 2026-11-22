@@ -1,0 +1,67 @@
+== setup 16:38:12
+client92 aedd5cf5ce25 e324110ee508
+server93 aedd5cf5ce25 e324110ee508
+== n1spd2_1 (spd2, 터널 1, pin '0', rps e) 16:38:25
+rtt min/avg/max/mdev = 60.949/80.642/109.032/20.570 ms
+P0 0 
+e
+  n1spd2_1_p1_up recv 133 Mbits/sec | retr 1384 | share 100/0/0 | idle c/s 38 70 69 70 / 30 67 68 59 / 
+  n1spd2_1_p1_dn recv 137 Mbits/sec | retr 360 | share 100/0/0 | idle c/s 42 72 66 68 / 56 78 81 79 / 
+  n1spd2_1_p8_up recv 134 Mbits/sec | retr 2517 | share 100/0/0 | idle c/s 45 72 71 73 / 40 69 67 65 / 
+  n1spd2_1_p8_dn recv 135 Mbits/sec | retr 4078 | share 100/0/0 | idle c/s 43 71 63 69 / 53 74 79 77 / 
+  $(hostname) [0m[32m[2026-11-19 16:41:34][INFO][client] batch gso=on gro=on send=1493824/125005 gso=1450219/189679 fallback=0 recv=1466096/170668 gro=1327802/257620
+  $(hostname) [0m[32m[2026-11-19 16:41:32][INFO][server] batch gso=on gro=on send=1431177/151657 gso=1352530/187572 fallback=0 recv=1479560/170635 gro=1352647/232311
+  P0 EAGAIN=225 pin=0 
+== n1spd1_1 (spd1, 터널 1, pin '0', rps e) 16:41:59
+rtt min/avg/max/mdev = 61.031/72.494/95.284/16.115 ms
+P0 0 
+e
+  n1spd1_1_p1_up recv 105 Mbits/sec | retr 1937 | share 100/0/0 | idle c/s 29 78 68 75 / 26 71 64 63 / 
+  n1spd1_1_p1_dn recv 148 Mbits/sec | retr 226 | share 100/0/0 | idle c/s 23 66 61 68 / 23 79 71 73 / 
+  n1spd1_1_p8_up recv 139 Mbits/sec | retr 1330 | share 100/0/0 | idle c/s 17 64 63 68 / 17 66 62 59 / 
+  n1spd1_1_p8_dn recv 151 Mbits/sec | retr 1668 | share 100/0/0 | idle c/s 18 63 56 62 / 18 70 71 68 / 
+  P0 EAGAIN=215 pin=0 
+== n1spd2_2 (spd2, 터널 1, pin '0', rps e) 16:45:36
+rtt min/avg/max/mdev = 71.170/79.852/96.080/11.484 ms
+P0 0 
+e
+  n1spd2_2_p1_up recv 125 Mbits/sec | retr 11 | share 100/0/0 | idle c/s 66 86 86 84 / 55 80 74 79 / 
+  n1spd2_2_p1_dn recv 146 Mbits/sec | retr 193 | share 100/0/0 | idle c/s 41 70 65 71 / 54 81 79 75 / 
+  n1spd2_2_p8_up recv 135 Mbits/sec | retr 2269 | share 100/0/0 | idle c/s 44 72 69 72 / 38 69 64 66 / 
+  n1spd2_2_p8_dn recv 134 Mbits/sec | retr 2722 | share 100/0/0 | idle c/s 41 69 63 69 / 51 76 77 73 / 
+  $(hostname) [0m[32m[2026-11-19 16:48:48][INFO][client] batch gso=on gro=on send=1429117/121534 gso=1373235/161374 fallback=0 recv=1269814/126256 gro=1165839/202579
+  $(hostname) [0m[32m[2026-11-19 16:48:46][INFO][server] batch gso=on gro=on send=1233996/112838 gso=1180712/146857 fallback=0 recv=1415385/148283 gro=1301179/214352
+  P0 EAGAIN=81 pin=0 
+== n1spd1_2 (spd1, 터널 1, pin '0', rps e) 16:49:13
+rtt min/avg/max/mdev = 61.109/69.069/84.956/11.233 ms
+P0 0 
+e
+  n1spd1_2_p1_up recv 153 Mbits/sec | retr 2652 | share 100/0/0 | idle c/s 12 73 66 64 / 14 63 63 57 / 
+  n1spd1_2_p1_dn recv 192 Mbits/sec | retr 310 | share 100/0/0 | idle c/s 23 67 56 66 / 17 78 73 77 / 
+  n1spd1_2_p8_up recv 144 Mbits/sec | retr 1322 | share 100/0/0 | idle c/s 16 65 63 67 / 19 64 60 59 / 
+  n1spd1_2_p8_dn recv 184 Mbits/sec | retr 429 | share 100/0/0 | idle c/s 18 60 50 61 / 12 66 65 70 / 
+  P0 EAGAIN=233 pin=0 
+== n1spd2_3 (spd2, 터널 1, pin '0', rps e) 16:52:50
+rtt min/avg/max/mdev = 61.044/74.926/82.188/9.819 ms
+P0 0 
+e
+  n1spd2_3_p1_up recv 145 Mbits/sec | retr 1412 | share 100/0/0 | idle c/s 64 85 83 86 / 54 77 73 74 / 
+  n1spd2_3_p1_dn recv 89.9 Mbits/sec | retr 6 | share 100/0/0 | idle c/s 64 85 78 82 / 69 85 90 87 / 
+  n1spd2_3_p8_up recv 150 Mbits/sec | retr 2827 | share 100/0/0 | idle c/s 54 77 76 77 / 46 71 68 66 / 
+  n1spd2_3_p8_dn recv 152 Mbits/sec | retr 2568 | share 100/0/0 | idle c/s 46 70 64 70 / 61 79 81 78 / 
+  $(hostname) [0m[32m[2026-11-19 16:56:02][INFO][client] batch gso=on gro=on send=1298628/98990 gso=1247751/110666 fallback=0 recv=992110/89739 gro=910217/137154
+  $(hostname) [0m[32m[2026-11-19 16:56:00][INFO][server] batch gso=on gro=on send=951492/84749 gso=904322/94041 fallback=0 recv=1289737/93317 gro=1199730/164290
+  P0 EAGAIN=244 pin=0 
+== n1spd1_3 (spd1, 터널 1, pin '0', rps e) 16:56:27
+rtt min/avg/max/mdev = 61.197/79.357/95.306/14.012 ms
+P0 0 
+e
+  n1spd1_3_p1_up recv 116 Mbits/sec | retr 1986 | share 100/0/0 | idle c/s 41 81 83 83 / 47 76 71 76 / 
+  n1spd1_3_p1_dn recv 182 Mbits/sec | retr 129 | share 100/0/0 | idle c/s 25 67 56 66 / 18 80 78 70 / 
+  n1spd1_3_p8_up recv 149 Mbits/sec | retr 1376 | share 100/0/0 | idle c/s 17 67 69 65 / 26 63 61 63 / 
+  n1spd1_3_p8_dn recv 191 Mbits/sec | retr 887 | share 100/0/0 | idle c/s 18 62 49 59 / 13 72 72 69 / 
+  P0 EAGAIN=220 pin=0 
+done 17:00:17
+== restore 17:00:17
+client92 rps=0 4/1 mf=0
+server93 rps=0 1/4 mf=0

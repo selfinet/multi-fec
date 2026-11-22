@@ -1,0 +1,8 @@
+== setup 23:00:29
+cbeb61371a4a
+cbeb61371a4a
+rtt min/avg/max/mdev = 71.445/76.055/84.847/6.219 ms
+== tcp_up (-P 8) 23:00:49
+== udp_up (-u -b 200M -l 1200) 23:01:41
+== tcp_down (-P 8 -R) 23:02:33
+done 23:03:36

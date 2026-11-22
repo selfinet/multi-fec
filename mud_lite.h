@@ -177,6 +177,9 @@ int mud_set_path (struct mud *, struct mud_path_conf *);
 
 int mud_update     (struct mud *);
 int mud_send_wait  (struct mud *);
+void mud_set_window_opts(struct mud *, unsigned floor_x100, int unlimited);   /* mmulti-fec experiment */
+void mud_set_window_mult(struct mud *, unsigned mult_x100);                   /* mmulti-fec experiment */
+void mud_refill_window(struct mud *);                                          /* mmulti-fec experiment */
 int mud_send_flush (struct mud *);  /* flush sendmmsg queue immediately */
 
 int mud_recv         (struct mud *, void *, size_t);

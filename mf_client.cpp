@@ -31,6 +31,7 @@ extern "C" void mf_client_event_loop(struct mud *mud, const struct obfs_ctx *obf
 
 /* We need the mud pointer accessible from static callbacks */
 static struct mud            *g_mud  = NULL;
+extern bool                   g_pend_fifo;   /* main.cpp, mmulti-fec experiment */
 static const struct obfs_ctx *g_obfs = NULL;
 
 /* ── per-multipath-mode send helper ──────────────────────────────
@@ -137,7 +138,7 @@ static void flush_pending_packets()
         mylog(log_info, "[client] dropped %d stale pending packet(s) (>%d ms)\n",
               stale, CLIENT_PENDING_TTL_MS);
     if (flushed > 0) {
-        mylog(log_info, "[client] flushed %d pending packet(s)\n", flushed);
+        if (!g_pend_fifo) mylog(log_info, "[client] flushed %d pending packet(s)\n", flushed);
         mud_send_flush(g_mud);
     }
 }
@@ -184,6 +185,10 @@ static void send_fec_output(conn_info_t &conn_info,
         memcpy(sbuf + SESSION_ID_LEN, out_arr[i], out_len[i]);
         int sbuf_len = SESSION_ID_LEN + out_len[i];
 
+        if (g_pend_fifo && s_pending_count > 0) {   /* mmulti-fec --pend-fifo: no overtaking the queue */
+            enqueue_pending(sbuf, sbuf_len);
+            continue;
+        }
         int ret = mud_send_mp(g_mud, sbuf, sbuf_len);
         if (ret < 0) {
             if (errno == EAGAIN || errno == EWOULDBLOCK) {
@@ -466,11 +471,43 @@ static void conn_timer_cb(struct ev_loop * /*loop*/, struct ev_timer *watcher, i
     }
 }
 
+
+/* mmulti-fec --workers: does this worker have a path that can carry data? */
+static bool mud_any_running(struct mud *m)
+{
+    static struct mud_paths paths;
+    if (!m || mud_get_paths(m, &paths, NULL, NULL) != 0) return false;
+    for (unsigned i = 0; i < paths.count; i++)
+        if (paths.path[i].status == MUD_RUNNING) return true;
+    return false;
+}
+
+static struct ev_io   *s_local_watcher = NULL;   /* WG-side watcher, for the gate below */
+static struct ev_loop *s_loop          = NULL;
+
+/* With --workers, read the shared WG socket only while this worker has a
+ * RUNNING path; otherwise the other workers take the datagrams. Without this a
+ * worker whose port is blocked kept taking 1/N of the traffic and dropping it. */
+static void shared_wg_gate()
+{
+    if (g_shared_wg_fd < 0 || !s_local_watcher) return;
+    static int state = -1;   /* -1 unknown, 0 paused, 1 reading */
+    bool run = mud_any_running(g_mud);
+    if (run && !ev_is_active(s_local_watcher)) ev_io_start(s_loop, s_local_watcher);
+    if (!run && ev_is_active(s_local_watcher)) ev_io_stop(s_loop, s_local_watcher);
+    if (state != (int)run) {
+        mylog(run ? log_info : log_warn, run ? "[client] path RUNNING — reading the shared WG socket\n"
+                                             : "[client] no RUNNING path — not reading the shared WG socket\n");
+        state = run;
+    }
+}
+
 static void mud_update_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/, int /*revents*/)
 {
     mud_update(g_mud);
     if (s_pending_count > 0)
         flush_pending_packets();
+    shared_wg_gate();   /* timer is 100 ms */
 }
 
 static void delay_manager_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/, int /*revents*/)
@@ -478,10 +515,20 @@ static void delay_manager_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watc
     /* nothing — delay_manager checks happen via ev_prepare */
 }
 
+
+static void reorder_tick_cb(struct ev_loop * /*loop*/, struct ev_timer * /*watcher*/, int /*revents*/)
+{
+    wg_reorder_tick();   /* mmulti-fec --reorder-ms: release gaps that waited long enough */
+}
+
 static void prepare_cb(struct ev_loop * /*loop*/, struct ev_prepare * /*watcher*/, int /*revents*/)
 {
     wg_batch_flush();   /* 잠들기 전에 WG 쪽 묶음을 내보낸다 (wg_batch.h) */
     delay_manager.check();
+    if (g_pend_fifo && s_pending_count > 0) {   /* drain as soon as the window has room, not every 100 ms */
+        mud_refill_window(g_mud);
+        flush_pending_packets();
+    }
 }
 
 /* ────────────────────────────────────────────────────────────────
@@ -505,7 +552,12 @@ void mf_client_event_loop(struct mud *mud, const struct obfs_ctx *obfs)
 
     /* Local listen socket (WireGuard proxy port) */
     int &local_listen_fd = conn_info.local_listen_fd;
-    new_listen_socket2(local_listen_fd, local_addr);
+    /* mmulti-fec --workers: the WG-facing socket was opened before the workers
+     * were forked, so every worker reads from and replies through the same
+     * 127.0.0.1:port — WireGuard sees one endpoint and the kernel hands each
+     * datagram to whichever worker reads it first (per-packet spreading). */
+    if (g_shared_wg_fd >= 0) local_listen_fd = g_shared_wg_fd;
+    else new_listen_socket2(local_listen_fd, local_addr);
     mylog(log_info, "[client] local listen fd=%d addr=%s\n",
           local_listen_fd, local_addr.get_str());
 
@@ -514,7 +566,7 @@ void mf_client_event_loop(struct mud *mud, const struct obfs_ctx *obfs)
      * on a stock kernel. Through v1.3.5 only the mud socket got --sock-buf, and this
      * socket became the next place to overflow: on the 2 vCPU testnet with default
      * sysctl it carried most of the remaining drops (2026-10-06, REPORT §11). */
-    if (g_sock_buf > 0) {
+    if (g_sock_buf > 0 && g_shared_wg_fd < 0) {   /* shared socket: set before fork */
         int rcv_kb = 0, snd_kb = 0;
         int r = mf_set_sock_buf(local_listen_fd, g_sock_buf, &rcv_kb, &snd_kb);
         if (r < 0)
@@ -541,7 +593,9 @@ void mf_client_event_loop(struct mud *mud, const struct obfs_ctx *obfs)
     struct ev_io local_watcher;
     local_watcher.data = &conn_info;
     ev_io_init(&local_watcher, local_listen_cb, local_listen_fd, EV_READ);
-    ev_io_start(loop, &local_watcher);
+    s_local_watcher = &local_watcher;
+    s_loop          = loop;
+    if (g_shared_wg_fd < 0) ev_io_start(loop, &local_watcher);   /* shared: started by shared_wg_gate() once a path runs */
 
     /* ev_io: mud fd */
     struct ev_io mud_watcher;
@@ -559,6 +613,11 @@ void mf_client_event_loop(struct mud *mud, const struct obfs_ctx *obfs)
     struct ev_timer mud_timer;
     ev_timer_init(&mud_timer, mud_update_cb, 0.1, 0.1);
     ev_timer_start(loop, &mud_timer);
+
+    /* ev_timer: shared reorder gap release (mmulti-fec --reorder-ms) */
+    struct ev_timer reorder_timer;
+    ev_timer_init(&reorder_timer, reorder_tick_cb, 0.002, 0.002);
+    if (g_reorder_shm) ev_timer_start(loop, &reorder_timer);
 
     /* ev_prepare: delay_manager */
     ev_prepare prepare_watcher;

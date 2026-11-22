@@ -1,0 +1,81 @@
+== setup 21:18:30
+client92 v145i dc4e17d3 multi-fec 1.4.5
+client92 spd2i 6a223cfb multi-fec 1.4.5-speed.2
+server93 v145i dc4e17d3 multi-fec 1.4.5
+server93 spd2i 6a223cfb multi-fec 1.4.5-speed.2
+== v145i_1 (v145i ) 21:18:48
+  server93 running multi-fec 1.4.5 env=0
+  client92 running multi-fec 1.4.5 env=0
+rtt min/avg/max/mdev = 60.915/83.809/108.965/19.681 ms
+  v145i_1_p8_up start 1795177147789
+  v145i_1_p8_up end   1795177180581 82.5 Mbits/sec
+  v145i_1_p8_dn start 1795177191494
+  v145i_1_p8_dn end   1795177224678 87.3 Mbits/sec
+  v145i_1_p1_up start 1795177232989
+  v145i_1_p1_up end   1795177264708 61.2 Mbits/sec
+  v145i_1_p1_dn start 1795177275608
+  v145i_1_p1_dn end   1795177307489 79.3 Mbits/sec
+== spd2i_1 (spd2i ) 21:21:53
+  server93 running multi-fec 1.4.5-speed.2 env=0
+  client92 running multi-fec 1.4.5-speed.2 env=0
+rtt min/avg/max/mdev = 71.064/79.536/95.619/11.377 ms
+  spd2i_1_p8_up start 1795177332366
+  spd2i_1_p8_up end   1795177366149 128 Mbits/sec
+  spd2i_1_p8_dn start 1795177375742
+  spd2i_1_p8_dn end   1795177408408 129 Mbits/sec
+  spd2i_1_p1_up start 1795177417963
+  spd2i_1_p1_up end   1795177449677 111 Mbits/sec
+  spd2i_1_p1_dn start 1795177459252
+  spd2i_1_p1_dn end   1795177490993 118 Mbits/sec
+== spd2nogso_1 (spd2i MF_UDP_GSO=0) 21:24:57
+  server93 running multi-fec 1.4.5-speed.2 env=1
+  client92 running multi-fec 1.4.5-speed.2 env=1
+rtt min/avg/max/mdev = 71.062/82.822/106.311/16.608 ms
+  spd2nogso_1_p8_up start 1795177517145
+  spd2nogso_1_p8_up end   1795177549785 124 Mbits/sec
+  spd2nogso_1_p8_dn start 1795177559385
+  spd2nogso_1_p8_dn end   1795177592086 121 Mbits/sec
+  spd2nogso_1_p1_up start 1795177601684
+  spd2nogso_1_p1_up end   1795177633493 119 Mbits/sec
+  spd2nogso_1_p1_dn start 1795177643081
+  spd2nogso_1_p1_dn end   1795177674878 150 Mbits/sec
+== v145i_2 (v145i ) 21:28:00
+  server93 running multi-fec 1.4.5 env=0
+  client92 running multi-fec 1.4.5 env=0
+rtt min/avg/max/mdev = 71.237/77.028/84.923/5.781 ms
+  v145i_2_p8_up start 1795177701019
+  v145i_2_p8_up end   1795177733714 80.1 Mbits/sec
+  v145i_2_p8_dn start 1795177743288
+  v145i_2_p8_dn end   1795177776472 82.2 Mbits/sec
+  v145i_2_p1_up start 1795177786064
+  v145i_2_p1_up end   1795177817817 85.7 Mbits/sec
+  v145i_2_p1_dn start 1795177827421
+  v145i_2_p1_dn end   1795177859268 95.1 Mbits/sec
+== spd2i_2 (spd2i ) 21:31:05
+  server93 running multi-fec 1.4.5-speed.2 env=0
+  client92 running multi-fec 1.4.5-speed.2 env=0
+rtt min/avg/max/mdev = 60.890/85.042/133.271/34.102 ms
+  spd2i_2_p8_up start 1795177885406
+  spd2i_2_p8_up end   1795177917985 107 Mbits/sec
+  spd2i_2_p8_dn start 1795177927584
+  spd2i_2_p8_dn end   1795177960332 128 Mbits/sec
+  spd2i_2_p1_up start 1795177969968
+  spd2i_2_p1_up end   1795178001698 94.1 Mbits/sec
+  spd2i_2_p1_dn start 1795178011268
+  spd2i_2_p1_dn end   1795178042983 88.2 Mbits/sec
+== spd2nogso_2 (spd2i MF_UDP_GSO=0) 21:34:08
+  server93 running multi-fec 1.4.5-speed.2 env=1
+  client92 running multi-fec 1.4.5-speed.2 env=1
+rtt min/avg/max/mdev = 71.662/79.862/96.201/11.553 ms
+  spd2nogso_2_p8_up start 1795178069138
+  spd2nogso_2_p8_up end   1795178101787 140 Mbits/sec
+  spd2nogso_2_p8_dn start 1795178111446
+  spd2nogso_2_p8_dn end   1795178144072 118 Mbits/sec
+  spd2nogso_2_p1_up start 1795178153688
+  spd2nogso_2_p1_up end   1795178185482 107 Mbits/sec
+  spd2nogso_2_p1_dn start 1795178195101
+  spd2nogso_2_p1_dn end   1795178226918 137 Mbits/sec
+done 21:37:25
+== restore 21:37:25
+client92 rps=0 mf=0 iperf=0 samp=0
+server93 rps=0 mf=0 iperf=0 samp=0

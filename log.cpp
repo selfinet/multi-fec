@@ -8,6 +8,7 @@
 #include <sys/stat.h>
 
 int log_level = log_info;
+int log_worker_id = -1;
 
 int enable_log_position = 0;
 int enable_log_color = 1;
@@ -136,6 +137,7 @@ void log0(const char* file, const char* function, int line, int level, const cha
 
     strftime(buffer, 100, "%Y-%m-%d %H:%M:%S", tm_info);
     pos = log_append(out, pos, "[%s][%s]", buffer, log_text[level]);
+    if (log_worker_id >= 0) pos = log_append(out, pos, "[w%d]", log_worker_id);
 
     if (enable_log_position) pos = log_append(out, pos, "[%s,func:%s,line:%d]", file, function, line);
 

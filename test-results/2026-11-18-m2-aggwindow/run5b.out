@@ -1,0 +1,18 @@
+== eq_up 08:00:57
+[SUM]   0.00-30.01  sec   241 MBytes  67.4 Mbits/sec  1988             sender
+[SUM]   0.00-30.21  sec   234 MBytes  64.8 Mbits/sec                  receiver
+== eq_down 08:01:42
+[SUM]   0.00-30.09  sec   284 MBytes  79.1 Mbits/sec  847             sender
+[SUM]   0.00-30.00  sec   269 MBytes  75.1 Mbits/sec                  receiver
+== single_up 08:02:48
+[SUM]   0.00-30.00  sec   318 MBytes  88.9 Mbits/sec  1472             sender
+[SUM]   0.00-30.24  sec   304 MBytes  84.4 Mbits/sec                  receiver
+== single_down 08:03:34
+[SUM]   0.00-30.20  sec   378 MBytes   105 Mbits/sec  681             sender
+[SUM]   0.00-30.00  sec   364 MBytes   102 Mbits/sec                  receiver
+rules=0
+qdisc netem 10: parent 1:1 limit 20000 delay 30ms
+qdisc netem 20: parent 1:2 limit 20000 delay 54ms
+qdisc netem 10: parent 1:1 limit 20000 delay 30ms
+qdisc netem 20: parent 1:2 limit 20000 delay 54ms
+done

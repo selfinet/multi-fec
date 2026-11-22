@@ -1,0 +1,32 @@
+== setup 20:04:13
+8ca075228506
+8ca075228506
+== scalar1 (MF_NO_SIMD=1) 20:04:26
+rtt min/avg/max/mdev = 61.071/72.375/84.898/9.765 ms
+  scalar1_tcp_up recv 67.4 Mbits/sec | retr 2612 | mfCPU c/s 50/55/ | rcvbufErr c/s 0/0/
+  scalar1_tcp_down recv 73.8 Mbits/sec | retr 354 | mfCPU c/s 54/56/ | rcvbufErr c/s 0/0/
+  scalar1_udp_up recv 136 Mbits/sec loss (31%) | mfCPU c/s 79/81/ | rcvbufErr c/s 94160/10388/
+  scalar1_udp_down recv 161 Mbits/sec loss (18%) | mfCPU c/s 78/81/ | rcvbufErr c/s 72072/62085/
+  client EAGAIN=935 total 32000
+== simd1 () 20:07:58
+rtt min/avg/max/mdev = 71.063/87.660/120.819/23.446 ms
+  simd1_tcp_up recv 81.0 Mbits/sec | retr 651 | mfCPU c/s 47/54/ | rcvbufErr c/s 256/0/
+  simd1_tcp_down recv 85.4 Mbits/sec | retr 702 | mfCPU c/s 50/50/ | rcvbufErr c/s 0/565/
+  simd1_udp_up recv 147 Mbits/sec loss (25%) | mfCPU c/s 77/78/ | rcvbufErr c/s 6335/80786/
+  simd1_udp_down recv 177 Mbits/sec loss (11%) | mfCPU c/s 77/78/ | rcvbufErr c/s 51582/148/
+  client EAGAIN=1123 total 40000
+== scalar2 (MF_NO_SIMD=1) 20:11:31
+rtt min/avg/max/mdev = 71.671/86.970/107.912/15.323 ms
+  scalar2_tcp_up recv 68.3 Mbits/sec | retr 1265 | mfCPU c/s 57/57/ | rcvbufErr c/s 0/0/
+  scalar2_tcp_down recv 74.4 Mbits/sec | retr 829 | mfCPU c/s 55/59/ | rcvbufErr c/s 0/134/
+  scalar2_udp_up recv 136 Mbits/sec loss (31%) | mfCPU c/s 79/80/ | rcvbufErr c/s 82750/22009/
+  scalar2_udp_down recv 155 Mbits/sec loss (22%) | mfCPU c/s 77/80/ | rcvbufErr c/s 4215/77146/
+  client EAGAIN=945 total 33000
+== simd2 () 20:14:37
+rtt min/avg/max/mdev = 71.971/79.596/85.499/5.655 ms
+  simd2_tcp_up recv 80.8 Mbits/sec | retr 1460 | mfCPU c/s 48/54/ | rcvbufErr c/s 415/0/
+  simd2_tcp_down recv 78.4 Mbits/sec | retr 407 | mfCPU c/s 48/51/ | rcvbufErr c/s 0/89/
+  simd2_udp_up recv 151 Mbits/sec loss (23%) | mfCPU c/s 77/77/ | rcvbufErr c/s 26048/46862/
+  simd2_udp_down recv 175 Mbits/sec loss (12%) | mfCPU c/s 77/76/ | rcvbufErr c/s 37502/0/
+  client EAGAIN=1168 total 41000
+done 20:18:17

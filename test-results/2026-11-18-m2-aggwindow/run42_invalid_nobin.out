@@ -1,0 +1,29 @@
+== setup 16:06:03
+md5sum: mmulti-fec-dist: No such file or directory
+bash: line 3: ./mmulti-fec-dist: No such file or directory
+client92 spd2 e324110ee508 mt  
+md5sum: mmulti-fec-dist: No such file or directory
+bash: line 3: ./mmulti-fec-dist: No such file or directory
+server93 spd2 e324110ee508 mt  
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.153/60.193/60.239/0.027 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.147/108.172/108.212/0.021 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.151/108.175/108.208/0.026 ms
+scp: stat local "/home/stevekim/mmulti-fec/mmulti-fec-dist": No such file or directory
+scp: stat local "/home/stevekim/mmulti-fec/mmulti-fec-dist": No such file or directory
+md5sum: mmulti-fec-dist: No such file or directory
+bash: line 1: ./mmulti-fec-dist: No such file or directory
+client92 spd2 e324110ee508 mt  
+md5sum: mmulti-fec-dist: No such file or directory
+bash: line 1: ./mmulti-fec-dist: No such file or directory
+server93 spd2 e324110ee508 mt  
+== mt_1 (mt) 16:06:24
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+
+  route 1 rps 8 procs 0+0 cpus 0-3,0-3,0-3
+  mt_1_p1_up recv  | retr  | ping  | idle c/s 98 100 99 100 / 100 100 100 99 / | rcvbuf c/s 0/0/
+== restore 16:09:40
+Terminated

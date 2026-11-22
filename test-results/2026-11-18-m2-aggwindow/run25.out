@@ -1,0 +1,71 @@
+== setup 13:56:25
+e9ae9a5849af aedd5cf5ce25
+e9ae9a5849af aedd5cf5ce25
+== v145_r0_1 (v145 rps=0 ) 13:56:38
+rtt min/avg/max/mdev = 60.836/94.117/160.594/47.005 ms
+  v145_r0_1_tcp_up recv 82.4 Mbits/sec | retr 2536 | mfCPU c/s 51/51/ | rcvbufErr c/s 0/0/
+  v145_r0_1_tcp_down recv 85.8 Mbits/sec | retr 933 | mfCPU c/s 54/51/ | rcvbufErr c/s 0/63/
+  v145_r0_1_udp_up recv 185 Mbits/sec loss (6.4%) | mfCPU c/s 77/77/ | rcvbufErr c/s 2233/3424/
+  v145_r0_1_udp_down recv 188 Mbits/sec loss (5.9%) | mfCPU c/s 76/74/ | rcvbufErr c/s 22993/238/
+  client EAGAIN=864 wg_batch_err=0
+  server wg_batch_err=0
+== spd_r0_1 (spd1 rps=0 ) 13:59:47
+rtt min/avg/max/mdev = 71.099/86.719/107.752/15.445 ms
+  spd_r0_1_tcp_up recv 124 Mbits/sec | retr 2021 | mfCPU c/s 70/66/ | rcvbufErr c/s 521/0/
+  spd_r0_1_tcp_down recv 116 Mbits/sec | retr 521 | mfCPU c/s 59/58/ | rcvbufErr c/s 0/73/
+  spd_r0_1_udp_up recv 186 Mbits/sec loss (6.9%) | mfCPU c/s 77/76/ | rcvbufErr c/s 0/0/
+  spd_r0_1_udp_down recv 187 Mbits/sec loss (6.6%) | mfCPU c/s 75/75/ | rcvbufErr c/s 1604/5/
+  client EAGAIN=1039 wg_batch_err=0
+  server wg_batch_err=0
+== v145_e_1 (v145 rps=e --pin-cpu 0) 14:02:59
+rtt min/avg/max/mdev = 71.097/81.919/89.743/7.901 ms
+  v145_e_1_tcp_up recv 133 Mbits/sec | retr 2386 | mfCPU c/s 66/59/ | rcvbufErr c/s 899/0/
+  v145_e_1_tcp_down recv 122 Mbits/sec | retr 855 | mfCPU c/s 56/55/ | rcvbufErr c/s 0/639/
+  v145_e_1_udp_up recv 189 Mbits/sec loss (5.2%) | mfCPU c/s 77/69/ | rcvbufErr c/s 0/0/
+  v145_e_1_udp_down recv 192 Mbits/sec loss (4.4%) | mfCPU c/s 74/79/ | rcvbufErr c/s 2016/0/
+  client EAGAIN=835 wg_batch_err=0
+  server wg_batch_err=0
+== spd_e_1 (spd1 rps=e --pin-cpu 0) 14:06:08
+rtt min/avg/max/mdev = 71.151/76.069/85.117/6.405 ms
+  spd_e_1_tcp_up recv 129 Mbits/sec | retr 1887 | mfCPU c/s 75/72/ | rcvbufErr c/s 312/0/
+  spd_e_1_tcp_down recv 187 Mbits/sec | retr 818 | mfCPU c/s 74/78/ | rcvbufErr c/s 0/735/
+  spd_e_1_udp_up recv 187 Mbits/sec loss (6.4%) | mfCPU c/s 76/60/ | rcvbufErr c/s 0/0/
+  spd_e_1_udp_down recv 188 Mbits/sec loss (6.4%) | mfCPU c/s 65/78/ | rcvbufErr c/s 1292/0/
+  client EAGAIN=954 wg_batch_err=0
+  server wg_batch_err=0
+== v145_r0_2 (v145 rps=0 ) 14:09:18
+rtt min/avg/max/mdev = 60.792/85.285/110.179/20.164 ms
+  v145_r0_2_tcp_up recv 83.7 Mbits/sec | retr 692 | mfCPU c/s 53/52/ | rcvbufErr c/s 46/0/
+  v145_r0_2_tcp_down recv 93.0 Mbits/sec | retr 588 | mfCPU c/s 52/50/ | rcvbufErr c/s 0/486/
+  v145_r0_2_udp_up recv 180 Mbits/sec loss (9.7%) | mfCPU c/s 76/75/ | rcvbufErr c/s 488/7373/
+  v145_r0_2_udp_down recv 173 Mbits/sec loss (13%) | mfCPU c/s 76/74/ | rcvbufErr c/s 72981/0/
+  client EAGAIN=1147 wg_batch_err=0
+  server wg_batch_err=0
+== spd_r0_2 (spd1 rps=0 ) 14:12:29
+rtt min/avg/max/mdev = 71.214/86.793/107.687/15.356 ms
+  spd_r0_2_tcp_up recv 145 Mbits/sec | retr 1030 | mfCPU c/s 76/71/ | rcvbufErr c/s 409/0/
+  spd_r0_2_tcp_down recv 123 Mbits/sec | retr 478 | mfCPU c/s 59/58/ | rcvbufErr c/s 0/382/
+  spd_r0_2_udp_up recv 184 Mbits/sec loss (7.7%) | mfCPU c/s 76/73/ | rcvbufErr c/s 0/0/
+  spd_r0_2_udp_down recv 185 Mbits/sec loss (7.5%) | mfCPU c/s 78/76/ | rcvbufErr c/s 1413/74/
+  client EAGAIN=1104 wg_batch_err=0
+  server wg_batch_err=0
+== v145_e_2 (v145 rps=e --pin-cpu 0) 14:15:40
+rtt min/avg/max/mdev = 71.079/80.695/86.122/6.818 ms
+  v145_e_2_tcp_up recv 110 Mbits/sec | retr 2086 | mfCPU c/s 62/58/ | rcvbufErr c/s 167/0/
+  v145_e_2_tcp_down recv 114 Mbits/sec | retr 542 | mfCPU c/s 55/53/ | rcvbufErr c/s 0/308/
+  v145_e_2_udp_up recv 188 Mbits/sec loss (5.4%) | mfCPU c/s 78/71/ | rcvbufErr c/s 0/0/
+  v145_e_2_udp_down recv 186 Mbits/sec loss (7.3%) | mfCPU c/s 72/78/ | rcvbufErr c/s 1785/0/
+  client EAGAIN=816 wg_batch_err=0
+  server wg_batch_err=0
+== spd_e_2 (spd1 rps=e --pin-cpu 0) 14:18:48
+rtt min/avg/max/mdev = 71.240/84.466/96.066/10.200 ms
+  spd_e_2_tcp_up recv 156 Mbits/sec | retr 1202 | mfCPU c/s 75/66/ | rcvbufErr c/s 556/0/
+  spd_e_2_tcp_down recv 183 Mbits/sec | retr 425 | mfCPU c/s 74/78/ | rcvbufErr c/s 0/309/
+  spd_e_2_udp_up recv 184 Mbits/sec loss (7.9%) | mfCPU c/s 76/57/ | rcvbufErr c/s 0/0/
+  spd_e_2_udp_down recv 188 Mbits/sec loss (6.1%) | mfCPU c/s 64/78/ | rcvbufErr c/s 1566/0/
+  client EAGAIN=1148 wg_batch_err=0
+  server wg_batch_err=0
+done 14:22:08
+== restore 14:22:08
+client92 rps=0 mf=0
+server93 rps=0 mf=0

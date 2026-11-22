@@ -1,0 +1,75 @@
+== setup 16:39:01
+client92 spd2 e324110ee508 mt 68881644de3b multi-fec 1.4.5-mt.1
+server93 spd2 e324110ee508 mt 68881644de3b multi-fec 1.4.5-mt.1
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.166/60.180/60.227/0.023 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.151/108.186/108.218/0.027 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.146/108.161/108.191/0.015 ms
+client92 spd2 e324110ee508 mt 68881644de3b multi-fec 1.4.5-mt.1
+server93 spd2 e324110ee508 mt 68881644de3b multi-fec 1.4.5-mt.1
+== mt_1 (mt) 16:39:24
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 72.013/88.354/107.527/14.636 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  mt_1_p30_up recv 279 | retr 11283 | ping p50 82 p99 167 n=149 | idle c/s 40 36 38 43 / 29 28 26 38 / | rcvbuf c/s 0/0/
+  mt_1_p30_dn recv 290 | retr 15777 | ping p50 90 p99 253 n=150 | idle c/s 24 25 23 30 / 36 30 33 43 / | rcvbuf c/s 0/0/
+  client EAGAIN 360 pendfull 7 err 0
+== ecmp_1 (ecmp) 16:41:34
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 71.662/80.565/85.049/6.295 ms
+  route 4 rps 8 procs 3+0 cpus 0-3,0-3,0-3,0,1,2,0-3,0-3,0-3
+  ecmp_1_p30_up recv 270 | retr 4281 | ping p50 181 p99 444 n=150 | idle c/s 50 50 52 57 / 38 38 37 46 / | rcvbuf c/s 1728/0/
+  ecmp_1_p30_dn recv 230 | retr 3850 | ping p50 198 p99 457 n=150 | idle c/s 39 41 37 45 / 55 53 51 62 / | rcvbuf c/s 56/340/
+  client EAGAIN 345 pendfull 3 err 0
+== one_1 (one) 16:43:48
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 64.837/78.657/99.952/15.278 ms
+  route 1 rps e procs 1+0 cpus 0-3,0,0-3,0-3,0-3
+  one_1_p30_up recv 156 | retr 4794 | ping p50 85 p99 193 n=150 | idle c/s 59 74 77 76 / 52 71 66 69 / | rcvbuf c/s 0/0/
+  one_1_p30_dn recv 128 | retr 3049 | ping p50 113 p99 544 n=149 | idle c/s 54 73 67 73 / 64 78 80 78 / | rcvbuf c/s 0/0/
+  client EAGAIN 147 pendfull 2 err 0
+== mt_2 (mt) 16:46:08
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 81.479/87.480/95.671/5.997 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  mt_2_p30_up recv 291 | retr 9673 | ping p50 91 p99 181 n=150 | idle c/s 38 35 38 44 / 28 28 24 38 / | rcvbuf c/s 0/0/
+  mt_2_p30_dn recv 271 | retr 15739 | ping p50 95 p99 412 n=150 | idle c/s 28 28 26 35 / 41 35 38 48 / | rcvbuf c/s 0/1148/
+  client EAGAIN 273 pendfull 5 err 0
+== ecmp_2 (ecmp) 16:48:17
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 71.228/74.904/82.045/5.049 ms
+  route 4 rps 8 procs 3+0 cpus 0-3,0-3,0-3,0,1,2,0-3,0-3,0-3
+  ecmp_2_p30_up recv 265 | retr 8477 | ping p50 132 p99 468 n=150 | idle c/s 47 47 44 54 / 38 35 35 43 / | rcvbuf c/s 820/18/
+  ecmp_2_p30_dn recv 264 | retr 2963 | ping p50 171 p99 435 n=150 | idle c/s 40 41 34 44 / 55 52 50 61 / | rcvbuf c/s 35/920/
+  client EAGAIN 535 pendfull 7 err 0
+== one_2 (one) 16:50:32
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.035/64.745/72.000/5.130 ms
+  route 1 rps e procs 1+0 cpus 0-3,0,0-3,0-3,0-3
+  one_2_p30_up recv 138 | retr 5217 | ping p50 89 p99 173 n=150 | idle c/s 52 72 73 72 / 47 68 67 68 / | rcvbuf c/s 0/0/
+  one_2_p30_dn recv 152 | retr 3881 | ping p50 113 p99 326 n=150 | idle c/s 49 71 63 69 / 62 78 80 76 / | rcvbuf c/s 0/0/
+  client EAGAIN 97 pendfull 1 err 0
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+done 16:53:07
+== restore 16:53:07
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+client92 rps=0 4/1 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+server93 rps=0 1/4 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

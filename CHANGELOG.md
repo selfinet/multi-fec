@@ -729,6 +729,22 @@ multi-fec의 **버전·작성일자별 변경 내용**을 기록한다. 버전�
 
 ---
 
+## [1.4.5-mt.1] — 2026-11-22 (속도 특별 버전 시제품, 브랜치 `mmulti-fec/main` ← speed.2 `19a9f27`)
+
+**`--workers N` 을 쓰면 양끝 N 이 같아야 한다**(worker k 는 원격/리슨 포트 base+k). 서버당 WG peer 1개, relay·FIFO 미지원.
+`--workers` 를 쓰지 않은 상태에서 speed.2 와 섞는 시험은 하지 않았다.
+
+- 추가 · `--workers N` `--worker-cpus 0,1,2` — 시작 시 fork 로 worker N개(각자 mud 소켓·FEC·코어 고정). WG 쪽 소켓은 fork 전에 열어 공유(패킷 단위 분산).
+  supervisor 가 신호를 전달하고 worker 하나가 죽으면 전체 종료(exit 1).
+- 수정(코드 점검 11-21) · 서버 worker 당 공유 소켓 conv 1개(새 conv 가 옛 conv 교체, 활동 시각은 실제 수신 후 갱신) — 클라 재시작 후 하향 영구 단절 해소 ·
+  RUNNING 경로가 없는 worker 는 공유 WG 소켓 읽기 중지 · `--check` 가 base..base+N-1 포트 검사 · worker 별 session id·난수 재시드 ·
+  회수한 PID 에 신호 안 보냄 · relay+workers·worker-cpus 단독·포트 넘침 거부.
+- 추가(실험) · `--reorder-ms`(공유 메모리 정렬, 기본 끔 — 손실 1 % 에서 끔의 40~60 %, run45~47) · `--pend-fifo` · `--win-floor` · `--win-unlimited`.
+- 변경 · `--win-mult X` 송신 창 = rate × X, **기본 2**(`--win-mult 1` = 1.4.5 동작). J1900 run52~54 상향 +10~24 %, 하향 같음.
+- 실측 · J1900 -P1 w3 209/214 vs ECMP 3터널 177/181 vs 터널 1 129/143 Mbps(run42/43), ping p50 ECMP 의 절반, 재전송은 재정렬로 2~7배.
+  연결 1개 재전송의 주원인은 송신 창 부족 → pending 큐 → 앞지르기(run47·48). `test-results/2026-11-18-m2-aggwindow/REPORT.md` run41~54.
+- 테스트 · 루프백 재현 시나리오 1000/1000, 서버 w2/클라 w3 3000/3000, ASAN 클린. J1900 배포본 dist md5 `3c965d14`.
+
 ## [1.4.5-speed.2] — 2026-11-19 (속도 특별 버전, 브랜치 `speed/main`)
 
 **와이어·설정 형식 무변경**(speed.1 과 혼용 가능). GSO/GRO 는 커널 기능이라 상대 버전과 무관.

@@ -1,0 +1,45 @@
+== setup 12:06:46
+Warning: writing to world accessible file.
+Consider setting the umask to 077 and trying again.
+Warning: writing to world accessible file.
+Consider setting the umask to 077 and trying again.
+S mf=0 hash=1 fwd=1
+10.88.1.0/24 
+	nexthop dev wgp1 weight 1 
+	nexthop dev wgp2 weight 1 
+C mf=0 hash=1
+10.90.0.0/24 
+	nexthop dev wgp1 weight 1 
+	nexthop dev wgp2 weight 1 
+172.31.10.1 dev enp4s0 src 172.31.10.2 uid 0 
+172.31.20.1 dev enp1s0 src 172.31.20.2 uid 0 
+wgp1 rtt min/avg/max/mdev = 60.399/60.477/60.582/0.079 ms
+wgp2 rtt min/avg/max/mdev = 108.390/114.940/134.485/11.284 ms
+rtt min/avg/max/mdev = 60.441/60.511/60.617/0.069 ms
+<wg-pubkey>	172.31.10.1:51901
+<wg-pubkey>	172.31.20.1:51902
+== p1only_up (P8 ) 12:07:03
+  share wgp1 100% wgp2 0%  | recv 867 Mbits/sec | retr 17360 | idle c/s 42 20 
+== p1only_down (P8 -R) 12:07:51
+  share wgp1 100% wgp2 0%  | recv 871 Mbits/sec | retr 15209 | idle c/s 26 41 
+== p2only_up (P8 ) 12:08:44
+  share wgp1 0% wgp2 100%  | recv 862 Mbits/sec | retr 27 | idle c/s 45 24 
+== p2only_down (P8 -R) 12:09:33
+  share wgp1 0% wgp2 100%  | recv 864 Mbits/sec | retr 31 | idle c/s 25 46 
+== ecmp24_up1 (P24 ) 12:10:24
+  share wgp1 51% wgp2 49%  | recv 1.18 Gbits/sec | retr 8636 | idle c/s 29 19 
+== ecmp24_down1 (P24 -R) 12:11:13
+  share wgp1 53% wgp2 47%  | recv 1.24 Gbits/sec | retr 5327 | idle c/s 22 28 
+== ecmp24_up2 (P24 ) 12:12:02
+  share wgp1 49% wgp2 51%  | recv 1.22 Gbits/sec | retr 6559 | idle c/s 28 18 
+== ecmp24_down2 (P24 -R) 12:12:51
+  share wgp1 49% wgp2 51%  | recv 1.23 Gbits/sec | retr 9014 | idle c/s 21 28 
+== ecmp8_up (P8 ) 12:13:39
+  share wgp1 56% wgp2 44%  | recv 1.23 Gbits/sec | retr 3406 | idle c/s 35 15 
+== ecmp8_down (P8 -R) 12:14:27
+  share wgp1 50% wgp2 50%  | recv 1.22 Gbits/sec | retr 2999 | idle c/s 21 36 
+== ecmp1_up (P1 ) 12:15:16
+  share wgp1 100% wgp2 0%  | recv 300 Mbits/sec | retr 0 | idle c/s 77 73 
+== ecmp1_down (P1 -R) 12:16:04
+  share wgp1 0% wgp2 100%  | recv 298 Mbits/sec | retr 0 | idle c/s 74 79 
+done 12:16:58

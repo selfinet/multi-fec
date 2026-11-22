@@ -1,0 +1,43 @@
+== setup 12:23:09
+client92: netem 8003: dev enp1s0 root refcnt 9 limit 20000 delay 42.5ms netem 10: dev enp4s0 parent 1:1 limit 20000 delay 42.5ms netem 20: dev enp4s0 parent 1:2 limit 20000 delay 42.5ms
+server93: netem 8003: dev enp1s0 root refcnt 9 limit 20000 delay 42.5ms netem 10: dev enp4s0 parent 1:1 limit 20000 delay 42.5ms netem 20: dev enp4s0 parent 1:2 limit 20000 delay 42.5ms
+10.91.1.1 rtt min/avg/max/mdev = 85.420/85.476/85.569/0.055 ms
+10.91.2.1 rtt min/avg/max/mdev = 85.416/85.468/85.571/0.061 ms
+== wg_p1only_up (P8 ) 12:23:22
+  recv 860 Mbits/sec | share 100/0/ | retr 17047 | rcvbufErr c/s 0/0/ | idle c/s 43 22 
+== wg_p1only_down (P8 -R) 12:24:12
+  recv 866 Mbits/sec | share 100/0/ | retr 2484 | rcvbufErr c/s 0/0/ | idle c/s 29 43 
+== wg_ecmp24_up (P24 ) 12:25:06
+  recv 1.25 Gbits/sec | share 54/46/ | retr 8265 | rcvbufErr c/s 0/0/ | idle c/s 29 18 
+== wg_ecmp24_down (P24 -R) 12:25:57
+  recv 1.20 Gbits/sec | share 54/46/ | retr 3964 | rcvbufErr c/s 0/0/ | idle c/s 23 30 
+== wg_ecmp8_up (P8 ) 12:26:49
+  recv 1.23 Gbits/sec | share 51/49/ | retr 5109 | rcvbufErr c/s 0/0/ | idle c/s 35 16 
+== wg_ecmp8_down (P8 -R) 12:27:38
+  recv 1.17 Gbits/sec | share 54/46/ | retr 4187 | rcvbufErr c/s 0/0/ | idle c/s 22 37 
+== wg_ecmp1_up (P1 ) 12:28:28
+  recv 286 Mbits/sec | share 0/100/ | retr 0 | rcvbufErr c/s 0/0/ | idle c/s 79 74 
+== wg_ecmp1_down (P1 -R) 12:29:20
+  recv 296 Mbits/sec | share 0/100/ | retr 0 | rcvbufErr c/s 0/0/ | idle c/s 73 78 
+pair0 rtt min/avg/max/mdev = 85.866/85.953/86.068/0.074 ms
+pair1 rtt min/avg/max/mdev = 85.893/114.416/199.946/49.380 ms
+pair2 rtt min/avg/max/mdev = 85.853/85.909/86.018/0.065 ms
+[0m[32m[2026-11-18 12:30:13][INFO]path[0] 172.31.10.1:443 leaves dev enp4s0
+[0m[32m[2026-11-18 12:30:13][INFO]path[1] 172.31.20.1:443 leaves dev enp1s0
+== mf_1tun_up (P8 ) 12:30:31
+  recv 61.3 Mbits/sec | share 100/0/0/ | retr 892 | rcvbufErr c/s 0/0/ | idle c/s 77 70 
+== mf_1tun_down (P8 -R) 12:31:22
+  recv 70.6 Mbits/sec | share 100/0/0/ | retr 791 | rcvbufErr c/s 0/785/ | idle c/s 70 71 
+== mf_ecmp24_up (P24 ) 12:32:16
+  recv 155 Mbits/sec | share 42/31/27/ | retr 6903 | rcvbufErr c/s 2921/52/ | idle c/s 46 33 
+== mf_ecmp24_down (P24 -R) 12:33:08
+  recv 154 Mbits/sec | share 31/30/39/ | retr 4856 | rcvbufErr c/s 182/4403/ | idle c/s 46 44 
+== mf_ecmp8_up (P8 ) 12:34:02
+  recv 142 Mbits/sec | share 29/43/28/ | retr 1255 | rcvbufErr c/s 0/0/ | idle c/s 49 37 
+== mf_ecmp8_down (P8 -R) 12:34:52
+  recv 164 Mbits/sec | share 22/43/35/ | retr 705 | rcvbufErr c/s 0/626/ | idle c/s 35 36 
+== mf_ecmp1_up (P1 ) 12:35:43
+  recv 51.1 Mbits/sec | share 0/100/0/ | retr 608 | rcvbufErr c/s 0/0/ | idle c/s 82 76 
+== mf_ecmp1_down (P1 -R) 12:36:35
+  recv 147 Mbits/sec | share 100/0/0/ | retr 4 | rcvbufErr c/s 0/0/ | idle c/s 36 44 
+done 12:37:34

@@ -1,0 +1,57 @@
+== setup 22:58:03
+client92 aedd5cf5ce25 e324110ee508
+server93 aedd5cf5ce25 e324110ee508
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms, run30 전 egress 와 같아야 함)
+172.31.10.1 rtt min/avg/max/mdev = 60.146/60.183/60.237/0.030 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.152/108.179/108.217/0.024 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.146/108.176/108.241/0.034 ms
+== s1t3_1 (spd1 env없음, 터널 3, pin '0 1 2', rps 8) 22:58:22
+rtt min/avg/max/mdev = 71.417/71.439/71.461/0.017 ms
+P0 0 P1 1 P2 2 
+8
+  s1t3_1_p24_up recv 219 Mbits/sec | retr 4768 | share 43/35/22 | idle c/s 38 36 43 54 / 35 32 31 45 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1t3_1_p24_dn recv 212 Mbits/sec | retr 3004 | share 32/36/32 | idle c/s 30 27 32 42 / 44 41 42 57 /  | drops c/s rcvbuf=490 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1t3_1_p8_up recv 263 Mbits/sec | retr 4248 | share 27/40/33 | idle c/s 27 28 26 42 / 18 21 15 30 /  | drops c/s rcvbuf=763 nicdrop=0 / rcvbuf=223 nicdrop=0 / 
+  s1t3_1_p8_dn recv 240 Mbits/sec | retr 2267 | share 59/2/38 | idle c/s 16 20 16 31 / 24 30 24 40 /  | drops c/s rcvbuf=801 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  P0 EAGAIN=167 pin=0   P1 EAGAIN=301 pin=1   P2 EAGAIN=259 pin=2 
+== g11t3_1 (spd2 env없음, 터널 3, pin '0 1 2', rps 8) 23:02:25
+rtt min/avg/max/mdev = 61.044/72.891/96.547/16.727 ms
+P0 0 P1 1 P2 2 
+8
+  g11t3_1_p24_up recv 302 Mbits/sec | retr 6126 | share 45/20/35 | idle c/s 36 30 36 40 / 19 23 18 31 /  | drops c/s rcvbuf=2486 nicdrop=0 / rcvbuf=124 nicdrop=0 / 
+  g11t3_1_p24_dn recv 268 Mbits/sec | retr 2935 | share 38/41/21 | idle c/s 32 28 33 39 / 50 49 50 59 /  | drops c/s rcvbuf=75 nicdrop=0 / rcvbuf=1073 nicdrop=0 / 
+  g11t3_1_p8_up recv 288 Mbits/sec | retr 2806 | share 40/41/19 | idle c/s 51 45 44 55 / 32 32 29 40 /  | drops c/s rcvbuf=104 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g11t3_1_p8_dn recv 278 Mbits/sec | retr 2759 | share 41/31/27 | idle c/s 25 32 30 38 / 46 51 54 59 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  $(hostname) [0m[32m[2026-11-19 23:06:03][INFO][client] batch gso=on gro=on send=785970/68061 gso=755971/95602 fallback=0 recv=697350/53145 gro=637815/118699
+  $(hostname) [0m[32m[2026-11-19 23:06:02][INFO][server] batch gso=on gro=on send=674095/62999 gso=642807/80934 fallback=0 recv=792189/49576 gro=727953/131683
+  P0 EAGAIN=171 pin=0   P1 EAGAIN=225 pin=1   P2 EAGAIN=158 pin=2 
+== s1t3_2 (spd1 env없음, 터널 3, pin '0 1 2', rps 8) 23:06:24
+rtt min/avg/max/mdev = 85.021/88.525/95.259/4.762 ms
+P0 0 P1 1 P2 2 
+8
+  s1t3_2_p24_up recv 206 Mbits/sec | retr 3159 | share 35/36/29 | idle c/s 33 37 37 49 / 31 32 32 44 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1t3_2_p24_dn recv 230 Mbits/sec | retr 2810 | share 37/30/33 | idle c/s 25 25 24 37 / 39 37 36 51 /  | drops c/s rcvbuf=185 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1t3_2_p8_up recv 198 Mbits/sec | retr 5503 | share 47/41/12 | idle c/s 34 30 40 50 / 30 28 29 40 /  | drops c/s rcvbuf=493 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1t3_2_p8_dn recv 247 Mbits/sec | retr 1336 | share 23/36/41 | idle c/s 15 15 13 28 / 32 31 25 43 /  | drops c/s rcvbuf=51 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  P0 EAGAIN=170 pin=0   P1 EAGAIN=185 pin=1   P2 EAGAIN=217 pin=2 
+== g11t3_2 (spd2 env없음, 터널 3, pin '0 1 2', rps 8) 23:10:23
+rtt min/avg/max/mdev = 61.062/69.140/85.226/11.374 ms
+P0 0 P1 1 P2 2 
+8
+  g11t3_2_p24_up recv 272 Mbits/sec | retr 5785 | share 29/30/41 | idle c/s 35 36 35 42 / 28 28 23 37 /  | drops c/s rcvbuf=231 nicdrop=0 / rcvbuf=238 nicdrop=0 / 
+  g11t3_2_p24_dn recv 248 Mbits/sec | retr 3664 | share 39/25/36 | idle c/s 36 39 30 43 / 50 51 49 58 /  | drops c/s rcvbuf=124 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g11t3_2_p8_up recv 243 Mbits/sec | retr 4013 | share 40/11/49 | idle c/s 40 57 41 50 / 30 42 26 42 /  | drops c/s rcvbuf=252 nicdrop=0 / rcvbuf=36 nicdrop=0 / 
+  g11t3_2_p8_dn recv 302 Mbits/sec | retr 1964 | share 45/51/4 | idle c/s 15 17 21 24 / 41 38 34 50 /  | drops c/s rcvbuf=49 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  $(hostname) [0m[32m[2026-11-19 23:14:06][INFO][client] batch gso=on gro=on send=1353907/109855 gso=1305716/142058 fallback=0 recv=542528/36997 gro=499916/90364
+  $(hostname) [0m[32m[2026-11-19 23:13:59][INFO][server] batch gso=on gro=on send=536646/45828 gso=515397/60934 fallback=0 recv=1216733/76489 gro=1135228/183743
+  P0 EAGAIN=253 pin=0   P1 EAGAIN=117 pin=1   P2 EAGAIN=295 pin=2 
+done 23:14:36
+== restore 23:14:36
+client92 rps=0 4/1 mf=0
+server93 rps=0 1/4 mf=0
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

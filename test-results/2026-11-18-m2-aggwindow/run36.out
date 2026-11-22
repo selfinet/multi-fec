@@ -1,0 +1,63 @@
+== setup 10:46:56
+client92 v144 3baba552 multi-fec 1.4.4
+client92 v145 b91ea178 multi-fec 1.4.5
+server93 v144 3baba552 multi-fec 1.4.4
+server93 v145 b91ea178 multi-fec 1.4.5
+== v144_1 (v144, rps 0, no pin) 10:47:13
+  server93 running multi-fec 1.4.4
+  client92 running multi-fec 1.4.4
+rtt min/avg/max/mdev = 60.873/68.945/85.082/11.410 ms
+  v144_1_tcp_up recv 80.1 Mbits/sec | retr 1626 | mfCPU c/s 57/58/ | rcvbufErr c/s 681/0/ | softnetDrop c/s 0/0
+  v144_1_tcp_down recv 72.8 Mbits/sec | retr 328 | mfCPU c/s 54/57/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  v144_1_udp_up recv 135 Mbits/sec loss (31%) | mfCPU c/s 79/80/ | rcvbufErr c/s 79641/23898/ | softnetDrop c/s 0/0
+  v144_1_udp_down recv 162 Mbits/sec loss (18%) | mfCPU c/s 80/79/ | rcvbufErr c/s 32958/52937/ | softnetDrop c/s 0/0
+  client EAGAIN=1073 total 38000
+== v145_1 (v145, rps 0, no pin) 10:50:44
+  server93 running multi-fec 1.4.5
+  client92 running multi-fec 1.4.5
+rtt min/avg/max/mdev = 71.051/86.504/107.063/15.138 ms
+  v145_1_tcp_up recv 89.6 Mbits/sec | retr 3026 | mfCPU c/s 51/50/ | rcvbufErr c/s 1018/0/ | softnetDrop c/s 0/0
+  v145_1_tcp_down recv 95.7 Mbits/sec | retr 1000 | mfCPU c/s 54/50/ | rcvbufErr c/s 0/836/ | softnetDrop c/s 0/0
+  v145_1_udp_up recv 184 Mbits/sec loss (7.7%) | mfCPU c/s 77/75/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  v145_1_udp_down recv 191 Mbits/sec loss (4.5%) | mfCPU c/s 75/76/ | rcvbufErr c/s 16756/404/ | softnetDrop c/s 0/0
+  client EAGAIN=1156 total 39000
+== v144_2 (v144, rps 0, no pin) 10:54:15
+  server93 running multi-fec 1.4.4
+  client92 running multi-fec 1.4.4
+rtt min/avg/max/mdev = 60.912/83.377/107.726/19.158 ms
+  v144_2_tcp_up recv 77.6 Mbits/sec | retr 1267 | mfCPU c/s 55/57/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  v144_2_tcp_down recv 80.7 Mbits/sec | retr 1169 | mfCPU c/s 55/59/ | rcvbufErr c/s 0/651/ | softnetDrop c/s 0/0
+  v144_2_udp_up recv 145 Mbits/sec loss (26%) | mfCPU c/s 79/81/ | rcvbufErr c/s 81589/8587/ | softnetDrop c/s 0/0
+  v144_2_udp_down recv 162 Mbits/sec loss (18%) | mfCPU c/s 77/79/ | rcvbufErr c/s 8724/45664/ | softnetDrop c/s 0/0
+  client EAGAIN=808 total 25000
+== v145_2 (v145, rps 0, no pin) 10:57:45
+  server93 running multi-fec 1.4.5
+  client92 running multi-fec 1.4.5
+rtt min/avg/max/mdev = 71.106/76.019/85.065/6.403 ms
+  v145_2_tcp_up recv 83.3 Mbits/sec | retr 1730 | mfCPU c/s 56/55/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  v145_2_tcp_down recv 92.5 Mbits/sec | retr 1491 | mfCPU c/s 53/49/ | rcvbufErr c/s 0/872/ | softnetDrop c/s 0/0
+  v145_2_udp_up recv 184 Mbits/sec loss (7.8%) | mfCPU c/s 77/75/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  v145_2_udp_down recv 182 Mbits/sec loss (8.8%) | mfCPU c/s 76/80/ | rcvbufErr c/s 35437/315/ | softnetDrop c/s 0/0
+  client EAGAIN=1098 total 40000
+== v144_3 (v144, rps 0, no pin) 11:01:17
+  server93 running multi-fec 1.4.4
+  client92 running multi-fec 1.4.4
+rtt min/avg/max/mdev = 60.824/76.363/97.143/15.283 ms
+  v144_3_tcp_up recv 76.0 Mbits/sec | retr 1368 | mfCPU c/s 52/57/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  v144_3_tcp_down recv 70.9 Mbits/sec | retr 413 | mfCPU c/s 53/58/ | rcvbufErr c/s 0/0/ | softnetDrop c/s 0/0
+  v144_3_udp_up recv 148 Mbits/sec loss (25%) | mfCPU c/s 79/79/ | rcvbufErr c/s 76361/5141/ | softnetDrop c/s 0/0
+  v144_3_udp_down recv 160 Mbits/sec loss (19%) | mfCPU c/s 78/81/ | rcvbufErr c/s 25721/53081/ | softnetDrop c/s 0/0
+  client EAGAIN=842 total 29000
+== v145_3 (v145, rps 0, no pin) 11:04:49
+  server93 running multi-fec 1.4.5
+  client92 running multi-fec 1.4.5
+rtt min/avg/max/mdev = 60.861/83.295/107.684/19.165 ms
+  v145_3_tcp_up recv 91.9 Mbits/sec | retr 1870 | mfCPU c/s 54/52/ | rcvbufErr c/s 689/0/ | softnetDrop c/s 0/0
+  v145_3_tcp_down recv 92.2 Mbits/sec | retr 1018 | mfCPU c/s 53/49/ | rcvbufErr c/s 0/487/ | softnetDrop c/s 0/0
+  v145_3_udp_up recv 182 Mbits/sec loss (8.2%) | mfCPU c/s 74/76/ | rcvbufErr c/s 0/4564/ | softnetDrop c/s 0/0
+  v145_3_udp_down recv 179 Mbits/sec loss (10%) | mfCPU c/s 76/75/ | rcvbufErr c/s 24884/0/ | softnetDrop c/s 0/0
+  client EAGAIN=1108 total 37000
+done 11:08:35
+== restore 11:08:35
+client92 rps=0 mf=0 iperf=0
+server93 rps=0 mf=0 iperf=0

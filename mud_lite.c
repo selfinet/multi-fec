@@ -217,6 +217,9 @@ struct mud {
     uint64_t           win_spent_time;
     uint64_t           agg_floor;
     uint64_t           agg_time;
+    unsigned           win_floor_x100;   /* mmulti-fec experiment: agg floor factor ×100 (125 = 5/4) */
+    int                win_unlimited;    /* mmulti-fec experiment: no send-window limit */
+    unsigned           win_mult_x100;    /* mmulti-fec experiment: window refill and cap = mult x rate (0 = 1x) */
     uint64_t           base_time;
     union mud_sockaddr last_remote;  /* source of the last packet mud_recv() returned */
     union mud_sockaddr last_local;   /* local address it arrived on (family 0 = unknown) */
@@ -1252,6 +1255,11 @@ mud_select_path(struct mud *mud, uint16_t cursor, uint64_t peer)
 static void
 mud_update_window(struct mud *mud, uint64_t now)
 {
+    if (mud->win_unlimited) {          /* experiment: the window never limits */
+        mud->window      = 1ull << 40;
+        mud->window_time = now;
+        return;
+    }
     if (!mud->window_time) {
         mud->window      = 0;
         mud->window_time = now;
@@ -1261,14 +1269,15 @@ mud_update_window(struct mud *mud, uint64_t now)
     if (elapsed < MUD_ONE_MSEC) return;
 
     mud->window_time = now;
-    mud->window += mud->rate * elapsed / MUD_ONE_SEC;
+    uint64_t wrate = mud->win_mult_x100 ? mud->rate * mud->win_mult_x100 / 100 : mud->rate;   /* experiment */
+    mud->window += wrate * elapsed / MUD_ONE_SEC;
 
     /* Horizon 200 ms, was 100 ms (1.4.1 review, 2026-10-23). The client calls
      * mud_update() every 100 ms, so a 100 ms cap left no slack at all: a refill
      * that came 20 ms late was clipped to 100 ms worth and the rest of the
      * budget was thrown away — any event-loop delay became lost send budget and
      * then EAGAIN. 200 ms absorbs one late tick. The server ticks every 20 ms. */
-    uint64_t window_max = mud->rate * 200 * MUD_ONE_MSEC / MUD_ONE_SEC;
+    uint64_t window_max = wrate * 200 * MUD_ONE_MSEC / MUD_ONE_SEC;
     if (window_max < 524288) window_max = 524288;  /* minimum 512KB floor */
     if (mud->window > window_max) mud->window = window_max;
 }
@@ -1557,7 +1566,8 @@ mud_update(struct mud *mud)
         uint64_t dt = MUD_TIME_MASK(now - mud->win_spent_time);
         if (dt >= MUD_ONE_SEC) {
             uint64_t spent = mud->win_spent - mud->win_spent_snap;
-            mud->agg_floor      = (5 * spent * MUD_ONE_SEC) / (4 * dt);
+            unsigned f = mud->win_floor_x100 ? mud->win_floor_x100 : 125;
+            mud->agg_floor      = (f * spent * MUD_ONE_SEC) / (100 * dt);
             mud->win_spent_snap = mud->win_spent;
             mud->win_spent_time = now;
         }
@@ -2171,4 +2181,23 @@ mud_get_paths(struct mud *mud, struct mud_paths *paths,
         if (paths->count >= MUD_PATH_MAX) break;
     }
     return 0;
+}
+
+/* mmulti-fec experiments (2026-11-21) */
+void mud_set_window_opts(struct mud *mud, unsigned floor_x100, int unlimited)
+{
+    mud->win_floor_x100 = floor_x100;
+    mud->win_unlimited  = unlimited;
+    if (unlimited) mud->window = 1ull << 40;
+}
+
+void mud_set_window_mult(struct mud *mud, unsigned mult_x100)
+{
+    mud->win_mult_x100 = mult_x100;
+}
+
+/* refill the send window now (normally only mud_update() does, every 20/100 ms) */
+void mud_refill_window(struct mud *mud)
+{
+    mud_update_window(mud, mud_now(mud));
 }

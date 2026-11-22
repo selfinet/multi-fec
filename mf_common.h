@@ -65,6 +65,7 @@ struct route_entry_t {
 };
 
 /* Defined in main.cpp, referenced from other modules via extern */
+extern int                        g_shared_wg_fd;   /* mmulti-fec: WG-side socket shared by all workers, -1 = per-process */
 extern std::vector<PathSpec>      g_paths;          /* client --path list */
 extern address_t                  g_wg_addr;        /* server --wg WireGuard upstream address */
 extern multipath_mode_t           g_multipath_mode; /* multipath operating mode */

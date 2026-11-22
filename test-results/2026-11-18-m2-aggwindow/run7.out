@@ -1,0 +1,79 @@
+== setup 10:31:24
+listen         = 0.0.0.0:443
+wg             = 127.0.0.1:51809
+listen         = 0.0.0.0:444
+wg             = 127.0.0.1:51810
+listen         = 0.0.0.0:445
+wg             = 127.0.0.1:51811
+rq-wg            UNKNOWN        10.89.0.1/32 
+rq-wg2           UNKNOWN        10.89.1.1 peer 10.89.1.2/32 
+rq-wg3           UNKNOWN        10.89.2.1 peer 10.89.2.2/32 
+listen         = 127.0.0.1:51801
+path           = 172.31.10.1:443
+path           = 172.31.20.1:443
+listen         = 127.0.0.1:51802
+path           = 172.31.10.1:444
+path           = 172.31.20.1:444
+listen         = 127.0.0.1:51803
+path           = 172.31.10.1:445
+path           = 172.31.20.1:445
+rq-wg            UNKNOWN        10.89.0.2/32 
+rq-wg2           UNKNOWN        10.89.1.2 peer 10.89.1.1/32 
+rq-wg3           UNKNOWN        10.89.2.2 peer 10.89.2.1/32 
+pair0 rtt min/avg/max/mdev = 60.904/74.328/84.893/8.896 ms
+pair1 rtt min/avg/max/mdev = 70.953/71.260/71.757/0.307 ms
+pair2 rtt min/avg/max/mdev = 60.931/76.666/95.291/12.023 ms
+path1 rtt min/avg/max/mdev = 60.142/60.151/60.161/0.007 ms
+path2 rtt min/avg/max/mdev = 108.139/108.144/108.151/0.005 ms
+172.31.20.1 dev enp1s0 src 172.31.20.2 uid 0 
+[0m[32m[2026-11-18 10:31:31][INFO]path[0] 172.31.10.1:443 leaves dev enp4s0
+[0m[32m[2026-11-18 10:31:31][INFO]path[1] 172.31.20.1:443 leaves dev enp1s0
+== n1_up1 10:31:52
+  pair0 68.8 Mbps
+  TOTAL 68.8 Mbps
+== n1_down1 10:32:41
+  pair0 74.7 Mbps
+  TOTAL 74.7 Mbps
+== n1_up2 10:33:29
+  pair0 72.9 Mbps
+  TOTAL 72.9 Mbps
+== n1_down2 10:34:19
+  pair0 77.0 Mbps
+  TOTAL 77.0 Mbps
+== n2_up1 10:35:07
+  pair0 60.7 Mbps
+  pair1 57.1 Mbps
+  TOTAL 117.8 Mbps
+== n2_down1 10:35:57
+  pair0 65.8 Mbps
+  pair1 65.8 Mbps
+  TOTAL 131.6 Mbps
+== n2_up2 10:36:47
+  pair0 56.6 Mbps
+  pair1 60.6 Mbps
+  TOTAL 117.2 Mbps
+== n2_down2 10:37:37
+  pair0 58.9 Mbps
+  pair1 59.5 Mbps
+  TOTAL 118.4 Mbps
+== n3_up1 10:38:26
+  pair0 50.0 Mbps
+  pair1 43.4 Mbps
+  pair2 46.8 Mbps
+  TOTAL 140.2 Mbps
+== n3_down1 10:39:17
+  pair0 47.6 Mbps
+  pair1 54.1 Mbps
+  pair2 50.6 Mbps
+  TOTAL 152.3 Mbps
+== n3_up2 10:40:07
+  pair0 47.4 Mbps
+  pair1 48.5 Mbps
+  pair2 43.8 Mbps
+  TOTAL 139.7 Mbps
+== n3_down2 10:40:59
+  pair0 48.8 Mbps
+  pair1 53.5 Mbps
+  pair2 52.6 Mbps
+  TOTAL 154.9 Mbps
+done 10:42:04

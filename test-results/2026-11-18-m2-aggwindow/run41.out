@@ -1,0 +1,47 @@
+== setup 14:56:18
+client92 spd2 e324110ee508 qdisc noqueue/noqueue/noqueue
+server93 spd2 e324110ee508 qdisc noqueue/noqueue/noqueue
+  hq iperf3 서버 30
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.153/60.189/60.236/0.035 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.152/108.171/108.212/0.020 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.148/108.172/108.200/0.020 ms
+  ue 주소 31
+rtt min/avg/max/mdev = 71.383/80.522/85.231/6.463 ms
+== nocake_1 14:56:59
+  nocake_1_heavy rcvbuf c/s 0/1223/ idle c/s 38 41 41 46 / 57 57 56 64 / 
+  nocake_1_cap rcvbuf c/s 103/1519/ idle c/s 33 34 32 39 / 52 50 50 59 / 
+  nocake_1_free rcvbuf c/s 198/1016/ idle c/s 35 35 34 41 / 53 53 50 60 / 
+== cake_1 14:59:39
+  server93 bandwidth 73575Kbit bandwidth 83520Kbit bandwidth 59850Kbit
+  client92 qdisc noqueue/noqueue/noqueue
+  cake_1_heavy rcvbuf c/s 0/0/ idle c/s 24 24 23 32 / 30 25 23 37 / 
+  cake_1_cap rcvbuf c/s 0/0/ idle c/s 13 13 12 20 / 16 13 10 25 / 
+  cake_1_free rcvbuf c/s 0/0/ idle c/s 12 12 11 19 / 18 13 10 25 / 
+  server93 rq-wg Sent 932592665 bytes 721680 pkt (dropped 791
+  server93 rq-wg2 Sent 1084831179 bytes 841040 pkt (dropped 1610
+  server93 rq-wg3 Sent 722236688 bytes 559271 pkt (dropped 1069
+== cake_2 15:02:18
+  server93 bandwidth 73575Kbit bandwidth 83520Kbit bandwidth 59850Kbit
+  client92 qdisc noqueue/noqueue/noqueue
+  cake_2_heavy rcvbuf c/s 0/0/ idle c/s 26 24 23 33 / 32 27 23 37 / 
+  cake_2_cap rcvbuf c/s 0/0/ idle c/s 14 13 13 21 / 19 13 10 25 / 
+  cake_2_free rcvbuf c/s 0/0/ idle c/s 12 12 11 19 / 17 14 10 25 / 
+  server93 rq-wg Sent 1812278418 bytes 1402507 pkt (dropped 1428
+  server93 rq-wg2 Sent 2151707380 bytes 1667860 pkt (dropped 3421
+  server93 rq-wg3 Sent 1471114735 bytes 1138746 pkt (dropped 2131
+== nocake_2 15:04:55
+  nocake_2_heavy rcvbuf c/s 321/523/ idle c/s 34 36 32 41 / 54 53 52 61 / 
+  nocake_2_cap rcvbuf c/s 247/2077/ idle c/s 28 29 26 35 / 50 47 45 56 / 
+  nocake_2_free rcvbuf c/s 94/3813/ idle c/s 27 29 25 34 / 47 45 44 55 / 
+done 15:08:03
+== restore 15:08:03
+client92 rps=0 4/1 mf=0 iperf=0 qdisc=noqueue/noqueue/noqueue
+server93 rps=0 1/4 mf=0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 ue 주소 1(원래 1)
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

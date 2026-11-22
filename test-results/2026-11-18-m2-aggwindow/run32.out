@@ -1,0 +1,127 @@
+== setup 22:40:03
+client92 aedd5cf5ce25 e324110ee508
+server93 aedd5cf5ce25 e324110ee508
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms, run30 전 egress 와 같아야 함)
+172.31.10.1 rtt min/avg/max/mdev = 60.148/60.179/60.236/0.031 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.152/108.169/108.210/0.020 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.154/108.177/108.224/0.026 ms
+== on_1 (spd2 GSO켬) 22:40:25
+rtt min/avg/max/mdev = 60.932/72.479/85.034/9.865 ms
+P0 0 
+e
+  on_1_p1_up recv 143 Mbits/sec | retr 768 | idle c/s 57 83 80 80 / 48 76 70 72 / 
+    ue: SACKReneging=0 SACKReorder=42348 RenoReorder=0 TSReorder=165 LostRetransmit=81 FastRetrans=768 SlowStartRetrans=0 Timeouts=0 DSACKRecv=317 SpuriousRTOs=0 OFOQueue=1 
+    hq: DSACKOldSent=423 OFOQueue=137301 OFOMerge=20 
+    ss t=10 rtt:82.314/5.554 cwnd:648 ssthresh:512 unacked:746 retrans:0/768 reordering:300 reord_seen:13439 rcv_space:12480 notsent:1317888 pacing_rate=108580272bps delivery_rate=88193016bps 
+    ss t=20 rtt:82.763/0.123 cwnd:2473 ssthresh:512 unacked:2473 retrans:0/768 reordering:300 reord_seen:29096 rcv_space:12480 notsent:177216 pacing_rate=357989616bps delivery_rate=295775920bps 
+  client batch gso=on gro=on send=519399/31549 gso=510649/49755 fallback=0 recv=180422/42581 gro=147667/37073
+  EAGAIN=95
+== off_1 (spd2 MF_UDP_GSO=0) 22:41:34
+rtt min/avg/max/mdev = 71.216/86.708/107.423/15.235 ms
+P0 0 
+e
+  off_1_p1_up recv 136 Mbits/sec | retr 1461 | idle c/s 28 69 69 70 / 25 63 57 64 / 
+    ue: SACKReneging=0 SACKReorder=92938 RenoReorder=0 TSReorder=13 LostRetransmit=256 FastRetrans=1461 SlowStartRetrans=0 Timeouts=0 DSACKRecv=106 SpuriousRTOs=0 OFOQueue=1 
+    hq: DSACKOldSent=183 OFOQueue=176599 OFOMerge=31 
+    ss t=10 rtt:83.846/3.319 cwnd:924 ssthresh:649 unacked:1031 retrans:0/1456 reordering:300 reord_seen:20955 rcv_space:12480 notsent:1847040 pacing_rate=147319264bps delivery_rate=120401280bps 
+    ss t=20 rtt:83.1/5.473 cwnd:1077 ssthresh:804 unacked:1227 retrans:0/1461 reordering:300 reord_seen:51059 rcv_space:12480 notsent:2120352 pacing_rate=180364216bps delivery_rate=127537424bps 
+  client batch gso=off gro=on send=493128/42219 gso=0/0 fallback=0 recv=317232/103567 gro=161068/70667
+  EAGAIN=124
+== off_2 (spd2 MF_UDP_GSO=0) 22:42:45
+rtt min/avg/max/mdev = 71.617/86.917/107.559/15.151 ms
+P0 0 
+e
+  off_2_p1_up recv 89.1 Mbits/sec | retr 1050 | idle c/s 48 84 77 82 / 45 78 75 79 / 
+    ue: SACKReneging=0 SACKReorder=47807 RenoReorder=0 TSReorder=3 LostRetransmit=77 FastRetrans=1050 SlowStartRetrans=0 Timeouts=0 DSACKRecv=33 SpuriousRTOs=0 OFOQueue=1 
+    hq: DSACKOldSent=39 OFOQueue=124002 OFOMerge=18 
+    ss t=10 rtt:78.334/7.964 cwnd:178 ssthresh:130 unacked:206 retrans:0/1050 reordering:300 reord_seen:3920 rcv_space:12480 notsent:3479424 pacing_rate=31636872bps delivery_rate=21214384bps 
+    ss t=20 rtt:62.343/0.639 cwnd:901 ssthresh:130 unacked:898 retrans:0/1050 reordering:300 reord_seen:15839 rcv_space:12480 notsent:2563392 pacing_rate=173150160bps delivery_rate=141399112bps 
+  client batch gso=off gro=on send=323201/26535 gso=0/0 fallback=0 recv=185897/58613 gro=81987/35198
+  EAGAIN=66
+== on_2 (spd2 GSO켬) 22:43:54
+rtt min/avg/max/mdev = 81.511/84.191/86.085/1.948 ms
+P0 0 
+e
+  on_2_p1_up recv 127 Mbits/sec | retr 794 | idle c/s 47 76 73 74 / 41 68 68 69 / 
+    ue: SACKReneging=0 SACKReorder=81454 RenoReorder=0 TSReorder=153 LostRetransmit=68 FastRetrans=794 SlowStartRetrans=0 Timeouts=0 DSACKRecv=250 SpuriousRTOs=0 OFOQueue=2 
+    hq: DSACKOldSent=323 OFOQueue=127747 OFOMerge=5 
+    ss t=10 rtt:79.23/7.142 cwnd:695 ssthresh:558 unacked:771 retrans:0/794 reordering:300 reord_seen:17852 rcv_space:12480 notsent:1648608 pacing_rate=116585816bps delivery_rate=90938968bps 
+    ss t=20 rtt:87.137/4.099 cwnd:2464 ssthresh:558 unacked:2513 retrans:0/794 reordering:300 reord_seen:54575 rcv_space:12480 notsent:897312 pacing_rate=345519520bps delivery_rate=263234048bps 
+  client batch gso=on gro=on send=461751/37383 gso=453530/64849 fallback=0 recv=300619/77215 gro=238335/66093
+  EAGAIN=92
+== on_3 (spd2 GSO켬) 22:45:04
+rtt min/avg/max/mdev = 71.206/75.766/84.794/6.383 ms
+P0 0 
+e
+  on_3_p1_up recv 110 Mbits/sec | retr 551 | idle c/s 52 78 80 82 / 46 76 71 73 / 
+    ue: SACKReneging=0 SACKReorder=45795 RenoReorder=0 TSReorder=96 LostRetransmit=46 FastRetrans=551 SlowStartRetrans=0 Timeouts=0 DSACKRecv=117 SpuriousRTOs=0 OFOQueue=1 
+    hq: DSACKOldSent=244 OFOQueue=148496 OFOMerge=43 
+    ss t=10 rtt:66.414/2.739 cwnd:445 ssthresh:311 unacked:456 retrans:0/397 reordering:300 reord_seen:4908 rcv_space:12480 notsent:2160288 pacing_rate=80275480bps delivery_rate=70455184bps 
+    ss t=20 rtt:77.766/10.622 cwnd:890 ssthresh:311 unacked:1080 retrans:0/397 reordering:300 reord_seen:17332 rcv_space:12480 notsent:1166688 pacing_rate=166385824bps delivery_rate=125843824bps 
+  client batch gso=on gro=on send=400649/37305 gso=386574/56780 fallback=0 recv=197931/62608 gro=150758/44075
+  EAGAIN=70
+== off_3 (spd2 MF_UDP_GSO=0) 22:46:13
+rtt min/avg/max/mdev = 60.981/72.373/84.894/9.794 ms
+P0 0 
+e
+  off_3_p1_up recv 143 Mbits/sec | retr 499 | idle c/s 38 82 74 78 / 37 72 64 72 / 
+    ue: SACKReneging=0 SACKReorder=46767 RenoReorder=0 TSReorder=21 LostRetransmit=78 FastRetrans=500 SlowStartRetrans=0 Timeouts=0 DSACKRecv=188 SpuriousRTOs=0 OFOQueue=1 
+    hq: DSACKOldSent=272 OFOQueue=154655 OFOMerge=36 
+    ss t=10 rtt:78.508/7.955 cwnd:452 ssthresh:292 unacked:552 retrans:0/499 reordering:300 reord_seen:9916 rcv_space:12480 notsent:1677312 pacing_rate=83017720bps delivery_rate=49076896bps 
+    ss t=20 rtt:73.103/2.269 cwnd:2392 ssthresh:292 unacked:2196 retrans:0/499 reordering:300 reord_seen:26534 rcv_space:12480 pacing_rate=392019200bps delivery_rate=260987312bps 
+  client batch gso=off gro=on send=516971/32958 gso=0/0 fallback=0 recv=194465/57500 gro=105050/43179
+  EAGAIN=53
+== off_4 (spd2 MF_UDP_GSO=0) 22:47:23
+rtt min/avg/max/mdev = 81.564/82.749/85.117/1.674 ms
+P0 0 
+e
+  off_4_p1_up recv 161 Mbits/sec | retr 4 | idle c/s 39 81 78 83 / 40 72 63 73 / 
+    ue: SACKReneging=0 SACKReorder=17922 RenoReorder=0 TSReorder=3 LostRetransmit=0 FastRetrans=4 SlowStartRetrans=0 Timeouts=0 DSACKRecv=3 SpuriousRTOs=0 OFOQueue=0 
+    hq: DSACKOldSent=4 OFOQueue=78370 OFOMerge=0 
+    ss t=10 rtt:80.705/8.098 cwnd:285 ssthresh:67 unacked:343 retrans:0/3 reordering:173 reord_seen:3033 rcv_space:12480 notsent:690144 pacing_rate=50324752bps delivery_rate=38269752bps 
+    ss t=20 rtt:87.782/0.591 cwnd:2283 ssthresh:1710 unacked:2261 retrans:0/4 reordering:300 reord_seen:11769 rcv_space:12480 notsent:324480 pacing_rate=311588864bps delivery_rate=279460352bps 
+  client batch gso=off gro=on send=582189/35800 gso=0/0 fallback=0 recv=136170/40654 gro=53489/25044
+  EAGAIN=0
+== on_4 (spd2 GSO켬) 22:48:32
+rtt min/avg/max/mdev = 60.926/85.842/111.569/20.682 ms
+P0 0 
+e
+  on_4_p1_up recv 90.0 Mbits/sec | retr 12 | idle c/s 53 83 78 83 / 48 75 74 75 / 
+    ue: SACKReneging=0 SACKReorder=56083 RenoReorder=0 TSReorder=8 LostRetransmit=0 FastRetrans=12 SlowStartRetrans=0 Timeouts=0 DSACKRecv=6 SpuriousRTOs=0 OFOQueue=1 
+    hq: DSACKOldSent=12 OFOQueue=121820 OFOMerge=0 
+    ss t=10 rtt:72.939/11.073 cwnd:405 ssthresh:241 unacked:497 retrans:0/5 reordering:165 reord_seen:5156 rcv_space:12480 notsent:884832 pacing_rate=80485904bps delivery_rate=42173800bps 
+    ss t=20 rtt:76.836/9.172 cwnd:771 ssthresh:403 unacked:910 retrans:0/7 reordering:300 reord_seen:21375 rcv_space:12480 notsent:2112864 pacing_rate=144985096bps delivery_rate=107649448bps 
+  client batch gso=on gro=on send=327420/26158 gso=322958/47041 fallback=0 recv=208026/93014 gro=134286/57376
+  EAGAIN=27
+== on_5 (spd2 GSO켬) 22:49:42
+rtt min/avg/max/mdev = 71.273/83.292/97.164/10.650 ms
+P0 0 
+e
+  on_5_p1_up recv 102 Mbits/sec | retr 667 | idle c/s 49 76 77 81 / 43 73 71 72 / 
+    ue: SACKReneging=0 SACKReorder=65059 RenoReorder=0 TSReorder=99 LostRetransmit=32 FastRetrans=668 SlowStartRetrans=0 Timeouts=0 DSACKRecv=156 SpuriousRTOs=0 OFOQueue=1 
+    hq: DSACKOldSent=273 OFOQueue=144833 OFOMerge=62 
+    ss t=10 rtt:83.528/4.747 cwnd:308 ssthresh:252 unacked:371 retrans:0/437 reordering:300 reord_seen:5644 rcv_space:12480 notsent:2493504 pacing_rate=51779632bps delivery_rate=31576456bps 
+    ss t=20 rtt:78.156/8.478 cwnd:961 ssthresh:252 unacked:1132 retrans:0/437 reordering:300 reord_seen:22046 rcv_space:12480 notsent:1133184 pacing_rate=171368064bps delivery_rate=129672728bps 
+  client batch gso=on gro=on send=371845/39301 gso=357291/60108 fallback=0 recv=245699/77278 gro=183625/55302
+  EAGAIN=47
+== off_5 (spd2 MF_UDP_GSO=0) 22:50:51
+rtt min/avg/max/mdev = 71.389/93.730/113.806/17.390 ms
+P0 0 
+e
+  off_5_p1_up recv 157 Mbits/sec | retr 1357 | idle c/s 20 69 66 69 / 19 60 55 58 / 
+    ue: SACKReneging=0 SACKReorder=100271 RenoReorder=0 TSReorder=28 LostRetransmit=164 FastRetrans=1360 SlowStartRetrans=0 Timeouts=0 DSACKRecv=95 SpuriousRTOs=0 OFOQueue=0 
+    hq: DSACKOldSent=159 OFOQueue=201488 OFOMerge=12 
+    ss t=10 rtt:73.787/10.953 cwnd:982 ssthresh:706 unacked:1196 retrans:0/1354 reordering:300 reord_seen:16175 rcv_space:12480 notsent:1254240 pacing_rate=186962552bps delivery_rate=100609016bps 
+    ss t=20 rtt:112.783/3.517 cwnd:2194 ssthresh:706 unacked:2235 retrans:0/1354 reordering:300 reord_seen:50661 rcv_space:12480 pacing_rate=237421048bps delivery_rate=220204176bps 
+  client batch gso=off gro=on send=570559/37542 gso=0/0 fallback=0 recv=368353/59840 gro=265912/84358
+  EAGAIN=82
+done 22:52:09
+== restore 22:52:09
+client92 rps=0 4/1 mf=0
+server93 rps=0 1/4 mf=0
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

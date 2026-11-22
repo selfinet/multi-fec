@@ -3,6 +3,12 @@
  *            glorytun multipath (mud_lite) + GFW obfuscation
  */
 
+#include <sys/prctl.h>
+#include <sys/signalfd.h>
+#include <poll.h>
+#include "mt_reorder.h"
+#include "wg_batch.h"
+#include <sys/wait.h>
 #include "common.h"
 #include "misc.h"
 #include "log.h"
@@ -83,6 +89,14 @@ static int         g_fec_mode         = 1;                /* was 0 */
 static int         g_mtu              = 1350;             /* was default_mtu (1250) */
 static int         g_queue_len        = 500;              /* was 200 */
 int                g_pin_cpu          = -1;               /* --pin-cpu: CPU core to pin the process to, -1 = off */
+static int         g_workers          = 1;                /* mmulti-fec --workers: worker processes (1 = plain multi-fec) */
+static std::vector<int> g_worker_cpus;                    /* mmulti-fec --worker-cpus: core per worker */
+static double      g_reorder_ms       = 0;                /* mmulti-fec --reorder-ms: supervisor reorder hold, 0 = off */
+bool               g_pend_fifo        = false;            /* mmulti-fec --pend-fifo (read by mf_client/mf_server) */
+static double      g_win_floor        = 1.25;             /* mmulti-fec --win-floor */
+static bool        g_win_unlimited    = false;            /* mmulti-fec --win-unlimited */
+static double      g_win_mult         = 2.0;              /* mmulti-fec --win-mult (run53: 2 x rate raises upload throughput; 1 = previous behaviour) */
+int                g_shared_wg_fd     = -1;               /* mmulti-fec: WG-side socket shared by the workers */
 int                g_sock_buf         = 4096;             /* --sock-buf kB (was 0 = OS default; read by mf_relay.cpp) */
 static address_t   g_upstream_addr;                       /* relay: --upstream */
 address_t          g_upstream_local;                      /* relay: --upstream-local (read by mf_relay.cpp) */
@@ -282,6 +296,17 @@ static void print_help(const char *prog)
         "  --pin-cpu N           Pin the process to CPU core N (0-based). Keeps it off the cores\n"
         "                        that run loopback/WireGuard receive work (pair with lo RPS on the\n"
         "                        other cores). Refused if N is outside the current CPU affinity  [default: off]\n"
+        "  --workers N           mmulti-fec: run N worker processes (1-16), each with its own mud socket,\n"
+        "                        FEC state and core. Worker k uses remote/listen port + k; the WireGuard-side\n"
+        "                        socket is shared, so WG sees one endpoint. Both ends must use the same N.\n"
+        "                        Client and server only, one WG peer per server  [default: 1]\n"
+        "  --worker-cpus LIST    Core for each worker, e.g. 0,1,2 (use instead of --pin-cpu)  [default: off]\n"
+        "  --pend-fifo           (experiment) keep the pending queue FIFO: new packets queue behind it, drained every loop\n"
+        "  --win-floor F         (experiment) aggregate send-window floor = F x last second's sending  [default: 1.25]\n"
+        "  --win-unlimited       (experiment) the send window never limits\n"
+        "  --win-mult M          Send window refills at M x the path-rate sum, cap M x 200 ms; 1 = 1.4.5 behaviour  [default: 2]\n"
+        "  --reorder-ms MS       With --workers: the supervisor puts WireGuard packets back in counter order\n"
+        "                        before handing them to WG, waiting at most MS for a gap  [default: 0 = off]\n"
         "\n"
         "Obfuscation:\n"
         "  --obfs-mode M         Protocol mimicry mode  [default: quic]\n"
@@ -437,6 +462,13 @@ enum {
     OPT_DISABLE_FEC,
     OPT_SOCK_BUF,
     OPT_PIN_CPU,
+    OPT_WORKERS,
+    OPT_WORKER_CPUS,
+    OPT_REORDER_MS,
+    OPT_PEND_FIFO,
+    OPT_WIN_FLOOR,
+    OPT_WIN_UNLIMITED,
+    OPT_WIN_MULT,
     OPT_JITTER,
     OPT_RANDOM_DROP,
     OPT_DISABLE_CHECKSUM,
@@ -480,6 +512,13 @@ static const struct option long_opts[] = {
     { "disable-fec",      no_argument,       NULL, OPT_DISABLE_FEC     },
     { "sock-buf",         required_argument, NULL, OPT_SOCK_BUF        },
     { "pin-cpu",          required_argument, NULL, OPT_PIN_CPU         },
+    { "workers",          required_argument, NULL, OPT_WORKERS         },
+    { "worker-cpus",      required_argument, NULL, OPT_WORKER_CPUS     },
+    { "reorder-ms",       required_argument, NULL, OPT_REORDER_MS      },
+    { "pend-fifo",        no_argument,       NULL, OPT_PEND_FIFO       },
+    { "win-floor",        required_argument, NULL, OPT_WIN_FLOOR       },
+    { "win-unlimited",    no_argument,       NULL, OPT_WIN_UNLIMITED   },
+    { "win-mult",         required_argument, NULL, OPT_WIN_MULT        },
     { "jitter",           required_argument, NULL, OPT_JITTER          },
     { "random-drop",      required_argument, NULL, OPT_RANDOM_DROP     },
     { "disable-checksum", no_argument,       NULL, OPT_DISABLE_CHECKSUM},
@@ -737,6 +776,74 @@ static void parse_args(int argc, char *argv[])
                 exit(1);
             }
             g_pin_cpu = (int)v;
+            break;
+        }
+
+        case OPT_WORKERS: {
+            char *end = NULL;
+            long v = strtol(optarg, &end, 10);
+            if (end == optarg || *end || v < 1 || v > 16) {
+                fprintf(stderr, "error: --workers must be 1-16\n");
+                exit(1);
+            }
+            g_workers = (int)v;
+            break;
+        }
+
+        case OPT_PEND_FIFO:
+            g_pend_fifo = true;
+            break;
+
+        case OPT_WIN_UNLIMITED:
+            g_win_unlimited = true;
+            break;
+
+        case OPT_WIN_MULT: {
+            char *end = NULL;
+            double v = strtod(optarg, &end);
+            if (end == optarg || *end || v < 1.0 || v > 20.0) {
+                fprintf(stderr, "error: --win-mult must be 1.0-20.0\n");
+                exit(1);
+            }
+            g_win_mult = v;
+            break;
+        }
+
+        case OPT_WIN_FLOOR: {
+            char *end = NULL;
+            double v = strtod(optarg, &end);
+            if (end == optarg || *end || v < 1.0 || v > 10.0) {
+                fprintf(stderr, "error: --win-floor must be 1.0-10.0\n");
+                exit(1);
+            }
+            g_win_floor = v;
+            break;
+        }
+
+        case OPT_REORDER_MS: {
+            char *end = NULL;
+            double v = strtod(optarg, &end);
+            if (end == optarg || *end || v < 0 || v > 200) {
+                fprintf(stderr, "error: --reorder-ms must be 0-200\n");
+                exit(1);
+            }
+            g_reorder_ms = v;
+            break;
+        }
+
+        case OPT_WORKER_CPUS: {
+            g_worker_cpus.clear();
+            const char *p = optarg;
+            while (*p) {
+                char *end = NULL;
+                long v = strtol(p, &end, 10);
+                if (end == p || v < 0 || v >= CPU_SETSIZE || (*end && *end != ',')) {
+                    fprintf(stderr, "error: --worker-cpus is a comma list of CPU cores, e.g. 0,1,2\n");
+                    exit(1);
+                }
+                g_worker_cpus.push_back((int)v);
+                p = *end ? end + 1 : end;
+            }
             break;
         }
 
@@ -1044,6 +1151,145 @@ static bool pin_cpu_allowed(int cpu, std::string &allowed)
     return CPU_ISSET(cpu, &s);
 }
 
+/* mmulti-fec --workers: fork n workers and supervise them. Returns the worker
+ * number (0..n-1) in each child; the parent never returns — it forwards
+ * SIGTERM/SIGINT to the workers, and if any worker dies it stops the rest and
+ * exits 1, so systemd (or the harness) sees one failed unit rather than a
+ * half-alive tunnel that silently drops every n-th packet. */
+/* mmulti-fec: every --workers rule in one place, used by main() before any mode
+ * starts (so relay or bad values are refused, not silently ignored) and by --check. */
+static std::string workers_problem()
+{
+    if (g_workers <= 1) {
+        if (!g_worker_cpus.empty()) return "--worker-cpus needs --workers 2 or more";
+        return g_reorder_ms > 0 ? "--reorder-ms needs --workers 2 or more" : "";
+    }
+    if (program_mode != client_mode && program_mode != server_mode)
+        return "--workers is for client/server only";
+    if (g_pin_cpu >= 0) return "use --worker-cpus with --workers, not --pin-cpu";
+    if (!g_worker_cpus.empty() && (int)g_worker_cpus.size() < g_workers)
+        return "--worker-cpus lists " + std::to_string(g_worker_cpus.size()) + " core(s) for " + std::to_string(g_workers) + " workers";
+    for (int c : g_worker_cpus) {
+        std::string allowed;
+        if (!pin_cpu_allowed(c, allowed))
+            return "--worker-cpus " + std::to_string(c) + ": outside this process's CPU affinity (" + allowed + ")";
+    }
+    if (program_mode == server_mode) {
+        if (local_addr.is_vaild() && (int)local_addr.get_port() + g_workers - 1 > 65535)
+            return "listen port + workers - 1 exceeds 65535";
+    } else {
+        for (size_t i = 0; i < g_paths.size(); i++) {
+            if ((int)g_paths[i].remote.get_port() + g_workers - 1 > 65535)
+                return std::string("path ") + g_paths[i].remote.get_str() + ": port + workers - 1 exceeds 65535";
+            /* two paths to one IP whose port ranges overlap would put two workers on one server port */
+            for (size_t j = i + 1; j < g_paths.size(); j++) {
+                address_t a = g_paths[i].remote, b = g_paths[j].remote;
+                a.set_port(0); b.set_port(0);
+                if (!(a == b)) continue;
+                int d = (int)g_paths[i].remote.get_port() - (int)g_paths[j].remote.get_port();
+                if (d < 0) d = -d;
+                if (d < g_workers)
+                    return std::string("paths ") + g_paths[i].remote.get_str() + " and " + g_paths[j].remote.get_str() +
+                           ": same IP, ports closer than --workers (worker port ranges would overlap)";
+            }
+        }
+    }
+    return "";
+}
+
+static uint64_t mono_us()
+{
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);
+    return (uint64_t)ts.tv_sec * 1000000ull + (uint64_t)ts.tv_nsec / 1000;
+}
+
+/* mmulti-fec --workers: fork n workers and supervise them. Returns the worker
+ * number (0..n-1) in each child; the parent never returns — it forwards
+ * SIGTERM/SIGINT to the workers, and if any worker dies it stops the rest and
+ * exits 1, so systemd (or the harness) sees one failed unit rather than a
+ * half-alive tunnel that silently drops every n-th packet.
+ * With --reorder-ms it also logs the shared reorder counters every --report s. */
+static int spawn_workers(int n)
+{
+    sigset_t set, old;
+    sigemptyset(&set);
+    sigaddset(&set, SIGTERM);
+    sigaddset(&set, SIGINT);
+    sigaddset(&set, SIGCHLD);
+    sigprocmask(SIG_BLOCK, &set, &old);   /* before fork: no window where a signal is lost */
+    pid_t parent = getpid();
+    std::vector<pid_t> pids;
+    for (int k = 0; k < n; k++) {
+        pid_t p = fork();
+        if (p == 0) {
+            sigprocmask(SIG_SETMASK, &old, NULL);
+            prctl(PR_SET_PDEATHSIG, SIGTERM);
+            if (getppid() != parent) _exit(1);   /* supervisor died before prctl */
+            return k;
+        }
+        if (p < 0) {
+            mylog(log_fatal, "fork worker %d: %s\n", k, strerror(errno));
+            for (pid_t q : pids) kill(q, SIGTERM);
+            exit(1);
+        }
+        pids.push_back(p);
+    }
+    mylog(log_info, "supervisor pid %d: %d workers started%s\n", (int)parent, n,
+          g_reorder_shm ? " (shared reorder on)" : "");
+
+    int sfd = signalfd(-1, &set, SFD_NONBLOCK | SFD_CLOEXEC);
+    if (sfd < 0) { mylog(log_fatal, "signalfd: %s\n", strerror(errno)); for (pid_t q : pids) kill(q, SIGTERM); exit(1); }
+    uint64_t next_report = mono_us() + (uint64_t)(report_interval > 0 ? report_interval : 60) * 1000000ull;
+    int code = 0;
+    bool stop = false;
+    while (!stop) {
+        struct pollfd pf[1];
+        pf[0].fd = sfd; pf[0].events = POLLIN;
+        int pr = poll(pf, 1, 1000);
+        if (pr < 0 && errno != EINTR) break;
+        if (g_reorder_shm && mono_us() >= next_report) {
+            mt_ro_stats st;
+            mt_ro_get_stats(&st);
+            mylog(log_info, "[reorder] in %llu inorder %llu buffered %llu late %llu gaps skipped %llu (%llu pkts) dup %llu pass %llu toolong %llu\n",
+                  st.in, st.inorder, st.buffered, st.late, st.skipped_gaps, st.skipped_pkts, st.dups, st.passthru, st.toolong);
+            mylog(log_info, "[reorder] hold(<5/<10/<20/<50/<100/100+ ms) %llu/%llu/%llu/%llu/%llu/%llu  late-after-skip %llu/%llu/%llu/%llu/%llu/%llu unknown %llu\n",
+                  st.hold_hist[0], st.hold_hist[1], st.hold_hist[2], st.hold_hist[3], st.hold_hist[4], st.hold_hist[5],
+                  st.late_hist[0], st.late_hist[1], st.late_hist[2], st.late_hist[3], st.late_hist[4], st.late_hist[5], st.late_unknown);
+            next_report = mono_us() + (uint64_t)(report_interval > 0 ? report_interval : 60) * 1000000ull;
+        }
+        if (pr > 0 && (pf[0].revents & POLLIN)) {
+            struct signalfd_siginfo si;
+            while (read(sfd, &si, sizeof(si)) == (ssize_t)sizeof(si)) {
+                if (si.ssi_signo == SIGCHLD) {
+                    int st = 0;
+                    pid_t q;
+                    while ((q = waitpid(-1, &st, WNOHANG)) > 0) {
+                        mylog(log_error, "worker pid %d exited (status 0x%x) — stopping all workers\n", (int)q, st);
+                        for (size_t i = 0; i < pids.size(); i++) if (pids[i] == q) { pids.erase(pids.begin() + i); break; }
+                        code = 1;
+                        stop = true;
+                    }
+                } else {
+                    stop = true;
+                }
+            }
+        }
+    }
+    /* Signal only pids we have not reaped yet: a reaped pid may already belong
+     * to some other process. */
+    for (pid_t q : pids) kill(q, SIGTERM);
+    for (int i = 0; i < 30 && !pids.empty(); i++) {   /* up to 3 s, then SIGKILL */
+        pid_t q;
+        while ((q = waitpid(-1, NULL, WNOHANG)) > 0)
+            for (size_t j = 0; j < pids.size(); j++) if (pids[j] == q) { pids.erase(pids.begin() + j); break; }
+        if (!pids.empty()) usleep(100000);
+    }
+    for (pid_t q : pids) kill(q, SIGKILL);
+    for (pid_t q : pids) waitpid(q, NULL, 0);
+    exit(code);
+}
+
 static bool is_tunnel_dev(const char *dev)
 {
     return !strncmp(dev, "wg", 2) || !strncmp(dev, "tun", 3);
@@ -1090,12 +1336,21 @@ static int path_egress(PathSpec &ps, mf_route_info &ri)
 }
 
 /* listen-side address of an instance (what a second process would collide on) */
-static void cfg_listen_addrs(const mf_cfg &c, std::vector<std::pair<std::string, std::string> > &out)
+static void cfg_listen_addrs(const mf_cfg &c, std::vector<std::pair<std::string, std::string> > &out, int workers_override = 0)
 {
     std::string listen, wg;
+    int workers = 1;
     for (auto &it : c.items) {
         if (it.first == "listen") listen = it.second;
         if (it.first == "wg") wg = it.second;
+        if (it.first == "workers") workers = atoi(it.second.c_str());
+    }
+    if (workers_override > 0) workers = workers_override;
+    if (c.mode == "server" && !listen.empty() && workers > 1) {   /* mmulti-fec: base..base+N-1 */
+        size_t colon = listen.rfind(':');
+        int base = colon == std::string::npos ? -1 : atoi(listen.c_str() + colon + 1);
+        for (int k = 1; base > 0 && k < workers && base + k <= 65535; k++)
+            out.push_back(std::make_pair("listen", listen.substr(0, colon + 1) + std::to_string(base + k)));
     }
     if (c.mode == "client") out.push_back(std::make_pair("listen", listen.empty() ? "127.0.0.1:51821" : listen));
     if (c.mode == "server") {
@@ -1174,10 +1429,25 @@ static int run_check()
     if (g_pin_cpu >= 0) snprintf(b, sizeof(b), "%d", g_pin_cpu);
     else                snprintf(b, sizeof(b), "(off)");
     row("pin-cpu", b);
+    snprintf(b, sizeof(b), "%d", g_workers);             row("workers", b);
+    {
+        std::string wc;
+        for (int c : g_worker_cpus) { if (!wc.empty()) wc += ","; wc += std::to_string(c); }
+        row("worker-cpus", wc.empty() ? "(off)" : wc.c_str());
+    }
     snprintf(b, sizeof(b), "%d", log_level);             row("log-level", b);
 
     printf("\nchecks:\n");
     if (program_mode == unset_mode) bad("no mode (mode = client|server|relay, or -c/-s/-r)");
+    {
+        std::string wp = workers_problem();
+        if (!wp.empty()) bad(wp);
+        else if (g_workers > 1) {
+            ok("workers " + std::to_string(g_workers) + (program_mode == server_mode ? " — listens on base port .. base+" : " — sends to path port .. +") +
+               std::to_string(g_workers - 1) + "; the peer must use the same --workers");
+            if (fifo_file[0]) warn("fifo is disabled with --workers");
+        }
+    }
     if (g_pin_cpu >= 0) {
         std::string allowed;
         if (!pin_cpu_allowed(g_pin_cpu, allowed))
@@ -1314,17 +1584,20 @@ static int run_check()
 
     /* port already held by another process: mud and relay listen sockets set
      * SO_REUSEPORT, so a second one binds without error and splits the traffic */
-    if (local_addr.is_vaild()) {
+    /* server with --workers listens on base..base+N-1: check every one */
+    for (int wk = 0; local_addr.is_vaild() && wk < (program_mode == server_mode ? g_workers : 1); wk++) {
         std::vector<mf_port_owner> owners;
         address_t la = local_addr;
+        if (wk && (int)la.get_port() + wk <= 65535) la.set_port((int)la.get_port() + wk);
+        std::string las = la.get_str();
         mf_udp_port_owners(la, owners);
         for (mf_port_owner &o : owners) {
             bool self = g_have_cfg && o.cmdline.find(g_cfg.path) != std::string::npos;
-            if (self) { printf("  [NOTE] %s is held by this instance (pid %d, running)\n", local_addr.get_str(), o.pid); continue; }
-            snprintf(b, sizeof(b), "%s is already bound by pid %d: %.80s", local_addr.get_str(), o.pid, o.cmdline.c_str());
+            if (self) { printf("  [NOTE] %s is held by this instance (pid %d, running)\n", las.c_str(), o.pid); continue; }
+            snprintf(b, sizeof(b), "%s is already bound by pid %d: %.80s", las.c_str(), o.pid, o.cmdline.c_str());
             bad(std::string(b) + " — a second process would bind silently (SO_REUSEPORT) and split the traffic");
         }
-        if (owners.empty()) ok(std::string(local_addr.get_str()) + " is free");
+        if (owners.empty()) ok(las + " is free");
     }
 
     /* other instances configured next to this one */
@@ -1333,7 +1606,7 @@ static int run_check()
         size_t sl = dir.rfind('/');
         dir = sl == std::string::npos ? "." : dir.substr(0, sl);
         std::vector<std::pair<std::string, std::string> > mine;
-        cfg_listen_addrs(g_cfg, mine);
+        cfg_listen_addrs(g_cfg, mine, g_workers);
         DIR *d = opendir(dir.c_str());
         while (d) {
             struct dirent *e = readdir(d);
@@ -1595,6 +1868,11 @@ int main(int argc, char *argv[])
         return 1;
     }
 
+    {   /* mmulti-fec --workers rules: before any mode (relay included) starts */
+        std::string wp = workers_problem();
+        if (!wp.empty()) { fprintf(stderr, "error: %s\n", wp.c_str()); return 1; }
+    }
+
     /* --pin-cpu: before any mode starts, so every later thread/child inherits it.
      * A core we cannot use is a config error, not something to ignore. */
     if (g_pin_cpu >= 0) {
@@ -1752,6 +2030,79 @@ int main(int argc, char *argv[])
         }
     }
 
+    /* mmulti-fec --workers: open the shared WG-side socket, then fork. Each worker
+     * builds its own mud/FEC below; the parent only supervises. */
+    if (g_workers > 1) {
+        int r = program_mode == client_mode ? new_listen_socket2(g_shared_wg_fd, local_addr)
+                                            : new_connected_socket2(g_shared_wg_fd, g_wg_addr, out_addr, out_interface);
+        if (r != 0 || g_shared_wg_fd < 0) {
+            mylog(log_fatal, "shared WG-side socket failed: %s\n", strerror(errno));
+            return 1;
+        }
+        if (g_sock_buf > 0) {
+            int rcv_kb = 0, snd_kb = 0;
+            mf_set_sock_buf(g_shared_wg_fd, g_sock_buf, &rcv_kb, &snd_kb);
+            mylog(log_info, "shared wg-side sock-buf rcv=%d snd=%d kB\n", rcv_kb, snd_kb);
+        }
+        if (fifo_file[0]) {
+            mylog(log_warn, "FIFO disabled with --workers (each worker has its own FEC state)\n");
+            fifo_file[0] = '\0';
+        }
+        if (g_reorder_ms > 0) {
+            if (mt_ro_shm_init((uint64_t)(g_reorder_ms * 1000.0)) != 0) {
+                mylog(log_fatal, "reorder shared memory: %s\n", strerror(errno));
+                return 1;
+            }
+            g_reorder_shm = true;
+            mylog(log_info, "shared reorder: hold %.1f ms\n", g_reorder_ms);
+        }
+        int k = spawn_workers(g_workers);   /* returns only in a worker */
+        if (g_reorder_shm) wg_reorder_worker_init();
+        log_worker_id = k;
+        ev_loop_fork(ev_default_loop(0));
+        struct timespec ts;
+        clock_gettime(CLOCK_MONOTONIC, &ts);
+        srand((unsigned)(ts.tv_sec ^ ts.tv_nsec ^ ((unsigned)getpid() << 16) ^ (unsigned)k));
+        reseed_fake_random();   /* conv ids, FEC seq: not the same sequence in every worker */
+        if (program_mode == client_mode) {
+            /* own session id per worker: a packet that reaches the wrong server worker
+             * (port collapsed by NAT/relay) is then a different session, not merged in */
+            int rfd = open("/dev/urandom", O_RDONLY);
+            if (rfd < 0 || read(rfd, g_session_id, SESSION_ID_LEN) != SESSION_ID_LEN) {
+                mylog(log_fatal, "worker %d: session_id generation failed\n", k);
+                return 1;
+            }
+            close(rfd);
+            mylog(log_info, "session_id: %016llx\n", (unsigned long long)(*(uint64_t *)g_session_id));
+        }
+        if (!g_worker_cpus.empty()) {
+            cpu_set_t s;
+            CPU_ZERO(&s);
+            CPU_SET(g_worker_cpus[k], &s);
+            if (sched_setaffinity(0, sizeof(s), &s) != 0) {
+                mylog(log_fatal, "worker %d: sched_setaffinity %d: %s\n", k, g_worker_cpus[k], strerror(errno));
+                return 1;
+            }
+            mylog(log_info, "pinned to CPU %d\n", g_worker_cpus[k]);
+        }
+        if (k > 0) {
+            if (program_mode == client_mode) {
+                for (PathSpec &ps : g_paths) {
+                    int port = (int)ps.remote.get_port() + k;
+                    if (port > 65535) { mylog(log_fatal, "worker %d: remote port overflow\n", k); return 1; }
+                    ps.remote.set_port(port);
+                }
+            } else {
+                int port = (int)local_addr.get_port() + k;
+                if (port > 65535) { mylog(log_fatal, "worker %d: listen port overflow\n", k); return 1; }
+                local_addr.set_port(port);
+            }
+        }
+        mylog(log_info, "worker %d/%d pid %d %s port %s\n", k, g_workers, (int)getpid(),
+              program_mode == client_mode ? "remote" : "listen",
+              program_mode == client_mode ? (g_paths.empty() ? "-" : g_paths[0].remote.get_str()) : local_addr.get_str());
+    }
+
     /* mud creation
      *
      * Server: mud socket = listen socket (bound to -l address)
@@ -1845,6 +2196,15 @@ int main(int argc, char *argv[])
     mconf.keepalive     = 5000000ULL;   /* 5s (5,000,000 µs) */
     mconf.timetolerance = 30000000ULL;  /* 30s — matches HMAC ±30s tolerance, handles clock skew */
     mud_set(mud, &mconf);
+    if (g_win_unlimited || g_win_floor != 1.25) {
+        mud_set_window_opts(mud, (unsigned)(g_win_floor * 100.0 + 0.5), g_win_unlimited ? 1 : 0);
+        mylog(log_info, "send window: floor %.2f%s (experiment)\n", g_win_floor, g_win_unlimited ? ", unlimited" : "");
+    }
+    if (g_win_mult != 1.0) {
+        mud_set_window_mult(mud, (unsigned)(g_win_mult * 100.0 + 0.5));
+        mylog(log_info, "send window: mult %.2f x rate\n", g_win_mult);
+    }
+    if (g_pend_fifo) mylog(log_info, "pending queue: FIFO, drained every loop (experiment)\n");
 
     setnonblocking(mud_get_fd(mud));
 

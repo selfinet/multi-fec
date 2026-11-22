@@ -1,0 +1,49 @@
+== setup 14:54:20
+client92 e9ae9a5849af aedd5cf5ce25
+server93 e9ae9a5849af aedd5cf5ce25
+== n1spd_1 (spd1, 터널 1, pin '0', rps e) 14:54:30
+rtt min/avg/max/mdev = 61.241/72.483/84.984/9.733 ms
+P0 0 
+e
+  n1spd_1_p1_up recv 131 Mbits/sec | retr 1011 | share 100/0/0 | idle c/s 34 85 79 78 / 42 75 70 67 / 
+  n1spd_1_p1_dn recv 203 Mbits/sec | retr 143 | share 100/0/0 | idle c/s 18 67 48 64 / 14 79 73 74 / 
+  P0 EAGAIN=96 pin=0 
+== n1v145_1 (v145, 터널 1, pin '0', rps e) 14:56:26
+rtt min/avg/max/mdev = 60.948/86.204/109.031/19.704 ms
+P0 0 
+e
+  n1v145_1_p1_up recv 102 Mbits/sec | retr 173 | share 100/0/0 | idle c/s 50 89 84 84 / 47 68 72 77 / 
+  n1v145_1_p1_dn recv 124 Mbits/sec | retr 132 | share 100/0/0 | idle c/s 40 72 60 75 / 43 84 85 83 / 
+  P0 EAGAIN=43 pin=0 
+== n1spd_2 (spd1, 터널 1, pin '0', rps e) 14:58:25
+rtt min/avg/max/mdev = 71.244/75.986/84.761/6.211 ms
+P0 0 
+e
+  n1spd_2_p1_up recv 131 Mbits/sec | retr 849 | share 100/0/0 | idle c/s 27 81 73 79 / 32 70 64 73 / 
+  n1spd_2_p1_dn recv 206 Mbits/sec | retr 12 | share 100/0/0 | idle c/s 16 63 50 65 / 13 71 76 77 / 
+  P0 EAGAIN=68 pin=0 
+== n1v145_2 (v145, 터널 1, pin '0', rps e) 15:00:31
+rtt min/avg/max/mdev = 61.250/71.632/82.409/8.642 ms
+P0 0 
+e
+  n1v145_2_p1_up recv 78.1 Mbits/sec | retr 1525 | share 100/0/0 | idle c/s 44 83 75 83 / 43 76 68 73 / 
+  n1v145_2_p1_dn recv 123 Mbits/sec | retr 160 | share 100/0/0 | idle c/s 38 72 58 76 / 44 87 82 80 / 
+  P0 EAGAIN=84 pin=0 
+== n1spd_3 (spd1, 터널 1, pin '0', rps e) 15:02:28
+rtt min/avg/max/mdev = 71.217/83.076/93.123/9.034 ms
+P0 0 
+e
+  n1spd_3_p1_up recv 99.4 Mbits/sec | retr 4166 | share 100/0/0 | idle c/s 36 79 75 75 / 31 74 68 64 / 
+  n1spd_3_p1_dn recv 129 Mbits/sec | retr 158 | share 100/0/0 | idle c/s 31 73 64 66 / 35 83 78 75 / 
+  P0 EAGAIN=172 pin=0 
+== n1v145_3 (v145, 터널 1, pin '0', rps e) 15:04:27
+rtt min/avg/max/mdev = 60.949/68.955/84.908/11.280 ms
+P0 0 
+e
+  n1v145_3_p1_up recv 81.8 Mbits/sec | retr 1644 | share 100/0/0 | idle c/s 54 89 84 88 / 53 78 76 75 / 
+  n1v145_3_p1_dn recv 103 Mbits/sec | retr 113 | share 100/0/0 | idle c/s 30 68 61 67 / 36 83 78 69 / 
+  P0 EAGAIN=74 pin=0 
+done 15:06:33
+== restore 15:06:33
+client92 rps=0 4/1 mf=0
+server93 rps=0 1/4 mf=0

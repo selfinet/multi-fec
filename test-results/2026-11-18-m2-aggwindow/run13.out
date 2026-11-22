@@ -1,0 +1,65 @@
+== setup 14:13:47
+client92: netem 8003: dev enp1s0 root refcnt 9 limit 20000 delay 54ms netem 10: dev enp4s0 parent 1:1 limit 20000 delay 30ms netem 20: dev enp4s0 parent 1:2 limit 20000 delay 54ms
+server93: netem 8003: dev enp1s0 root refcnt 9 limit 20000 delay 54ms netem 10: dev enp4s0 parent 1:1 limit 20000 delay 30ms netem 20: dev enp4s0 parent 1:2 limit 20000 delay 54ms
+== base 14:13:55
+rtt min/avg/max/mdev = 60.900/71.280/81.266/8.319 ms
+qdisc noqueue 0: root refcnt 2 
+  base_up1 recv 78.7 Mbps | retr 2137 | rcvbufErr c/s 307/0/
+  base_down1 recv 82.3 Mbps | retr 1036 | rcvbufErr c/s 0/460/
+  base_up2 recv 79.3 Mbps | retr 2297 | rcvbufErr c/s 259/0/
+  base_down2 recv 80.6 Mbps | retr 1008 | rcvbufErr c/s 0/476/
+  client EAGAIN=247 total 3000
+== sb1024 14:17:10
+rtt min/avg/max/mdev = 60.855/81.053/121.405/28.532 ms
+sock-buf = 1024
+qdisc noqueue 0: root refcnt 2 
+  sb1024_up1 recv 75.7 Mbps | retr 2675 | rcvbufErr c/s 326/0/
+  sb1024_down1 recv 93.7 Mbps | retr 638 | rcvbufErr c/s 0/484/
+  sb1024_up2 recv 80.3 Mbps | retr 1815 | rcvbufErr c/s 279/0/
+  sb1024_down2 recv 85.5 Mbps | retr 1426 | rcvbufErr c/s 0/410/
+  client EAGAIN=175 total 2000
+== sb512 14:20:25
+rtt min/avg/max/mdev = 72.034/79.417/84.941/5.430 ms
+sock-buf = 512
+qdisc noqueue 0: root refcnt 2 
+  sb512_up1 recv 68.1 Mbps | retr 2004 | rcvbufErr c/s 503/0/
+  sb512_down1 recv 71.1 Mbps | retr 2185 | rcvbufErr c/s 0/1665/
+  sb512_up2 recv 66.8 Mbps | retr 1945 | rcvbufErr c/s 464/0/
+  sb512_down2 recv 71.7 Mbps | retr 1027 | rcvbufErr c/s 0/812/
+  client EAGAIN=245 total 2000
+== cake120 14:23:38
+rtt min/avg/max/mdev = 71.102/79.840/97.198/12.273 ms
+qdisc cake 8004: root refcnt 2 bandwidth 120Mbit diffserv3 triple-isolate nonat nowash no-ack-filter split-gso rtt 100ms raw overhead 0 
+  cake120_up1 recv 70.0 Mbps | retr 1270 | rcvbufErr c/s 0/0/
+  cake120_down1 recv 72.8 Mbps | retr 728 | rcvbufErr c/s 0/0/
+  cake120_up2 recv 77.1 Mbps | retr 1529 | rcvbufErr c/s 0/0/
+  cake120_down2 recv 68.6 Mbps | retr 488 | rcvbufErr c/s 0/0/
+  client EAGAIN=178 total 1000
+== cake100 14:26:56
+rtt min/avg/max/mdev = 71.896/79.519/85.233/5.609 ms
+qdisc cake 8005: root refcnt 2 bandwidth 100Mbit diffserv3 triple-isolate nonat nowash no-ack-filter split-gso rtt 100ms raw overhead 0 
+  cake100_up1 recv 92.2 Mbps | retr 345 | rcvbufErr c/s 0/0/
+  cake100_down1 recv 93.2 Mbps | retr 134 | rcvbufErr c/s 0/0/
+  cake100_up2 recv 92.4 Mbps | retr 1050 | rcvbufErr c/s 0/0/
+  cake100_down2 recv 93.3 Mbps | retr 306 | rcvbufErr c/s 0/0/
+  client EAGAIN=169 total 1000
+== f202 14:30:08
+rtt min/avg/max/mdev = 60.954/83.358/107.734/19.148 ms
+fec = 20:2
+qdisc noqueue 0: root refcnt 2 
+  f202_up1 recv 80.4 Mbps | retr 1053 | rcvbufErr c/s 0/0/
+  f202_down1 recv 91.2 Mbps | retr 1207 | rcvbufErr c/s 0/446/
+  f202_up2 recv 82.0 Mbps | retr 2337 | rcvbufErr c/s 617/0/
+  f202_down2 recv 84.0 Mbps | retr 1341 | rcvbufErr c/s 0/560/
+  client EAGAIN=198 total 1000
+== combo 14:33:25
+rtt min/avg/max/mdev = 60.817/81.039/96.056/14.849 ms
+sock-buf = 1024
+fec = 20:2
+qdisc cake 8006: root refcnt 2 bandwidth 120Mbit diffserv3 triple-isolate nonat nowash no-ack-filter split-gso rtt 100ms raw overhead 0 
+  combo_up1 recv 78.1 Mbps | retr 2199 | rcvbufErr c/s 356/0/
+  combo_down1 recv 100 Mbps | retr 1236 | rcvbufErr c/s 0/319/
+  combo_up2 recv 80.4 Mbps | retr 1818 | rcvbufErr c/s 267/0/
+  combo_down2 recv 101 Mbps | retr 1732 | rcvbufErr c/s 0/875/
+  client EAGAIN=169 total 1000
+done 14:36:44

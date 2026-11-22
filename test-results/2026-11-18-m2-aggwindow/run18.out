@@ -1,0 +1,36 @@
+== setup 22:42:23
+7fdfaf7028d9
+cbeb61371a4a
+7fdfaf7028d9
+cbeb61371a4a
+== eager1 (nopeek) 22:42:36
+rtt min/avg/max/mdev = 61.105/67.734/71.067/4.687 ms
+  eager1_tcp_up recv 79.9 Mbits/sec | retr 2241 | mfCPU c/s 53/54/ | rcvbufErr c/s 0/0/
+  eager1_tcp_down recv 87.0 Mbits/sec | retr 1156 | mfCPU c/s 52/49/ | rcvbufErr c/s 0/735/
+  eager1_udp_up recv 167 Mbits/sec loss (15%) | mfCPU c/s 76/75/ | rcvbufErr c/s 6987/24152/
+  eager1_udp_down recv 179 Mbits/sec loss (10%) | mfCPU c/s 76/75/ | rcvbufErr c/s 39264/0/
+  client EAGAIN=1290 total 47000
+== lazy1 (lazylog) 22:45:42
+rtt min/avg/max/mdev = 61.019/76.848/84.937/11.193 ms
+  lazy1_tcp_up recv 79.8 Mbits/sec | retr 1405 | mfCPU c/s 53/54/ | rcvbufErr c/s 0/0/
+  lazy1_tcp_down recv 81.4 Mbits/sec | retr 266 | mfCPU c/s 56/51/ | rcvbufErr c/s 0/0/
+  lazy1_udp_up recv 182 Mbits/sec loss (8.1%) | mfCPU c/s 75/75/ | rcvbufErr c/s 0/1003/
+  lazy1_udp_down recv 183 Mbits/sec loss (8.2%) | mfCPU c/s 79/77/ | rcvbufErr c/s 90395/0/
+  client EAGAIN=1085 total 39000
+== eager2 (nopeek) 22:48:52
+rtt min/avg/max/mdev = 81.503/84.044/85.790/1.838 ms
+  eager2_tcp_up recv 85.6 Mbits/sec | retr 683 | mfCPU c/s 49/49/ | rcvbufErr c/s 273/0/
+  eager2_tcp_down recv 92.6 Mbits/sec | retr 1029 | mfCPU c/s 53/50/ | rcvbufErr c/s 0/837/
+  eager2_udp_up recv 171 Mbits/sec loss (13%) | mfCPU c/s 78/78/ | rcvbufErr c/s 24782/5982/
+  eager2_udp_down recv 173 Mbits/sec loss (13%) | mfCPU c/s 75/76/ | rcvbufErr c/s 48256/0/
+  client EAGAIN=895 total 29000
+== lazy2 (lazylog) 22:51:57
+rtt min/avg/max/mdev = 71.047/75.586/84.658/6.414 ms
+  lazy2_tcp_up recv 94.7 Mbits/sec | retr 2429 | mfCPU c/s 53/53/ | rcvbufErr c/s 874/0/
+  lazy2_tcp_down recv 88.7 Mbits/sec | retr 860 | mfCPU c/s 55/51/ | rcvbufErr c/s 0/525/
+  lazy2_udp_up recv 189 Mbits/sec loss (5.1%) | mfCPU c/s 78/77/ | rcvbufErr c/s 0/1466/
+  lazy2_udp_down recv 183 Mbits/sec loss (8.3%) | mfCPU c/s 78/76/ | rcvbufErr c/s 27037/0/
+  client EAGAIN=794 total 25000
+rtt min/avg/max/mdev = 71.545/83.168/96.829/10.422 ms
+rtt min/avg/max/mdev = 60.912/75.941/95.856/14.678 ms
+done 22:56:40

@@ -36,6 +36,7 @@ const char log_text[][20] = {"NEVER", "FATAL", "ERROR", "WARN", "INFO", "DEBUG",
 const char log_color[][20] = {RED, RED, RED, YEL, GRN, MAG, ""};
 
 extern int log_level;
+extern int log_worker_id;   /* mmulti-fec: worker number in log lines, -1 = none */
 extern int enable_log_position;
 extern int enable_log_color;
 

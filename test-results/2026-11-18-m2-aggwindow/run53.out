@@ -1,0 +1,251 @@
+== setup 15:57:46
+client92 spd2 e324110ee508 mt eb0bbfa89b32 multi-fec 1.4.5-mt.1
+server93 spd2 e324110ee508 mt eb0bbfa89b32 multi-fec 1.4.5-mt.1
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.142/60.170/60.228/0.030 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.147/108.172/108.204/0.026 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.149/108.166/108.200/0.017 ms
+client92 spd2 e324110ee508 mt eb0bbfa89b32 multi-fec 1.4.5-mt.1
+server93 spd2 e324110ee508 mt eb0bbfa89b32 multi-fec 1.4.5-mt.1
+  client92 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+  server93 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+== nr_mm_1 (mm) 15:58:13
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 71.381/71.771/72.167/0.320 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nr_mm_1_p1_up recv 115 | retr 1251 | ping p50 85 p99 154 n=149 | idle c/s 56 84 79 79 / 51 76 74 78 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 28/23  s drop 0/0 MB 506/99
+  nr_mm_1_p1_dn recv 150 | retr 605 | ping p50 116 p99 374 n=150 | idle c/s 47 77 65 71 / 64 84 82 83 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 636/149  s drop 0/0 MB 35/31
+  nr_mm_1_p8_up recv 135 | retr 1838 | ping p50 110 p99 239 n=150 | idle c/s 49 76 72 73 / 46 68 68 70 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 58/53  s drop 0/0 MB 416/297
+  nr_mm_1_p8_dn recv 150 | retr 2291 | ping p50 131 p99 303 n=149 | idle c/s 50 73 60 73 / 65 80 81 80 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 722/68  s drop 0/0 MB 39/35
+  server93 [INFO][server] pending enq 6722 sent 4524 wait avg 317.0 max 497 ms hist(<10/<20/<50/<100/100+) 54/89/144/359/3878 queued 2198
+  server93 [INFO][server] pending enq 21944 sent 21944 wait avg 167.8 max 497 ms hist(<10/<20/<50/<100/100+) 833/1387/2390/3567/13767 queued 0
+  server93 [INFO][server] pending enq 40187 sent 40187 wait avg 133.7 max 497 ms hist(<10/<20/<50/<100/100+) 3549/1669/8344/6817/19808 queued 0
+  client EAGAIN 158 pendfull 2 err 0
+== nr_mm_m2_1 (mm_m2) 16:02:23
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.213/71.805/82.235/8.582 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nr_mm_m2_1_p1_up recv 157 | retr 1343 | ping p50 81 p99 141 n=149 | idle c/s 64 86 84 83 / 54 77 72 73 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 22/17  s drop 0/0 MB 785/34
+  nr_mm_m2_1_p1_dn recv 160 | retr 298 | ping p50 117 p99 213 n=150 | idle c/s 47 77 63 73 / 66 85 83 82 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 730/107  s drop 0/0 MB 31/30
+  nr_mm_m2_1_p8_up recv 169 | retr 5313 | ping p50 87 p99 178 n=150 | idle c/s 58 79 78 78 / 51 72 66 69 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 36/28  s drop 0/0 MB 852/34
+  nr_mm_m2_1_p8_dn recv 157 | retr 2275 | ping p50 132 p99 283 n=150 | idle c/s 50 73 64 67 / 65 81 81 81 / | rcvbuf c/s 0/14/ | q(A100/B50) c drop 0/0 MB 761/68  s drop 0/0 MB 37/38
+  server93 [INFO][server] pending enq 10975 sent 10975 wait avg 76.1 max 174 ms hist(<10/<20/<50/<100/100+) 471/892/2271/3866/3475 queued 0
+  server93 [INFO][server] pending enq 32160 sent 32160 wait avg 91.0 max 221 ms hist(<10/<20/<50/<100/100+) 1216/1137/6293/11257/12257 queued 0
+  client EAGAIN 232 pendfull 6 err 0
+== nr_mm_m2f_1 (mm_m2f) 16:06:33
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.135/71.589/81.599/8.360 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nr_mm_m2f_1_p1_up recv 198 | retr 1963 | ping p50 86 p99 158 n=150 | idle c/s 60 77 81 81 / 45 72 65 71 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 28/20  s drop 0/0 MB 985/48
+  nr_mm_m2f_1_p1_dn recv 156 | retr 9 | ping p50 104 p99 229 n=150 | idle c/s 51 76 65 73 / 65 86 85 83 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 774/41  s drop 0/0 MB 25/22
+  nr_mm_m2f_1_p8_up recv 167 | retr 2821 | ping p50 97 p99 192 n=150 | idle c/s 58 79 77 76 / 49 71 65 69 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 40/32  s drop 0/0 MB 810/69
+  nr_mm_m2f_1_p8_dn recv 144 | retr 4318 | ping p50 130 p99 257 n=149 | idle c/s 50 74 66 67 / 62 79 81 80 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 594/174  s drop 0/0 MB 47/40
+  server93 [INFO][server] pending enq 17410 sent 17410 wait avg 61.6 max 232 ms hist(<10/<20/<50/<100/100+) 3124/2110/5576/2535/4065 queued 0
+  server93 [INFO][server] pending enq 34281 sent 34281 wait avg 69.9 max 232 ms hist(<10/<20/<50/<100/100+) 9421/3384/7015/4178/10283 queued 0
+  client EAGAIN 2 pendfull 4 err 0
+== nr_mm_2 (mm) 16:10:42
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 60.965/61.040/61.169/0.091 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nr_mm_2_p1_up recv 113 | retr 2428 | ping p50 86 p99 206 n=150 | idle c/s 46 78 70 69 / 39 70 71 67 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 49/50  s drop 0/0 MB 264/329
+  nr_mm_2_p1_dn recv 144 | retr 284 | ping p50 110 p99 341 n=150 | idle c/s 43 72 64 67 / 56 81 80 78 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 458/299  s drop 0/0 MB 48/48
+  nr_mm_2_p8_up recv 124 | retr 3929 | ping p50 106 p99 201 n=150 | idle c/s 50 75 75 74 / 44 69 70 70 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 50/49  s drop 0/0 MB 388/269
+  nr_mm_2_p8_dn recv 134 | retr 2817 | ping p50 131 p99 251 n=150 | idle c/s 41 67 62 65 / 50 75 75 74 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 292/421  s drop 0/0 MB 55/61
+  server93 [INFO][server] pending enq 15856 sent 15856 wait avg 109.6 max 373 ms hist(<10/<20/<50/<100/100+) 1552/602/5317/2517/5868 queued 0
+  server93 [INFO][server] pending enq 21908 sent 21908 wait avg 93.2 max 373 ms hist(<10/<20/<50/<100/100+) 2127/1783/7285/3862/6851 queued 0
+  client EAGAIN 232 pendfull 4 err 0
+== nr_mm_m2_2 (mm_m2) 16:14:53
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.197/75.849/95.169/14.256 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nr_mm_m2_2_p1_up recv 159 | retr 2170 | ping p50 86 p99 146 n=150 | idle c/s 37 74 65 72 / 28 62 61 63 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 64/67  s drop 0/0 MB 426/409
+  nr_mm_m2_2_p1_dn recv 143 | retr 454 | ping p50 148 p99 237 n=150 | idle c/s 48 77 66 71 / 62 80 82 82 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 516/232  s drop 0/0 MB 42/44
+  nr_mm_m2_2_p8_up recv 146 | retr 2732 | ping p50 98 p99 204 n=148 | idle c/s 51 72 74 75 / 43 72 64 69 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 53/43  s drop 0/0 MB 556/214
+  nr_mm_m2_2_p8_dn recv 141 | retr 3637 | ping p50 130 p99 263 n=149 | idle c/s 47 73 63 70 / 59 79 79 78 / | rcvbuf c/s 0/46/ | q(A100/B50) c drop 0/0 MB 508/246  s drop 0/0 MB 49/48
+  server93 [INFO][server] pending enq 12228 sent 12228 wait avg 77.8 max 212 ms hist(<10/<20/<50/<100/100+) 466/1294/2710/4014/3744 queued 0
+  server93 [INFO][server] pending enq 31199 sent 31199 wait avg 99.7 max 235 ms hist(<10/<20/<50/<100/100+) 1089/2029/4816/9018/14247 queued 0
+  client EAGAIN 154 pendfull 4 err 0
+== nr_mm_m2f_2 (mm_m2f) 16:19:00
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.234/77.082/85.025/11.206 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nr_mm_m2f_2_p1_up recv 143 | retr 49 | ping p50 92 p99 180 n=150 | idle c/s 48 80 72 72 / 40 71 68 67 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 48/48  s drop 0/0 MB 421/324
+  nr_mm_m2f_2_p1_dn recv 152 | retr 42 | ping p50 103 p99 210 n=150 | idle c/s 36 68 61 67 / 53 75 77 77 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 475/319  s drop 0/0 MB 54/50
+  nr_mm_m2f_2_p8_up recv 151 | retr 5012 | ping p50 109 p99 201 n=149 | idle c/s 49 73 73 74 / 44 70 64 67 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 58/55  s drop 0/0 MB 476/318
+  nr_mm_m2f_2_p8_dn recv 142 | retr 3948 | ping p50 125 p99 234 n=150 | idle c/s 50 75 62 73 / 63 79 81 80 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 585/172  s drop 0/0 MB 46/41
+  server93 [INFO][server] pending enq 4825 sent 4825 wait avg 14.7 max 35 ms hist(<10/<20/<50/<100/100+) 2006/1050/1769/0/0 queued 0
+  server93 [INFO][server] pending enq 19211 sent 19211 wait avg 27.9 max 76 ms hist(<10/<20/<50/<100/100+) 4392/5352/4720/4747/0 queued 0
+  client EAGAIN 1 pendfull 3 err 0
+== nr_mm_3 (mm) 16:23:09
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.220/76.369/95.929/14.509 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nr_mm_3_p1_up recv 141 | retr 1261 | ping p50 85 p99 137 n=149 | idle c/s 53 81 72 77 / 44 73 68 70 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 42/36  s drop 0/0 MB 551/189
+  nr_mm_3_p1_dn recv 142 | retr 305 | ping p50 108 p99 322 n=150 | idle c/s 49 77 66 72 / 65 84 83 82 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 587/158  s drop 0/0 MB 33/36
+  nr_mm_3_p8_up recv 137 | retr 2372 | ping p50 86 p99 184 n=149 | idle c/s 56 75 76 76 / 48 73 66 72 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 43/36  s drop 0/0 MB 587/138
+  nr_mm_3_p8_dn recv 141 | retr 2481 | ping p50 110 p99 290 n=150 | idle c/s 53 75 62 72 / 66 80 81 81 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 680/68  s drop 0/0 MB 36/35
+  server93 [INFO][server] pending enq 3240 sent 1568 wait avg 160.3 max 255 ms hist(<10/<20/<50/<100/100+) 56/25/112/188/1187 queued 1672
+  server93 [INFO][server] pending enq 20902 sent 20902 wait avg 123.2 max 375 ms hist(<10/<20/<50/<100/100+) 1474/914/4206/4451/9857 queued 0
+  server93 [INFO][server] pending enq 38688 sent 38688 wait avg 105.7 max 375 ms hist(<10/<20/<50/<100/100+) 4759/1420/10146/6398/15965 queued 0
+  client EAGAIN 172 pendfull 3 err 0
+== nr_mm_m2_3 (mm_m2) 16:27:18
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 71.282/74.953/81.561/4.681 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nr_mm_m2_3_p1_up recv 114 | retr 446 | ping p50 85 p99 172 n=150 | idle c/s 63 85 81 85 / 55 79 77 75 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 21/22  s drop 0/0 MB 521/76
+  nr_mm_m2_3_p1_dn recv 139 | retr 1137 | ping p50 102 p99 240 n=150 | idle c/s 45 75 66 70 / 60 82 81 81 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 543/188  s drop 0/0 MB 36/39
+  nr_mm_m2_3_p8_up recv 149 | retr 4996 | ping p50 100 p99 183 n=149 | idle c/s 49 72 72 71 / 43 68 66 63 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 57/58  s drop 0/0 MB 494/297
+  nr_mm_m2_3_p8_dn recv 151 | retr 1500 | ping p50 118 p99 219 n=150 | idle c/s 50 72 64 68 / 64 79 81 80 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 680/119  s drop 0/0 MB 42/41
+  server93 [INFO][server] pending enq 11921 sent 11921 wait avg 84.3 max 216 ms hist(<10/<20/<50/<100/100+) 449/1698/2168/3492/4114 queued 0
+  server93 [INFO][server] pending enq 13684 sent 12357 wait avg 82.4 max 216 ms hist(<10/<20/<50/<100/100+) 556/1714/2364/3609/4114 queued 1327
+  server93 [INFO][server] pending enq 26079 sent 26079 wait avg 81.3 max 233 ms hist(<10/<20/<50/<100/100+) 1491/5902/4739/4761/9186 queued 0
+  client EAGAIN 144 pendfull 3 err 0
+== nr_mm_m2f_3 (mm_m2f) 16:31:28
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 60.952/77.011/108.956/22.588 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nr_mm_m2f_3_p1_up recv 132 | retr 221 | ping p50 78 p99 151 n=150 | idle c/s 62 84 79 84 / 55 76 73 77 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 22/18  s drop 0/0 MB 638/52
+  nr_mm_m2f_3_p1_dn recv 152 | retr 9 | ping p50 98 p99 203 n=150 | idle c/s 49 77 63 74 / 63 84 84 82 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 733/66  s drop 0/0 MB 29/23
+  nr_mm_m2f_3_p8_up recv 162 | retr 2837 | ping p50 87 p99 200 n=150 | idle c/s 52 74 73 75 / 44 66 65 68 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 47/39  s drop 0/0 MB 712/135
+  nr_mm_m2f_3_p8_dn recv 152 | retr 3987 | ping p50 135 p99 315 n=148 | idle c/s 49 68 64 70 / 62 80 81 79 / | rcvbuf c/s 0/263/ | q(A100/B50) c drop 0/0 MB 666/142  s drop 0/0 MB 47/38
+  server93 [INFO][server] pending enq 10819 sent 10803 wait avg 69.3 max 205 ms hist(<10/<20/<50/<100/100+) 1903/1725/1824/1873/3478 queued 16
+  server93 [INFO][server] pending enq 11319 sent 11319 wait avg 66.2 max 205 ms hist(<10/<20/<50/<100/100+) 2419/1725/1824/1873/3478 queued 0
+  server93 [INFO][server] pending enq 29193 sent 29193 wait avg 81.3 max 241 ms hist(<10/<20/<50/<100/100+) 4324/5959/4781/3605/10524 queued 0
+  client EAGAIN 1 pendfull 2 err 0
+  client92 A: limit 750 delay 30ms rate 100Mbit / B: limit 500 delay 54ms rate 50Mbit
+  server93 A: limit 750 delay 30ms rate 100Mbit / B: limit 500 delay 54ms rate 50Mbit
+-- 하부 ping (속도 제한 후)
+172.31.10.1 rtt min/avg/max/mdev = 60.156/60.166/60.182/0.008 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.170/108.185/108.195/0.009 ms
+== nl_mm_1 (mm) 16:35:42
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 71.375/76.156/85.049/6.293 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nl_mm_1_p1_up recv 59.6 | retr 381 | ping p50 94 p99 256 n=150 | idle c/s 61 86 80 83 / 58 81 84 82 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 18/22  s drop 0/0 MB 274/41
+  nl_mm_1_p1_dn recv 90.6 | retr 3978 | ping p50 111 p99 245 n=150 | idle c/s 41 75 70 69 / 50 81 82 75 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 336/147  s drop 0/0 MB 37/37
+  nl_mm_1_p8_up recv 87.6 | retr 11969 | ping p50 100 p99 263 n=150 | idle c/s 38 73 69 72 / 35 68 69 64 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 46/46  s drop 0/9 MB 300/181
+  nl_mm_1_p8_dn recv 87.2 | retr 8312 | ping p50 109 p99 292 n=150 | idle c/s 36 68 63 69 / 42 73 75 71 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/87 MB 317/160  s drop 0/0 MB 47/47
+  server93 [INFO][server] pending enq 13514 sent 13514 wait avg 77.9 max 249 ms hist(<10/<20/<50/<100/100+) 1413/1948/3435/2273/4445 queued 0
+  server93 [INFO][server] pending enq 30504 sent 30504 wait avg 98.3 max 372 ms hist(<10/<20/<50/<100/100+) 2583/3964/5914/5003/13040 queued 0
+  client EAGAIN 156 pendfull 2 err 0
+== nl_mm_m2_1 (mm_m2) 16:39:52
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.189/80.769/95.999/14.540 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nl_mm_m2_1_p1_up recv 92.4 | retr 1571 | ping p50 88 p99 183 n=150 | idle c/s 42 75 68 72 / 36 68 68 72 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 44/38  s drop 0/0 MB 305/181
+  nl_mm_m2_1_p1_dn recv 83.0 | retr 923 | ping p50 257 p99 329 n=150 | idle c/s 49 77 71 80 / 54 82 78 83 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 372/67  s drop 0/0 MB 34/28
+  nl_mm_m2_1_p8_up recv 95.5 | retr 4092 | ping p50 176 p99 252 n=149 | idle c/s 30 66 66 70 / 27 63 58 66 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 52/52  s drop 158/15 MB 376/133
+  nl_mm_m2_1_p8_dn recv 87.1 | retr 1220 | ping p50 188 p99 239 n=150 | idle c/s 35 69 58 73 / 43 73 73 73 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 66/56 MB 378/88  s drop 0/0 MB 50/44
+  server93 [INFO][server] pending enq 8766 sent 8766 wait avg 63.7 max 131 ms hist(<10/<20/<50/<100/100+) 400/647/1912/4595/1212 queued 0
+  server93 [INFO][server] pending enq 14263 sent 14263 wait avg 75.0 max 189 ms hist(<10/<20/<50/<100/100+) 618/979/2702/6177/3787 queued 0
+  client EAGAIN 158 pendfull 3 err 0
+== nl_mm_m2f_1 (mm_m2f) 16:44:02
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.282/77.121/85.044/11.199 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nl_mm_m2f_1_p1_up recv 70.7 | retr 4566 | ping p50 86 p99 190 n=150 | idle c/s 51 83 75 76 / 48 77 74 78 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 30/31  s drop 0/0 MB 235/143
+  nl_mm_m2f_1_p1_dn recv 80.0 | retr 3148 | ping p50 89 p99 247 n=150 | idle c/s 38 75 68 71 / 49 78 79 79 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 252/176  s drop 0/0 MB 35/40
+  nl_mm_m2f_1_p8_up recv 78.4 | retr 13457 | ping p50 105 p99 248 n=150 | idle c/s 41 74 69 73 / 38 69 70 70 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 44/43  s drop 0/124 MB 264/173
+  nl_mm_m2f_1_p8_dn recv 76.8 | retr 8671 | ping p50 85 p99 243 n=150 | idle c/s 41 74 60 75 / 47 76 75 76 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 241/181  s drop 0/0 MB 40/42
+  client EAGAIN 1 pendfull 1 err 0
+== nl_mm_2 (mm) 16:48:13
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.223/71.684/81.770/8.392 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nl_mm_2_p1_up recv 72.2 | retr 1562 | ping p50 95 p99 197 n=149 | idle c/s 58 85 82 83 / 55 80 80 83 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 23/18  s drop 0/0 MB 348/33
+  nl_mm_2_p1_dn recv 77.5 | retr 235 | ping p50 218 p99 348 n=150 | idle c/s 45 76 66 78 / 51 83 80 80 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 364/43  s drop 0/0 MB 36/28
+  nl_mm_2_p8_up recv 76.4 | retr 1039 | ping p50 205 p99 267 n=150 | idle c/s 44 77 69 74 / 41 73 69 75 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 42/35  s drop 67/0 MB 350/56
+  nl_mm_2_p8_dn recv 83.1 | retr 5221 | ping p50 179 p99 353 n=150 | idle c/s 37 72 62 68 / 42 74 73 75 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 210/487 MB 367/83  s drop 0/0 MB 50/39
+  server93 [INFO][server] pending enq 15533 sent 15533 wait avg 128.1 max 376 ms hist(<10/<20/<50/<100/100+) 453/436/3001/4532/7111 queued 0
+  server93 [INFO][server] pending enq 33867 sent 33867 wait avg 153.6 max 406 ms hist(<10/<20/<50/<100/100+) 859/923/4393/7448/20244 queued 0
+  client EAGAIN 204 pendfull 2 err 0
+== nl_mm_m2_2 (mm_m2) 16:52:24
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.175/75.959/95.264/14.279 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nl_mm_m2_2_p1_up recv 81.1 | retr 4015 | ping p50 86 p99 191 n=149 | idle c/s 43 77 75 79 / 39 72 76 66 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 39/38  s drop 0/0 MB 250/180
+  nl_mm_m2_2_p1_dn recv 100 | retr 3978 | ping p50 182 p99 293 n=150 | idle c/s 39 73 66 74 / 50 80 80 73 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 364/168  s drop 0/0 MB 42/41
+  nl_mm_m2_2_p8_up recv 85.5 | retr 8156 | ping p50 86 p99 226 n=150 | idle c/s 36 72 71 73 / 34 68 71 65 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 46/44  s drop 0/131 MB 298/168
+  nl_mm_m2_2_p8_dn recv 85.6 | retr 3490 | ping p50 156 p99 257 n=150 | idle c/s 34 68 63 71 / 43 72 76 71 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 275/0 MB 380/82  s drop 0/0 MB 49/42
+  server93 [INFO][server] pending enq 6394 sent 6394 wait avg 56.5 max 115 ms hist(<10/<20/<50/<100/100+) 434/299/2204/3031/426 queued 0
+  server93 [INFO][server] pending enq 12344 sent 12344 wait avg 75.8 max 176 ms hist(<10/<20/<50/<100/100+) 693/573/3125/4621/3332 queued 0
+  client EAGAIN 76 pendfull 2 err 0
+== nl_mm_m2f_2 (mm_m2f) 16:56:33
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.088/69.103/85.015/11.251 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nl_mm_m2f_2_p1_up recv 87.5 | retr 2194 | ping p50 95 p99 279 n=150 | idle c/s 49 81 76 78 / 45 71 74 76 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 38/35  s drop 0/0 MB 301/161
+  nl_mm_m2f_2_p1_dn recv 74.7 | retr 4717 | ping p50 109 p99 294 n=150 | idle c/s 46 74 71 76 / 53 83 79 83 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 284/118  s drop 0/0 MB 31/30
+  nl_mm_m2f_2_p8_up recv 79.1 | retr 12867 | ping p50 91 p99 235 n=148 | idle c/s 41 72 70 75 / 37 69 69 71 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 46/40  s drop 0/626 MB 270/168
+  nl_mm_m2f_2_p8_dn recv 77.1 | retr 1718 | ping p50 205 p99 261 n=149 | idle c/s 41 71 59 74 / 46 74 76 78 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 174/0 MB 379/35  s drop 0/0 MB 43/38
+  server93 [INFO][server] pending enq 6641 sent 6641 wait avg 38.7 max 89 ms hist(<10/<20/<50/<100/100+) 2434/843/477/2887/0 queued 0
+  server93 [INFO][server] pending enq 12775 sent 12775 wait avg 72.6 max 205 ms hist(<10/<20/<50/<100/100+) 2712/1149/1284/4170/3460 queued 0
+  client EAGAIN 3 pendfull 1 err 0
+== nl_mm_3 (mm) 17:00:42
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.007/69.070/85.065/11.310 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nl_mm_3_p1_up recv 61.3 | retr 972 | ping p50 87 p99 236 n=149 | idle c/s 61 87 80 81 / 56 80 81 82 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 22/18  s drop 0/0 MB 294/31
+  nl_mm_3_p1_dn recv 80.7 | retr 94 | ping p50 164 p99 261 n=150 | idle c/s 39 73 61 77 / 48 79 81 78 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 364/60  s drop 0/0 MB 42/32
+  nl_mm_3_p8_up recv 74.0 | retr 720 | ping p50 187 p99 254 n=149 | idle c/s 45 78 73 78 / 44 73 71 74 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 37/33  s drop 80/0 MB 359/33
+  nl_mm_3_p8_dn recv 82.6 | retr 601 | ping p50 176 p99 287 n=150 | idle c/s 38 71 58 72 / 44 73 76 72 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 92/0 MB 372/69  s drop 0/0 MB 52/38
+  server93 [INFO][server] pending enq 12973 sent 12973 wait avg 85.4 max 273 ms hist(<10/<20/<50/<100/100+) 2167/912/2171/3386/4337 queued 0
+  server93 [INFO][server] pending enq 26332 sent 26332 wait avg 87.3 max 273 ms hist(<10/<20/<50/<100/100+) 2655/2787/6136/5523/9231 queued 0
+  server93 [INFO][server] pending enq 26883 sent 26883 wait avg 85.6 max 273 ms hist(<10/<20/<50/<100/100+) 3069/2924/6136/5523/9231 queued 0
+  client EAGAIN 174 pendfull 2 err 0
+== nl_mm_m2_3 (mm_m2) 17:04:54
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.019/61.106/61.217/0.082 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nl_mm_m2_3_p1_up recv 79.3 | retr 3547 | ping p50 87 p99 258 n=150 | idle c/s 50 82 70 76 / 44 75 74 77 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 33/33  s drop 0/0 MB 254/170
+  nl_mm_m2_3_p1_dn recv 75.3 | retr 7581 | ping p50 96 p99 249 n=149 | idle c/s 45 76 70 77 / 54 82 82 81 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 259/150  s drop 0/0 MB 32/34
+  nl_mm_m2_3_p8_up recv 73.4 | retr 13044 | ping p50 86 p99 248 n=150 | idle c/s 41 74 71 76 / 37 72 71 72 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 42/38  s drop 0/404 MB 230/178
+  nl_mm_m2_3_p8_dn recv 77.4 | retr 10239 | ping p50 94 p99 253 n=150 | idle c/s 38 68 69 72 / 45 75 78 78 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 252/177  s drop 0/0 MB 42/43
+  client EAGAIN 1 pendfull 0 err 0
+== nl_mm_m2f_3 (mm_m2f) 17:09:04
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.152/77.221/109.155/22.580 ms
+  route 1 rps e procs 1+1 cpus 0-3,0,0-3,0-3,0-3
+  nl_mm_m2f_3_p1_up recv 54.4 | retr 4269 | ping p50 85 p99 199 n=149 | idle c/s 56 85 78 79 / 52 82 83 76 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 28/26  s drop 0/0 MB 164/127
+  nl_mm_m2f_3_p1_dn recv 88.2 | retr 5815 | ping p50 143 p99 238 n=150 | idle c/s 37 74 64 75 / 48 82 79 75 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 336/138  s drop 0/0 MB 35/42
+  nl_mm_m2f_3_p8_up recv 65.9 | retr 8339 | ping p50 100 p99 226 n=150 | idle c/s 44 76 72 77 / 41 75 78 69 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 39/34  s drop 0/116 MB 179/182
+  nl_mm_m2f_3_p8_dn recv 97.8 | retr 8706 | ping p50 143 p99 307 n=149 | idle c/s 33 68 64 68 / 42 76 78 72 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 414/417 MB 360/171  s drop 0/0 MB 44/49
+  server93 [INFO][server] pending enq 6835 sent 6835 wait avg 111.6 max 228 ms hist(<10/<20/<50/<100/100+) 343/390/976/1514/3612 queued 0
+  server93 [INFO][server] pending enq 19294 sent 19294 wait avg 101.4 max 228 ms hist(<10/<20/<50/<100/100+) 842/1106/3712/3683/9951 queued 0
+  client EAGAIN 1 pendfull 2 err 0
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+done 17:13:44
+== restore 17:13:44
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+client92 rps=0 4/1 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+server93 rps=0 1/4 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

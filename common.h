@@ -10,7 +10,7 @@
 
 /* Project semantic version (source-controlled). Combined at runtime with the
  * git revision and build date from the Makefile-generated git_version.h. */
-#define MULTI_FEC_VERSION "1.4.5-speed.2"
+#define MULTI_FEC_VERSION "1.4.5-mt.1"
 
 //#define __STDC_FORMAT_MACROS 1
 #include <inttypes.h>
@@ -436,6 +436,7 @@ int new_connected_socket(int &fd, u32_t ip, int port);
 
 int new_listen_socket2(int &fd, address_t &addr);
 int new_connected_socket2(int &fd, address_t &addr, address_t *bind_addr, char *out_interface);
+void reseed_fake_random();   /* mmulti-fec: re-seed after fork */
 
 struct not_copy_able_t {
     not_copy_able_t() {

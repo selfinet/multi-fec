@@ -1,0 +1,117 @@
+== setup 17:03:19
+client92 aedd5cf5ce25 e324110ee508
+server93 aedd5cf5ce25 e324110ee508
+client92 netem 끔: qdisc mq 0: root  / qdisc mq 0: root 
+server93 netem 끔: qdisc mq 0: root  / qdisc mq 0: root 
+== s1_1 (spd1 env없음, 터널 1, pin '0', rps e) 17:03:31
+rtt min/avg/max/mdev = 0.927/1.033/1.213/0.127 ms
+P0 0 
+e
+  s1_1_p1_up recv 184 Mbits/sec | retr 25 | idle c/s 9 60 63 63 / 17 52 59 54 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1_1_p1_dn recv 178 Mbits/sec | retr 201 | idle c/s 13 63 52 61 / 27 76 67 68 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1_1_p8_up recv 177 Mbits/sec | retr 285 | idle c/s 9 61 61 63 / 19 53 53 48 /  | drops c/s rcvbuf=190 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1_1_p8_dn recv 172 Mbits/sec | retr 288 | idle c/s 13 60 51 54 / 25 71 66 66 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  P0 EAGAIN=150 pin=0 
+== g11_1 (spd2 env없음, 터널 1, pin '0', rps e) 17:07:25
+rtt min/avg/max/mdev = 0.868/1.011/1.131/0.108 ms
+P0 0 
+e
+  g11_1_p1_up recv 228 Mbits/sec | retr 289 | idle c/s 41 68 71 71 / 30 59 60 60 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g11_1_p1_dn recv 190 Mbits/sec | retr 356 | idle c/s 30 64 56 60 / 51 78 74 75 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g11_1_p8_up recv 232 Mbits/sec | retr 783 | idle c/s 43 74 73 73 / 30 57 60 55 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g11_1_p8_dn recv 174 Mbits/sec | retr 595 | idle c/s 32 59 54 61 / 49 74 74 72 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  $(hostname) [0m[32m[2026-11-19 17:11:04][INFO][client] batch gso=on gro=on send=2498237/137335 gso=2458789/210073 fallback=0 recv=2006603/47499 gro=1940213/283092
+  $(hostname) [0m[32m[2026-11-19 17:11:02][INFO][server] batch gso=on gro=on send=1999625/113451 gso=1978245/200297 fallback=0 recv=2502389/55878 gro=2415158/319619
+  P0 EAGAIN=212 pin=0 
+== g10_1 (spd2 MF_UDP_GRO=0, 터널 1, pin '0', rps e) 17:11:17
+rtt min/avg/max/mdev = 0.952/1.053/1.187/0.098 ms
+P0 0 
+e
+  g10_1_p1_up recv 204 Mbits/sec | retr 355 | idle c/s 43 78 69 72 / 33 63 62 61 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g10_1_p1_dn recv 204 Mbits/sec | retr 318 | idle c/s 28 62 52 63 / 51 80 78 74 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g10_1_p8_up recv 197 Mbits/sec | retr 620 | idle c/s 44 75 71 72 / 34 63 59 59 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g10_1_p8_dn recv 182 Mbits/sec | retr 716 | idle c/s 32 62 52 61 / 50 75 74 73 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  $(hostname) [0m[32m[2026-11-19 17:14:56][INFO][client] batch gso=on gro=off send=2136183/118030 gso=2108980/201005 fallback=0 recv=2162944/88539 gro=0/0
+  $(hostname) [0m[32m[2026-11-19 17:14:54][INFO][server] batch gso=on gro=off send=2156952/118592 gso=2124099/188259 fallback=0 recv=2140735/89479 gro=0/0
+  P0 EAGAIN=300 pin=0 
+== g01_1 (spd2 MF_UDP_GSO=0, 터널 1, pin '0', rps e) 17:15:09
+rtt min/avg/max/mdev = 0.946/1.050/1.247/0.139 ms
+P0 0 
+e
+  g01_1_p1_up recv 206 Mbits/sec | retr 29 | idle c/s 10 71 56 60 / 13 56 49 57 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g01_1_p1_dn recv 182 Mbits/sec | retr 153 | idle c/s 15 64 52 55 / 25 77 66 70 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g01_1_p8_up recv 189 Mbits/sec | retr 220 | idle c/s 9 62 59 59 / 13 53 49 52 /  | drops c/s rcvbuf=121 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g01_1_p8_dn recv 179 Mbits/sec | retr 493 | idle c/s 15 61 49 54 / 26 71 69 70 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  $(hostname) [0m[32m[2026-11-19 17:18:47][INFO][client] batch gso=off gro=on send=2274925/123491 gso=0/0 fallback=0 recv=2164368/91459 gro=1829465/452336
+  $(hostname) [0m[32m[2026-11-19 17:18:46][INFO][server] batch gso=off gro=on send=2156056/174461 gso=0/0 fallback=0 recv=2279124/231761 gro=2007549/449879
+  P0 EAGAIN=161 pin=0 
+== g00_1 (spd2 MF_UDP_GSO=0 MF_UDP_GRO=0, 터널 1, pin '0', rps e) 17:19:01
+rtt min/avg/max/mdev = 0.975/1.051/1.175/0.088 ms
+P0 0 
+e
+  g00_1_p1_up recv 250 Mbits/sec | retr 26 | idle c/s 11 71 64 68 / 13 58 50 57 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g00_1_p1_dn recv 228 Mbits/sec | retr 128 | idle c/s 15 61 51 50 / 23 78 73 77 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g00_1_p8_up recv 230 Mbits/sec | retr 304 | idle c/s 10 60 67 62 / 13 57 47 52 /  | drops c/s rcvbuf=195 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g00_1_p8_dn recv 213 Mbits/sec | retr 407 | idle c/s 16 56 49 50 / 23 75 73 73 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=288 nicdrop=0 / 
+  $(hostname) [0m[32m[2026-11-19 17:22:39][INFO][client] batch gso=off gro=off send=2212519/128542 gso=0/0 fallback=0 recv=2062711/127213 gro=0/0
+  $(hostname) [0m[32m[2026-11-19 17:22:37][INFO][server] batch gso=off gro=off send=2056264/174372 gso=0/0 fallback=0 recv=2218381/195116 gro=0/0
+  P0 EAGAIN=220 pin=0 
+== s1_2 (spd1 env없음, 터널 1, pin '0', rps e) 17:22:52
+rtt min/avg/max/mdev = 0.938/1.026/1.178/0.107 ms
+P0 0 
+e
+  s1_2_p1_up recv 231 Mbits/sec | retr 21 | idle c/s 9 73 62 62 / 15 57 48 54 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1_2_p1_dn recv 180 Mbits/sec | retr 135 | idle c/s 14 65 52 59 / 28 76 69 66 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1_2_p8_up recv 202 Mbits/sec | retr 255 | idle c/s 9 62 64 59 / 15 55 47 47 /  | drops c/s rcvbuf=147 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  s1_2_p8_dn recv 177 Mbits/sec | retr 293 | idle c/s 15 61 50 54 / 26 69 67 67 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  P0 EAGAIN=178 pin=0 
+== g11_2 (spd2 env없음, 터널 1, pin '0', rps e) 17:26:43
+rtt min/avg/max/mdev = 0.998/9.598/26.541/11.980 ms
+P0 0 
+e
+  g11_2_p1_up recv 250 Mbits/sec | retr 248 | idle c/s 43 68 74 73 / 27 62 60 56 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g11_2_p1_dn recv 215 Mbits/sec | retr 323 | idle c/s 26 60 52 61 / 48 73 77 75 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g11_2_p8_up recv 243 Mbits/sec | retr 640 | idle c/s 44 74 73 75 / 28 60 56 55 /  | drops c/s rcvbuf=71 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g11_2_p8_dn recv 212 Mbits/sec | retr 564 | idle c/s 27 58 49 58 / 47 73 75 72 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  $(hostname) [0m[32m[2026-11-19 17:30:22][INFO][client] batch gso=on gro=on send=2439059/136627 gso=2396610/177241 fallback=0 recv=2114391/51369 gro=2026449/264675
+  $(hostname) [0m[32m[2026-11-19 17:30:20][INFO][server] batch gso=on gro=on send=2107976/121543 gso=2065771/168707 fallback=0 recv=2444659/58606 gro=2359739/294553
+  P0 EAGAIN=192 pin=0 
+== g10_2 (spd2 MF_UDP_GRO=0, 터널 1, pin '0', rps e) 17:30:37
+rtt min/avg/max/mdev = 0.938/0.998/1.050/0.046 ms
+P0 0 
+e
+  g10_2_p1_up recv 176 Mbits/sec | retr 222 | idle c/s 44 73 72 72 / 38 61 67 66 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g10_2_p1_dn recv 185 Mbits/sec | retr 328 | idle c/s 28 63 56 58 / 49 77 75 72 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g10_2_p8_up recv 175 Mbits/sec | retr 520 | idle c/s 45 75 71 73 / 38 60 63 61 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g10_2_p8_dn recv 177 Mbits/sec | retr 608 | idle c/s 30 59 52 60 / 48 73 72 73 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  $(hostname) [0m[32m[2026-11-19 17:34:15][INFO][client] batch gso=on gro=off send=2118878/116441 gso=2107090/218943 fallback=0 recv=2153774/85868 gro=0/0
+  $(hostname) [0m[32m[2026-11-19 17:34:14][INFO][server] batch gso=on gro=off send=2149208/118654 gso=2130629/215223 fallback=0 recv=2126458/86080 gro=0/0
+  P0 EAGAIN=373 pin=0 
+== g01_2 (spd2 MF_UDP_GSO=0, 터널 1, pin '0', rps e) 17:34:28
+rtt min/avg/max/mdev = 0.965/1.047/1.194/0.104 ms
+P0 0 
+e
+  g01_2_p1_up recv 225 Mbits/sec | retr 18 | idle c/s 11 61 63 65 / 16 54 56 53 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g01_2_p1_dn recv 218 Mbits/sec | retr 142 | idle c/s 15 58 49 59 / 25 76 71 70 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g01_2_p8_up recv 200 Mbits/sec | retr 267 | idle c/s 10 57 59 65 / 16 56 49 49 /  | drops c/s rcvbuf=172 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g01_2_p8_dn recv 198 Mbits/sec | retr 349 | idle c/s 15 60 48 56 / 26 74 72 70 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  $(hostname) [0m[32m[2026-11-19 17:38:07][INFO][client] batch gso=off gro=on send=2180740/123497 gso=0/0 fallback=0 recv=2185304/95794 gro=1835124/367988
+  $(hostname) [0m[32m[2026-11-19 17:38:05][INFO][server] batch gso=off gro=on send=2177880/198821 gso=0/0 fallback=0 recv=2185772/221754 gro=1887922/376009
+  P0 EAGAIN=191 pin=0 
+== g00_2 (spd2 MF_UDP_GSO=0 MF_UDP_GRO=0, 터널 1, pin '0', rps e) 17:38:20
+rtt min/avg/max/mdev = 0.950/1.099/1.187/0.106 ms
+P0 0 
+e
+  g00_2_p1_up recv 190 Mbits/sec | retr 21 | idle c/s 10 64 66 65 / 19 58 55 54 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g00_2_p1_dn recv 190 Mbits/sec | retr 131 | idle c/s 12 65 53 58 / 27 69 71 67 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g00_2_p8_up recv 184 Mbits/sec | retr 235 | idle c/s 10 64 61 64 / 19 56 49 52 /  | drops c/s rcvbuf=162 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  g00_2_p8_dn recv 186 Mbits/sec | retr 408 | idle c/s 13 63 49 58 / 26 72 72 65 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+  $(hostname) [0m[32m[2026-11-19 17:41:59][INFO][client] batch gso=off gro=off send=2039530/109736 gso=0/0 fallback=0 recv=2088854/106030 gro=0/0
+  $(hostname) [0m[32m[2026-11-19 17:41:57][INFO][server] batch gso=off gro=off send=2081559/203658 gso=0/0 fallback=0 recv=2044061/265545 gro=0/0
+  P0 EAGAIN=174 pin=0 
+done 17:42:28
+== restore 17:42:28
+client92 rps=0 4/1 mf=0
+server93 rps=0 1/4 mf=0
+client92 netem 복원 일치
+server93 netem 복원 일치

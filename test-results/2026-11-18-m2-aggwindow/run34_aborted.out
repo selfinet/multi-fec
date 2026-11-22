@@ -1,0 +1,23 @@
+== setup 23:17:50
+client92 aedd5cf5ce25 e324110ee508
+server93 aedd5cf5ce25 e324110ee508
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms, run30 전 egress 와 같아야 함)
+172.31.10.1 rtt min/avg/max/mdev = 60.153/60.185/60.230/0.026 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.149/108.176/108.213/0.027 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.148/108.170/108.194/0.018 ms
+== g11u3_1 (spd2 env없음, 터널 3, pin '0 1 2', rps 8) 23:18:06
+rtt min/avg/max/mdev = 61.060/72.517/95.223/16.055 ms
+P0 0 P1 1 P2 2 
+8
+  g11u3_1_u300_up recv 285 Mbits/sec | lost 28776/625016 (4.6%) | share 17/50/33 | idle c/s 13 14 18 22 / 29 21 18 34 /  | drops c/s rcvbuf=0 nicdrop=0 / rcvbuf=0 nicdrop=0 / 
+./run34.sh: line 88: 147666480 141450113 14822283 14601195 10759816 10793145 : syntax error in expression (error token is "141450113 14822283 14601195 10759816 10793145 ")
+done 23:19:16
+== restore 23:19:16
+client92 rps=0 4/1 mf=0
+server93 rps=0 1/4 mf=0
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

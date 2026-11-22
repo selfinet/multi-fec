@@ -1,0 +1,52 @@
+== setup 12:52:22
+client92 spd2 e324110ee508 qdisc noqueue/noqueue/noqueue
+server93 spd2 e324110ee508 qdisc noqueue/noqueue/noqueue
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.151/60.180/60.216/0.023 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.151/108.167/108.208/0.021 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.161/108.177/108.195/0.013 ms
+rtt min/avg/max/mdev = 61.213/67.915/71.276/4.739 ms
+P0 0 rtt min/avg/max/mdev = 71.258/76.449/81.641/5.191 ms
+P1 1 rtt min/avg/max/mdev = 60.997/66.101/71.206/5.104 ms
+P2 2 rtt min/avg/max/mdev = 71.354/83.559/95.765/12.205 ms
+8
+  CAKE rate kbit 상향(.92) 77940 81585 63810 / 하향(.93) 73575 83520 59850 (run40 보정값)
+== nocake_1 12:53:05
+  nocake_1_dir_dn 터널별 83.9 88.7 69.5 합 242 | idle c/s 36 37 35 43 / 52 49 48 50 / 
+  nocake_1_dir_up2 터널별 76.2 94.0 71.0 합 241 | idle c/s 45 45 40 47 / 35 35 31 41 / 
+== cake_1 12:54:23
+  client92 bandwidth 77940Kbit bandwidth 81585Kbit bandwidth 63810Kbit
+  server93 bandwidth 73575Kbit bandwidth 83520Kbit bandwidth 59850Kbit
+  cake_1_dir_dn 터널별 69.5 77.9 55.0 합 202 | idle c/s 17 18 19 25 / 19 11 11 23 / 
+  cake_1_dir_up2 터널별 72.2 71.6 58.9 합 203 | idle c/s 28 23 22 30 / 16 18 17 25 / 
+  client92 rq-wg Sent 201708046 bytes 283920 pkt (dropped 1
+  client92 rq-wg2 Sent 194930872 bytes 239378 pkt (dropped 4
+  client92 rq-wg3 Sent 162956870 bytes 217516 pkt (dropped 12
+  server93 rq-wg Sent 194869455 bytes 274648 pkt (dropped 2
+  server93 rq-wg2 Sent 211278067 bytes 240847 pkt (dropped 8
+  server93 rq-wg3 Sent 150483818 bytes 180918 pkt (dropped 26
+== cake_2 12:55:45
+  client92 bandwidth 77940Kbit bandwidth 81585Kbit bandwidth 63810Kbit
+  server93 bandwidth 73575Kbit bandwidth 83520Kbit bandwidth 59850Kbit
+  cake_2_dir_dn 터널별 68.7 78.2 54.1 합 201 | idle c/s 22 25 21 31 / 26 18 17 30 / 
+  cake_2_dir_up2 터널별 72.2 74.0 58.9 합 205 | idle c/s 21 17 16 25 / 17 19 19 26 / 
+  client92 rq-wg Sent 403006394 bytes 563550 pkt (dropped 3
+  client92 rq-wg2 Sent 395538314 bytes 482194 pkt (dropped 8
+  client92 rq-wg3 Sent 326398741 bytes 427757 pkt (dropped 24
+  server93 rq-wg Sent 387875145 bytes 548999 pkt (dropped 4
+  server93 rq-wg2 Sent 423221815 bytes 486539 pkt (dropped 9
+  server93 rq-wg3 Sent 300557897 bytes 375432 pkt (dropped 48
+== nocake_2 12:57:10
+  nocake_2_dir_dn 터널별 83.3 84.1 70.5 합 238 | idle c/s 35 36 34 42 / 52 49 46 52 / 
+  nocake_2_dir_up2 터널별 84.5 98.7 65.8 합 249 | idle c/s 44 44 43 46 / 33 35 34 41 / 
+  P0 EAGAIN=318 pin=0   P1 EAGAIN=396 pin=1   P2 EAGAIN=404 pin=2 
+done 12:58:48
+== restore 12:58:48
+client92 rps=0 4/1 mf=0 iperf=0 qdisc=noqueue/noqueue/noqueue
+server93 rps=0 1/4 mf=0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

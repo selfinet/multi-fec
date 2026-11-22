@@ -1,0 +1,89 @@
+== setup 16:15:01
+md5sum: mmulti-fec-dist: No such file or directory
+bash: line 3: ./mmulti-fec-dist: No such file or directory
+client92 spd2 e324110ee508 mt  
+md5sum: mmulti-fec-dist: No such file or directory
+bash: line 3: ./mmulti-fec-dist: No such file or directory
+server93 spd2 e324110ee508 mt  
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.145/60.189/60.268/0.046 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.147/108.165/108.205/0.021 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.152/108.173/108.196/0.018 ms
+client92 spd2 e324110ee508 mt 68881644de3b multi-fec 1.4.5-mt.1
+server93 spd2 e324110ee508 mt 68881644de3b multi-fec 1.4.5-mt.1
+== mt_1 (mt) 16:15:25
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.028/77.111/109.070/22.598 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  mt_1_p1_up recv 169 | retr 2853 | ping p50 78 p99 110 n=150 | idle c/s 61 61 59 70 / 52 54 45 61 / | rcvbuf c/s 0/0/
+  mt_1_p1_dn recv 225 | retr 2461 | ping p50 75 p99 239 n=150 | idle c/s 37 38 36 46 / 54 55 52 60 / | rcvbuf c/s 0/0/
+  mt_1_p8_up recv 327 | retr 18313 | ping p50 96 p99 212 n=150 | idle c/s 35 33 39 46 / 23 25 19 34 / | rcvbuf c/s 271/0/
+  mt_1_p8_dn recv 280 | retr 10299 | ping p50 87 p99 290 n=150 | idle c/s 20 21 19 29 / 36 32 33 44 / | rcvbuf c/s 0/0/
+  client EAGAIN 249 pendfull 3 err 0
+== ecmp_1 (ecmp) 16:19:12
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.079/67.746/71.098/4.714 ms
+  route 4 rps 8 procs 3+0 cpus 0-3,0-3,0-3,0,1,2,0-3,0-3,0-3
+  ecmp_1_p1_up recv 172 | retr 1625 | ping p50 73 p99 109 n=150 | idle c/s 74 54 46 56 / 63 52 29 55 / | rcvbuf c/s 0/0/
+  ecmp_1_p1_dn recv 145 | retr 305 | ping p50 82 p99 394 n=150 | idle c/s 75 51 71 68 / 85 64 82 82 / | rcvbuf c/s 0/0/
+  ecmp_1_p8_up recv 297 | retr 2746 | ping p50 96 p99 187 n=149 | idle c/s 43 47 42 50 / 28 34 27 40 / | rcvbuf c/s 0/108/
+  ecmp_1_p8_dn recv 277 | retr 1923 | ping p50 3399 p99 10911 n=150 | idle c/s 18 28 28 31 / 42 42 43 52 / | rcvbuf c/s 25/0/
+  client EAGAIN 459 pendfull 6 err 0
+== one_1 (one) 16:23:01
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.217/75.858/95.160/14.243 ms
+  route 1 rps e procs 1+0 cpus 0-3,0,0-3,0-3,0-3
+  one_1_p1_up recv 154 | retr 1604 | ping p50 86 p99 171 n=149 | idle c/s 53 80 73 75 / 42 67 69 69 / | rcvbuf c/s 0/0/
+  one_1_p1_dn recv 140 | retr 315 | ping p50 140 p99 395 n=150 | idle c/s 48 74 66 72 / 62 79 83 81 / | rcvbuf c/s 0/0/
+  one_1_p8_up recv 140 | retr 1798 | ping p50 98 p99 233 n=149 | idle c/s 53 77 74 71 / 47 70 68 70 / | rcvbuf c/s 0/0/
+  one_1_p8_dn recv 146 | retr 1723 | ping p50 115 p99 268 n=150 | idle c/s 44 70 61 69 / 57 76 77 76 / | rcvbuf c/s 0/0/
+  client EAGAIN 139 pendfull 2 err 0
+== mt_2 (mt) 16:26:53
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.143/81.053/96.014/14.660 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  mt_2_p1_up recv 249 | retr 2243 | ping p50 84 p99 134 n=150 | idle c/s 49 49 47 58 / 35 35 29 46 / | rcvbuf c/s 0/0/
+  mt_2_p1_dn recv 203 | retr 3563 | ping p50 86 p99 206 n=150 | idle c/s 47 49 47 52 / 63 62 59 68 / | rcvbuf c/s 0/0/
+  mt_2_p8_up recv 249 | retr 18544 | ping p50 85 p99 175 n=150 | idle c/s 44 42 45 49 / 36 35 30 46 / | rcvbuf c/s 0/0/
+  mt_2_p8_dn recv 266 | retr 15139 | ping p50 88 p99 291 n=150 | idle c/s 23 24 22 31 / 38 32 35 47 / | rcvbuf c/s 0/0/
+  client EAGAIN 333 pendfull 4 err 0
+== ecmp_2 (ecmp) 16:30:41
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 60.994/64.508/71.493/4.938 ms
+  route 4 rps 8 procs 3+0 cpus 0-3,0-3,0-3,0,1,2,0-3,0-3,0-3
+  ecmp_2_p1_up recv 182 | retr 1343 | ping p50 72 p99 101 n=150 | idle c/s 75 56 46 62 / 62 39 45 54 / | rcvbuf c/s 0/0/
+  ecmp_2_p1_dn recv 216 | retr 73 | ping p50 91 p99 280 n=150 | idle c/s 52 29 60 52 / 64 57 73 70 / | rcvbuf c/s 0/0/
+  ecmp_2_p8_up recv 287 | retr 3750 | ping p50 97 p99 241 n=150 | idle c/s 39 42 39 49 / 23 33 30 38 / | rcvbuf c/s 0/41/
+  ecmp_2_p8_dn recv 283 | retr 1665 | ping p50 107 p99 385 n=150 | idle c/s 30 18 19 31 / 47 45 41 49 / | rcvbuf c/s 50/0/
+  client EAGAIN 324 pendfull 6 err 0
+== one_2 (one) 16:34:27
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.298/67.887/71.241/4.659 ms
+  route 1 rps e procs 1+0 cpus 0-3,0,0-3,0-3,0-3
+  one_2_p1_up recv 103 | retr 30 | ping p50 85 p99 151 n=150 | idle c/s 54 83 74 81 / 48 74 74 76 / | rcvbuf c/s 0/0/
+  one_2_p1_dn recv 146 | retr 755 | ping p50 108 p99 265 n=150 | idle c/s 44 72 64 71 / 60 82 79 80 / | rcvbuf c/s 0/0/
+  one_2_p8_up recv 137 | retr 2500 | ping p50 92 p99 219 n=150 | idle c/s 55 75 74 76 / 48 71 68 70 / | rcvbuf c/s 0/0/
+  one_2_p8_dn recv 139 | retr 1778 | ping p50 118 p99 429 n=150 | idle c/s 47 68 63 72 / 59 78 78 76 / | rcvbuf c/s 0/0/
+  client EAGAIN 88 pendfull 1 err 0
+cat: '*_MT.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+done 16:38:38
+== restore 16:38:38
+cat: '*_P?.pid': No such file or directory
+client92 rps=0 4/1 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+cat: '*_MT.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+server93 rps=0 1/4 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

@@ -157,6 +157,10 @@ struct my_random_t {
         gen = gen_tmp;
         gen.discard(700000);  // magic
     }
+    void reseed() {               /* mmulti-fec: after fork, so workers do not share the sequence */
+        gen.seed(rd());
+        gen.discard(700000);
+    }
     u64_t gen64() {
         return dis64(gen);
     }
@@ -504,6 +508,10 @@ char *my_ntoa(u32_t ip) {
     in_addr a;
     a.s_addr = ip;
     return inet_ntoa(a);
+}
+
+void reseed_fake_random() {
+    my_random.reseed();
 }
 
 u64_t get_fake_random_number_64() {
