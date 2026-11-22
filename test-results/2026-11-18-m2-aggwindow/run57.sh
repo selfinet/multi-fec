@@ -1,6 +1,6 @@
 #!/bin/bash
 # run57 — 30세션 aging 전 설정 고르기: worker 3개(rps 8, 터널 1개)에서 -P 30, 상·하향 각 2회, nr(무제한 무손실).
-#   A = 기본(--win-mult 2) · B = A + --pend-fifo · C = A + --pend-fifo --win-unlimited. dist 3c965d14.
+#   A = 기본(--win-mult 2) · B = A + --pend-fifo · C = A + --pend-fifo --win-unlimited. dist mt.2 10b361ea (bd216ec).
 # 2026-11-23 사용자 "그대로 진행해줘". 선택: 처리량 최고, 5 % 이내면 재전송 적은 쪽.
 RUN=r57; RAW=raw57
 cd "$(dirname "$0")"; . ./lib.sh

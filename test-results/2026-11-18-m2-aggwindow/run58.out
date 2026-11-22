@@ -1,0 +1,68 @@
+== lib.sh a94713a07676  RUN=r58 RAW=raw58
+== setup 02:42:01  VAR=C XA='--pend-fifo --win-unlimited' DUR=10800
+client92 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+server93 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.150/60.180/60.229/0.030 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.144/108.162/108.207/0.022 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.145/108.159/108.194/0.017 ms
+  client92 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+  server93 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+== start multi-fec workers 3 (C) 02:42:28
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 81.456/92.418/100.279/7.991 ms
+  route 1 rps 8 procs 4
+== start load 02:42:56
+  2026-11-23T02:43:01,client92,4,43948,28,3993107,1901817,9245116 214971678,0 0 0,,,2
+  2026-11-23T02:43:01,server93,4,44224,31,2221502,1873277,8559894 181006299,0 0 0,,,2
+  2026-11-23T02:58:01,client92,4,49592,28,3993534,1996312,9551799 215017997,0 0 0,176,86.7,2
+  2026-11-23T02:58:01,server93,4,49880,31,2221506,1961325,8855937 181062736,0 0 0,,,2
+  2026-11-23T03:13:01,client92,4,49740,28,3996511,2099879,9859139 215063861,0 0 0,115,162,2
+  2026-11-23T03:13:01,server93,4,50036,31,2221750,2051250,9152457 181118242,0 0 0,,,2
+  2026-11-23T03:28:01,client92,4,49792,28,3996778,2197176,10165795 215110124,0 0 0,146,124,2
+  2026-11-23T03:28:01,server93,4,50088,31,2221750,2137911,9447319 181175220,0 0 0,,,2
+  2026-11-23T03:43:01,client92,4,49824,28,3996932,2288370,10470943 215157879,0 0 0,154,108,2
+  2026-11-23T03:43:01,server93,4,50136,31,2221750,2229337,9740709 181233566,0 0 0,,,2
+  2026-11-23T03:58:01,client92,4,49868,28,3998363,2380274,10778903 215203170,0 0 0,135,139,2
+  2026-11-23T03:58:01,server93,4,50168,31,2222378,2326677,10036357 181289913,0 0 0,,,2
+  2026-11-23T04:13:01,client92,4,49900,28,3998596,2474365,11085138 215249740,0 0 0,135,134,2
+  2026-11-23T04:13:01,server93,4,50188,31,2222378,2410648,10331038 181346356,0 0 0,,,2
+  2026-11-23T04:28:01,client92,4,49904,28,3998596,2564594,11392282 215295362,0 0 0,143,110,2
+  2026-11-23T04:28:01,server93,4,50196,31,2222378,2496995,10626373 181403059,0 0 0,,,2
+  2026-11-23T04:43:01,client92,4,49948,28,4002048,2665691,11700815 215340057,0 0 0,157,99.7,2
+  2026-11-23T04:43:01,server93,4,50236,31,2222717,2589823,10923006 181458464,0 0 0,,,2
+  2026-11-23T04:58:01,client92,4,49968,28,4003119,2764649,12007782 215386208,0 0 0,213,66.2,2
+  2026-11-23T04:58:01,server93,4,50248,31,2222717,2681447,11218401 181515068,0 0 0,,,2
+  2026-11-23T05:13:01,client92,4,49988,28,4008422,2870615,12314771 215432539,0 0 0,131,141,2
+  2026-11-23T05:13:01,server93,4,50264,31,2222812,2773179,11513771 181571481,0 0 0,,,2
+  2026-11-23T05:28:01,client92,4,49996,28,4010797,2976433,12621331 215478808,1 0 0,146,118,2
+  2026-11-23T05:28:01,server93,4,50292,31,2222812,2862109,11809795 181627573,0 0 0,,,2
+  2026-11-23T05:43:01,client92,4,49996,28,4010797,3073004,12927087 215526348,1 0 0,146,121,0
+  2026-11-23T05:43:01,server93,4,50308,31,2222812,2945737,12102406 181686327,0 0 0,,,2
+== load end 05:44:01
+[SUM]   0.00-10800.04 sec   194 GBytes   154 Mbits/sec  1172663             sender
+[SUM]   0.00-10800.16 sec   194 GBytes   154 Mbits/sec                  receiver
+[SUM]   0.00-10800.11 sec   141 GBytes   113 Mbits/sec  1074539             sender
+[SUM]   0.00-10800.01 sec   141 GBytes   113 Mbits/sec                  receiver
+  server93 [INFO][w1][server] pending enq 4 sent 4 wait avg 923.5 max 926 ms hist(<10/<20/<50/<100/100+) 0/0/0/0/4 queued 0
+  server93 [INFO][w1][server] pending enq 6 sent 4 wait avg 923.5 max 926 ms hist(<10/<20/<50/<100/100+) 0/0/0/0/4 queued 0
+  client EAGAIN 1 pendfull 0 err 0 winlog  3 floor 1.25, unlimited (experiment), 3 mult 2.00 x rate
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+done 05:44:30
+== restore 05:44:30
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+client92 rps=0 4/1 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+server93 rps=0 1/4 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

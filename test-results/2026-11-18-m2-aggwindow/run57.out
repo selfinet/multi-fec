@@ -1,0 +1,64 @@
+== lib.sh a94713a07676  RUN=r57 RAW=raw57
+== setup 02:26:34
+client92 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+server93 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.146/60.170/60.216/0.027 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.144/108.162/108.210/0.024 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.147/108.169/108.199/0.019 ms
+  client92 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+  server93 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+== nr_A (A) 02:26:57
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.028/69.117/85.058/11.272 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nr_A_p30_up recv 259 | retr 9776 | ping p50 92 p99 149 n=149 | idle c/s 37 35 34 39 / 27 25 26 34 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 133/118  s drop 0/0 MB 539/831
+  nr_A_p30_dn recv 297 | retr 10492 | ping p50 90 p99 169 n=150 | idle c/s 26 27 24 33 / 37 32 36 45 / | rcvbuf c/s 0/278/ | q(A100/B50) c drop 0/0 MB 1182/411  s drop 0/0 MB 111/109
+  nr_A_p30_up2 recv 278 | retr 8592 | ping p50 92 p99 162 n=150 | idle c/s 36 34 35 40 / 26 25 24 35 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 116/101  s drop 0/0 MB 991/479
+  nr_A_p30_dn2 recv 290 | retr 33539 | ping p50 91 p99 270 n=150 | idle c/s 27 27 26 34 / 37 32 37 45 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 1321/271  s drop 0/0 MB 112/111
+  server93 [INFO][w0][server] pending enq 7644 sent 7644 wait avg 69.9 max 162 ms hist(<10/<20/<50/<100/100+) 421/407/1780/3237/1799 queued 0
+  server93 [INFO][w2][server] pending enq 12938 sent 12938 wait avg 126.9 max 287 ms hist(<10/<20/<50/<100/100+) 507/649/1400/2546/7836 queued 0
+  server93 [INFO][w0][server] pending enq 13001 sent 13001 wait avg 86.9 max 194 ms hist(<10/<20/<50/<100/100+) 704/507/2489/4172/5129 queued 0
+  client EAGAIN 351 pendfull 7 err 0 winlog  3 mult 2.00 x rate
+== nr_B (B) 02:31:41
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 60.979/81.027/110.084/21.034 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nr_B_p30_up recv 266 | retr 9226 | ping p50 94 p99 157 n=150 | idle c/s 37 35 35 39 / 27 26 25 35 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 129/121  s drop 0/0 MB 619/790
+  nr_B_p30_dn recv 282 | retr 9985 | ping p50 92 p99 150 n=150 | idle c/s 28 29 28 33 / 38 33 33 44 / | rcvbuf c/s 0/46/ | q(A100/B50) c drop 0/0 MB 872/635  s drop 0/0 MB 114/121
+  nr_B_p30_up2 recv 268 | retr 7341 | ping p50 96 p99 173 n=150 | idle c/s 37 34 34 38 / 26 26 25 34 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 133/124  s drop 0/0 MB 590/831
+  nr_B_p30_dn2 recv 268 | retr 9992 | ping p50 95 p99 187 n=150 | idle c/s 28 29 29 33 / 39 34 34 44 / | rcvbuf c/s 0/370/ | q(A100/B50) c drop 0/0 MB 715/718  s drop 0/0 MB 115/131
+  server93 [INFO][w1][server] pending enq 7622 sent 7622 wait avg 50.2 max 170 ms hist(<10/<20/<50/<100/100+) 1472/732/2293/1475/1650 queued 0
+  server93 [INFO][w0][server] pending enq 15150 sent 15150 wait avg 33.2 max 107 ms hist(<10/<20/<50/<100/100+) 3852/2487/4554/4158/99 queued 0
+  server93 [INFO][w2][server] pending enq 8206 sent 8206 wait avg 22.3 max 70 ms hist(<10/<20/<50/<100/100+) 1741/2364/3312/789/0 queued 0
+  client EAGAIN 2 pendfull 4 err 0 winlog  3 mult 2.00 x rate
+== nr_C (C) 02:36:26
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.137/84.355/96.174/16.418 ms
+  route 1 rps 8 procs 4+4 cpus 0-3,0-3,0,1,2,0-3,0-3,0-3
+  nr_C_p30_up recv 281 | retr 11372 | ping p50 97 p99 199 n=150 | idle c/s 37 35 36 42 / 27 26 25 35 / | rcvbuf c/s 168/0/ | q(A100/B50) c drop 0/0 MB 129/111  s drop 0/0 MB 909/591
+  nr_C_p30_dn recv 325 | retr 11489 | ping p50 102 p99 218 n=150 | idle c/s 25 27 24 31 / 39 32 37 45 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 1156/573  s drop 0/0 MB 110/117
+  nr_C_p30_up2 recv 269 | retr 10534 | ping p50 96 p99 213 n=149 | idle c/s 36 34 34 39 / 27 26 26 34 / | rcvbuf c/s 767/0/ | q(A100/B50) c drop 0/0 MB 131/116  s drop 0/0 MB 726/701
+  nr_C_p30_dn2 recv 301 | retr 9006 | ping p50 93 p99 169 n=150 | idle c/s 25 27 25 33 / 38 32 36 45 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 1183/425  s drop 0/0 MB 109/114
+  client EAGAIN 0 pendfull 0 err 0 winlog  3 floor 1.25, unlimited (experiment), 3 mult 2.00 x rate
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+done 02:41:26
+== restore 02:41:26
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+client92 rps=0 4/1 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+server93 rps=0 1/4 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

@@ -1,6 +1,6 @@
 #!/bin/bash
 # run58 — 동시 30세션 3시간 aging: worker 3개(rps 8, 터널 1개), nr(무제한 무손실 IFB 60/108 ms), run57 에서 고른 변형.
-#   상향 iperf3 -P 15 (5201) + 하향 -R -P 15 (5202) 를 3시간 동시에. dist 3c965d14.
+#   상향 iperf3 -P 15 (5201) + 하향 -R -P 15 (5202) 를 3시간 동시에. dist mt.2 10b361ea (bd216ec).
 # 2026-11-23 사용자 "그대로 진행해줘". 쓰는 법: VAR=A|B|C ./run58.sh   (A 기본 · B +--pend-fifo · C +--pend-fifo --win-unlimited)
 # 1분마다 raw58/samples.csv: 처리량(마지막 10초 SUM)·재전송(netns TcpRetransSegs 누적)·RSS·FD·CPU 유휴·UdpRcvbufErrors·로그 누적·프로세스 수.
 RUN=r58; RAW=raw58
