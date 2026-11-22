@@ -13,8 +13,10 @@
 #
 # 변경 기록
 #   2026-11-22  run54.sh 에서 추출. mini 10.0.5.3, 역할 이름 출력.
+#   2026-11-23  TZ=Asia/Seoul — 작업 서버 sv2 가 UTC 라 출력 시각이 J1900(KST)·보고서와 어긋났다. run55 는 이 수정 전(UTC)으로 돌았다.
 
 : "${RUN:?RUN 을 먼저 정할 것 (예: RUN=r55)}" "${RAW:?RAW 를 먼저 정할 것 (예: RAW=raw55)}"
+export TZ=Asia/Seoul
 LIB_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)
 echo "== lib.sh $(sha256sum "$LIB_DIR/lib.sh" | cut -c1-12)  RUN=$RUN RAW=$RAW"
 mkdir -p "$RAW"
