@@ -1,0 +1,130 @@
+== lib.sh a94713a07676  RUN=r59 RAW=raw59
+== setup 09:25:30
+client92 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+server93 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.152/60.187/60.232/0.028 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.147/108.174/108.213/0.026 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.166/108.185/108.206/0.014 ms
+  client92 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+  server93 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+== l0_G1 (G1) 09:25:55
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.079/67.996/81.649/9.653 ms
+  route 1 rps 8 procs 4
+  client92 MF_UDP_GRO=0 in env: 0
+  server93 MF_UDP_GRO=0 in env: 0
+  l0_G1_p1_up recv 201 | retr 243 | ping p50 85 p99 139 n=150 | idle c/s 60 62 57 64 / 51 51 48 52 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 71/67  s drop 0/0 MB 417/636
+  l0_G1_p1_dn recv 208 | retr 692 | ping p50 86 p99 152 n=150 | idle c/s 51 52 49 54 / 65 65 61 69 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 766/325  s drop 0/0 MB 55/60
+  l0_G1_p8_up recv 342 | retr 22746 | ping p50 101 p99 224 n=150 | idle c/s 36 30 36 40 / 17 18 15 27 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 131/117  s drop 0/0 MB 965/861
+  l0_G1_p8_dn recv 333 | retr 12619 | ping p50 95 p99 213 n=150 | idle c/s 20 21 19 27 / 38 31 35 46 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 1102/680  s drop 0/0 MB 97/114
+  IFB 평균 크기 B/pkt  client 1040  server 1083  (패킷 3135691 / 2959931)
+  server93 [INFO][w1][server] pending enq 5127 sent 5127 wait avg 100.3 max 195 ms hist(<10/<20/<50/<100/100+) 180/109/552/1441/2845 queued 0
+  server93 [INFO][w2][server] pending enq 4489 sent 4489 wait avg 62.1 max 149 ms hist(<10/<20/<50/<100/100+) 565/416/1130/1196/1182 queued 0
+  server93 [INFO][w0][server] pending enq 11802 sent 11802 wait avg 110.8 max 294 ms hist(<10/<20/<50/<100/100+) 1179/963/2448/1661/5551 queued 0
+  client EAGAIN 206 pendfull 6 err 0 winlog  3 mult 2.00 x rate
+[INFO][w0][client] batch gso=on gro=on send=960773/79276 gso=926948/107203 fallback=0 recv=1149249/86679 gro=1059269/186595
+== l0_G0 (G0) 09:30:42
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 71.232/79.979/97.222/12.192 ms
+  route 1 rps 8 procs 4
+  client92 MF_UDP_GRO=0 in env: 1
+  server93 MF_UDP_GRO=0 in env: 1
+  l0_G0_p1_up recv 255 | retr 846 | ping p50 85 p99 119 n=150 | idle c/s 58 57 58 63 / 40 41 31 51 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 54/52  s drop 0/0 MB 1171/165
+  l0_G0_p1_dn recv 210 | retr 1636 | ping p50 86 p99 145 n=150 | idle c/s 47 49 41 52 / 63 61 62 68 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 840/263  s drop 0/0 MB 62/48
+  l0_G0_p8_up recv 296 | retr 25435 | ping p50 88 p99 176 n=150 | idle c/s 32 29 34 40 / 19 18 13 32 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 91/89  s drop 0/0 MB 1321/272
+  l0_G0_p8_dn recv 282 | retr 14323 | ping p50 88 p99 165 n=150 | idle c/s 22 22 17 31 / 36 31 37 47 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 0/0 MB 1083/432  s drop 0/0 MB 103/75
+  IFB 평균 크기 B/pkt  client 1091  server 1115  (패킷 2664166 / 2885354)
+  server93 [INFO][w2][server] pending enq 204 sent 204 wait avg 15.0 max 30 ms hist(<10/<20/<50/<100/100+) 0/183/21/0/0 queued 0
+  server93 [INFO][w2][server] pending enq 3656 sent 3656 wait avg 37.0 max 65 ms hist(<10/<20/<50/<100/100+) 324/498/1838/996/0 queued 0
+  server93 [INFO][w0][server] pending enq 7573 sent 7573 wait avg 97.9 max 205 ms hist(<10/<20/<50/<100/100+) 669/482/1192/1406/3824 queued 0
+  client EAGAIN 199 pendfull 4 err 0 winlog  3 mult 2.00 x rate
+[INFO][w2][client] batch gso=on gro=off send=761712/61563 gso=735260/79171 fallback=0 recv=715685/41574 gro=0/0
+  client92 A: limit 20000 delay 30ms loss 1% / B: limit 20000 delay 54ms loss 1%
+  server93 A: limit 20000 delay 30ms loss 1% / B: limit 20000 delay 54ms loss 1%
+== l1_G1_1 (G1) 09:35:27
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 71.187/79.283/95.276/11.309 ms
+  route 1 rps 8 procs 4
+  client92 MF_UDP_GRO=0 in env: 0
+  server93 MF_UDP_GRO=0 in env: 0
+  l1_G1_1_p1_up recv 11.7 | retr 401 | ping p50 83 p99 110 n=149 | idle c/s 91 91 89 93 / 91 90 90 92 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 209/159 MB 7/6  s drop 214/192 MB 37/29
+  l1_G1_1_p1_dn recv 17.9 | retr 919 | ping p50 80 p99 109 n=150 | idle c/s 88 86 85 90 / 91 88 88 92 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 277/183 MB 66/34  s drop 232/191 MB 9/7
+  l1_G1_1_p8_up recv 65.2 | retr 3891 | ping p50 83 p99 109 n=150 | idle c/s 65 62 62 73 / 63 61 57 70 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 753/653 MB 34/27  s drop 1018/632 MB 221/126
+  l1_G1_1_p8_dn recv 57.7 | retr 4898 | ping p50 85 p99 109 n=150 | idle c/s 68 64 62 73 / 70 66 66 76 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 860/642 MB 194/120  s drop 687/623 MB 30/27
+  IFB 평균 크기 B/pkt  client 953  server 958  (패킷 513463 / 509363)
+  server93 [INFO][w2][server] pending enq 2290 sent 2290 wait avg 73.7 max 124 ms hist(<10/<20/<50/<100/100+) 130/139/404/846/771 queued 0
+  server93 [INFO][w0][server] pending enq 3618 sent 3618 wait avg 96.2 max 173 ms hist(<10/<20/<50/<100/100+) 262/192/405/803/1956 queued 0
+  client EAGAIN 71 pendfull 2 err 0 winlog  3 mult 2.00 x rate
+[INFO][w1][client] batch gso=on gro=on send=170527/100228 gso=70122/24603 fallback=0 recv=136245/97436 gro=45840/17073
+== l1_G0_1 (G0) 09:40:05
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 71.332/86.744/107.467/15.222 ms
+  route 1 rps 8 procs 4
+  client92 MF_UDP_GRO=0 in env: 1
+  server93 MF_UDP_GRO=0 in env: 1
+  l1_G0_1_p1_up recv 233 | retr 1795 | ping p50 84 p99 120 n=150 | idle c/s 56 55 55 63 / 40 42 34 50 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 1786/1290 MB 60/45  s drop 7231/1363 MB 1018/191
+  l1_G0_1_p1_dn recv 221 | retr 1748 | ping p50 79 p99 115 n=150 | idle c/s 37 38 28 47 / 56 52 54 61 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 7022/943 MB 1019/129  s drop 1803/1408 MB 58/48
+  l1_G0_1_p8_up recv 326 | retr 34224 | ping p50 93 p99 203 n=150 | idle c/s 34 29 33 38 / 17 18 14 27 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 3503/2763 MB 118/92  s drop 7741/4380 MB 1122/623
+  l1_G0_1_p8_dn recv 275 | retr 18402 | ping p50 87 p99 212 n=150 | idle c/s 23 22 16 33 / 37 32 38 47 / | rcvbuf c/s 989/0/ | q(A100/B50) c drop 8355/2171 MB 1183/288  s drop 2775/2118 MB 92/74
+  IFB 평균 크기 B/pkt  client 1068  server 1131  (패킷 2751120 / 2852661)
+  server93 [INFO][w0][server] pending enq 12392 sent 12392 wait avg 98.8 max 210 ms hist(<10/<20/<50/<100/100+) 408/590/1848/3394/6152 queued 0
+  server93 [INFO][w1][server] pending enq 5724 sent 5724 wait avg 110.6 max 187 ms hist(<10/<20/<50/<100/100+) 153/8/399/1896/3268 queued 0
+  server93 [INFO][w2][server] pending enq 11992 sent 11992 wait avg 86.2 max 193 ms hist(<10/<20/<50/<100/100+) 502/1210/1800/3366/5114 queued 0
+  client EAGAIN 283 pendfull 9 err 0 winlog  3 mult 2.00 x rate
+[INFO][w2][client] batch gso=on gro=off send=789172/67845 gso=756777/84631 fallback=0 recv=686543/59995 gro=0/0
+== l1_G1_2 (G1) 09:44:49
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.080/64.491/71.218/4.756 ms
+  route 1 rps 8 procs 4
+  client92 MF_UDP_GRO=0 in env: 0
+  server93 MF_UDP_GRO=0 in env: 0
+  l1_G1_2_p1_up recv 10.5 | retr 300 | ping p50 81 p99 109 n=150 | idle c/s 91 93 89 93 / 91 92 89 93 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 175/128 MB 6/5  s drop 222/158 MB 38/23
+  l1_G1_2_p1_dn recv 10.9 | retr 973 | ping p50 85 p99 109 n=150 | idle c/s 90 91 88 92 / 92 93 91 94 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 217/143 MB 36/28  s drop 182/165 MB 7/6
+  l1_G1_2_p8_up recv 65.1 | retr 5942 | ping p50 82 p99 109 n=150 | idle c/s 69 69 64 75 / 66 67 59 73 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 608/611 MB 27/25  s drop 964/483 MB 263/86
+  l1_G1_2_p8_dn recv 49.5 | retr 4975 | ping p50 84 p99 109 n=150 | idle c/s 69 69 62 75 / 72 72 67 79 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 761/470 MB 179/92  s drop 656/491 MB 27/20
+  IFB 평균 크기 B/pkt  client 935  server 1004  (패킷 426526 / 468408)
+  server93 [INFO][w0][server] pending enq 4294 sent 4294 wait avg 153.9 max 242 ms hist(<10/<20/<50/<100/100+) 86/106/345/542/3215 queued 0
+  server93 [INFO][w2][server] pending enq 2533 sent 2533 wait avg 78.2 max 128 ms hist(<10/<20/<50/<100/100+) 73/195/310/1126/829 queued 0
+  client EAGAIN 133 pendfull 3 err 0 winlog  3 mult 2.00 x rate
+[INFO][w1][client] batch gso=on gro=on send=104730/57132 gso=47615/14361 fallback=0 recv=86801/62666 gro=28690/10210
+== l1_G0_2 (G0) 09:49:09
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.200/80.550/95.137/14.258 ms
+  route 1 rps 8 procs 4
+  client92 MF_UDP_GRO=0 in env: 1
+  server93 MF_UDP_GRO=0 in env: 1
+  l1_G0_2_p1_up recv 204 | retr 844 | ping p50 84 p99 126 n=150 | idle c/s 61 59 58 65 / 49 49 43 55 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 1775/1348 MB 60/48  s drop 5370/2140 MB 759/301
+  l1_G0_2_p1_dn recv 159 | retr 2424 | ping p50 85 p99 114 n=150 | idle c/s 47 46 36 55 / 61 58 58 68 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 4779/1044 MB 680/150  s drop 1342/1168 MB 46/39
+  l1_G0_2_p8_up recv 306 | retr 11501 | ping p50 87 p99 172 n=150 | idle c/s 34 29 34 41 / 19 18 13 32 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 2891/2375 MB 99/80  s drop 8706/2527 MB 1249/358
+  l1_G0_2_p8_dn recv 272 | retr 28326 | ping p50 89 p99 206 n=150 | idle c/s 23 18 18 32 / 37 31 38 46 / | rcvbuf c/s 0/0/ | q(A100/B50) c drop 7530/2957 MB 1063/411  s drop 3093/2612 MB 102/89
+  IFB 평균 크기 B/pkt  client 1060  server 1103  (패킷 2446855 / 2668721)
+  server93 [INFO][w0][server] pending enq 2457 sent 2457 wait avg 105.0 max 171 ms hist(<10/<20/<50/<100/100+) 72/42/304/566/1473 queued 0
+  server93 [INFO][w2][server] pending enq 5445 sent 5445 wait avg 93.1 max 167 ms hist(<10/<20/<50/<100/100+) 289/513/553/1278/2812 queued 0
+  server93 [INFO][w0][server] pending enq 12210 sent 12210 wait avg 89.9 max 184 ms hist(<10/<20/<50/<100/100+) 1140/635/2427/2033/5975 queued 0
+  client EAGAIN 204 pendfull 6 err 0 winlog  3 mult 2.00 x rate
+[INFO][w1][client] batch gso=on gro=off send=908933/122410 gso=830318/117337 fallback=0 recv=832448/157221 gro=0/0
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+done 09:53:49
+== restore 09:53:49
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+client92 rps=0 4/1 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+server93 rps=0 1/4 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치
