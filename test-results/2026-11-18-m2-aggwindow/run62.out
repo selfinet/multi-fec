@@ -1,0 +1,118 @@
+== lib.sh a94713a07676  RUN=r62 RAW=raw62
+== setup 17:09:30 DUR=300
+client92 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+server93 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+client92 egress 기준 저장 3 netem, ifb 0
+server93 egress 기준 저장 3 netem, ifb 0
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.140/60.170/60.208/0.027 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.130/108.156/108.194/0.022 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.133/108.150/108.178/0.016 ms
+  client92 netem 10: parent 1:1 limit 20000 delay 30ms netem 20: parent 1:2 limit 20000 delay 54ms | netem 8003: root refcnt 9 limit 20000 delay 54ms
+  server93 netem 10: parent 1:1 limit 20000 delay 30ms netem 20: parent 1:2 limit 20000 delay 54ms | netem 8003: root refcnt 9 limit 20000 delay 54ms
+== l0_E11 (E11) 17:09:53
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 71.382/78.846/92.877/9.928 ms
+  route 1 rps 8 procs 4
+  client92 env GSO=0:0
+  server93 env GSO=0:0
+  up recv 168 retr 39049 | dn recv 105 retr 26723
+  ping 0.333333% packet loss p50 103 p90 160 p99 225 max 268
+  egress netem 버림/세그먼트  client 0/8341145 (0.00 %)  server 0/7491737 (0.00 %)
+  procs c/s 4/4  RSS KB c 38008→49744 s 38236→68688  netns 재전송 c 39060 s 26724
+  CPU 유휴 c/s 19 21 | rcvbuf c/s 0 0 
+  server93 [INFO][w0][server] pending enq 7659 sent 7659 wait avg 84.6 max 192 ms hist(<10/<20/<50/<100/100+) 351/510/1363/2692/2743 queued 0
+  server93 [INFO][w2][server] pending enq 6780 sent 6780 wait avg 161.9 max 267 ms hist(<10/<20/<50/<100/100+) 87/105/215/897/5476 queued 0
+  server93 [INFO][w1][server] pending enq 6731 sent 6731 wait avg 85.6 max 156 ms hist(<10/<20/<50/<100/100+) 726/351/770/1933/2951 queued 0
+  client EAGAIN 0 pendfull 0 err 0 winlog  3 mult 2.00 x rate
+  client92 'no RUNNING path' 3 · stale 폐기 3
+  server93 'no RUNNING path' 0 · stale 폐기 0
+== l0_E01 (E01) 17:16:13
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.136/76.566/107.422/21.818 ms
+  route 1 rps 8 procs 4
+  client92 env GSO=0:1
+  server93 env GSO=0:1
+  up recv 164 retr 30370 | dn recv 86.3 retr 30310
+  ping 1.33333% packet loss p50 138 p90 206 p99 268 max 390
+  egress netem 버림/세그먼트  client 0/7733597 (0.00 %)  server 0/5779508 (0.00 %)
+  procs c/s 4/4  RSS KB c 38104→49184 s 38264→54816  netns 재전송 c 30392 s 30312
+  CPU 유휴 c/s 22 25 | rcvbuf c/s 3708 1644 
+  server93 [INFO][w1][server] pending enq 2614 sent 2614 wait avg 34.8 max 86 ms hist(<10/<20/<50/<100/100+) 607/93/1190/724/0 queued 0
+  server93 [INFO][w2][server] pending enq 361 sent 361 wait avg 10.4 max 22 ms hist(<10/<20/<50/<100/100+) 240/3/118/0/0 queued 0
+  client EAGAIN 0 pendfull 0 err 0 winlog  3 mult 2.00 x rate
+  client92 'no RUNNING path' 3 · stale 폐기 3
+  server93 'no RUNNING path' 0 · stale 폐기 0
+  client92 netem 10: parent 1:1 limit 20000 delay 30ms loss 1% netem 20: parent 1:2 limit 20000 delay 54ms loss 1% | netem 8003: root refcnt 9 limit 20000 delay 54ms loss 1%
+  server93 netem 10: parent 1:1 limit 20000 delay 30ms loss 1% netem 20: parent 1:2 limit 20000 delay 54ms loss 1% | netem 8003: root refcnt 9 limit 20000 delay 54ms loss 1%
+== l1_E01_1 (E01) 17:22:40
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 60.989/73.107/97.252/17.072 ms
+  route 1 rps 8 procs 4
+  client92 env GSO=0:1
+  server93 env GSO=0:1
+  up recv 169 retr 33224 | dn recv 79.0 retr 33212
+  ping 0.533333% packet loss p50 135 p90 208 p99 276 max 359
+  egress netem 버림/세그먼트  client 79084/7826461 (1.01 %)  server 55982/5531056 (1.01 %)
+  procs c/s 4/4  RSS KB c 38008→48856 s 28516→61740  netns 재전송 c 33226 s 33214
+  CPU 유휴 c/s 22 25 | rcvbuf c/s 3742 207 
+  server93 [INFO][w2][server] pending enq 3610 sent 2335 wait avg 100.9 max 179 ms hist(<10/<20/<50/<100/100+) 87/3/359/688/1198 queued 1275
+  server93 [INFO][w1][server] pending enq 5664 sent 5664 wait avg 92.2 max 149 ms hist(<10/<20/<50/<100/100+) 255/91/462/1914/2942 queued 0
+  server93 [INFO][w2][server] pending enq 4484 sent 4484 wait avg 96.9 max 179 ms hist(<10/<20/<50/<100/100+) 149/3/552/1403/2377 queued 0
+  client EAGAIN 0 pendfull 0 err 0 winlog  3 mult 2.00 x rate
+  client92 'no RUNNING path' 3 · stale 폐기 3
+  server93 'no RUNNING path' 0 · stale 폐기 0
+== l1_E01_2 (E01) 17:29:03
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.005/81.006/120.955/28.248 ms
+  route 1 rps 8 procs 4
+  client92 env GSO=0:1
+  server93 env GSO=0:1
+  up recv 148 retr 38497 | dn recv 84.0 retr 25614
+  ping 0.866667% packet loss p50 129 p90 198 p99 272 max 429
+  egress netem 버림/세그먼트  client 70151/6996610 (1.00 %)  server 66493/6570921 (1.01 %)
+  procs c/s 4/4  RSS KB c 37988→48912 s 28516→48596  netns 재전송 c 38506 s 25614
+  CPU 유휴 c/s 18 21 | rcvbuf c/s 1280 1101 
+  client EAGAIN 0 pendfull 0 err 0 winlog  3 mult 2.00 x rate
+  client92 'no RUNNING path' 3 · stale 폐기 3
+  server93 'no RUNNING path' 0 · stale 폐기 0
+  client92 netem 10: parent 1:1 limit 20000 delay 30ms netem 20: parent 1:2 limit 20000 delay 54ms | netem 8003: root refcnt 9 limit 20000 delay 54ms
+  server93 netem 10: parent 1:1 limit 20000 delay 30ms netem 20: parent 1:2 limit 20000 delay 54ms | netem 8003: root refcnt 9 limit 20000 delay 54ms
+== l0_E11_2 (E11) 17:35:28
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+rtt min/avg/max/mdev = 61.132/93.458/134.266/30.453 ms
+  route 1 rps 8 procs 4
+  client92 env GSO=0:0
+  server93 env GSO=0:0
+  up recv 149 retr 33270 | dn recv 114 retr 31510
+  ping 0.266667% packet loss p50 110 p90 162 p99 211 max 298
+  egress netem 버림/세그먼트  client 0/7870804 (0.00 %)  server 0/8034159 (0.00 %)
+  procs c/s 4/4  RSS KB c 38080→51520 s 38256→55488  netns 재전송 c 33471 s 31510
+  CPU 유휴 c/s 17 20 | rcvbuf c/s 0 0 
+  server93 [INFO][w0][server] pending enq 5415 sent 5306 wait avg 29.1 max 59 ms hist(<10/<20/<50/<100/100+) 668/1243/2548/847/0 queued 109
+  server93 [INFO][w1][server] pending enq 451 sent 451 wait avg 3.8 max 21 ms hist(<10/<20/<50/<100/100+) 420/0/31/0/0 queued 0
+  server93 [INFO][w0][server] pending enq 5912 sent 5912 wait avg 27.9 max 64 ms hist(<10/<20/<50/<100/100+) 819/1589/2567/937/0 queued 0
+  client EAGAIN 34 pendfull 1 err 0 winlog  3 mult 2.00 x rate
+  client92 'no RUNNING path' 3 · stale 폐기 3
+  server93 'no RUNNING path' 0 · stale 폐기 0
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+done 17:42:11
+== restore 17:42:11
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+client92 rps=0 4/1 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+server93 rps=0 1/4 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치
