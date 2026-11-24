@@ -1,0 +1,50 @@
+== lib.sh a94713a07676  RUN=r60 RAW=raw60
+== setup 10:38:59
+client92 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+server93 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.158/60.179/60.227/0.024 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.158/108.174/108.210/0.020 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.149/108.173/108.221/0.026 ms
+client92 iptables R60 준비 (비어 있음)
+  client92 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+  server93 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+== A worker 3 10:39:21
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 61.114/68.156/72.141/4.994 ms
+  route 1 rps 8 procs 4
+-- p8_up 10:39:49  (-P8 , 270초)
+  recv 319 Mbps | retr 96431 | ping 1350 packets transmitted, 1340 received, 0.740741% packet loss, time 271496ms
+  rcvbuf c/s 6887/0/ | cuts 10:39:55.209 start 10:40:25.243 drop A 172.31.10.1 10:40:55.275 heal 10:41:25.329 drop B 172.31.20.1 10:41:55.385 heal 10:42:25.443 drop A 172.31.10.1 10:42:55.477 heal 10:43:25.571 drop B 172.31.20.1
+-- p8_dn 10:44:43  (-P8 -R, 270초)
+  recv 304 Mbps | retr 83552 | ping 1350 packets transmitted, 1337 received, 0.962963% packet loss, time 270959ms
+  rcvbuf c/s 0/480/ | cuts 10:44:50.256 start 10:45:20.308 drop A 172.31.10.1 10:45:50.360 heal 10:46:20.414 drop B 172.31.20.1 10:46:50.462 heal 10:47:20.544 drop A 172.31.10.1 10:47:50.596 heal 10:48:20.655 drop B 172.31.20.1
+-- p1_up 10:49:38  (-P1 , 270초)
+  recv 214 Mbps | retr 11598 | ping 1350 packets transmitted, 1342 received, 0.592593% packet loss, time 270934ms
+  rcvbuf c/s 0/0/ | cuts 10:49:44.316 start 10:50:14.357 drop A 172.31.10.1 10:50:44.378 heal 10:51:14.406 drop B 172.31.20.1 10:51:44.443 heal 10:52:14.471 drop A 172.31.10.1 10:52:44.495 heal 10:53:14.516 drop B 172.31.20.1
+  server93 [INFO][w1][server] pending enq 7948 sent 7948 wait avg 53.6 max 131 ms hist(<10/<20/<50/<100/100+) 421/1263/2647/2271/1346 queued 0
+  server93 [INFO][w0][server] pending enq 8624 sent 8624 wait avg 124.2 max 212 ms hist(<10/<20/<50/<100/100+) 395/239/989/1666/5335 queued 0
+  server93 [INFO][w2][server] pending enq 7632 sent 7632 wait avg 160.0 max 244 ms hist(<10/<20/<50/<100/100+) 27/106/202/903/6394 queued 0
+  client EAGAIN 570 pendfull 7 err 0 winlog  3 mult 2.00 x rate
+  client92 경로 경고 3 / 재개 3 / stale 0 / procs 4
+  server93 경로 경고 0 / 재개 0 / stale 0 / procs 4
+cat: '*_P?.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+done 10:54:59
+client92 iptables R60 제거: 남은 R60 줄 0
+== restore 10:55:00
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+client92 rps=0 4/1 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+server93 rps=0 1/4 mf=0+0 iperf=0 qdisc=noqueue/noqueue/noqueue
+client92 IFB 제거: ifb 0 ingress 0/0
+client92 netem 복원 일치
+server93 IFB 제거: ifb 0 ingress 0/0
+server93 netem 복원 일치

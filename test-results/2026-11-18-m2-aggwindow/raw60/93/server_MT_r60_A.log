@@ -1,0 +1,431 @@
+[32m[2026-11-23 10:39:34][INFO]parsing address: 0.0.0.0:443
+[0m[32m[2026-11-23 10:39:34][INFO]its an ipv4 adress
+[0m[32m[2026-11-23 10:39:34][INFO]ip_address is {0.0.0.0}, port is {443}
+[0m[32m[2026-11-23 10:39:34][INFO]parsing address: 127.0.0.1:51809
+[0m[32m[2026-11-23 10:39:34][INFO]its an ipv4 adress
+[0m[32m[2026-11-23 10:39:34][INFO]ip_address is {127.0.0.1}, port is {51809}
+[0m[32m[2026-11-23 10:39:34][INFO]WireGuard upstream: 127.0.0.1:51809
+[0m[32m[2026-11-23 10:39:34][INFO]multi-fec 1.4.5-mt.2 (git v1.4.5-7-gbd216ec) build 2026-11-23 02:25:53 KST
+[0m[32m[2026-11-23 10:39:34][INFO]config /root/rq/server_P0.conf (instance server_P0)
+[0m[33m[2026-11-23 10:39:34][WARN]/root/rq/server_P0.conf is readable by group/other — chmod 600 (it holds the key)
+[0m[32m[2026-11-23 10:39:34][INFO]key kf:16c99173 from key-file
+[0m[32m[2026-11-23 10:39:34][INFO]v1.4.0 defaults in effect (not set in config/CLI): fec=5:1,20:4 fec-mode=1 fec-timeout=10 mtu=1350 queue-len=500 sock-buf=4096 auth-interval=60
+[0m[32m[2026-11-23 10:39:34][INFO]jitter_min=0 jitter_max=0 output_interval_min=0 output_interval_max=0 fec_timeout=10 fec_mtu=1350 fec_queue_len=500 fec_mode=1
+[0m[32m[2026-11-23 10:39:34][INFO]fec_str=5:1,20:4
+[0m[32m[2026-11-23 10:39:34][INFO]fec_inner_parameter=1:1,2:1,3:1,4:1,5:1,6:2,7:2,8:2,9:2,10:2,11:3,12:3,13:3,14:3,15:3,16:4,17:4,18:4,19:4,20:4
+[0m[32m[2026-11-23 10:39:34][INFO]obfs: mode=QUIC-ShortHeader + HMAC-auth (interval=60s) + size-norm
+[0m[32m[2026-11-23 10:39:34][INFO]shared wg-side sock-buf rcv=4096 snd=4096 kB
+[0m[33m[2026-11-23 10:39:34][WARN]FIFO disabled with --workers (each worker has its own FEC state)
+[0m[32m[2026-11-23 10:39:34][INFO]supervisor pid 317724: 3 workers started
+[0m[32m[2026-11-23 10:39:34][INFO][w0]pinned to CPU 0
+[0m[32m[2026-11-23 10:39:34][INFO][w0]worker 0/3 pid 317725 listen port 0.0.0.0:443
+[0m[32m[2026-11-23 10:39:34][INFO][w2]pinned to CPU 2
+[0m[32m[2026-11-23 10:39:34][INFO][w2]worker 2/3 pid 317727 listen port 0.0.0.0:445
+[0m[32m[2026-11-23 10:39:34][INFO][w0]mud fd=6
+[0m[32m[2026-11-23 10:39:34][INFO][w0]sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+[0m[32m[2026-11-23 10:39:34][INFO][w0]send window: mult 2.00 x rate
+[0m[32m[2026-11-23 10:39:34][INFO][w0]server mode started (multipath=aggregate)
+[0m[32m[2026-11-23 10:39:34][INFO][w0][server] FD budget: soft=1024 open=7 reserve=64 → client sockets 953
+[0m[32m[2026-11-23 10:39:34][INFO][w0][server] conv socket budget=953
+[0m[32m[2026-11-23 10:39:34][INFO][w0][server] starting event loop
+[0m[32m[2026-11-23 10:39:34][INFO][w2]mud fd=6
+[0m[32m[2026-11-23 10:39:34][INFO][w0][server] listening, forwarding to WireGuard at 127.0.0.1:51809
+[0m[32m[2026-11-23 10:39:34][INFO][w2]sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+[0m[32m[2026-11-23 10:39:34][INFO][w2]send window: mult 2.00 x rate
+[0m[32m[2026-11-23 10:39:34][INFO][w2]server mode started (multipath=aggregate)
+[0m[32m[2026-11-23 10:39:34][INFO][w2][server] FD budget: soft=1024 open=7 reserve=64 → client sockets 953
+[0m[32m[2026-11-23 10:39:34][INFO][w2][server] conv socket budget=953
+[0m[32m[2026-11-23 10:39:34][INFO][w2][server] starting event loop
+[0m[32m[2026-11-23 10:39:34][INFO][w2][server] listening, forwarding to WireGuard at 127.0.0.1:51809
+[0m[32m[2026-11-23 10:39:34][INFO][w1]pinned to CPU 1
+[0m[32m[2026-11-23 10:39:34][INFO][w1]worker 1/3 pid 317726 listen port 0.0.0.0:444
+[0m[32m[2026-11-23 10:39:34][INFO][w1]mud fd=6
+[0m[32m[2026-11-23 10:39:34][INFO][w1]sock-buf=4096 kB (rcv=4096 snd=4096 kB)
+[0m[32m[2026-11-23 10:39:34][INFO][w1]send window: mult 2.00 x rate
+[0m[32m[2026-11-23 10:39:34][INFO][w1]server mode started (multipath=aggregate)
+[0m[32m[2026-11-23 10:39:34][INFO][w1][server] FD budget: soft=1024 open=7 reserve=64 → client sockets 953
+[0m[32m[2026-11-23 10:39:34][INFO][w1][server] conv socket budget=953
+[0m[32m[2026-11-23 10:39:34][INFO][w1][server] starting event loop
+[0m[32m[2026-11-23 10:39:34][INFO][w1][server] listening, forwarding to WireGuard at 127.0.0.1:51809
+[0m[32m[2026-11-23 10:39:36][INFO][w1][server] new session 45683acbca8e5ea7 from 172.31.10.2:34981
+[0m[32m[2026-11-23 10:39:36][INFO][w1][server] new client 172.31.10.2:34981
+[0m[32m[2026-11-23 10:39:36][INFO][w1][server][172.31.10.2:34981] new conv 29a834bf fd=7 fd64=4294967395
+[0m[32m[2026-11-23 10:39:36][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1 pkt;152 byte) (fec:1 pkt;162 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+[0m[32m[2026-11-23 10:39:36][INFO][w1][server] path RUNNING — reading the shared WG socket
+[0m[32m[2026-11-23 10:39:36][INFO][w0][server] new session fdb851a18b222e9e from 172.31.10.2:40037
+[0m[32m[2026-11-23 10:39:36][INFO][w0][server] new client 172.31.10.2:40037
+[0m[32m[2026-11-23 10:39:36][INFO][w0][server][172.31.10.2:40037] new conv db09ba1f fd=7 fd64=4294967395
+[0m[32m[2026-11-23 10:39:36][INFO][w0][report][172.31.10.2:40037]client-->server:(original:1 pkt;36 byte) (fec:1 pkt;46 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+[0m[32m[2026-11-23 10:39:36][INFO][w0][server] path RUNNING — reading the shared WG socket
+[0m[32m[2026-11-23 10:39:39][INFO][w2][server] new session ef26520dc52a5135 from 172.31.10.2:45199
+[0m[32m[2026-11-23 10:39:40][INFO][w2][server] new client 172.31.10.2:45199
+[0m[32m[2026-11-23 10:39:40][INFO][w2][server][172.31.10.2:45199] new conv d5af32f fd=7 fd64=4294967395
+[0m[32m[2026-11-23 10:39:40][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2 pkt;168 byte) (fec:2 pkt;188 byte)  server-->client:(original:0 pkt;0 byte) (fec:0 pkt;0 byte)
+[0m[32m[2026-11-23 10:39:40][INFO][w2][server] path RUNNING — reading the shared WG socket
+[0m[32m[2026-11-23 10:39:47][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2 pkt;236 byte) (fec:4 pkt;512 byte)  server-->client:(original:3 pkt;2768 byte) (fec:5 pkt;4250 byte)
+[0m[32m[2026-11-23 10:39:47][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4 pkt;320 byte) (fec:7 pkt;626 byte)  server-->client:(original:3 pkt;2772 byte) (fec:4 pkt;4148 byte)
+[0m[32m[2026-11-23 10:39:50][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3 pkt;300 byte) (fec:6 pkt;660 byte)  server-->client:(original:2 pkt;264 byte) (fec:4 pkt;568 byte)
+[0m[32m[2026-11-23 10:39:57][INFO][w1][report][172.31.10.2:34981]client-->server:(original:39 pkt;45992 byte) (fec:50 pkt;56312 byte)  server-->client:(original:30 pkt;5740 byte) (fec:42 pkt;8720 byte)
+[0m[32m[2026-11-23 10:39:57][INFO][w0][report][172.31.10.2:40037]client-->server:(original:147 pkt;159968 byte) (fec:200 pkt;201280 byte)  server-->client:(original:136 pkt;17544 byte) (fec:175 pkt;25102 byte)
+[0m[32m[2026-11-23 10:40:00][INFO][w2][report][172.31.10.2:45199]client-->server:(original:24428 pkt;32569172 byte) (fec:29339 pkt;39399290 byte)  server-->client:(original:19906 pkt;2302952 byte) (fec:23925 pkt;3008630 byte)
+[0m[32m[2026-11-23 10:40:04][INFO][w2][server] batch gso=on gro=on send=46642/6023 gso=43319/7058 fallback=0 recv=72026/7724 gro=66038/12026
+[0m[32m[2026-11-23 10:40:04][INFO][w1][server] batch gso=on gro=on send=51062/6858 gso=47191/7845 fallback=0 recv=73413/8971 gro=66255/12747
+[0m[32m[2026-11-23 10:40:04][INFO][w0][server] batch gso=on gro=on send=53021/6979 gso=49241/8395 fallback=0 recv=82435/9697 gro=75091/14361
+[0m[32m[2026-11-23 10:40:07][INFO][w1][report][172.31.10.2:34981]client-->server:(original:91811 pkt;122570096 byte) (fec:110186 pkt;148216080 byte)  server-->client:(original:65328 pkt;7556628 byte) (fec:78425 pkt;9862130 byte)
+[0m[32m[2026-11-23 10:40:08][INFO][w0][report][172.31.10.2:40037]client-->server:(original:109290 pkt;145868164 byte) (fec:131174 pkt;176385432 byte)  server-->client:(original:71167 pkt;8230468 byte) (fec:85450 pkt;10744408 byte)
+[0m[32m[2026-11-23 10:40:10][INFO][w2][report][172.31.10.2:45199]client-->server:(original:118188 pkt;157747952 byte) (fec:141865 pkt;190774706 byte)  server-->client:(original:83019 pkt;9592268 byte) (fec:99731 pkt;12529402 byte)
+[0m[32m[2026-11-23 10:40:17][INFO][w1][report][172.31.10.2:34981]client-->server:(original:180098 pkt;240458908 byte) (fec:216185 pkt;290828114 byte)  server-->client:(original:146955 pkt;16981776 byte) (fec:176437 pkt;22169658 byte)
+[0m[32m[2026-11-23 10:40:18][INFO][w0][report][172.31.10.2:40037]client-->server:(original:251213 pkt;335373396 byte) (fec:301534 pkt;405584892 byte)  server-->client:(original:109241 pkt;12614540 byte) (fec:131207 pkt;16477598 byte)
+[0m[32m[2026-11-23 10:40:21][INFO][w2][report][172.31.10.2:45199]client-->server:(original:209156 pkt;279186828 byte) (fec:251090 pkt;337697184 byte)  server-->client:(original:158928 pkt;18345488 byte) (fec:190894 pkt;23965108 byte)
+[0m[32m[2026-11-23 10:40:28][INFO][w1][report][172.31.10.2:34981]client-->server:(original:255398 pkt;340994660 byte) (fec:306581 pkt;412436082 byte)  server-->client:(original:202477 pkt;23339192 byte) (fec:243172 pkt;30494380 byte)
+[0m[32m[2026-11-23 10:40:28][INFO][w0][report][172.31.10.2:40037]client-->server:(original:353288 pkt;471665704 byte) (fec:423876 pkt;570177332 byte)  server-->client:(original:147003 pkt;16882036 byte) (fec:176629 pkt;22084994 byte)
+[0m[32m[2026-11-23 10:40:31][INFO][w2][report][172.31.10.2:45199]client-->server:(original:279315 pkt;372850644 byte) (fec:335236 pkt;450886684 byte)  server-->client:(original:204992 pkt;23428832 byte) (fec:246252 pkt;30670504 byte)
+[0m[32m[2026-11-23 10:40:34][INFO][w2][server] batch gso=on gro=on send=260036/40555 gso=237833/36745 fallback=0 recv=358399/39062 gro=330433/59468
+[0m[32m[2026-11-23 10:40:34][INFO][w0][server] batch gso=on gro=on send=194778/32010 gso=177061/29913 fallback=0 recv=468315/43120 gro=434010/78878
+[0m[32m[2026-11-23 10:40:34][INFO][w1][server] batch gso=on gro=on send=265565/37550 gso=245948/37846 fallback=0 recv=339944/38808 gro=309246/56471
+[0m[32m[2026-11-23 10:40:38][INFO][w1][report][172.31.10.2:34981]client-->server:(original:304464 pkt;406491664 byte) (fec:365476 pkt;491653580 byte)  server-->client:(original:235940 pkt;26790340 byte) (fec:283405 pkt;35118426 byte)
+[0m[32m[2026-11-23 10:40:38][INFO][w0][report][172.31.10.2:40037]client-->server:(original:427100 pkt;570211132 byte) (fec:512453 pkt;689334570 byte)  server-->client:(original:179786 pkt;20262912 byte) (fec:216048 pkt;26614700 byte)
+[0m[32m[2026-11-23 10:40:42][INFO][w2][report][172.31.10.2:45199]client-->server:(original:380218 pkt;507595860 byte) (fec:456320 pkt;613804556 byte)  server-->client:(original:256050 pkt;28770056 byte) (fec:307551 pkt;37793698 byte)
+[0m[32m[2026-11-23 10:40:48][INFO][w1][report][172.31.10.2:34981]client-->server:(original:391285 pkt;522416564 byte) (fec:469698 pkt;631868436 byte)  server-->client:(original:309127 pkt;34856112 byte) (fec:371298 pkt;45761104 byte)
+[0m[32m[2026-11-23 10:40:48][INFO][w0][report][172.31.10.2:40037]client-->server:(original:585617 pkt;781888944 byte) (fec:702694 pkt;945298056 byte)  server-->client:(original:205836 pkt;23067912 byte) (fec:247402 pkt;30343576 byte)
+[0m[32m[2026-11-23 10:40:52][INFO][w2][report][172.31.10.2:45199]client-->server:(original:535953 pkt;715568980 byte) (fec:643220 pkt;865283116 byte)  server-->client:(original:299768 pkt;33498832 byte) (fec:360070 pkt;44062244 byte)
+[0m[32m[2026-11-23 10:40:58][INFO][w1][report][172.31.10.2:34981]client-->server:(original:489516 pkt;653602792 byte) (fec:587602 pkt;790516832 byte)  server-->client:(original:364899 pkt;41016272 byte) (fec:438303 pkt;53889798 byte)
+[0m[32m[2026-11-23 10:40:59][INFO][w0][report][172.31.10.2:40037]client-->server:(original:743562 pkt;992792864 byte) (fec:892250 pkt;1200328628 byte)  server-->client:(original:231750 pkt;25832992 byte) (fec:278576 pkt;34025740 byte)
+[0m[32m[2026-11-23 10:41:02][INFO][w2][report][172.31.10.2:45199]client-->server:(original:653561 pkt;872603648 byte) (fec:784381 pkt;1055196202 byte)  server-->client:(original:386423 pkt;43311580 byte) (fec:464109 pkt;56930198 byte)
+[0m[32m[2026-11-23 10:41:04][INFO][w1][server] batch gso=on gro=on send=477839/67276 gso=447632/62431 fallback=0 recv=660903/62917 gro=614186/105884
+[0m[32m[2026-11-23 10:41:04][INFO][w2][server] batch gso=on gro=on send=480051/74357 gso=444783/64344 fallback=0 recv=811115/65435 gro=767650/122364
+[0m[32m[2026-11-23 10:41:04][INFO][w0][server] batch gso=on gro=on send=287054/50401 gso=262056/41979 fallback=0 recv=1014695/64776 gro=962074/151976
+[0m[32m[2026-11-23 10:41:09][INFO][w0][report][172.31.10.2:40037]client-->server:(original:926210 pkt;1236689060 byte) (fec:1111450 pkt;1495250296 byte)  server-->client:(original:247074 pkt;27585296 byte) (fec:297021 pkt;36324706 byte)
+[0m[32m[2026-11-23 10:41:09][INFO][w1][report][172.31.10.2:34981]client-->server:(original:609130 pkt;813342004 byte) (fec:731175 pkt;983700998 byte)  server-->client:(original:421676 pkt;47555236 byte) (fec:506510 pkt;62437736 byte)
+[0m[32m[2026-11-23 10:41:12][INFO][w2][report][172.31.10.2:45199]client-->server:(original:751553 pkt;1003453268 byte) (fec:902010 pkt;1213457144 byte)  server-->client:(original:494903 pkt;55822844 byte) (fec:594337 pkt;73268558 byte)
+[0m[32m[2026-11-23 10:41:19][INFO][w0][report][172.31.10.2:40037]client-->server:(original:1100733 pkt;1469736180 byte) (fec:1320906 pkt;1777062464 byte)  server-->client:(original:266258 pkt;29786480 byte) (fec:320109 pkt;39209986 byte)
+[0m[32m[2026-11-23 10:41:19][INFO][w1][report][172.31.10.2:34981]client-->server:(original:733801 pkt;979819052 byte) (fec:880815 pkt;1185033030 byte)  server-->client:(original:468784 pkt;52984900 byte) (fec:563124 pkt;69536812 byte)
+[0m[32m[2026-11-23 10:41:23][INFO][w2][report][172.31.10.2:45199]client-->server:(original:841753 pkt;1123895408 byte) (fec:1010308 pkt;1359161192 byte)  server-->client:(original:591519 pkt;66942668 byte) (fec:710330 pkt;87797708 byte)
+[0m[32m[2026-11-23 10:41:29][INFO][w0][report][172.31.10.2:40037]client-->server:(original:1210584 pkt;1616422456 byte) (fec:1452770 pkt;1954476748 byte)  server-->client:(original:299560 pkt;33515448 byte) (fec:360182 pkt;44118032 byte)
+[0m[32m[2026-11-23 10:41:29][INFO][w1][report][172.31.10.2:34981]client-->server:(original:808201 pkt;1079152392 byte) (fec:970137 pkt;1305195382 byte)  server-->client:(original:517468 pkt;58481732 byte) (fec:621630 pkt;76751080 byte)
+[0m[32m[2026-11-23 10:41:33][INFO][w2][report][172.31.10.2:45199]client-->server:(original:898346 pkt;1199454632 byte) (fec:1078263 pkt;1450579598 byte)  server-->client:(original:627470 pkt;70844744 byte) (fec:753609 pkt;92965166 byte)
+[0m[32m[2026-11-23 10:41:34][INFO][w1][server] batch gso=on gro=on send=640792/92256 gso=598208/85582 fallback=0 recv=1004820/91767 gro=932085/160163
+[0m[32m[2026-11-23 10:41:34][INFO][w0][server] batch gso=on gro=on send=382877/70789 gso=346452/56859 fallback=0 recv=1500361/90605 gro=1419727/216523
+[0m[32m[2026-11-23 10:41:34][INFO][w2][server] batch gso=on gro=on send=756151/108580 gso=704317/101090 fallback=0 recv=1087028/91322 gro=1024518/164791
+[0m[32m[2026-11-23 10:41:39][INFO][w0][report][172.31.10.2:40037]client-->server:(original:1314608 pkt;1755306576 byte) (fec:1577601 pkt;2122407330 byte)  server-->client:(original:348369 pkt;38697148 byte) (fec:418787 pkt;51004230 byte)
+[0m[32m[2026-11-23 10:41:40][INFO][w1][report][172.31.10.2:34981]client-->server:(original:886187 pkt;1183276692 byte) (fec:1063725 pkt;1431099834 byte)  server-->client:(original:571650 pkt;64317708 byte) (fec:686694 pkt;84484568 byte)
+[0m[32m[2026-11-23 10:41:44][INFO][w2][report][172.31.10.2:45199]client-->server:(original:1035668 pkt;1382839372 byte) (fec:1243063 pkt;1672322946 byte)  server-->client:(original:641019 pkt;72254744 byte) (fec:769918 pkt;94853600 byte)
+[0m[32m[2026-11-23 10:41:50][INFO][w1][report][172.31.10.2:34981]client-->server:(original:982923 pkt;1312444812 byte) (fec:1179848 pkt;1587330216 byte)  server-->client:(original:654475 pkt;73863744 byte) (fec:786134 pkt;96951656 byte)
+[0m[32m[2026-11-23 10:41:50][INFO][w0][report][172.31.10.2:40037]client-->server:(original:1453291 pkt;1940495068 byte) (fec:1744057 pkt;2346363906 byte)  server-->client:(original:411015 pkt;45914692 byte) (fec:494025 pkt;60433578 byte)
+[0m[32m[2026-11-23 10:41:55][INFO][w2][report][172.31.10.2:45199]client-->server:(original:1180491 pkt;1576246844 byte) (fec:1416907 pkt;1906240914 byte)  server-->client:(original:648117 pkt;73032288 byte) (fec:778477 pkt;95882658 byte)
+[0m[32m[2026-11-23 10:42:00][INFO][w0][report][172.31.10.2:40037]client-->server:(original:1578315 pkt;2107442520 byte) (fec:1894123 pkt;2548265722 byte)  server-->client:(original:457561 pkt;51225148 byte) (fec:549960 pkt;67387996 byte)
+[0m[32m[2026-11-23 10:42:00][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1071148 pkt;1430228512 byte) (fec:1285776 pkt;1729824404 byte)  server-->client:(original:736062 pkt;83182588 byte) (fec:884100 pkt;109145020 byte)
+[0m[32m[2026-11-23 10:42:04][INFO][w1][server] batch gso=on gro=on send=927099/126852 gso=873296/116686 fallback=0 recv=1327853/115152 gro=1241290/207601
+[0m[32m[2026-11-23 10:42:04][INFO][w0][server] batch gso=on gro=on send=580473/99233 gso=533356/79825 fallback=0 recv=1959457/115200 gro=1862246/285330
+[0m[32m[2026-11-23 10:42:10][INFO][w0][report][172.31.10.2:40037]client-->server:(original:1711149 pkt;2284798176 byte) (fec:2053507 pkt;2762686018 byte)  server-->client:(original:523217 pkt;58814076 byte) (fec:628808 pkt;77296684 byte)
+[0m[32m[2026-11-23 10:42:10][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1158531 pkt;1546909484 byte) (fec:1390654 pkt;1870927476 byte)  server-->client:(original:837347 pkt;94890544 byte) (fec:1005659 pkt;124422590 byte)
+[0m[32m[2026-11-23 10:42:17][INFO][w2][report][172.31.10.2:45199]client-->server:(original:1503918 pkt;2008142720 byte) (fec:1805049 pkt;2428477450 byte)  server-->client:(original:650487 pkt;73292264 byte) (fec:781341 pkt;96227394 byte)
+[0m[32m[2026-11-23 10:42:17][INFO][w2][server] batch gso=on gro=on send=781341/113508 gso=727529/104328 fallback=0 recv=1808775/100148 gro=1717303/261317
+[0m[32m[2026-11-23 10:42:21][INFO][w0][report][172.31.10.2:40037]client-->server:(original:1835179 pkt;2450388012 byte) (fec:2202401 pkt;2962983098 byte)  server-->client:(original:586127 pkt;66098804 byte) (fec:704367 pkt;86805358 byte)
+[0m[32m[2026-11-23 10:42:21][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1245536 pkt;1663090488 byte) (fec:1495094 pkt;2011446040 byte)  server-->client:(original:932266 pkt;105885324 byte) (fec:1119593 pkt;138764274 byte)
+[0m[32m[2026-11-23 10:42:27][INFO][w2][report][172.31.10.2:45199]client-->server:(original:1589619 pkt;2122565608 byte) (fec:1907921 pkt;2566869514 byte)  server-->client:(original:682077 pkt;76919568 byte) (fec:819372 pkt;100981524 byte)
+[0m[32m[2026-11-23 10:42:31][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1303688 pkt;1740742168 byte) (fec:1564792 pkt;2105220156 byte)  server-->client:(original:973237 pkt;110494216 byte) (fec:1168855 pkt;144823974 byte)
+[0m[32m[2026-11-23 10:42:31][INFO][w0][report][172.31.10.2:40037]client-->server:(original:1916869 pkt;2559440068 byte) (fec:2300453 pkt;3094877714 byte)  server-->client:(original:629965 pkt;71002572 byte) (fec:757076 pkt;93259124 byte)
+[0m[32m[2026-11-23 10:42:34][INFO][w1][server] batch gso=on gro=on send=1181611/159270 gso=1112715/152787 fallback=0 recv=1588739/147757 gro=1478880/252889
+[0m[32m[2026-11-23 10:42:34][INFO][w2][server] batch gso=on gro=on send=852876/131220 gso=789479/115797 fallback=0 recv=1970984/118267 gro=1867319/286044
+[0m[32m[2026-11-23 10:42:34][INFO][w0][server] batch gso=on gro=on send=769536/127907 gso=707780/107821 fallback=0 recv=2333014/150642 gro=2209271/348970
+[0m[32m[2026-11-23 10:42:38][INFO][w2][report][172.31.10.2:45199]client-->server:(original:1671073 pkt;2231318340 byte) (fec:2005675 pkt;2698376586 byte)  server-->client:(original:727287 pkt;81592760 byte) (fec:873661 pkt;107233218 byte)
+[0m[32m[2026-11-23 10:42:41][INFO][w0][report][172.31.10.2:40037]client-->server:(original:2008383 pkt;2681625672 byte) (fec:2410275 pkt;3242621026 byte)  server-->client:(original:667748 pkt;74921144 byte) (fec:802480 pkt;98504364 byte)
+[0m[32m[2026-11-23 10:42:41][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1369706 pkt;1828895472 byte) (fec:1644023 pkt;2211818338 byte)  server-->client:(original:1012572 pkt;114585700 byte) (fec:1216128 pkt;150297524 byte)
+[0m[32m[2026-11-23 10:42:48][INFO][w2][report][172.31.10.2:45199]client-->server:(original:1797814 pkt;2400539896 byte) (fec:2157785 pkt;2903012226 byte)  server-->client:(original:791101 pkt;88498720 byte) (fec:950285 pkt;116383362 byte)
+[0m[32m[2026-11-23 10:42:51][INFO][w0][report][172.31.10.2:40037]client-->server:(original:2160741 pkt;2885088696 byte) (fec:2593127 pkt;3488651350 byte)  server-->client:(original:695873 pkt;77932652 byte) (fec:836334 pkt;102515488 byte)
+[0m[32m[2026-11-23 10:42:52][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1472359 pkt;1965978304 byte) (fec:1767230 pkt;2377593384 byte)  server-->client:(original:1064512 pkt;120249972 byte) (fec:1278543 pkt;157795238 byte)
+[0m[32m[2026-11-23 10:42:58][INFO][w2][report][172.31.10.2:45199]client-->server:(original:1918111 pkt;2561163296 byte) (fec:2302170 pkt;3097261044 byte)  server-->client:(original:863271 pkt;96400664 byte) (fec:1036952 pkt;126825756 byte)
+[0m[32m[2026-11-23 10:43:01][INFO][w0][report][172.31.10.2:40037]client-->server:(original:2314504 pkt;3090404388 byte) (fec:2777671 pkt;3736935898 byte)  server-->client:(original:721851 pkt;80788804 byte) (fec:867612 pkt;106296516 byte)
+[0m[32m[2026-11-23 10:43:02][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1570270 pkt;2096723544 byte) (fec:1884753 pkt;2535715486 byte)  server-->client:(original:1115599 pkt;125980832 byte) (fec:1339937 pkt;165333682 byte)
+[0m[32m[2026-11-23 10:43:04][INFO][w2][server] batch gso=on gro=on send=1088605/168834 gso=1010444/145707 fallback=0 recv=2374866/147587 gro=2254987/345110
+[0m[32m[2026-11-23 10:43:04][INFO][w1][server] batch gso=on gro=on send=1353589/187249 gso=1273595/174943 fallback=0 recv=1914924/173791 gro=1788617/303283
+[0m[32m[2026-11-23 10:43:04][INFO][w0][server] batch gso=on gro=on send=878705/148778 gso=808025/122712 fallback=0 recv=2823794/175609 gro=2682114/417798
+[0m[32m[2026-11-23 10:43:08][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2018339 pkt;2694992796 byte) (fec:2422487 pkt;3259132618 byte)  server-->client:(original:948727 pkt;106165048 byte) (fec:1139541 pkt;139604786 byte)
+[0m[32m[2026-11-23 10:43:12][INFO][w0][report][172.31.10.2:40037]client-->server:(original:2476635 pkt;3306910756 byte) (fec:2972242 pkt;3998727816 byte)  server-->client:(original:752389 pkt;84266732 byte) (fec:904359 pkt;110862430 byte)
+[0m[32m[2026-11-23 10:43:12][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1683455 pkt;2247852728 byte) (fec:2020599 pkt;2718476990 byte)  server-->client:(original:1171377 pkt;132368952 byte) (fec:1406953 pkt;173696722 byte)
+[0m[32m[2026-11-23 10:43:18][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2105320 pkt;2811131880 byte) (fec:2526914 pkt;3399623828 byte)  server-->client:(original:1056405 pkt;118578416 byte) (fec:1268799 pkt;155816014 byte)
+[0m[32m[2026-11-23 10:43:22][INFO][w0][report][172.31.10.2:40037]client-->server:(original:2645305 pkt;3532133516 byte) (fec:3174670 pkt;4271075544 byte)  server-->client:(original:776189 pkt;86988988 byte) (fec:933001 pkt;114432970 byte)
+[0m[32m[2026-11-23 10:43:22][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1808819 pkt;2415256636 byte) (fec:2171058 pkt;2920912408 byte)  server-->client:(original:1215486 pkt;137436812 byte) (fec:1459955 pkt;180327006 byte)
+[0m[32m[2026-11-23 10:43:29][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2181064 pkt;2912277916 byte) (fec:2617843 pkt;3521966314 byte)  server-->client:(original:1122210 pkt;126088804 byte) (fec:1347861 pkt;165652978 byte)
+[0m[32m[2026-11-23 10:43:32][INFO][w0][report][172.31.10.2:40037]client-->server:(original:2734608 pkt;3651361548 byte) (fec:3281877 pkt;4415295390 byte)  server-->client:(original:802275 pkt;89750020 byte) (fec:964403 pkt;118111926 byte)
+[0m[32m[2026-11-23 10:43:33][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1869477 pkt;2496250344 byte) (fec:2243895 pkt;3018905630 byte)  server-->client:(original:1255098 pkt;141759772 byte) (fec:1507598 pkt;186045560 byte)
+[0m[32m[2026-11-23 10:43:34][INFO][w0][server] batch gso=on gro=on send=973019/168386 gso=891605/137255 fallback=0 recv=3304923/202380 gro=3133820/486888
+[0m[32m[2026-11-23 10:43:34][INFO][w1][server] batch gso=on gro=on send=1513307/211902 gso=1421030/198079 fallback=0 recv=2258377/201709 gro=2107067/355120
+[0m[32m[2026-11-23 10:43:34][INFO][w2][server] batch gso=on gro=on send=1365106/204054 gso=1269580/184026 fallback=0 recv=2660156/173929 gro=2521491/386451
+[0m[32m[2026-11-23 10:43:39][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2253001 pkt;3008326932 byte) (fec:2704173 pkt;3638107678 byte)  server-->client:(original:1152896 pkt;129236716 byte) (fec:1384778 pkt;169873880 byte)
+[0m[32m[2026-11-23 10:43:42][INFO][w0][report][172.31.10.2:40037]client-->server:(original:2844564 pkt;3798189116 byte) (fec:3413837 pkt;4592839902 byte)  server-->client:(original:852834 pkt;95199116 byte) (fec:1025120 pkt;125328152 byte)
+[0m[32m[2026-11-23 10:43:43][INFO][w1][report][172.31.10.2:34981]client-->server:(original:1955829 pkt;2611530692 byte) (fec:2347532 pkt;3158315108 byte)  server-->client:(original:1318199 pkt;148686336 byte) (fec:1583361 pkt;195184978 byte)
+[0m[32m[2026-11-23 10:43:52][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2438150 pkt;3255571720 byte) (fec:2926386 pkt;3937092100 byte)  server-->client:(original:1155267 pkt;129491512 byte) (fec:1387642 pkt;170213416 byte)
+[0m[32m[2026-11-23 10:43:53][INFO][w0][report][172.31.10.2:40037]client-->server:(original:2992499 pkt;3995714636 byte) (fec:3591394 pkt;4831715984 byte)  server-->client:(original:911852 pkt;102012244 byte) (fec:1096009 pkt;134227110 byte)
+[0m[32m[2026-11-23 10:43:53][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2049030 pkt;2735999568 byte) (fec:2459404 pkt;3308847160 byte)  server-->client:(original:1410521 pkt;159324840 byte) (fec:1694181 pkt;209076282 byte)
+[0m[32m[2026-11-23 10:44:03][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3120529 pkt;4166665712 byte) (fec:3745020 pkt;5038399576 byte)  server-->client:(original:978655 pkt;109707760 byte) (fec:1176227 pkt;144281010 byte)
+[0m[32m[2026-11-23 10:44:03][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2143711 pkt;2862419448 byte) (fec:2573027 pkt;3461709782 byte)  server-->client:(original:1496876 pkt;169283332 byte) (fec:1797840 pkt;222078900 byte)
+[0m[32m[2026-11-23 10:44:04][INFO][w1][server] batch gso=on gro=on send=1802409/248323 gso=1698040/230255 fallback=0 recv=2584293/228795 gro=2417418/402968
+[0m[32m[2026-11-23 10:44:04][INFO][w0][server] batch gso=on gro=on send=1182956/199275 gso=1089778/162605 fallback=0 recv=3765041/231460 gro=3576005/556609
+[0m[32m[2026-11-23 10:44:13][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3257390 pkt;4349417380 byte) (fec:3909296 pkt;5259420444 byte)  server-->client:(original:1041453 pkt;116978136 byte) (fec:1251654 pkt;153772220 byte)
+[0m[32m[2026-11-23 10:44:13][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2230454 pkt;2978254160 byte) (fec:2677129 pkt;3601777138 byte)  server-->client:(original:1600417 pkt;181269128 byte) (fec:1922109 pkt;237713370 byte)
+[0m[32m[2026-11-23 10:44:15][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2782932 pkt;3715968564 byte) (fec:3340143 pkt;4493775910 byte)  server-->client:(original:1157893 pkt;129779792 byte) (fec:1390808 pkt;170594828 byte)
+[0m[32m[2026-11-23 10:44:15][INFO][w2][server] batch gso=on gro=on send=1390808/209819 gso=1293019/187541 fallback=0 recv=3346237/183558 gro=3180033/477669
+[0m[32m[2026-11-23 10:44:23][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3383435 pkt;4517722612 byte) (fec:4060583 pkt;5462960622 byte)  server-->client:(original:1097139 pkt;123412704 byte) (fec:1318533 pkt;162175038 byte)
+[0m[32m[2026-11-23 10:44:24][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2318053 pkt;3095212552 byte) (fec:2782309 pkt;3743275546 byte)  server-->client:(original:1692307 pkt;191893776 byte) (fec:2032418 pkt;251579280 byte)
+[0m[32m[2026-11-23 10:44:26][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2921890 pkt;3901513332 byte) (fec:3506928 pkt;4718164196 byte)  server-->client:(original:1171142 pkt;131309780 byte) (fec:1406752 pkt;172597004 byte)
+[0m[32m[2026-11-23 10:44:34][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3429395 pkt;4579055812 byte) (fec:4115747 pkt;5537134542 byte)  server-->client:(original:1125218 pkt;126632544 byte) (fec:1352254 pkt;166383912 byte)
+[0m[32m[2026-11-23 10:44:34][INFO][w2][server] batch gso=on gro=on send=1408420/212218 gso=1309091/189944 fallback=0 recv=3541013/187231 gro=3363527/504128
+[0m[32m[2026-11-23 10:44:34][INFO][w1][server] batch gso=on gro=on send=2068920/274281 gso=1952735/264874 fallback=0 recv=2825813/249968 gro=2640453/440047
+[0m[32m[2026-11-23 10:44:34][INFO][w0][server] batch gso=on gro=on send=1352254/218075 gso=1249304/185616 fallback=0 recv=4123440/254103 gro=3912178/616325
+[0m[32m[2026-11-23 10:44:34][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2348514 pkt;3135874932 byte) (fec:2818874 pkt;3792453544 byte)  server-->client:(original:1722713 pkt;195366696 byte) (fec:2068920 pkt;256117220 byte)
+[0m[32m[2026-11-23 10:44:36][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2944793 pkt;3932080616 byte) (fec:3534434 pkt;4755152392 byte)  server-->client:(original:1172526 pkt;131460344 byte) (fec:1408420 pkt;172796380 byte)
+[0m[32m[2026-11-23 10:44:44][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3429395 pkt;4579055812 byte) (fec:4115747 pkt;5537134542 byte)  server-->client:(original:1125218 pkt;126632544 byte) (fec:1352254 pkt;166383912 byte)
+[0m[32m[2026-11-23 10:44:44][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2348514 pkt;3135874932 byte) (fec:2818874 pkt;3792453544 byte)  server-->client:(original:1722713 pkt;195366696 byte) (fec:2068920 pkt;256117220 byte)
+[0m[32m[2026-11-23 10:44:46][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2944793 pkt;3932080616 byte) (fec:3534434 pkt;4755152392 byte)  server-->client:(original:1172527 pkt;131460380 byte) (fec:1408422 pkt;172796472 byte)
+[0m[32m[2026-11-23 10:44:54][INFO][w1][server] pending enq 7948 sent 7948 wait avg 53.6 max 131 ms hist(<10/<20/<50/<100/100+) 421/1263/2647/2271/1346 queued 0
+[0m[32m[2026-11-23 10:44:54][INFO][w0][server] pending enq 8624 sent 8624 wait avg 124.2 max 212 ms hist(<10/<20/<50/<100/100+) 395/239/989/1666/5335 queued 0
+[0m[32m[2026-11-23 10:44:55][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3440328 pkt;4580319848 byte) (fec:4128907 pkt;5538788782 byte)  server-->client:(original:1149776 pkt;159399212 byte) (fec:1381751 pkt;206034262 byte)
+[0m[32m[2026-11-23 10:44:55][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2362021 pkt;3137436992 byte) (fec:2835107 pkt;3794494646 byte)  server-->client:(original:1744940 pkt;225038180 byte) (fec:2095607 pkt;292009190 byte)
+[0m[32m[2026-11-23 10:44:55][INFO][w2][server] pending enq 7632 sent 7632 wait avg 160.0 max 244 ms hist(<10/<20/<50/<100/100+) 27/106/202/903/6394 queued 0
+[0m[32m[2026-11-23 10:44:56][INFO][w2][report][172.31.10.2:45199]client-->server:(original:2965377 pkt;3934459160 byte) (fec:3559181 pkt;4758261842 byte)  server-->client:(original:1205228 pkt;175073888 byte) (fec:1447709 pkt;225566478 byte)
+[0m[32m[2026-11-23 10:45:04][INFO][w0][server] batch gso=on gro=on send=1518795/230978 gso=1411270/205065 fallback=0 recv=4186486/265074 gro=3967800/628128
+[0m[32m[2026-11-23 10:45:04][INFO][w1][server] batch gso=on gro=on send=2190710/285789 gso=2069281/280274 fallback=0 recv=2924132/263068 gro=2730491/457960
+[0m[32m[2026-11-23 10:45:04][INFO][w2][server] batch gso=on gro=on send=1547849/223381 gso=1443503/203463 fallback=0 recv=3601129/195549 gro=3417759/515095
+[0m[32m[2026-11-23 10:45:05][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3483724 pkt;4585333720 byte) (fec:4181050 pkt;5545339536 byte)  server-->client:(original:1273032 pkt;323982176 byte) (fec:1529678 pkt;405056952 byte)
+[0m[32m[2026-11-23 10:45:05][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2441047 pkt;3146580024 byte) (fec:2929986 pkt;3806426808 byte)  server-->client:(original:1834033 pkt;343985780 byte) (fec:2202550 pkt;435873820 byte)
+[0m[32m[2026-11-23 10:45:06][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3001851 pkt;3938675760 byte) (fec:3603045 pkt;4763775106 byte)  server-->client:(original:1311812 pkt;317374440 byte) (fec:1575633 pkt;397656510 byte)
+[0m[32m[2026-11-23 10:45:15][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3532770 pkt;4591010976 byte) (fec:4239969 pkt;5552752562 byte)  server-->client:(original:1404690 pkt;499794964 byte) (fec:1687689 pkt;617657458 byte)
+[0m[32m[2026-11-23 10:45:15][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2551696 pkt;3159389084 byte) (fec:3062792 pkt;3823136060 byte)  server-->client:(original:1919906 pkt;458637160 byte) (fec:2305627 pkt;574540514 byte)
+[0m[32m[2026-11-23 10:45:16][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3007406 pkt;3939318716 byte) (fec:3609733 pkt;4764616418 byte)  server-->client:(original:1448852 pkt;500359104 byte) (fec:1740096 pkt;618922932 byte)
+[0m[32m[2026-11-23 10:45:25][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3568692 pkt;4595002360 byte) (fec:4283132 pkt;5558013068 byte)  server-->client:(original:1487728 pkt;610651656 byte) (fec:1787386 pkt;751767544 byte)
+[0m[32m[2026-11-23 10:45:26][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2599368 pkt;3164769132 byte) (fec:3120091 pkt;3830204454 byte)  server-->client:(original:1977930 pkt;536103096 byte) (fec:2375314 pkt;668285088 byte)
+[0m[32m[2026-11-23 10:45:27][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3043581 pkt;3943258584 byte) (fec:3653207 pkt;4769833070 byte)  server-->client:(original:1524758 pkt;601698536 byte) (fec:1831230 pkt;741518312 byte)
+[0m[32m[2026-11-23 10:45:34][INFO][w2][server] batch gso=on gro=on send=1921877/259796 gso=1806751/243669 fallback=0 recv=3714255/215379 gro=3518212/534946
+[0m[32m[2026-11-23 10:45:34][INFO][w0][server] batch gso=on gro=on send=1893671/266947 gso=1775924/247165 fallback=0 recv=4329316/291871 gro=4093245/654647
+[0m[32m[2026-11-23 10:45:34][INFO][w1][server] batch gso=on gro=on send=2451313/318340 gso=2317275/308663 fallback=0 recv=3168798/295458 gro=2955307/501672
+[0m[32m[2026-11-23 10:45:36][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3607046 pkt;4599152080 byte) (fec:4329244 pkt;5563520428 byte)  server-->client:(original:1595309 pkt;754285628 byte) (fec:1916520 pkt;925485256 byte)
+[0m[32m[2026-11-23 10:45:36][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2639635 pkt;3169173560 byte) (fec:3168503 pkt;3836035694 byte)  server-->client:(original:2056885 pkt;641508420 byte) (fec:2470097 pkt;795784450 byte)
+[0m[32m[2026-11-23 10:45:37][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3106297 pkt;3950119852 byte) (fec:3728528 pkt;4778904512 byte)  server-->client:(original:1635965 pkt;750191108 byte) (fec:1964707 pkt;921098374 byte)
+[0m[32m[2026-11-23 10:45:46][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3650249 pkt;4603817836 byte) (fec:4381181 pkt;5569714058 byte)  server-->client:(original:1717439 pkt;917362996 byte) (fec:2063089 pkt;1122678818 byte)
+[0m[32m[2026-11-23 10:45:46][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2688675 pkt;3174523944 byte) (fec:3227458 pkt;3843122504 byte)  server-->client:(original:2152574 pkt;769263652 byte) (fec:2584943 pkt;950281894 byte)
+[0m[32m[2026-11-23 10:45:48][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3178452 pkt;3957981608 byte) (fec:3815174 pkt;4789306148 byte)  server-->client:(original:1756141 pkt;910664640 byte) (fec:2108940 pkt;1115154388 byte)
+[0m[32m[2026-11-23 10:45:57][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3688747 pkt;4608135396 byte) (fec:4427479 pkt;5575397686 byte)  server-->client:(original:1848217 pkt;1091990516 byte) (fec:2220048 pkt;1333853744 byte)
+[0m[32m[2026-11-23 10:45:57][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2734509 pkt;3179694048 byte) (fec:3282556 pkt;3849917828 byte)  server-->client:(original:2255933 pkt;907261764 byte) (fec:2709002 pkt;1117175796 byte)
+[0m[32m[2026-11-23 10:45:58][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3261624 pkt;3967448824 byte) (fec:3915036 pkt;4801708424 byte)  server-->client:(original:1866240 pkt;1057667540 byte) (fec:2241090 pkt;1292937720 byte)
+[0m[32m[2026-11-23 10:46:04][INFO][w2][server] batch gso=on gro=on send=2311462/291358 gso=2188189/275339 fallback=0 recv=3976394/244432 gro=3762967/578999
+[0m[32m[2026-11-23 10:46:04][INFO][w0][server] batch gso=on gro=on send=2332039/301879 gso=2204385/282177 fallback=0 recv=4473975/311575 gro=4226166/678956
+[0m[32m[2026-11-23 10:46:04][INFO][w1][server] batch gso=on gro=on send=2792163/351449 gso=2648309/343310 fallback=0 recv=3345701/316307 gro=3119915/530263
+[0m[32m[2026-11-23 10:46:07][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3733388 pkt;4613268536 byte) (fec:4481137 pkt;5582114002 byte)  server-->client:(original:1976310 pkt;1263012324 byte) (fec:2373776 pkt;1540661192 byte)
+[0m[32m[2026-11-23 10:46:07][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2797600 pkt;3186954604 byte) (fec:3358337 pkt;3859408938 byte)  server-->client:(original:2352839 pkt;1036664804 byte) (fec:2825309 pkt;1273661642 byte)
+[0m[32m[2026-11-23 10:46:08][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3338085 pkt;3976259116 byte) (fec:4006859 pkt;4813220874 byte)  server-->client:(original:1967256 pkt;1192537704 byte) (fec:2362339 pkt;1456051662 byte)
+[0m[32m[2026-11-23 10:46:17][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3785749 pkt;4619313132 byte) (fec:4544036 pkt;5590010572 byte)  server-->client:(original:2100518 pkt;1428853404 byte) (fec:2522843 pkt;1741204566 byte)
+[0m[32m[2026-11-23 10:46:17][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2872152 pkt;3195566348 byte) (fec:3447853 pkt;3870653138 byte)  server-->client:(original:2444957 pkt;1159644896 byte) (fec:2935872 pkt;1422389884 byte)
+[0m[32m[2026-11-23 10:46:19][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3403467 pkt;3983813028 byte) (fec:4085404 pkt;4823088200 byte)  server-->client:(original:2065348 pkt;1323508756 byte) (fec:2480081 pkt;1614452534 byte)
+[0m[32m[2026-11-23 10:46:28][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3834240 pkt;4624708056 byte) (fec:4602302 pkt;5597120680 byte)  server-->client:(original:2212148 pkt;1577888124 byte) (fec:2656826 pkt;1921442724 byte)
+[0m[32m[2026-11-23 10:46:28][INFO][w1][report][172.31.10.2:34981]client-->server:(original:2937333 pkt;3202845040 byte) (fec:3526114 pkt;3880231592 byte)  server-->client:(original:2527488 pkt;1269848604 byte) (fec:3034936 pkt;1555672320 byte)
+[0m[32m[2026-11-23 10:46:29][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3437490 pkt;3987549696 byte) (fec:4126326 pkt;4828030292 byte)  server-->client:(original:2159388 pkt;1449067380 byte) (fec:2592967 pkt;1766318274 byte)
+[0m[32m[2026-11-23 10:46:34][INFO][w2][server] batch gso=on gro=on send=2659274/321144 gso=2527909/309877 fallback=0 recv=4143782/264400 gro=3918301/607997
+[0m[32m[2026-11-23 10:46:34][INFO][w1][server] batch gso=on gro=on send=3091727/383097 gso=2937153/377675 fallback=0 recv=3597251/342632 gro=3356479/568827
+[0m[32m[2026-11-23 10:46:34][INFO][w0][server] batch gso=on gro=on send=2742111/336627 gso=2605797/324566 fallback=0 recv=4634551/333491 gro=4374091/705930
+[0m[32m[2026-11-23 10:46:38][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3017496 pkt;3211952316 byte) (fec:3622376 pkt;3892163420 byte)  server-->client:(original:2605676 pkt;1374251076 byte) (fec:3128823 pkt;1681987526 byte)
+[0m[32m[2026-11-23 10:46:38][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3862895 pkt;4627929076 byte) (fec:4636767 pkt;5601356230 byte)  server-->client:(original:2336038 pkt;1743297420 byte) (fec:2805561 pkt;2121531086 byte)
+[0m[32m[2026-11-23 10:46:40][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3453794 pkt;3989364592 byte) (fec:4145947 pkt;4830422778 byte)  server-->client:(original:2275669 pkt;1604340236 byte) (fec:2732552 pkt;1954121124 byte)
+[0m[32m[2026-11-23 10:46:48][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3107575 pkt;3222235608 byte) (fec:3730520 pkt;3905617900 byte)  server-->client:(original:2692445 pkt;1490100876 byte) (fec:3233010 pkt;1822149644 byte)
+[0m[32m[2026-11-23 10:46:49][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3887189 pkt;4630679884 byte) (fec:4665991 pkt;5604969414 byte)  server-->client:(original:2470942 pkt;1923417328 byte) (fec:2967501 pkt;2339390490 byte)
+[0m[32m[2026-11-23 10:46:50][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3482679 pkt;3992615412 byte) (fec:4180678 pkt;4834695636 byte)  server-->client:(original:2380711 pkt;1744616168 byte) (fec:2858671 pkt;2123817118 byte)
+[0m[32m[2026-11-23 10:46:59][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3206530 pkt;3233626820 byte) (fec:3849304 pkt;3920497628 byte)  server-->client:(original:2775825 pkt;1601422780 byte) (fec:3333095 pkt;1956790278 byte)
+[0m[32m[2026-11-23 10:46:59][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3935659 pkt;4636250964 byte) (fec:4724236 pkt;5612257420 byte)  server-->client:(original:2595348 pkt;2089535360 byte) (fec:3116814 pkt;2540277404 byte)
+[0m[32m[2026-11-23 10:47:00][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3482983 pkt;3992649812 byte) (fec:4181048 pkt;4834741312 byte)  server-->client:(original:2509986 pkt;1917228060 byte) (fec:3013812 pkt;2332537396 byte)
+[0m[32m[2026-11-23 10:47:04][INFO][w2][server] batch gso=on gro=on send=3073161/351933 gso=2933088/341614 fallback=0 recv=4191030/267790 gro=3962974/613617
+[0m[32m[2026-11-23 10:47:04][INFO][w1][server] batch gso=on gro=on send=3382312/410272 gso=3219764/403091 fallback=0 recv=3930011/370822 gro=3673689/617059
+[0m[32m[2026-11-23 10:47:04][INFO][w0][server] batch gso=on gro=on send=3186280/369858 gso=3041399/359535 fallback=0 recv=4763817/349468 gro=4493438/727054
+[0m[32m[2026-11-23 10:47:09][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3323606 pkt;3247133956 byte) (fec:3989820 pkt;3938131812 byte)  server-->client:(original:2856325 pkt;1708906956 byte) (fec:3429721 pkt;2086785050 byte)
+[0m[32m[2026-11-23 10:47:09][INFO][w0][report][172.31.10.2:40037]client-->server:(original:3981028 pkt;4641482152 byte) (fec:4778759 pkt;5619096150 byte)  server-->client:(original:2721339 pkt;2257766008 byte) (fec:3268022 pkt;2743710044 byte)
+[0m[32m[2026-11-23 10:47:10][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3483357 pkt;3992692604 byte) (fec:4181504 pkt;4834798176 byte)  server-->client:(original:2638316 pkt;2088565104 byte) (fec:3167830 pkt;2539733788 byte)
+[0m[32m[2026-11-23 10:47:19][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3433123 pkt;3259805752 byte) (fec:4121268 pkt;3954664004 byte)  server-->client:(original:2941933 pkt;1823216624 byte) (fec:3532469 pkt;2225021238 byte)
+[0m[32m[2026-11-23 10:47:20][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4035333 pkt;4647768924 byte) (fec:4844008 pkt;5627306276 byte)  server-->client:(original:2844620 pkt;2422369852 byte) (fec:3415979 pkt;2942760594 byte)
+[0m[32m[2026-11-23 10:47:20][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3483565 pkt;3992716700 byte) (fec:4181761 pkt;4834830542 byte)  server-->client:(original:2769428 pkt;2263628788 byte) (fec:3325187 pkt;2751434362 byte)
+[0m[32m[2026-11-23 10:47:30][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3476127 pkt;3264553656 byte) (fec:4172962 pkt;3960936024 byte)  server-->client:(original:3024757 pkt;1933794540 byte) (fec:3631903 pkt;2358784454 byte)
+[0m[32m[2026-11-23 10:47:30][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4073049 pkt;4651893132 byte) (fec:4889353 pkt;5632765842 byte)  server-->client:(original:2948320 pkt;2560845212 byte) (fec:3540470 pkt;3110257640 byte)
+[0m[32m[2026-11-23 10:47:31][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3546390 pkt;3999599424 byte) (fec:4257209 pkt;4843927118 byte)  server-->client:(original:2880000 pkt;2411262636 byte) (fec:3457911 pkt;2929990522 byte)
+[0m[32m[2026-11-23 10:47:34][INFO][w2][server] batch gso=on gro=on send=3498466/386213 gso=3348551/379225 fallback=0 recv=4297932/279262 gro=4063216/629291
+[0m[32m[2026-11-23 10:47:34][INFO][w1][server] batch gso=on gro=on send=3680043/440631 gso=3507357/430824 fallback=0 recv=4200825/400787 gro=3927668/663130
+[0m[32m[2026-11-23 10:47:34][INFO][w0][server] batch gso=on gro=on send=3596374/403248 gso=3442240/398820 fallback=0 recv=4915012/371019 gro=4632127/753848
+[0m[32m[2026-11-23 10:47:40][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3513664 pkt;3268677020 byte) (fec:4218109 pkt;3966390690 byte)  server-->client:(original:3123094 pkt;2065102236 byte) (fec:3749943 pkt;2517595758 byte)
+[0m[32m[2026-11-23 10:47:41][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4109446 pkt;4655856176 byte) (fec:4933129 pkt;5638017986 byte)  server-->client:(original:3066433 pkt;2718566352 byte) (fec:3682242 pkt;3301004924 byte)
+[0m[32m[2026-11-23 10:47:41][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3615189 pkt;4007140176 byte) (fec:4339827 pkt;4853891214 byte)  server-->client:(original:2993077 pkt;2562225488 byte) (fec:3593640 pkt;3112573736 byte)
+[0m[32m[2026-11-23 10:47:51][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3556363 pkt;3273312216 byte) (fec:4269457 pkt;3972539898 byte)  server-->client:(original:3221370 pkt;2196299432 byte) (fec:3867898 pkt;2676263648 byte)
+[0m[32m[2026-11-23 10:47:51][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4157322 pkt;4661030752 byte) (fec:4990671 pkt;5644884566 byte)  server-->client:(original:3179677 pkt;2869779336 byte) (fec:3818154 pkt;3483861476 byte)
+[0m[32m[2026-11-23 10:47:52][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3680848 pkt;4014305756 byte) (fec:4418689 pkt;4863372402 byte)  server-->client:(original:3118135 pkt;2729226856 byte) (fec:3743732 pkt;3314521448 byte)
+[0m[32m[2026-11-23 10:48:01][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4192229 pkt;4665000252 byte) (fec:5032637 pkt;5650093386 byte)  server-->client:(original:3319812 pkt;3056910236 byte) (fec:3986330 pkt;3710136912 byte)
+[0m[32m[2026-11-23 10:48:01][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3612053 pkt;3279666176 byte) (fec:4336364 pkt;3980865044 byte)  server-->client:(original:3329843 pkt;2341132116 byte) (fec:3998087 pkt;2851410798 byte)
+[0m[32m[2026-11-23 10:48:02][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3762153 pkt;4023604448 byte) (fec:4516310 pkt;4875541352 byte)  server-->client:(original:3227600 pkt;2875390840 byte) (fec:3875110 pkt;3491274980 byte)
+[0m[32m[2026-11-23 10:48:04][INFO][w0][server] batch gso=on gro=on send=4029433/438615 gso=3864558/431727 fallback=0 recv=5060699/391727 gro=4765056/778914
+[0m[32m[2026-11-23 10:48:04][INFO][w1][server] batch gso=on gro=on send=4028422/474519 gso=3845823/464471 fallback=0 recv=4368639/422280 gro=4082428/691416
+[0m[32m[2026-11-23 10:48:04][INFO][w2][server] batch gso=on gro=on send=3897066/419235 gso=3739170/411525 fallback=0 recv=4542085/307708 gro=4290287/670758
+[0m[32m[2026-11-23 10:48:11][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4238551 pkt;4670309940 byte) (fec:5088303 pkt;5657044646 byte)  server-->client:(original:3454634 pkt;3236939228 byte) (fec:4148136 pkt;3927834588 byte)
+[0m[32m[2026-11-23 10:48:11][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3676910 pkt;3287115348 byte) (fec:4414252 pkt;3990605972 byte)  server-->client:(original:3428384 pkt;2472693240 byte) (fec:4116366 pkt;3010524680 byte)
+[0m[32m[2026-11-23 10:48:12][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3833420 pkt;4031798220 byte) (fec:4601902 pkt;4886253800 byte)  server-->client:(original:3334046 pkt;3017517764 byte) (fec:4002880 pkt;3663168468 byte)
+[0m[32m[2026-11-23 10:48:21][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4290413 pkt;4676276748 byte) (fec:5150608 pkt;5664846724 byte)  server-->client:(original:3563196 pkt;3381897092 byte) (fec:4278440 pkt;4103142804 byte)
+[0m[32m[2026-11-23 10:48:22][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3739380 pkt;3294290332 byte) (fec:4489275 pkt;3999988102 byte)  server-->client:(original:3516749 pkt;2590670192 byte) (fec:4222437 pkt;3153217558 byte)
+[0m[32m[2026-11-23 10:48:23][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3875339 pkt;4036603160 byte) (fec:4652299 pkt;4892546846 byte)  server-->client:(original:3434493 pkt;3151627808 byte) (fec:4123445 pkt;3825361810 byte)
+[0m[32m[2026-11-23 10:48:32][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4333376 pkt;4681053816 byte) (fec:5202255 pkt;5671143462 byte)  server-->client:(original:3682020 pkt;3540547684 byte) (fec:4421080 pkt;4295037972 byte)
+[0m[32m[2026-11-23 10:48:32][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3815356 pkt;3302818716 byte) (fec:4580528 pkt;4011196556 byte)  server-->client:(original:3604059 pkt;2707236300 byte) (fec:4327265 pkt;3294235994 byte)
+[0m[32m[2026-11-23 10:48:33][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3903611 pkt;4039738984 byte) (fec:4686315 pkt;4896684686 byte)  server-->client:(original:3539743 pkt;3292169620 byte) (fec:4249806 pkt;3995371528 byte)
+[0m[32m[2026-11-23 10:48:34][INFO][w1][server] batch gso=on gro=on send=4342522/504875 gso=4150297/499191 fallback=0 recv=4611774/446393 gro=4311779/728007
+[0m[32m[2026-11-23 10:48:34][INFO][w0][server] batch gso=on gro=on send=4452593/472650 gso=4277275/466614 fallback=0 recv=5222028/412535 gro=4913924/805717
+[0m[32m[2026-11-23 10:48:34][INFO][w2][server] batch gso=on gro=on send=4259860/448371 gso=4094283/445984 fallback=0 recv=4698629/325488 gro=4435703/697961
+[0m[32m[2026-11-23 10:48:42][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4364686 pkt;4684587472 byte) (fec:5239905 pkt;5675783442 byte)  server-->client:(original:3806336 pkt;3706514768 byte) (fec:4570329 pkt;4495808034 byte)
+[0m[32m[2026-11-23 10:48:42][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3894771 pkt;3311869576 byte) (fec:4675893 pkt;4023046434 byte)  server-->client:(original:3685586 pkt;2816096192 byte) (fec:4425167 pkt;3425951906 byte)
+[0m[32m[2026-11-23 10:48:44][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3921634 pkt;4041753364 byte) (fec:4707994 pkt;4899336640 byte)  server-->client:(original:3649917 pkt;3439297024 byte) (fec:4382085 pkt;4173354002 byte)
+[0m[32m[2026-11-23 10:48:53][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4393003 pkt;4687811044 byte) (fec:5273942 pkt;5680007624 byte)  server-->client:(original:3943228 pkt;3889296888 byte) (fec:4734649 pkt;4716877162 byte)
+[0m[32m[2026-11-23 10:48:53][INFO][w1][report][172.31.10.2:34981]client-->server:(original:3988685 pkt;3322610240 byte) (fec:4788644 pkt;4037093476 byte)  server-->client:(original:3770407 pkt;2929348344 byte) (fec:4527014 pkt;3562968028 byte)
+[0m[32m[2026-11-23 10:48:54][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3944575 pkt;4044327032 byte) (fec:4735583 pkt;4902720070 byte)  server-->client:(original:3758193 pkt;3583882584 byte) (fec:4512064 pkt;4348234560 byte)
+[0m[32m[2026-11-23 10:49:03][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4073833 pkt;3332344864 byte) (fec:4890867 pkt;4049832294 byte)  server-->client:(original:3852899 pkt;3039503592 byte) (fec:4626043 pkt;3696206998 byte)
+[0m[32m[2026-11-23 10:49:03][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4443310 pkt;4693551600 byte) (fec:5334398 pkt;5687530232 byte)  server-->client:(original:4063512 pkt;4049900512 byte) (fec:4879032 pkt;4911120880 byte)
+[0m[32m[2026-11-23 10:49:04][INFO][w0][server] batch gso=on gro=on send=4893102/504631 gso=4710191/499622 fallback=0 recv=5352278/428121 gro=5033745/826471
+[0m[32m[2026-11-23 10:49:04][INFO][w2][server] batch gso=on gro=on send=4660233/477753 gso=4487020/476598 fallback=0 recv=4752070/329591 gro=4486074/704592
+[0m[32m[2026-11-23 10:49:04][INFO][w1][server] batch gso=on gro=on send=4637326/531011 gso=4437423/523620 fallback=0 recv=4916650/471160 gro=4601524/770855
+[0m[32m[2026-11-23 10:49:04][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3947870 pkt;4044685716 byte) (fec:4739574 pkt;4903199080 byte)  server-->client:(original:3888944 pkt;3758444260 byte) (fec:4669011 pkt;4559362326 byte)
+[0m[32m[2026-11-23 10:49:13][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4165261 pkt;3342890128 byte) (fec:5000608 pkt;4063600908 byte)  server-->client:(original:3932890 pkt;3146326124 byte) (fec:4722063 pkt;3825404474 byte)
+[0m[32m[2026-11-23 10:49:13][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4494629 pkt;4699474972 byte) (fec:5396058 pkt;5695271072 byte)  server-->client:(original:4188144 pkt;4216298552 byte) (fec:5028609 pkt;5112341210 byte)
+[0m[32m[2026-11-23 10:49:15][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3949210 pkt;4044840164 byte) (fec:4741191 pkt;4903401878 byte)  server-->client:(original:4018975 pkt;3932057260 byte) (fec:4825061 pkt;4769297210 byte)
+[0m[32m[2026-11-23 10:49:23][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4219946 pkt;3349206340 byte) (fec:5066271 pkt;4071845998 byte)  server-->client:(original:3995438 pkt;3229792496 byte) (fec:4797131 pkt;3926343238 byte)
+[0m[32m[2026-11-23 10:49:24][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4533063 pkt;4703909352 byte) (fec:5442204 pkt;5701064208 byte)  server-->client:(original:4263337 pkt;4316641516 byte) (fec:5118847 pkt;5233679178 byte)
+[0m[32m[2026-11-23 10:49:25][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3971623 pkt;4047417912 byte) (fec:4768166 pkt;4906776520 byte)  server-->client:(original:4068463 pkt;3998054188 byte) (fec:4884452 pkt;4849109708 byte)
+[0m[32m[2026-11-23 10:49:33][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4219946 pkt;3349206340 byte) (fec:5066271 pkt;4071845998 byte)  server-->client:(original:3995438 pkt;3229792496 byte) (fec:4797131 pkt;3926343238 byte)
+[0m[32m[2026-11-23 10:49:34][INFO][w2][server] batch gso=on gro=on send=4884454/500736 gso=4699963/506473 fallback=0 recv=4781671/341333 gro=4506790/711201
+[0m[32m[2026-11-23 10:49:34][INFO][w1][server] batch gso=on gro=on send=4797131/553523 gso=4585123/543280 fallback=0 recv=5079942/502372 gro=4742981/802593
+[0m[32m[2026-11-23 10:49:34][INFO][w0][server] batch gso=on gro=on send=5118847/528537 gso=4923056/526453 fallback=0 recv=5457449/455239 gro=5119568/848187
+[0m[32m[2026-11-23 10:49:34][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4533063 pkt;4703909352 byte) (fec:5442204 pkt;5701064208 byte)  server-->client:(original:4263337 pkt;4316641516 byte) (fec:5118847 pkt;5233679178 byte)
+[0m[32m[2026-11-23 10:49:36][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3971624 pkt;4047417948 byte) (fec:4768168 pkt;4906776612 byte)  server-->client:(original:4068464 pkt;3998054224 byte) (fec:4884454 pkt;4849109800 byte)
+[0m[32m[2026-11-23 10:49:44][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4219948 pkt;3349206508 byte) (fec:5066275 pkt;4071846374 byte)  server-->client:(original:3995440 pkt;3229792724 byte) (fec:4797134 pkt;3926343628 byte)
+[0m[32m[2026-11-23 10:49:45][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4533073 pkt;4703910692 byte) (fec:5442223 pkt;5701066946 byte)  server-->client:(original:4263344 pkt;4316642440 byte) (fec:5118861 pkt;5233681166 byte)
+[0m[32m[2026-11-23 10:49:46][INFO][w2][report][172.31.10.2:45199]client-->server:(original:3971644 pkt;4047437348 byte) (fec:4768198 pkt;4906804824 byte)  server-->client:(original:4068503 pkt;3998058668 byte) (fec:4884514 pkt;4849117328 byte)
+[0m[32m[2026-11-23 10:49:54][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4270004 pkt;3416033572 byte) (fec:5126475 pkt;4152824158 byte)  server-->client:(original:4018235 pkt;3232424768 byte) (fec:4824608 pkt;3929793160 byte)
+[0m[32m[2026-11-23 10:49:55][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4596441 pkt;4788496088 byte) (fec:5518398 pkt;5803500260 byte)  server-->client:(original:4291060 pkt;4319841112 byte) (fec:5152265 pkt;5237873654 byte)
+[0m[32m[2026-11-23 10:49:56][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4038003 pkt;4136034408 byte) (fec:4847981 pkt;5014118282 byte)  server-->client:(original:4111527 pkt;4003030700 byte) (fec:4936301 pkt;4855624346 byte)
+[0m[32m[2026-11-23 10:50:04][INFO][w1][server] batch gso=on gro=on send=4864281/565881 gso=4643071/552907 fallback=0 recv=5208819/512491 gro=4864553/823922
+[0m[32m[2026-11-23 10:50:04][INFO][w0][server] batch gso=on gro=on send=5188835/543158 gso=4981394/537310 fallback=0 recv=5616542/467349 gro=5269699/874260
+[0m[32m[2026-11-23 10:50:04][INFO][w2][server] batch gso=on gro=on send=4972926/518270 gso=4774392/520529 fallback=0 recv=4925337/351976 gro=4642721/734687
+[0m[32m[2026-11-23 10:50:05][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4330610 pkt;3496953948 byte) (fec:5199333 pkt;4250834658 byte)  server-->client:(original:4053666 pkt;3236518524 byte) (fec:4867265 pkt;3935151718 byte)
+[0m[32m[2026-11-23 10:50:05][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4672938 pkt;4890621932 byte) (fec:5610354 pkt;5927184984 byte)  server-->client:(original:4324076 pkt;4323653960 byte) (fec:5192043 pkt;5242868786 byte)
+[0m[32m[2026-11-23 10:50:07][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4109330 pkt;4231257716 byte) (fec:4933718 pkt;5129441440 byte)  server-->client:(original:4155947 pkt;4008163740 byte) (fec:4989762 pkt;4862341024 byte)
+[0m[32m[2026-11-23 10:50:15][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4386701 pkt;3571822956 byte) (fec:5266756 pkt;4341507924 byte)  server-->client:(original:4087190 pkt;3240389820 byte) (fec:4907622 pkt;3940219164 byte)
+[0m[32m[2026-11-23 10:50:15][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4746285 pkt;4988548232 byte) (fec:5698450 pkt;6045688416 byte)  server-->client:(original:4350426 pkt;4326696848 byte) (fec:5223812 pkt;5246858048 byte)
+[0m[32m[2026-11-23 10:50:17][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4172489 pkt;4315585048 byte) (fec:5009490 pkt;5231372176 byte)  server-->client:(original:4193762 pkt;4012504088 byte) (fec:5035281 pkt;4868030306 byte)
+[0m[32m[2026-11-23 10:50:25][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4437374 pkt;3639489872 byte) (fec:5327676 pkt;4423471624 byte)  server-->client:(original:4117487 pkt;3243804080 byte) (fec:4944117 pkt;3944715502 byte)
+[0m[32m[2026-11-23 10:50:26][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4827913 pkt;5097544764 byte) (fec:5796504 pkt;6177607012 byte)  server-->client:(original:4374985 pkt;4329453068 byte) (fec:5253444 pkt;5250498064 byte)
+[0m[32m[2026-11-23 10:50:28][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4251227 pkt;4420721480 byte) (fec:5104075 pkt;5358624846 byte)  server-->client:(original:4224906 pkt;4016010440 byte) (fec:5072793 pkt;4872649250 byte)
+[0m[32m[2026-11-23 10:50:34][INFO][w2][server] batch gso=on gro=on send=5098585/544622 gso=4885742/538841 fallback=0 recv=5170951/371189 gro=4879201/774793
+[0m[32m[2026-11-23 10:50:34][INFO][w0][server] batch gso=on gro=on send=5271333/561635 gso=5053218/548980 fallback=0 recv=5897551/486742 gro=5540766/919365
+[0m[32m[2026-11-23 10:50:34][INFO][w1][server] batch gso=on gro=on send=4975644/586267 gso=4744093/567000 fallback=0 recv=5397111/528851 gro=5044508/856489
+[0m[32m[2026-11-23 10:50:36][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4493630 pkt;3714598096 byte) (fec:5395306 pkt;4514451812 byte)  server-->client:(original:4149097 pkt;3247395304 byte) (fec:4982191 pkt;3949435930 byte)
+[0m[32m[2026-11-23 10:50:36][INFO][w0][report][172.31.10.2:40037]client-->server:(original:4917361 pkt;5216974628 byte) (fec:5903970 pkt;6322178768 byte)  server-->client:(original:4394720 pkt;4331684312 byte) (fec:5277303 pkt;5253444986 byte)
+[0m[32m[2026-11-23 10:50:38][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4323031 pkt;4516601044 byte) (fec:5190358 pkt;5474706368 byte)  server-->client:(original:4257928 pkt;4019747184 byte) (fec:5112556 pkt;4877563404 byte)
+[0m[32m[2026-11-23 10:50:46][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5003593 pkt;5332108076 byte) (fec:6007568 pkt;6461543152 byte)  server-->client:(original:4415218 pkt;4334011872 byte) (fec:5302048 pkt;5256511592 byte)
+[0m[32m[2026-11-23 10:50:46][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4551323 pkt;3791619152 byte) (fec:5464673 pkt;4607759518 byte)  server-->client:(original:4180012 pkt;3250920292 byte) (fec:5019427 pkt;3954064930 byte)
+[0m[32m[2026-11-23 10:50:48][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4394521 pkt;4612056304 byte) (fec:5276283 pkt;5590299954 byte)  server-->client:(original:4297158 pkt;4024232104 byte) (fec:5159780 pkt;4883446908 byte)
+[0m[32m[2026-11-23 10:50:57][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5104517 pkt;5466857928 byte) (fec:6128807 pkt;6624643486 byte)  server-->client:(original:4443320 pkt;4337242760 byte) (fec:5335955 pkt;5260755426 byte)
+[0m[32m[2026-11-23 10:50:57][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4622294 pkt;3886378172 byte) (fec:5549964 pkt;4722501764 byte)  server-->client:(original:4218130 pkt;3255307836 byte) (fec:5065329 pkt;3959814726 byte)
+[0m[32m[2026-11-23 10:50:58][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4470437 pkt;4713418996 byte) (fec:5367517 pkt;5713036158 byte)  server-->client:(original:4342251 pkt;4029424348 byte) (fec:5214036 pkt;4890245228 byte)
+[0m[32m[2026-11-23 10:51:04][INFO][w1][server] batch gso=on gro=on send=5092561/608053 gso=4846659/582903 fallback=0 recv=5628058/548776 gro=5263873/897564
+[0m[32m[2026-11-23 10:51:04][INFO][w2][server] batch gso=on gro=on send=5248314/575108 gso=5014946/560737 fallback=0 recv=5433126/393275 gro=5128774/819728
+[0m[32m[2026-11-23 10:51:04][INFO][w0][server] batch gso=on gro=on send=5360208/582503 gso=5127256/561993 fallback=0 recv=6229170/509968 gro=5857538/973886
+[0m[32m[2026-11-23 10:51:07][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5197145 pkt;5590515960 byte) (fec:6240097 pkt;6774338358 byte)  server-->client:(original:4471813 pkt;4340519516 byte) (fec:5370314 pkt;5265056692 byte)
+[0m[32m[2026-11-23 10:51:07][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4695018 pkt;3983479504 byte) (fec:5637376 pkt;4840100384 byte)  server-->client:(original:4251168 pkt;3259117028 byte) (fec:5105140 pkt;3964807904 byte)
+[0m[32m[2026-11-23 10:51:08][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4544460 pkt;4812261144 byte) (fec:5456476 pkt;5832719984 byte)  server-->client:(original:4391590 pkt;4035107976 byte) (fec:5273385 pkt;4897684354 byte)
+[0m[32m[2026-11-23 10:51:17][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5273888 pkt;5692971944 byte) (fec:6332295 pkt;6898356094 byte)  server-->client:(original:4496591 pkt;4343364404 byte) (fec:5400196 pkt;5268792800 byte)
+[0m[32m[2026-11-23 10:51:17][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4751653 pkt;4059093952 byte) (fec:5705443 pkt;4931667642 byte)  server-->client:(original:4278175 pkt;3262208704 byte) (fec:5137693 pkt;3968868238 byte)
+[0m[32m[2026-11-23 10:51:19][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4601809 pkt;4888839236 byte) (fec:5525391 pkt;5925436962 byte)  server-->client:(original:4425913 pkt;4039018740 byte) (fec:5314713 pkt;4902821554 byte)
+[0m[32m[2026-11-23 10:51:27][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5356191 pkt;5802899728 byte) (fec:6431061 pkt;7031266106 byte)  server-->client:(original:4529381 pkt;4346957996 byte) (fec:5439613 pkt;5273549886 byte)
+[0m[32m[2026-11-23 10:51:28][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4799359 pkt;4122806196 byte) (fec:5762722 pkt;5008742204 byte)  server-->client:(original:4308339 pkt;3265512512 byte) (fec:5173975 pkt;3973245322 byte)
+[0m[32m[2026-11-23 10:51:29][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4663315 pkt;4970984540 byte) (fec:5599210 pkt;6024770624 byte)  server-->client:(original:4456712 pkt;4042396864 byte) (fec:5351759 pkt;4907295590 byte)
+[0m[32m[2026-11-23 10:51:34][INFO][w2][server] batch gso=on gro=on send=5371135/607844 gso=5118732/580716 fallback=0 recv=5657740/420885 gro=5341786/854449
+[0m[32m[2026-11-23 10:51:34][INFO][w1][server] batch gso=on gro=on send=5197922/638605 gso=4935104/600620 fallback=0 recv=5816666/576567 gro=5439331/929400
+[0m[32m[2026-11-23 10:51:34][INFO][w0][server] batch gso=on gro=on send=5468034/614392 gso=5216977/579865 fallback=0 recv=6525143/545240 gro=6139402/1019234
+[0m[32m[2026-11-23 10:51:37][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5460183 pkt;5941797932 byte) (fec:6555853 pkt;7199201030 byte)  server-->client:(original:4566897 pkt;4351097068 byte) (fec:5484700 pkt;5279018224 byte)
+[0m[32m[2026-11-23 10:51:38][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4863279 pkt;4208178428 byte) (fec:5839446 pkt;5111987820 byte)  server-->client:(original:4347763 pkt;3269879952 byte) (fec:5221335 pkt;3979007642 byte)
+[0m[32m[2026-11-23 10:51:39][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4750768 pkt;5087793996 byte) (fec:5704165 pkt;6166012302 byte)  server-->client:(original:4490425 pkt;4046130644 byte) (fec:5392303 pkt;4912227286 byte)
+[0m[32m[2026-11-23 10:51:48][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5592544 pkt;6118516544 byte) (fec:6714738 pkt;7412943352 byte)  server-->client:(original:4602282 pkt;4355120064 byte) (fec:5527298 pkt;5284303028 byte)
+[0m[32m[2026-11-23 10:51:49][INFO][w1][report][172.31.10.2:34981]client-->server:(original:4955516 pkt;4331337344 byte) (fec:5950206 pkt;5260999764 byte)  server-->client:(original:4404955 pkt;3276404284 byte) (fec:5290073 pkt;3987557746 byte)
+[0m[32m[2026-11-23 10:51:50][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4863436 pkt;5238237896 byte) (fec:5839454 pkt;6348027136 byte)  server-->client:(original:4509362 pkt;4048276968 byte) (fec:5415175 pkt;4915057382 byte)
+[0m[32m[2026-11-23 10:51:58][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5697484 pkt;6258635352 byte) (fec:6840799 pkt;7582533138 byte)  server-->client:(original:4623216 pkt;4357530600 byte) (fec:5552559 pkt;5287468154 byte)
+[0m[32m[2026-11-23 10:51:59][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5023055 pkt;4421509864 byte) (fec:6031394 pkt;5370213688 byte)  server-->client:(original:4449601 pkt;3281559124 byte) (fec:5343770 pkt;3994299968 byte)
+[0m[32m[2026-11-23 10:52:00][INFO][w2][report][172.31.10.2:45199]client-->server:(original:4946963 pkt;5349765252 byte) (fec:5939787 pkt;6483003254 byte)  server-->client:(original:4525399 pkt;4050124908 byte) (fec:5434553 pkt;4917486834 byte)
+[0m[32m[2026-11-23 10:52:04][INFO][w1][server] batch gso=on gro=on send=5363759/663377 gso=5088769/622416 fallback=0 recv=6088375/597993 gro=5700282/969815
+[0m[32m[2026-11-23 10:52:04][INFO][w0][server] batch gso=on gro=on send=5573713/633385 gso=5312352/594407 fallback=0 recv=6914939/568701 gro=6514350/1078396
+[0m[32m[2026-11-23 10:52:04][INFO][w2][server] batch gso=on gro=on send=5447991/622450 gso=5187146/591683 fallback=0 recv=5995715/437721 gro=5666900/903090
+[0m[32m[2026-11-23 10:52:09][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5780078 pkt;6368903636 byte) (fec:6940049 pkt;7716037814 byte)  server-->client:(original:4657161 pkt;4361448972 byte) (fec:5593441 pkt;5292599382 byte)
+[0m[32m[2026-11-23 10:52:09][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5095814 pkt;4518662308 byte) (fec:6118823 pkt;5487831510 byte)  server-->client:(original:4484560 pkt;3285600224 byte) (fec:5385837 pkt;3999586714 byte)
+[0m[32m[2026-11-23 10:52:10][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5022928 pkt;5451191432 byte) (fec:6031060 pkt;6605783956 byte)  server-->client:(original:4554015 pkt;4053422076 byte) (fec:5469034 pkt;4921809376 byte)
+[0m[32m[2026-11-23 10:52:19][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5834829 pkt;6441990012 byte) (fec:7005846 pkt;7804528108 byte)  server-->client:(original:4679748 pkt;4364030792 byte) (fec:5620672 pkt;5295992072 byte)
+[0m[32m[2026-11-23 10:52:20][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5136120 pkt;4572479564 byte) (fec:6167289 pkt;5553030658 byte)  server-->client:(original:4505762 pkt;3288010616 byte) (fec:5411396 pkt;4002757420 byte)
+[0m[32m[2026-11-23 10:52:20][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5073496 pkt;5518709932 byte) (fec:6091835 pkt;6687536658 byte)  server-->client:(original:4579369 pkt;4056286532 byte) (fec:5499576 pkt;4925580436 byte)
+[0m[32m[2026-11-23 10:52:29][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5895745 pkt;6523347172 byte) (fec:7078988 pkt;7902950624 byte)  server-->client:(original:4704229 pkt;4366697916 byte) (fec:5650191 pkt;5299539226 byte)
+[0m[32m[2026-11-23 10:52:30][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5135075 pkt;5600948076 byte) (fec:6165772 pkt;6787024460 byte)  server-->client:(original:4613637 pkt;4060004452 byte) (fec:5540776 pkt;4930514628 byte)
+[0m[32m[2026-11-23 10:52:30][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5167385 pkt;4614235060 byte) (fec:6204926 pkt;5603675516 byte)  server-->client:(original:4527803 pkt;3290407308 byte) (fec:5438018 pkt;4005951872 byte)
+[0m[32m[2026-11-23 10:52:34][INFO][w2][server] batch gso=on gro=on send=5556173/654630 gso=5276501/609530 fallback=0 recv=6213965/465109 gro=5873229/935871
+[0m[32m[2026-11-23 10:52:34][INFO][w1][server] batch gso=on gro=on send=5448006/688422 gso=5158450/637096 fallback=0 recv=6237290/619888 gro=5837828/993756
+[0m[32m[2026-11-23 10:52:34][INFO][w0][server] batch gso=on gro=on send=5664819/659624 gso=5388083/609719 fallback=0 recv=7131619/596960 gro=6719073/1112167
+[0m[32m[2026-11-23 10:52:40][INFO][w0][report][172.31.10.2:40037]client-->server:(original:5968741 pkt;6620822200 byte) (fec:7166618 pkt;8020851772 byte)  server-->client:(original:4730869 pkt;4369623932 byte) (fec:5682296 pkt;5303420520 byte)
+[0m[32m[2026-11-23 10:52:40][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5207653 pkt;5697878324 byte) (fec:6252911 pkt;6904277186 byte)  server-->client:(original:4649752 pkt;4063974496 byte) (fec:5584206 pkt;4935767352 byte)
+[0m[32m[2026-11-23 10:52:41][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5211226 pkt;4672781636 byte) (fec:6257629 pkt;5674588754 byte)  server-->client:(original:4555579 pkt;3293482572 byte) (fec:5471499 pkt;4010023710 byte)
+[0m[32m[2026-11-23 10:52:50][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6058915 pkt;6741211328 byte) (fec:7274968 pkt;8166601452 byte)  server-->client:(original:4758882 pkt;4372823984 byte) (fec:5716084 pkt;5307627632 byte)
+[0m[32m[2026-11-23 10:52:50][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5287240 pkt;5804152556 byte) (fec:6348545 pkt;7032946550 byte)  server-->client:(original:4687677 pkt;4068319700 byte) (fec:5629882 pkt;4941468272 byte)
+[0m[32m[2026-11-23 10:52:51][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5280265 pkt;4764962980 byte) (fec:6340601 pkt;5786214306 byte)  server-->client:(original:4590532 pkt;3297482240 byte) (fec:5513596 pkt;4015272956 byte)
+[0m[32m[2026-11-23 10:53:00][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6150400 pkt;6863353408 byte) (fec:7384878 pkt;8314451208 byte)  server-->client:(original:4786089 pkt;4375957724 byte) (fec:5748889 pkt;5311739142 byte)
+[0m[32m[2026-11-23 10:53:01][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5359839 pkt;5901095368 byte) (fec:6435808 pkt;7150351860 byte)  server-->client:(original:4738712 pkt;4074197056 byte) (fec:5691261 pkt;4949159674 byte)
+[0m[32m[2026-11-23 10:53:01][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5353420 pkt;4862627280 byte) (fec:6428532 pkt;5904491524 byte)  server-->client:(original:4623418 pkt;3301271736 byte) (fec:5553216 pkt;4020240404 byte)
+[0m[32m[2026-11-23 10:53:04][INFO][w0][server] batch gso=on gro=on send=5762837/683862 gso=5468887/624894 fallback=0 recv=7443004/622271 gro=7015339/1161540
+[0m[32m[2026-11-23 10:53:04][INFO][w1][server] batch gso=on gro=on send=5563238/712704 gso=5258043/653940 fallback=0 recv=6462690/642328 gro=6050577/1033288
+[0m[32m[2026-11-23 10:53:04][INFO][w2][server] batch gso=on gro=on send=5707621/688298 gso=5405629/632613 fallback=0 recv=6480162/489433 gro=6126445/979556
+[0m[32m[2026-11-23 10:53:11][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6244245 pkt;6988654068 byte) (fec:7497639 pkt;8466145234 byte)  server-->client:(original:4816317 pkt;4379442428 byte) (fec:5785332 pkt;5316309776 byte)
+[0m[32m[2026-11-23 10:53:11][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5426558 pkt;5990170476 byte) (fec:6516004 pkt;7258230524 byte)  server-->client:(original:4786317 pkt;4079685220 byte) (fec:5748524 pkt;4956341132 byte)
+[0m[32m[2026-11-23 10:53:12][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5417755 pkt;4948526784 byte) (fec:6505877 pkt;6008541354 byte)  server-->client:(original:4661265 pkt;3305635348 byte) (fec:5598779 pkt;4025954782 byte)
+[0m[32m[2026-11-23 10:53:21][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6298827 pkt;7061517796 byte) (fec:7563210 pkt;8554327884 byte)  server-->client:(original:4838336 pkt;4381923064 byte) (fec:5811859 pkt;5319578850 byte)
+[0m[32m[2026-11-23 10:53:21][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5470845 pkt;6049306112 byte) (fec:6569215 pkt;7329811774 byte)  server-->client:(original:4811948 pkt;4082578192 byte) (fec:5779398 pkt;4960151192 byte)
+[0m[32m[2026-11-23 10:53:22][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5454735 pkt;4997900684 byte) (fec:6550308 pkt;6068312896 byte)  server-->client:(original:4680351 pkt;3307765148 byte) (fec:5621794 pkt;4028770912 byte)
+[0m[32m[2026-11-23 10:53:31][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5534081 pkt;6133764060 byte) (fec:6645115 pkt;7431947826 byte)  server-->client:(original:4841611 pkt;4085828972 byte) (fec:5815078 pkt;4964457080 byte)
+[0m[32m[2026-11-23 10:53:31][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6386980 pkt;7179257472 byte) (fec:7668998 pkt;8696685800 byte)  server-->client:(original:4873486 pkt;4385775712 byte) (fec:5854109 pkt;5324678590 byte)
+[0m[32m[2026-11-23 10:53:33][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5504135 pkt;5063877220 byte) (fec:6609631 pkt;6148139790 byte)  server-->client:(original:4712222 pkt;3311262872 byte) (fec:5660123 pkt;4033401646 byte)
+[0m[32m[2026-11-23 10:53:34][INFO][w0][server] batch gso=on gro=on send=5864110/713865 gso=5552690/641882 fallback=0 recv=7716679/654132 gro=7275976/1202407
+[0m[32m[2026-11-23 10:53:34][INFO][w1][server] batch gso=on gro=on send=5664797/741930 gso=5343022/671085 fallback=0 recv=6636130/668295 gro=6211821/1062672
+[0m[32m[2026-11-23 10:53:34][INFO][w2][server] batch gso=on gro=on send=5824970/719204 gso=5504693/651883 fallback=0 recv=6685292/514770 gro=6320983/1011526
+[0m[32m[2026-11-23 10:53:41][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6493331 pkt;7321309092 byte) (fec:7796620 pkt;8868431696 byte)  server-->client:(original:4911712 pkt;4390005800 byte) (fec:5900047 pkt;5330262122 byte)
+[0m[32m[2026-11-23 10:53:42][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5621306 pkt;6250272380 byte) (fec:6749800 pkt;7572829556 byte)  server-->client:(original:4875803 pkt;4089612524 byte) (fec:5856208 pkt;4969456276 byte)
+[0m[32m[2026-11-23 10:53:43][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5574341 pkt;5157637552 byte) (fec:6693912 pkt;6261547132 byte)  server-->client:(original:4753915 pkt;3315918812 byte) (fec:5710226 pkt;4039534432 byte)
+[0m[32m[2026-11-23 10:53:52][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6601734 pkt;7466041588 byte) (fec:7926804 pkt;9043558800 byte)  server-->client:(original:4944865 pkt;4393799132 byte) (fec:5939973 pkt;5335239742 byte)
+[0m[32m[2026-11-23 10:53:52][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5727645 pkt;6392274648 byte) (fec:6877481 pkt;7744614290 byte)  server-->client:(original:4891965 pkt;4091455104 byte) (fec:5875752 pkt;4971885088 byte)
+[0m[32m[2026-11-23 10:53:53][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5650439 pkt;5259234172 byte) (fec:6785289 pkt;6384466622 byte)  server-->client:(original:4796109 pkt;3320750164 byte) (fec:5760976 pkt;4045864868 byte)
+[0m[32m[2026-11-23 10:54:02][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6693540 pkt;7588618288 byte) (fec:8037072 pkt;9191896124 byte)  server-->client:(original:4974215 pkt;4397173140 byte) (fec:5975340 pkt;5339665456 byte)
+[0m[32m[2026-11-23 10:54:02][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5811870 pkt;6504743476 byte) (fec:6978640 pkt;7880712512 byte)  server-->client:(original:4921887 pkt;4094882856 byte) (fec:5911789 pkt;4976382150 byte)
+[0m[32m[2026-11-23 10:54:03][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5721353 pkt;5353908708 byte) (fec:6870535 pkt;6499131678 byte)  server-->client:(original:4830722 pkt;3324736376 byte) (fec:5802625 pkt;4051083650 byte)
+[0m[32m[2026-11-23 10:54:04][INFO][w1][server] batch gso=on gro=on send=5808120/768054 gso=5472332/691517 fallback=0 recv=6901279/691615 gro=6465802/1102080
+[0m[32m[2026-11-23 10:54:04][INFO][w2][server] batch gso=on gro=on send=5917367/737943 gso=5586198/666097 fallback=0 recv=7011995/534197 gro=6634690/1057493
+[0m[32m[2026-11-23 10:54:04][INFO][w0][server] batch gso=on gro=on send=5983502/737075 gso=5658923/659473 fallback=0 recv=8080112/682009 gro=7625409/1258110
+[0m[32m[2026-11-23 10:54:12][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6774933 pkt;7697290360 byte) (fec:8134880 pkt;9323461864 byte)  server-->client:(original:5008844 pkt;4401164792 byte) (fec:6017020 pkt;5344891632 byte)
+[0m[32m[2026-11-23 10:54:12][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5887828 pkt;6606161640 byte) (fec:7069951 pkt;8003549258 byte)  server-->client:(original:4956347 pkt;4098848344 byte) (fec:5953268 pkt;4981576600 byte)
+[0m[32m[2026-11-23 10:54:13][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5789956 pkt;5445493688 byte) (fec:6952974 pkt;6610018636 byte)  server-->client:(original:4864926 pkt;3328681480 byte) (fec:5843792 pkt;4056248164 byte)
+[0m[32m[2026-11-23 10:54:23][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6803991 pkt;7736084220 byte) (fec:8169804 pkt;9370435856 byte)  server-->client:(original:5020210 pkt;4402476704 byte) (fec:6030719 pkt;5346610986 byte)
+[0m[32m[2026-11-23 10:54:23][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5908205 pkt;6633369996 byte) (fec:7094460 pkt;8036517452 byte)  server-->client:(original:4972865 pkt;4100756432 byte) (fec:5973151 pkt;4984074018 byte)
+[0m[32m[2026-11-23 10:54:23][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5808535 pkt;5470298264 byte) (fec:6975321 pkt;6640077118 byte)  server-->client:(original:4871852 pkt;3329481248 byte) (fec:5852152 pkt;4057297716 byte)
+[0m[32m[2026-11-23 10:54:33][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6803991 pkt;7736084220 byte) (fec:8169804 pkt;9370435856 byte)  server-->client:(original:5020210 pkt;4402476704 byte) (fec:6030719 pkt;5346610986 byte)
+[0m[32m[2026-11-23 10:54:33][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5908205 pkt;6633369996 byte) (fec:7094460 pkt;8036517452 byte)  server-->client:(original:4972866 pkt;4100756468 byte) (fec:5973153 pkt;4984074110 byte)
+[0m[32m[2026-11-23 10:54:34][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5808535 pkt;5470298264 byte) (fec:6975321 pkt;6640077118 byte)  server-->client:(original:4871852 pkt;3329481248 byte) (fec:5852152 pkt;4057297716 byte)
+[0m[32m[2026-11-23 10:54:34][INFO][w1][server] batch gso=on gro=on send=5852152/776975 gso=5509515/698361 fallback=0 recv=6995751/699828 gro=6554604/1116817
+[0m[32m[2026-11-23 10:54:34][INFO][w2][server] batch gso=on gro=on send=5973153/748578 gso=5633849/675076 fallback=0 recv=7114935/541821 gro=6731401/1072479
+[0m[32m[2026-11-23 10:54:34][INFO][w0][server] batch gso=on gro=on send=6030719/747034 gso=5698227/667269 fallback=0 recv=8192411/691749 gro=7731428/1276358
+[0m[32m[2026-11-23 10:54:43][INFO][w0][report][172.31.10.2:40037]client-->server:(original:6803991 pkt;7736084220 byte) (fec:8169804 pkt;9370435856 byte)  server-->client:(original:5020210 pkt;4402476704 byte) (fec:6030719 pkt;5346610986 byte)
+[0m[32m[2026-11-23 10:54:44][INFO][w2][report][172.31.10.2:45199]client-->server:(original:5908205 pkt;6633369996 byte) (fec:7094460 pkt;8036517452 byte)  server-->client:(original:4972866 pkt;4100756468 byte) (fec:5973153 pkt;4984074110 byte)
+[0m[33m[2026-11-23 10:54:44][WARN][w0][server] no RUNNING path — not reading the shared WG socket
+[0m[33m[2026-11-23 10:54:44][WARN][w2][server] no RUNNING path — not reading the shared WG socket
+[0m[33m[2026-11-23 10:54:44][WARN][w1][server] no RUNNING path — not reading the shared WG socket
+[0m[32m[2026-11-23 10:54:44][INFO][w1][report][172.31.10.2:34981]client-->server:(original:5808535 pkt;5470298264 byte) (fec:6975321 pkt;6640077118 byte)  server-->client:(original:4871852 pkt;3329481248 byte) (fec:5852152 pkt;4057297716 byte)
+[0m[32m[2026-11-23 10:54:47][INFO][w0]signal 15 received, exiting
+[0m[32m[2026-11-23 10:54:47][INFO][w2]signal 15 received, exiting
+[0m[33m[2026-11-23 10:54:47][WARN][w0][server] ev_run returned
+[0m[33m[2026-11-23 10:54:47][WARN][w2][server] ev_run returned
+[0m[32m[2026-11-23 10:54:47][INFO][w1]signal 15 received, exiting
+[0m[33m[2026-11-23 10:54:47][WARN][w1][server] ev_run returned
+[0m[32m[2026-11-23 10:54:47][INFO][w0]exiting
+[0m[32m[2026-11-23 10:54:47][INFO][w2]exiting
+[0m[32m[2026-11-23 10:54:47][INFO][w1]exiting
+[0m

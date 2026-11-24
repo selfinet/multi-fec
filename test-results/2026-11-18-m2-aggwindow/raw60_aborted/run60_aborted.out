@@ -1,0 +1,25 @@
+== lib.sh a94713a07676  RUN=r60 RAW=raw60
+== setup 10:30:53
+client92 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+server93 spd2 e324110ee508 mt 10b361eac225 multi-fec 1.4.5-mt.2
+client92 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+server93 IFB: 2+1 netem, ingress 1/1, egress root qdisc mq 0: root 
+-- 하부 ping (기대 RTT 60 / 108 ms)
+172.31.10.1 rtt min/avg/max/mdev = 60.150/60.189/60.233/0.027 ms
+172.31.11.1 rtt min/avg/max/mdev = 108.154/108.177/108.213/0.021 ms
+172.31.20.1 rtt min/avg/max/mdev = 108.148/108.171/108.196/0.020 ms
+client92 iptables R60 준비 (비어 있음)
+  client92 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+  server93 A: limit 20000 delay 30ms / B: limit 20000 delay 54ms
+== A worker 3 10:31:20
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+cat: '*_P?.pid': No such file or directory
+cat: '*_MT.pid': No such file or directory
+rtt min/avg/max/mdev = 71.307/83.892/95.222/9.803 ms
+  route 1 rps 8 procs 4
+-- p8_up 10:31:52  (-P8 , 270초)
+cat: /root/rq/r60_p8_up_cuts.txt: No such file or directory
+  recv 319 Mbps | retr 65581 | ping 1350 packets transmitted, 1348 received, 0.148148% packet loss, time 271583ms
+  rcvbuf c/s 9632/140/ | cuts 
+-- p8_dn 10:36:46  (-P8 -R, 270초)
